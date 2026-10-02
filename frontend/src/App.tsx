@@ -15,6 +15,7 @@ import {
   Sparkles,
   Table2,
 } from "lucide-react";
+import ChatPanel from "./ChatPanel";
 
 type ComponentState = { status: string; message: string };
 type Readiness = {
@@ -33,7 +34,7 @@ type Source = {
   display_name: string;
   kind: string;
   state: string;
-  version: string;
+  version: number;
 };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -81,17 +82,14 @@ function App() {
   );
 
   const loadStatus = useCallback(async () => {
-    try {
-      const [, ready] = await Promise.all([
-        api<{ status: "ok" }>("/api/health"),
-        api<Readiness>("/api/readiness"),
-      ]);
-      setHealth("online");
-      setReadiness(ready);
-    } catch {
-      setHealth("offline");
-      setReadiness(null);
-    }
+    const [healthResult, readinessResult] = await Promise.allSettled([
+      api<{ status: "ok" }>("/api/health"),
+      api<Readiness>("/api/readiness"),
+    ]);
+    setHealth(healthResult.status === "fulfilled" ? "online" : "offline");
+    setReadiness(
+      readinessResult.status === "fulfilled" ? readinessResult.value : null,
+    );
   }, []);
 
   const loadWorkspaces = useCallback(async () => {
@@ -383,178 +381,202 @@ function App() {
           </div>
         )}
 
-        <div className="content-grid">
-          <div className="center-column">
-            <div className="hero-kicker">
-              <span className="kicker-line" /> ANALYST DESK{" "}
-              <span className="kicker-index">/ 001</span>
-            </div>
-            <h1>
-              {selectedThread
-                ? selectedThread.label
-                : workspace
-                  ? "A clearer view\nof your sources."
-                  : "Make room for\na new inquiry."}
-            </h1>
-            <p className="hero-copy">
-              {selectedThread
-                ? `Working in ${workspace?.label}. Your source material stays attached to this workspace.`
-                : workspace
-                  ? "Bring documents and data together, then trace each answer back to the material behind it."
-                  : "Create a workspace to collect source material and start a research thread."}
-            </p>
+        <div className={`content-grid ${selectedThread ? "chat-active" : ""}`}>
+          <div className={`center-column ${selectedThread ? "chat-mode" : ""}`}>
+            {selectedThread ? (
+              <ChatPanel
+                threadId={selectedThread.id}
+                sources={sources}
+                modelAvailable={
+                  readiness?.components.model.status === "configured"
+                }
+                modelMessage={
+                  readiness?.components.model.message ??
+                  (health === "offline"
+                    ? "The API is unavailable. Reconnect to continue."
+                    : "Checking model configuration...")
+                }
+              />
+            ) : (
+              <>
+                <div className="hero-kicker">
+                  <span className="kicker-line" /> ANALYST DESK{" "}
+                  <span className="kicker-index">/ 001</span>
+                </div>
+                <h1>
+                  {workspace
+                    ? "A clearer view\nof your sources."
+                    : "Make room for\na new inquiry."}
+                </h1>
+                <p className="hero-copy">
+                  {workspace
+                    ? "Bring documents and data together, then trace each answer back to the material behind it."
+                    : "Create a workspace to collect source material and start a research thread."}
+                </p>
 
-            {readiness?.components.model.status === "unavailable" && (
-              <div className="model-notice">
-                <span className="notice-icon">
-                  <Sparkles size={15} />
-                </span>
-                <div>
-                  <strong>Chat is not configured yet</strong>
-                  <p>
-                    {readiness.components.model.message ||
-                      "Add model credentials to enable assistant responses."}
-                  </p>
-                </div>
-                <span className="notice-state">OFFLINE</span>
-              </div>
-            )}
-            {health === "offline" && (
-              <div className="model-notice connection-notice">
-                <span className="notice-icon">
-                  <AlertCircle size={15} />
-                </span>
-                <div>
-                  <strong>Could not reach the API</strong>
-                  <p>
-                    Check that the backend is running, then refresh this page.
-                  </p>
-                </div>
-                <button
-                  className="text-action"
-                  onClick={() => {
-                    void loadStatus();
-                    void loadWorkspaces();
-                  }}
-                >
-                  Retry
-                </button>
-              </div>
-            )}
+                {readiness?.components.model.status === "unavailable" && (
+                  <div className="model-notice">
+                    <span className="notice-icon">
+                      <Sparkles size={15} />
+                    </span>
+                    <div>
+                      <strong>Chat is not configured yet</strong>
+                      <p>
+                        {readiness.components.model.message ||
+                          "Add model credentials to enable assistant responses."}
+                      </p>
+                    </div>
+                    <span className="notice-state">OFFLINE</span>
+                  </div>
+                )}
+                {health === "offline" && (
+                  <div className="model-notice connection-notice">
+                    <span className="notice-icon">
+                      <AlertCircle size={15} />
+                    </span>
+                    <div>
+                      <strong>Could not reach the API</strong>
+                      <p>
+                        Check that the backend is running, then refresh this
+                        page.
+                      </p>
+                    </div>
+                    <button
+                      className="text-action"
+                      onClick={() => {
+                        void loadStatus();
+                        void loadWorkspaces();
+                      }}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
 
-            <div className="workspace-overview">
-              <div className="overview-head">
-                <div>
-                  <span className="mini-label">Workspace contents</span>
-                  <span className="overview-caption">
-                    {workspace
-                      ? "A live view of this workspace"
-                      : "Nothing collected yet"}
-                  </span>
-                </div>
-                <span className="overview-number">
-                  {String(sources.length).padStart(2, "0")}{" "}
-                  <small>SOURCES</small>
-                </span>
-              </div>
-              <div className="overview-divider" />
-              {sources.length > 0 ? (
-                <div
-                  className="source-table"
-                  role="list"
-                  aria-label="Selected workspace sources"
-                >
-                  {sources.map((source, index) => (
-                    <div className="source-row" role="listitem" key={source.id}>
-                      <span className="source-index">
-                        {String(index + 1).padStart(2, "0")}
+                <div className="workspace-overview">
+                  <div className="overview-head">
+                    <div>
+                      <span className="mini-label">Workspace contents</span>
+                      <span className="overview-caption">
+                        {workspace
+                          ? "A live view of this workspace"
+                          : "Nothing collected yet"}
                       </span>
-                      <span className="source-kind-icon">
-                        {source.kind.toLowerCase().includes("csv") ||
-                        source.kind.toLowerCase().includes("sheet") ||
-                        source.kind.toLowerCase().includes("database") ? (
-                          <Table2 size={17} />
-                        ) : (
-                          <FileText size={17} />
-                        )}
-                      </span>
-                      <div className="source-meta">
-                        <strong>{source.display_name}</strong>
-                        <span>
-                          {source.kind} <i>·</i> {source.version}
-                        </span>
+                    </div>
+                    <span className="overview-number">
+                      {String(sources.length).padStart(2, "0")}{" "}
+                      <small>SOURCES</small>
+                    </span>
+                  </div>
+                  <div className="overview-divider" />
+                  {sources.length > 0 ? (
+                    <div
+                      className="source-table"
+                      role="list"
+                      aria-label="Selected workspace sources"
+                    >
+                      {sources.map((source, index) => (
+                        <div
+                          className="source-row"
+                          role="listitem"
+                          key={source.id}
+                        >
+                          <span className="source-index">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <span className="source-kind-icon">
+                            {source.kind.toLowerCase().includes("csv") ||
+                            source.kind.toLowerCase().includes("sheet") ||
+                            source.kind.toLowerCase().includes("database") ? (
+                              <Table2 size={17} />
+                            ) : (
+                              <FileText size={17} />
+                            )}
+                          </span>
+                          <div className="source-meta">
+                            <strong>{source.display_name}</strong>
+                            <span>
+                              {source.kind} <i>·</i> {source.version}
+                            </span>
+                          </div>
+                          <span
+                            className={`source-state ${source.state.toLowerCase()}`}
+                          >
+                            {source.state}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-sources">
+                      <div className="empty-illustration">
+                        <div className="paper paper-back" />
+                        <div className="paper paper-front">
+                          <span />
+                          <span />
+                          <span />
+                        </div>
+                        <div className="empty-plus">
+                          <Plus size={16} />
+                        </div>
                       </div>
-                      <span
-                        className={`source-state ${source.state.toLowerCase()}`}
-                      >
-                        {source.state}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-sources">
-                  <div className="empty-illustration">
-                    <div className="paper paper-back" />
-                    <div className="paper paper-front">
-                      <span />
-                      <span />
-                      <span />
-                    </div>
-                    <div className="empty-plus">
-                      <Plus size={16} />
-                    </div>
-                  </div>
-                  <div className="empty-copy">
-                    <strong>
-                      {workspace
-                        ? "Your source list is empty"
-                        : "Start with a workspace"}
-                    </strong>
-                    <p>
-                      {workspace
-                        ? "Sources added to this workspace will appear here with their current processing state."
-                        : "A workspace gives related sources and research threads one place to live."}
-                    </p>
-                  </div>
-                  {!workspace && (
-                    <form className="empty-create" onSubmit={createWorkspace}>
-                      <input
-                        aria-label="Workspace name"
-                        placeholder="e.g. Scheme review, Q3"
-                        value={workspaceName}
-                        onChange={(event) =>
-                          setWorkspaceName(event.target.value)
-                        }
-                        maxLength={120}
-                      />
-                      <button
-                        disabled={!workspaceName.trim() || creatingWorkspace}
-                      >
-                        <FolderPlus size={15} /> Create workspace
-                      </button>
-                    </form>
-                  )}
-                  {workspace && (
-                    <div className="no-upload-yet">
-                      <span className="upload-mark">
-                        <Search size={15} />
-                      </span>
-                      <span>Source upload arrives in a later phase</span>
+                      <div className="empty-copy">
+                        <strong>
+                          {workspace
+                            ? "Your source list is empty"
+                            : "Start with a workspace"}
+                        </strong>
+                        <p>
+                          {workspace
+                            ? "Sources added to this workspace will appear here with their current processing state."
+                            : "A workspace gives related sources and research threads one place to live."}
+                        </p>
+                      </div>
+                      {!workspace && (
+                        <form
+                          className="empty-create"
+                          onSubmit={createWorkspace}
+                        >
+                          <input
+                            aria-label="Workspace name"
+                            placeholder="e.g. Scheme review, Q3"
+                            value={workspaceName}
+                            onChange={(event) =>
+                              setWorkspaceName(event.target.value)
+                            }
+                            maxLength={120}
+                          />
+                          <button
+                            disabled={
+                              !workspaceName.trim() || creatingWorkspace
+                            }
+                          >
+                            <FolderPlus size={15} /> Create workspace
+                          </button>
+                        </form>
+                      )}
+                      {workspace && (
+                        <div className="no-upload-yet">
+                          <span className="upload-mark">
+                            <Search size={15} />
+                          </span>
+                          <span>Source upload arrives in a later phase</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
 
-            <div className="below-note">
-              <span className="note-index">01</span>
-              <span>
-                Original files stay unchanged. Analysis outputs will be stored
-                separately.
-              </span>
-              <span className="note-rule" />
-            </div>
+                <div className="below-note">
+                  <span className="note-index">01</span>
+                  <span>
+                    Original files stay unchanged. Analysis outputs will be
+                    stored separately.
+                  </span>
+                  <span className="note-rule" />
+                </div>
+              </>
+            )}
           </div>
 
           <aside className="right-column">

@@ -1,7 +1,9 @@
 # Implementation status
 
 Phase 00 is verified, including Compose startup, RustFS, and restart persistence.
-Phase 01 implementation has begun against the shared foundation contracts.
+Phase 01 backend gates are verified against the configured model and real microVM.
+API, worker, frontend, and sandbox now run directly on the host; Docker is used
+only for infrastructure. Full UI verification is deferred at the user's request.
 
 Allowed statuses: not started, in progress, implemented / integration pending,
 verified. A verified phase has evidence for every required acceptance gate.
@@ -9,7 +11,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | Phase | Status      | Verification evidence | Remaining gate   |
 | ----- | ----------- | --------------------- | ---------------- |
 | 00    | Verified | 20 deterministic tests, 6 PostgreSQL/RustFS integration tests, 5 Linux fixture tests, healthy Compose, migration/schema and restart checks | None |
-| 01    | In progress | Not run | Runtime, UI, sandbox/model integration |
+| 01    | Verified | 57 deterministic tests, 14 PostgreSQL/RustFS tests, 2 live provider cases, 3 live microVM cases, bilingual full-agent/follow-up/cancellation and app restart checks | Full UI QA deferred by user |
 | 02    | Not started | Not run                     | All phase checks |
 | 03    | Not started | Not run                     | All phase checks |
 | 04    | Not started | Not run                     | All phase checks |
@@ -93,3 +95,51 @@ Keep secrets and raw client data out of this file.
   `b3f032b6a0ce1fab7cebc75250073f58b5b6c63c`.
 - Foundation committed as `c694a57`. Phase 01 adds worker-driven agent runs,
   persisted history, SSE replay, microVM execution, and output inspection.
+
+
+## 2 October 2026: phase 01 agent and sandbox verification
+
+- Added the OpenAI-compatible Chat Completions adapter with bounded responses,
+  optional streaming assembly, correlated tool calls, usage, and typed failures.
+  The supplied `gpt-oss-120b` endpoint at `cloud.olakrutrim.com` passed real
+  English/Hindi tool-call round trips. Compatible endpoints may return the final
+  object in message content; that object now receives the same schema and
+  reference validation as `finish_answer`. Unknown/malformed calls never execute.
+- Added one bounded agent loop, versioned prompt `analyst-v1`, worker-owned runs,
+  persisted messages/tool/audit records, idempotent submission, SSE sequence
+  replay, cancellation, clarification, and typed partial/failure outcomes.
+  The loop bounds model/tool calls, context, elapsed time, and result bytes.
+- Added the HTTP client for sandbox revision
+  `b3f032b6a0ce1fab7cebc75250073f58b5b6c63c` and analysis image digest
+  `sha256:73520043dc5aa0a30475b8b8a11bf8cc9fea1236540c54b83055d9e876d32fec`.
+  Python is staged as a file and executed by a fixed launcher in a network-disabled
+  microVM. No host execution fallback exists. A synchronous execution POST is
+  never blindly replayed after an ambiguous response.
+- Exact code and collected outputs are retained with immutable keys, hashes, and
+  tool/source lineage. Output transfer uses bounded file byte reads, rather than
+  treating the sandbox's export URI as durable downloadable storage. Prior
+  artifacts can be staged into a fresh guest on a follow-up turn.
+- Session IDs persist before execution. Ownership checks guard durable writes
+  and cleanup. Interrupted tools become explicit partial/failure records, and
+  abandoned/exhausted jobs terminate their linked runs. Cleanup is recorded
+  separately, with failed/unknown cleanup visible instead of an endless spinner.
+- Real end-to-end English and Hindi runs each produced `proof.csv` containing
+  count 2 and INR 25,000. Both referenced their actual output IDs; bytes and
+  hashes remained accessible after guest cleanup. A follow-up in a new guest
+  imported the retained CSV and produced average INR 12,500. Active cancellation
+  preserved `partial.csv`, stopped/deleted the guest, and confirmed session 404.
+  Saved history and hashes survived a host API/worker restart.
+- Commands/checks: Black and mypy pass; deterministic tests 57 passed; real
+  PostgreSQL/RustFS integration tests 14 passed; live provider tests 2 passed;
+  live microVM tests 3 passed, including concurrent isolated sessions and
+  cancellation salvage. Guest environment checks confirm model, database, S3,
+  and sandbox credentials are absent. Frontend typecheck/build/format pass.
+- Synthetic report: `evals/reports/phase01-2026-10-02.json`. Repeat via
+  `make live-model`, `make live-sandbox`, and `make live-agent`. Default tests
+  exclude live requests unless explicitly enabled. No new migration was needed.
+- Per user direction, Compose now contains PostgreSQL/RustFS infrastructure only.
+  `make dev` launches host API, worker, and Vite; `make sandbox` starts the pinned
+  host service. Root `.env` supplies host S3/model settings. The development
+  workflow change is committed as `49e9d83`. Full UI QA is deferred.
+- Next phase adds immutable file uploads/profiles, encrypted database connectors,
+  dialect-aware read-only SQL, and source tools to this same agent loop.

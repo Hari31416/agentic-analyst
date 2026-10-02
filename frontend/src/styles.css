@@ -391,9 +391,22 @@ select:focus-visible {
   margin: 0 auto;
   padding: 66px 57px 46px 68px;
 }
+.content-grid.chat-active {
+  height: calc(100vh - 68px);
+  min-height: 540px;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 28px;
+  padding: 20px 31px 21px 37px;
+}
 .center-column {
   min-width: 0;
   animation: arrive 0.55s ease-out both;
+}
+.center-column.chat-mode {
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  animation: arrive 0.4s ease-out both;
 }
 @keyframes arrive {
   from {
@@ -958,6 +971,15 @@ h1 {
   .content-grid {
     grid-template-columns: minmax(0, 1fr);
     padding: 48px 38px;
+  }
+  .content-grid.chat-active {
+    height: auto;
+    min-height: calc(100vh - 68px);
+    grid-template-rows: minmax(520px, 1fr) auto;
+    padding: 16px 24px 28px;
+  }
+  .center-column.chat-mode {
+    min-height: 520px;
   }
   .right-column {
     display: grid;

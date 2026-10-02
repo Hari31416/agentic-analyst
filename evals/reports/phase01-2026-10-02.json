@@ -1,0 +1,65 @@
+{
+  "workspace_id": "9ddd6f6d-8092-4fbb-babc-e32f19686c8e",
+  "cases": [
+    {
+      "language": "en-IN",
+      "run_id": "ad7cb24a-f06a-46d5-864b-a17860374c35",
+      "thread_id": "d525f60e-b36f-4f9c-b703-5e4b1e735da4",
+      "state": "completed",
+      "cleanup": "complete",
+      "artifact_id": "0690ce7e-4779-5d50-9a71-30a792998d25",
+      "sha256": "179e985ecb51de5be7d4e70b670ca6a6071972f1f8cae2e4612cb43c1da31e5c",
+      "model_calls": 2,
+      "tool_calls": 2,
+      "prompt_version": "analyst-v1",
+      "event_count": 9,
+      "known_count": 2,
+      "known_total_inr": 25000
+    },
+    {
+      "language": "hi-IN",
+      "run_id": "cc88f435-b89f-4bdb-b4fd-a37fab3e1bdc",
+      "thread_id": "cd2b9f49-74d7-4e8c-b305-2ee638c86be9",
+      "state": "completed",
+      "cleanup": "complete",
+      "artifact_id": "d9a4d05f-f7ff-5e45-8d6a-e6d50a53ea2a",
+      "sha256": "179e985ecb51de5be7d4e70b670ca6a6071972f1f8cae2e4612cb43c1da31e5c",
+      "model_calls": 2,
+      "tool_calls": 1,
+      "prompt_version": "analyst-v1",
+      "event_count": 9,
+      "known_count": 2,
+      "known_total_inr": 25000
+    }
+  ],
+  "followup": {
+    "run_id": "4df24f7c-94f8-4d90-b451-c9abf7c77b88",
+    "input_artifact_id": "0690ce7e-4779-5d50-9a71-30a792998d25",
+    "artifact_id": "46095d4e-ebc1-5a22-8322-246c3a8a27b0",
+    "average_inr": 12500,
+    "cleanup": "complete"
+  },
+  "cancellation": {
+    "run_id": "c110456a-1ffc-43bf-8c57-2d554d5e7d2b",
+    "state": "cancelled",
+    "cleanup": "complete",
+    "partial_artifact_id": "1c3c4c86-dcf3-5524-9054-b2a25abec8e7",
+    "session_deleted": true
+  },
+  "restart_persistence": "passed",
+  "configuration": {
+    "model": "gpt-oss-120b",
+    "endpoint_host": "cloud.olakrutrim.com",
+    "sandbox_revision": "b3f032b6a0ce1fab7cebc75250073f58b5b6c63c",
+    "sandbox_image": "hari31416/data-science-heavy-runtime:py312-v2@sha256:73520043dc5aa0a30475b8b8a11bf8cc9fea1236540c54b83055d9e876d32fec",
+    "storage_backend": "s3"
+  },
+  "verified_at": "2026-10-02T10:25:09.016998+00:00",
+  "checks": {
+    "deterministic_tests": 57,
+    "postgresql_rustfs_tests": 14,
+    "live_model_cases": 2,
+    "live_microvm_cases": 3,
+    "frontend": "typecheck/build/format passed; full UI QA deferred"
+  }
+}

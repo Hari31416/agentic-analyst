@@ -40,17 +40,17 @@ Outcome: a real tool-using conversation that executes Python and retains its out
 
 ## Acceptance and validation
 
-- [ ] The configured endpoint completes a real tool round trip with correct IDs.
-- [ ] A real microVM runs Python, returns stdout/stderr, and exports verified bytes.
-- [ ] An exported artifact remains accessible after its sandbox session is stopped.
-- [ ] Hindi/English requests produce an answer in the requested language.
-- [ ] Malformed arguments, unknown tools, model timeouts, and unavailable sandbox
+- [x] The configured endpoint completes a real tool round trip with correct IDs.
+- [x] A real microVM runs Python, returns stdout/stderr, and exports verified bytes.
+- [x] An exported artifact remains accessible after its sandbox session is stopped.
+- [x] Hindi/English requests produce an answer in the requested language.
+- [x] Malformed arguments, unknown tools, model timeouts, and unavailable sandbox
   yield safe typed errors; no path falls back to API/host Python execution.
-- [ ] Cancellation stops new dispatch and terminates/cleans up the session using
+- [x] Cancellation stops new dispatch and terminates/cleans up the session using
   supported service operations; do not claim cancellation from HTTP timeout alone.
-- [ ] Disconnect/reconnect does not duplicate events, tool execution, or artifacts.
-- [ ] Concurrent runs have separate execution state; guest variables contain no secrets.
-- [ ] Restarting the API/worker preserves history and handles abandoned run leases.
+- [x] Disconnect/reconnect does not duplicate events, tool execution, or artifacts.
+- [x] Concurrent runs have separate execution state; guest variables contain no secrets.
+- [x] Restarting the API/worker preserves history and handles abandoned run leases.
 
 Test provider parsing with recorded/synthetic protocol fixtures, service failures
 with HTTP tests, and actual sandbox behavior separately. Live gates require the
@@ -61,3 +61,11 @@ supplied model and existing Mac-compatible sandbox; mark missing checks pending.
 Record endpoint capability results, pinned sandbox revision/image, usable limits,
 artifact transfer mechanism, and UI/run API contracts. Phase 02 adds source tools
 to this same agent loop.
+
+## Verification record: 2 October 2026
+
+Backend gates passed against the configured model, the pinned microVM service,
+and local PostgreSQL/RustFS. See `evals/reports/phase01-2026-10-02.json` and the
+phase handoff in `status.md`. Frontend typecheck/build/format pass; full UI QA is
+deferred at the user's request. API, worker, frontend, and sandbox run directly
+on the host. Only infrastructure uses Docker.

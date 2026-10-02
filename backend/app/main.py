@@ -144,3 +144,8 @@ def sources(workspace_id: str, session: Db) -> Any:
         .where(Source.workspace_id == workspace_id)
         .order_by(Source.created_at)
     ).all()
+
+
+from app.api.chat import router as chat_router
+
+app.include_router(chat_router)

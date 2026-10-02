@@ -39,18 +39,18 @@ Outcome: the single agent analyzes CSV, Excel, MySQL, and PostgreSQL safely.
 
 ## Acceptance and validation
 
-- [ ] Every initial source type can be selected and analyzed through the same agent.
-- [ ] Count 2 and INR 25,000 total match all corresponding golden sources.
-- [ ] SQL and Python result artifacts retain input versions, code/query, and units.
-- [ ] Upload hashes and source DB rows remain unchanged after cleaning/analysis.
-- [ ] Write queries, write CTEs, multi-statements, unsafe functions, and file sinks
+- [x] Every initial source type can be selected and analyzed through the same agent.
+- [x] Count 2 and INR 25,000 total match all corresponding golden sources.
+- [x] SQL and Python result artifacts retain input versions, code/query, and units.
+- [x] Upload hashes and source DB rows remain unchanged after cleaning/analysis.
+- [x] Write queries, write CTEs, multi-statements, unsafe functions, and file sinks
   are rejected in actual MySQL and PostgreSQL tests, including permissive test credentials.
-- [ ] Query timeout, row limits, cancellation, and decimal/date serialization work.
-- [ ] XLSX formulas and XLS limitations are visible; no macro execution occurs.
-- [ ] Oversized inputs/results are handled within configured limits with explicit
+- [x] Query timeout, row limits, cancellation, and decimal/date serialization work.
+- [x] XLSX formulas and XLS limitations are visible; no macro execution occurs.
+- [x] Oversized inputs/results are handled within configured limits with explicit
   partial/truncated status and inspection options.
-- [ ] Model/sandbox/DB credentials are absent from frontend, guest, and tool results.
-- [ ] At least one live agent case per source type has a recorded result.
+- [x] Model/sandbox/DB credentials are absent from frontend, guest, and tool results.
+- [x] At least one live agent case per source type has a recorded result.
 
 Keep dialect policy tests and real-database behavior tests separate. Unit tests
 that only mock rollback or a connection do not establish read-only behavior.
@@ -60,3 +60,6 @@ that only mock rollback or a connection do not establish read-only behavior.
 Document supported file details, connector configuration, SQL function policy,
 timeouts, result limits, profile semantics, and derived dataset registration.
 Phase 03 supplies document definitions to these analytical tools.
+
+Verification report: `evals/reports/phase02-2026-10-02.json`. All five live agent
+source cases passed. Full browser QA remains deferred by user instruction.

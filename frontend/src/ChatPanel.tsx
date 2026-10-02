@@ -32,6 +32,7 @@ import {
   RunEvent,
   chatApi,
 } from "./chatApi";
+import { DatasetSummary } from "./structuredApi";
 import "./chat.css";
 
 export type ChatSource = {
@@ -45,6 +46,7 @@ export type ChatSource = {
 type ChatPanelProps = {
   threadId: string;
   sources: ChatSource[];
+  datasets: DatasetSummary[];
   modelAvailable: boolean;
   modelMessage?: string;
 };
@@ -52,6 +54,7 @@ type ChatPanelProps = {
 type RetryInput = {
   text: string;
   selectedSourceIds: string[];
+  selectedDatasetIds: string[];
   language: AnswerLanguage;
 };
 
@@ -164,9 +167,39 @@ function SourceGlyph({ kind }: { kind: string }) {
   return structured ? <FileSpreadsheet size={15} /> : <FileText size={15} />;
 }
 
+function datasetLabel(dataset: DatasetSummary): string {
+  if (typeof dataset.identity === "string") return dataset.identity;
+  const values = Object.values(dataset.identity);
+  return values.length ? values.map(String).join(" · ") : "Dataset";
+}
+
+function effectiveDatasetIds(
+  sourceIds: string[],
+  selectedDatasetIds: string[],
+  datasets: DatasetSummary[],
+): string[] {
+  const selected = new Set(selectedDatasetIds);
+  const sourceHasSpecificSelection = sourceIds.some((sourceId) =>
+    datasets.some(
+      (dataset) => dataset.source_id === sourceId && selected.has(dataset.id),
+    ),
+  );
+  if (!sourceHasSpecificSelection) return [];
+  return sourceIds.flatMap((sourceId) => {
+    const available = datasets.filter(
+      (dataset) => dataset.source_id === sourceId,
+    );
+    const specific = available.filter((dataset) => selected.has(dataset.id));
+    return (specific.length ? specific : available).map(
+      (dataset) => dataset.id,
+    );
+  });
+}
+
 function ChatPanel({
   threadId,
   sources,
+  datasets,
   modelAvailable,
   modelMessage,
 }: ChatPanelProps) {
@@ -176,6 +209,7 @@ function ChatPanel({
     Record<string, RunArtifact[]>
   >({});
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
+  const [selectedDatasetIds, setSelectedDatasetIds] = useState<string[]>([]);
   const [language, setLanguage] = useState<AnswerLanguage>("en-IN");
   const [draft, setDraft] = useState("");
   const [activeRun, setActiveRun] = useState<AnalysisRun | null>(null);
@@ -249,6 +283,8 @@ function ChatPanel({
               text: userMessage.content,
               selectedSourceIds:
                 run.selected_source_ids ?? saved.selectedSourceIds ?? [],
+              selectedDatasetIds:
+                run.selected_dataset_ids ?? saved.selectedDatasetIds ?? [],
               language: run.answer_language ?? saved.language ?? "en-IN",
             });
           }
@@ -272,6 +308,16 @@ function ChatPanel({
     const allowed = new Set(sources.map((source) => source.id));
     setSelectedSourceIds((current) => current.filter((id) => allowed.has(id)));
   }, [sources]);
+
+  useEffect(() => {
+    const checkedSources = new Set(selectedSourceIds);
+    const allowed = new Set(
+      datasets
+        .filter((dataset) => checkedSources.has(dataset.source_id))
+        .map((dataset) => dataset.id),
+    );
+    setSelectedDatasetIds((current) => current.filter((id) => allowed.has(id)));
+  }, [datasets, selectedSourceIds]);
 
   useEffect(() => {
     let active = true;
@@ -417,10 +463,27 @@ function ChatPanel({
   }, [messages, optimisticMessage]);
 
   const toggleSource = (sourceId: string) => {
-    setSelectedSourceIds((current) =>
-      current.includes(sourceId)
-        ? current.filter((id) => id !== sourceId)
-        : [...current, sourceId],
+    if (selectedSourceIds.includes(sourceId)) {
+      setSelectedSourceIds((current) =>
+        current.filter((id) => id !== sourceId),
+      );
+      setSelectedDatasetIds((current) =>
+        current.filter(
+          (datasetId) =>
+            datasets.find((dataset) => dataset.id === datasetId)?.source_id !==
+            sourceId,
+        ),
+      );
+    } else {
+      setSelectedSourceIds((current) => [...current, sourceId]);
+    }
+  };
+
+  const toggleDataset = (datasetId: string) => {
+    setSelectedDatasetIds((current) =>
+      current.includes(datasetId)
+        ? current.filter((id) => id !== datasetId)
+        : [...current, datasetId],
     );
   };
 
@@ -436,12 +499,18 @@ function ChatPanel({
     const input: RetryInput = explicitInput ?? {
       text: cleanText,
       selectedSourceIds: [...selectedSourceIdsRef.current],
+      selectedDatasetIds: effectiveDatasetIds(
+        selectedSourceIdsRef.current,
+        selectedDatasetIds,
+        datasets,
+      ),
       language,
     };
     try {
       const run = await chatApi.createRun(threadId, {
         text: input.text,
         selected_source_ids: input.selectedSourceIds,
+        selected_dataset_ids: input.selectedDatasetIds,
         answer_language: input.language,
         request_id: crypto.randomUUID(),
       });
@@ -452,6 +521,7 @@ function ChatPanel({
           retrySelectionKey(threadId, run.id),
           JSON.stringify({
             selectedSourceIds: input.selectedSourceIds,
+            selectedDatasetIds: input.selectedDatasetIds,
             language: input.language,
           }),
         );
@@ -532,6 +602,8 @@ function ChatPanel({
         text: userMessage.content,
         selectedSourceIds: run.selected_source_ids ??
           saved.selectedSourceIds ?? [...selectedSourceIdsRef.current],
+        selectedDatasetIds: run.selected_dataset_ids ??
+          saved.selectedDatasetIds ?? [...selectedDatasetIds],
         language: run.answer_language ?? saved.language ?? language,
       };
     }
@@ -539,6 +611,7 @@ function ChatPanel({
     setDraft(input.text);
     setLanguage(input.language);
     setSelectedSourceIds(input.selectedSourceIds);
+    setSelectedDatasetIds(input.selectedDatasetIds);
     await sendMessage(input.text, run.id, input);
     setRetryingRunId("");
   }
@@ -751,34 +824,70 @@ function ChatPanel({
               </span>
               <span>Use sources</span>
               <span className="selected-source-count">
-                {selectedSourceIds.length} selected
+                {selectedSourceIds.length} sources ·{" "}
+                {selectedDatasetIds.length
+                  ? `${selectedDatasetIds.length} sheets`
+                  : "all sheets"}
               </span>
               <ArrowDown size={13} className="selector-chevron" />
             </summary>
             <div className="source-check-list">
-              {sources.map((source) => (
-                <label className="source-check-row" key={source.id}>
-                  <input
-                    type="checkbox"
-                    checked={selectedSourceIds.includes(source.id)}
-                    onChange={() => toggleSource(source.id)}
-                  />
-                  <span className="source-check-icon">
-                    <SourceGlyph kind={source.kind} />
-                  </span>
-                  <span className="source-check-copy">
-                    <strong>{source.display_name}</strong>
-                    <small>
-                      {source.kind} · v{source.version}
-                    </small>
-                  </span>
-                  <span
-                    className={`source-check-state ${source.state.toLowerCase()}`}
-                  >
-                    {source.state}
-                  </span>
-                </label>
-              ))}
+              {sources.map((source) => {
+                const checked = selectedSourceIds.includes(source.id);
+                const sourceDatasets = datasets.filter(
+                  (dataset) => dataset.source_id === source.id,
+                );
+                return (
+                  <div className="source-check-group" key={source.id}>
+                    <label className="source-check-row">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleSource(source.id)}
+                      />
+                      <span className="source-check-icon">
+                        <SourceGlyph kind={source.kind} />
+                      </span>
+                      <span className="source-check-copy">
+                        <strong>{source.display_name}</strong>
+                        <small>
+                          {source.kind} · v{source.version}
+                        </small>
+                      </span>
+                      <span
+                        className={`source-check-state ${source.state.toLowerCase()}`}
+                      >
+                        {source.state}
+                      </span>
+                    </label>
+                    {checked && sourceDatasets.length > 0 && (
+                      <div className="dataset-check-list">
+                        <div className="dataset-check-heading">
+                          Choose sheets or tables <span>optional</span>
+                        </div>
+                        {sourceDatasets.map((dataset) => (
+                          <label className="dataset-check-row" key={dataset.id}>
+                            <input
+                              type="checkbox"
+                              checked={selectedDatasetIds.includes(dataset.id)}
+                              onChange={() => toggleDataset(dataset.id)}
+                            />
+                            <span>{datasetLabel(dataset)}</span>
+                            <small>{dataset.designation}</small>
+                          </label>
+                        ))}
+                        {!selectedDatasetIds.some((id) =>
+                          sourceDatasets.some((dataset) => dataset.id === id),
+                        ) && (
+                          <p className="dataset-check-hint">
+                            All sheets stay available to the analyst.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </details>
         )}

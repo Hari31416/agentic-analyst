@@ -57,6 +57,45 @@ class Source(Identity, Base):
     schema_version: Mapped[str | None] = mapped_column(String(64))
     details: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
 
+    @property
+    def description(self) -> str | None:
+        value = self.details.get("description")
+        return value if isinstance(value, str) else None
+
+    @property
+    def metric_hints(self) -> dict[str, str]:
+        value = self.details.get("metric_hints", {})
+        return (
+            {str(k): str(v) for k, v in value.items()}
+            if isinstance(value, dict)
+            else {}
+        )
+
+
+class Connection(Identity, Base):
+    __tablename__ = "connections"
+    source_id: Mapped[str] = mapped_column(ForeignKey("sources.id"), unique=True)
+    dialect: Mapped[str] = mapped_column(String(20))
+    host: Mapped[str] = mapped_column(String(255))
+    port: Mapped[int] = mapped_column(Integer)
+    database_name: Mapped[str] = mapped_column(String(255))
+    username: Mapped[str] = mapped_column(String(255))
+    encrypted_credentials: Mapped[str] = mapped_column(Text)
+    options: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+
+
+class Dataset(Identity, Base):
+    __tablename__ = "datasets"
+    __table_args__ = (UniqueConstraint("source_id", "source_version", "identity"),)
+    source_id: Mapped[str] = mapped_column(ForeignKey("sources.id"), index=True)
+    source_version: Mapped[int] = mapped_column(Integer)
+    identity: Mapped[str] = mapped_column(String(512))
+    schema_version: Mapped[str] = mapped_column(String(64))
+    details: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+    storage_key: Mapped[str | None] = mapped_column(String(512))
+    designation: Mapped[str] = mapped_column(String(20), default="original")
+    lineage: Mapped[list[str]] = mapped_column(Json, default=list)
+
 
 class Run(Identity, Base):
     __tablename__ = "runs"

@@ -352,6 +352,19 @@ select:focus-visible {
   color: #474c43;
   font-weight: 600;
 }
+.breadcrumb-workspace {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #858a7f;
+  font-size: 11px;
+  cursor: pointer;
+}
+.breadcrumb-workspace:hover {
+  color: #4d5744;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .topbar-right {
   display: flex;
   align-items: center;

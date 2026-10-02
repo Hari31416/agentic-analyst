@@ -12,7 +12,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | ----- | ----------- | --------------------- | ---------------- |
 | 00    | Verified | 20 deterministic tests, 6 PostgreSQL/RustFS integration tests, 5 Linux fixture tests, healthy Compose, migration/schema and restart checks | None |
 | 01    | Verified | 57 deterministic tests, 14 PostgreSQL/RustFS tests, 2 live provider cases, 3 live microVM cases, bilingual full-agent/follow-up/cancellation and app restart checks | Full UI QA deferred by user |
-| 02    | Not started | Not run                     | All phase checks |
+| 02    | Verified | Five live source cases; real DuckDB, PostgreSQL/MySQL safety/deadline/cancellation and RustFS checks | Full UI QA deferred by user |
 | 03    | Not started | Not run                     | All phase checks |
 | 04    | Not started | Not run                     | All phase checks |
 | 05    | Not started | Not run                     | All phase checks |
@@ -143,3 +143,38 @@ Keep secrets and raw client data out of this file.
   workflow change is committed as `49e9d83`. Full UI QA is deferred.
 - Next phase adds immutable file uploads/profiles, encrypted database connectors,
   dialect-aware read-only SQL, and source tools to this same agent loop.
+
+## 2 October 2026: phase 02 structured analysis
+
+- Added immutable CSV/XLSX/XLS ingestion and bounded profiles with encoding,
+  delimiter, type uncertainty, formula-cache warnings, missingness, and explicit
+  currency hints. Canonical guest copies preserve leading-zero identifiers.
+  Workbook archive/macro checks reject active content; originals never change.
+- Added encrypted MySQL/PostgreSQL connections, TLS settings, introspection,
+  schema refresh/versioning, and dataset selection. Migration `504d7bc74621`
+  stores datasets and encrypted connection metadata. PyMySQL is pinned to 1.1.2
+  after a fresh-authentication failure in 1.2.3 against MySQL 8.4.
+- Added selected-source/schema/profile/sample/SQL/derived-registration tools.
+  File SQL runs DuckDB 1.4.4 in the real microVM with extension auto-loading and
+  external access disabled. Database SQL uses an AST policy, selected tables,
+  read-only transactions, bounded fetches, and server deadlines. Unknown unsafe
+  functions, commands, writes/CTEs, custom casts, and sinks are denied.
+- Queries retain exact SQL, code for file SQL, result CSV, input/schema versions,
+  hashes and calculation evidence. Output limits apply after full aggregation.
+  Python stages only selected canonical files or retained artifacts. Derived
+  CSV registration is idempotent and keeps originals and current selection fixed.
+- All five source types passed a real configured-model case with eligible count
+  2 and INR 25,000. The XLSX answer used Hindi. Exact output references/hash and
+  input hashes were checked. Report `evals/reports/phase02-2026-10-02.json`; repeat
+  with `python -m app.structured_probes` from the backend directory.
+- Backend deterministic, integration, formatting/type checks and frontend
+  typecheck/build pass. Real DuckDB tests cover full-input aggregate correctness,
+  row truncation, zero rows and external-reader denial. Real PG/MySQL tests cover
+  permissive-credential write denial, driver read-only enforcement, serialization,
+  duplicate columns, output bounds, deadlines and cancellation.
+- Host app workflow remains in place. `make analysis-image` builds/imports a
+  pinned guest image; `make eval-infra` starts optional MySQL infrastructure only.
+  The local arm64 guest manifest is `sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609`.
+  Docker was restarted at the user's request; infrastructure volumes persist.
+- Full UI QA remains deferred. Next step is phase 03 document extraction, local
+  multilingual embeddings, lexical/dense/hybrid retrieval and mixed-source citations.

@@ -149,3 +149,9 @@ def sources(workspace_id: str, session: Db) -> Any:
 from app.api.chat import router as chat_router
 
 app.include_router(chat_router)
+
+from app.api.files import router as files_router
+from app.api.connections import router as connections_router
+
+app.include_router(files_router)
+app.include_router(connections_router)

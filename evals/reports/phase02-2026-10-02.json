@@ -1,0 +1,110 @@
+{
+  "phase": "02",
+  "timestamp": "2026-10-02T13:20:36.001655+00:00",
+  "model": "gpt-oss-120b",
+  "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609",
+  "cases": [
+    {
+      "kind": "csv",
+      "source_id": "f13ad9df-9e45-47d4-a195-2057f1aae77e",
+      "thread_id": "1f0e5362-3f8f-4266-bc33-466ba2338498",
+      "run_id": "2db50cd0-51a5-4835-bfe0-edbe092ecd97",
+      "result_artifact_id": "8b967949-69c8-5d7c-9a03-fcbf9d54fda1",
+      "result_sha256": "84cb411f05ad80b4c9393d8cf74accaf8d89f10b8d49508e7b0f8d747b33c770",
+      "eligible_count": 2,
+      "total_inr": "25000.00",
+      "language": "en-IN",
+      "evidence_ids": [
+        "f8a2cbf5-9604-4d9e-a08a-4a4d16bc907a"
+      ],
+      "cleanup": "complete",
+      "tools": [
+        "list_sources",
+        "inspect_schema",
+        "run_sql"
+      ]
+    },
+    {
+      "kind": "xlsx",
+      "source_id": "aab391f3-2685-4f52-8a45-5e86dae231a5",
+      "thread_id": "75622074-5527-495f-a605-5118b6256143",
+      "run_id": "89174805-04d6-42ea-ad3a-173ff871d99d",
+      "result_artifact_id": "f992b1fd-5d19-5bf1-bac8-d22813e79784",
+      "result_sha256": "84cb411f05ad80b4c9393d8cf74accaf8d89f10b8d49508e7b0f8d747b33c770",
+      "eligible_count": 2,
+      "total_inr": "25000.00",
+      "language": "hi-IN",
+      "evidence_ids": [
+        "11997496-bef2-40f4-98ab-945872a2cf95"
+      ],
+      "cleanup": "complete",
+      "tools": [
+        "list_sources",
+        "inspect_schema",
+        "run_sql"
+      ]
+    },
+    {
+      "kind": "xls",
+      "source_id": "4f4fc5c2-0400-47f8-b505-8ab7c42664ce",
+      "thread_id": "707c6a03-d7f8-46e7-9989-9b23e832bb18",
+      "run_id": "bd313f20-0d43-410f-89a5-d9513e09623d",
+      "result_artifact_id": "f5e7611f-0ff2-50f8-a0b3-24593e9aee29",
+      "result_sha256": "84cb411f05ad80b4c9393d8cf74accaf8d89f10b8d49508e7b0f8d747b33c770",
+      "eligible_count": 2,
+      "total_inr": "25000.00",
+      "language": "en-IN",
+      "evidence_ids": [
+        "9d830b0f-fd0f-49ac-9de9-477d350cdc6b"
+      ],
+      "cleanup": "complete",
+      "tools": [
+        "list_sources",
+        "inspect_schema",
+        "run_sql"
+      ]
+    },
+    {
+      "kind": "postgresql",
+      "source_id": "eb92db2f-94fb-4c56-8ff0-438259e2e1fe",
+      "thread_id": "49b8ae96-9044-4c1f-babf-dc774c6410f4",
+      "run_id": "6f6a803d-3611-4a66-a8c1-789c7a8536e0",
+      "result_artifact_id": "4b0521e9-28e0-47e8-bdb3-46adb75b39b6",
+      "result_sha256": "f09f5a823b93ea80bf9f4fade88d7671b530f451148f6561eb57d2c62be41d88",
+      "eligible_count": 2,
+      "total_inr": "25000.00",
+      "language": "en-IN",
+      "evidence_ids": [
+        "7d28b0a4-6cc8-4318-90e6-9bd5d7648ad7"
+      ],
+      "cleanup": "complete",
+      "tools": [
+        "list_sources",
+        "inspect_schema",
+        "run_sql"
+      ]
+    },
+    {
+      "kind": "mysql",
+      "source_id": "f650455c-1e39-44b6-bc81-b1c8293c39e7",
+      "thread_id": "2ecaf974-8bc1-4eca-80ab-8f8323cf9f1f",
+      "run_id": "087ec3c3-99f5-408c-bcf8-d92b0797dd49",
+      "result_artifact_id": "c15969fe-0821-48cf-9ae0-b75c37be4a62",
+      "result_sha256": "f09f5a823b93ea80bf9f4fade88d7671b530f451148f6561eb57d2c62be41d88",
+      "eligible_count": 2,
+      "total_inr": "25000.00",
+      "language": "en-IN",
+      "evidence_ids": [
+        "7f0b6ae5-f684-44de-8cd2-6e5419be75b0"
+      ],
+      "cleanup": "complete",
+      "tools": [
+        "list_sources",
+        "inspect_schema",
+        "run_sql"
+      ]
+    }
+  ],
+  "original_hashes_unchanged": true,
+  "workspace_id": "9f30ca31-89e3-4005-8540-f33903c148ca"
+}

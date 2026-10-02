@@ -1,6 +1,27 @@
 name: agentic-rag-analyst
 
 services:
+  mysql:
+    profiles: [eval]
+    image: mysql:8.4@sha256:6ea90827b1100f8f2ae306a539f86d2c264a26ed435a2a9f75551dd5c3aeb242
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${EVAL_MYSQL_ROOT_PASSWORD:-eval-root-dev}
+      MYSQL_DATABASE: analyst_eval
+      MYSQL_USER: eval_analyst
+      MYSQL_PASSWORD: ${EVAL_MYSQL_PASSWORD:-eval-analyst-dev}
+    ports:
+      - "127.0.0.1:${EVAL_MYSQL_PORT:-33306}:3306"
+    volumes:
+      - mysql_eval_data:/var/lib/mysql
+      - ../evals/fixtures/v1/seed-mysql.sql:/docker-entrypoint-initdb.d/001-synthetic.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+
   db:
     image: pgvector/pgvector:pg17
     restart: unless-stopped
@@ -55,5 +76,6 @@ services:
 
 
 volumes:
+  mysql_eval_data:
   postgres_data:
   rustfs_data:

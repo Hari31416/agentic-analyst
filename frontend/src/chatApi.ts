@@ -29,6 +29,7 @@ export type AnalysisRun = {
   } | null;
   answer_language?: AnswerLanguage;
   selected_source_ids?: string[];
+  selected_dataset_ids?: string[];
 };
 
 export type RunEvent = {
@@ -112,6 +113,7 @@ export const chatApi = {
     input: {
       text: string;
       selected_source_ids: string[];
+      selected_dataset_ids: string[];
       answer_language: AnswerLanguage;
       request_id: string;
     },

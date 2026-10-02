@@ -28,12 +28,15 @@ from app.sandbox.client import SandboxError, SandboxHTTPClient
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
 from app.tools.python import PythonExecution
+from app.sources.connections import ConnectorError
+from app.policy.sql import SqlPolicyError
 from app.workers.queue import Claim, LeaseLost, owned
 
 
 class PythonInput(Contract):
     code: str = Field(min_length=1, max_length=20000)
     output_paths: list[str] | None = Field(default=None, max_length=16)
+    input_dataset_ids: list[UUID] = Field(default_factory=list, max_length=16)
     input_artifact_ids: list[UUID] = Field(default_factory=list, max_length=16)
     timeout_seconds: int = Field(default=120, ge=1, le=300)
 
@@ -67,7 +70,7 @@ class RunRuntime:
         )
         if job is None or not job.run_id:
             raise LeaseLost("run job ownership lost")
-        run = session.get(Run, job.run_id)
+        run = session.scalar(select(Run).where(Run.id == job.run_id).with_for_update())
         if run is None:
             raise ValueError("run not found")
         if run.state == "cancelled" and not allow_cancelled:
@@ -166,6 +169,17 @@ class RunRuntime:
             if name == "run_python":
                 assert isinstance(arguments, PythonInput)
                 result = await self.run_python(workspace_id, run_id, tool_id, arguments)
+            elif name in {
+                "list_sources",
+                "dataset_profile",
+                "inspect_schema",
+                "sample_rows",
+                "run_sql",
+                "register_dataset",
+            }:
+                from app.tools.structured import StructuredTools
+
+                result = await StructuredTools(self).execute(name, arguments, tool_id)
             elif name == "list_artifacts":
                 with self.db() as session:
                     run = self.guard(session)
@@ -235,15 +249,28 @@ class RunRuntime:
                                 "byte_size": artifact.byte_size,
                             },
                         )
-        except (ValueError, OSError, SandboxError, StorageUnavailable) as exc:
+        except (
+            ValueError,
+            OSError,
+            SandboxError,
+            StorageUnavailable,
+            ConnectorError,
+        ) as exc:
             code = (
-                exc.code if isinstance(exc, SandboxError) else "tool_execution_failed"
+                exc.code
+                if isinstance(exc, (SandboxError, ConnectorError, SqlPolicyError))
+                else "tool_execution_failed"
             )
             result = ToolResult(
                 status="failed",
                 summary="The tool could not complete safely",
                 error=SafeError(
-                    code=code, message="Check selected inputs and service availability"
+                    code=code,
+                    message=(
+                        str(exc)[:300]
+                        if isinstance(exc, (SqlPolicyError, ConnectorError))
+                        else "Check selected inputs and service availability"
+                    ),
                 ),
             )
         with self.db() as session, session.begin():
@@ -265,7 +292,22 @@ class RunRuntime:
                             media_type=item["media_type"],
                             byte_size=item["byte_size"],
                             sha256=item["sha256"],
-                            lineage=[*selected_sources, f"tool:{tool_id}"],
+                            lineage=[
+                                *selected_sources,
+                                *[
+                                    f"source:{identity}@{version}"
+                                    for identity, version in run.config.get(
+                                        "source_versions", {}
+                                    ).items()
+                                ],
+                                *[
+                                    f"dataset:{identity}"
+                                    for identity in result.data.get(
+                                        "input_dataset_ids", []
+                                    )
+                                ],
+                                f"tool:{tool_id}",
+                            ],
                             durable=True,
                         )
                     )
@@ -320,7 +362,15 @@ class RunRuntime:
                 media_type="text/x-python",
                 byte_size=stored.byte_size,
                 sha256=stored.sha256,
-                lineage=run.selected_source_ids,
+                lineage=[
+                    *run.selected_source_ids,
+                    *[
+                        f"source:{identity}@{version}"
+                        for identity, version in run.config.get(
+                            "source_versions", {}
+                        ).items()
+                    ],
+                ],
             )
             session.add(code)
             session.flush()
@@ -359,6 +409,34 @@ class RunRuntime:
         # session. Persist its ID for cleanup, then reject guest work if cancelled.
         with self.db() as session:
             self.guard(session)
+        # Staged file inputs are canonical working copies of selected versioned datasets.
+        staged_datasets: list[str] = []
+        if arguments.input_dataset_ids:
+            from app.tools.structured import StructuredTools
+            from app.sources.files import working_csv
+
+            _, sources, datasets, _ = StructuredTools(self).selection()
+            for dataset_id in dict.fromkeys(arguments.input_dataset_ids):
+                dataset = next(
+                    (row for row in datasets if row.id == str(dataset_id)), None
+                )
+                if dataset is None:
+                    raise ValueError("input dataset is not selected")
+                source = next(row for row in sources if row.id == dataset.source_id)
+                if source.kind not in {"csv", "xlsx", "xls"}:
+                    raise ValueError(
+                        "database credentials cannot enter the guest; stage query artifacts instead"
+                    )
+                content = await asyncio.to_thread(
+                    working_csv, source, dataset, storage, settings.max_upload_bytes
+                )
+                with self.db() as session:
+                    self.guard(session)
+                assert self.sandbox is not None
+                await self.sandbox.write(
+                    sandbox_session.id, f"inputs/{dataset_id}.csv", content
+                )
+                staged_datasets.append(dataset.id)
         # Resuming analysis uses durable artifacts; credentials and arbitrary paths are never staged.
         if arguments.input_artifact_ids:
             for artifact_id in arguments.input_artifact_ids:
@@ -398,6 +476,15 @@ class RunRuntime:
         result.artifact_ids.insert(0, UUID(code_id))
         # Paths and object keys are server-owned. Expose only usable guest input locations and references.
         result.data["code_artifact_id"] = code_id
+        result.data["input_dataset_ids"] = staged_datasets
+        with self.db() as session, session.begin():
+            self.guard(session)
+            retained_code = session.get(Artifact, code_id)
+            assert retained_code is not None
+            retained_code.lineage = [
+                *retained_code.lineage,
+                *[f"dataset:{identity}" for identity in staged_datasets],
+            ]
         return result
 
     async def run(self) -> None:
@@ -468,13 +555,61 @@ class RunRuntime:
             async def list_outputs(call: ModelToolCall, args: BaseModel) -> ToolResult:
                 return await self.dispatch("list_artifacts", call, args)
 
+            from app.tools.structured import (
+                DatasetInput,
+                RegisterInput,
+                SampleInput,
+                SourceInput,
+                SQLInput,
+            )
+
+            def structured_tool(
+                name: str, description: str, schema: type[BaseModel]
+            ) -> Tool:
+                async def execute(call: ModelToolCall, args: BaseModel) -> ToolResult:
+                    return await self.dispatch(name, call, args)
+
+                return Tool(name, description, schema, execute)
+
+            structured_tools = [
+                structured_tool(
+                    "list_sources",
+                    "List selected sources and datasets, with SQL table names. Start here before source analysis.",
+                    NoInput,
+                ),
+                structured_tool(
+                    "dataset_profile",
+                    "Inspect a selected dataset's columns, types, units, and warnings.",
+                    DatasetInput,
+                ),
+                structured_tool(
+                    "inspect_schema",
+                    "Inspect selected sheets or database tables in a selected source.",
+                    SourceInput,
+                ),
+                structured_tool(
+                    "sample_rows",
+                    "Read a bounded page from a selected dataset. A sample is not the full dataset for aggregates.",
+                    SampleInput,
+                ),
+                structured_tool(
+                    "run_sql",
+                    "Execute one read-only query. For file SQL use selected dataset_ids and listed data_UUID aliases; all file columns are VARCHAR, so explicitly cast numeric/date columns. For database SQL supply source_id and exact schema.table identifiers. Output limits apply after full aggregation. SQL, CSV, and evidence are retained.",
+                    SQLInput,
+                ),
+                structured_tool(
+                    "register_dataset",
+                    "Register an accessible CSV output as a derived source with lineage. Select it in a later run.",
+                    RegisterInput,
+                ),
+            ]
             loop = AgentLoop(
                 OpenAICompatibleModel(self.settings),
                 self.settings,
                 [
                     Tool(
                         "run_python",
-                        "Execute Python in the isolated microVM. Write output files relative to the current working directory; list output_paths relative to that directory. Imported durable artifacts are at /workspace/inputs/{artifact_id}. No network, secrets, or source modifications.",
+                        "Execute Python in the isolated microVM. Write output files relative to the current working directory; list output_paths relative to that directory. Imported durable artifacts are at /workspace/inputs/{artifact_id}; selected datasets supplied in input_dataset_ids are UTF-8 CSV at /workspace/inputs/{dataset_id}.csv. No network, secrets, or source modifications.",
                         PythonInput,
                         python,
                     ),
@@ -490,6 +625,7 @@ class RunRuntime:
                         InspectInput,
                         inspect,
                     ),
+                    *structured_tools,
                 ],
                 self.event,
                 self.answer_valid,

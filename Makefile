@@ -4,7 +4,7 @@ COMPOSE = docker compose $(if $(wildcard .env),--env-file .env) -f infra/compose
 BACKEND = cd backend && uv run
 
 .PHONY: setup up up-all dev api worker frontend sandbox down logs health migrate format check test frontend-check \
-	test-integration live-model live-sandbox live-agent fixtures
+	test-integration live-model live-sandbox live-agent fixtures analysis-image eval-infra
 
 setup:
 	@test -f .env || cp .env.example .env
@@ -77,3 +77,10 @@ live-agent:
 
 fixtures:
 	cd backend && uv run python ../evals/generators/generate_v1.py
+
+# Image construction prepares the microVM guest, not an application container.
+analysis-image:
+	backend/.venv/bin/python scripts/build-analysis.py
+
+eval-infra:
+	$(COMPOSE) --profile eval up -d --wait

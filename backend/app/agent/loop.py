@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from app.agent.protocol import Model, ModelToolCall
+from app.agent.model import ModelError
 from app.config import Settings
 from app.contracts import FinalAnswer, SafeError, ToolResult
 
@@ -89,6 +90,7 @@ class AgentLoop:
         started = time.monotonic()
         seen_call_ids: set[str] = set()
         has_references = False
+        provider_failures = 0
         try:
             async with asyncio.timeout(self.settings.run_timeout_seconds):
                 while self.model_calls < self.settings.max_model_calls:
@@ -107,7 +109,22 @@ class AgentLoop:
                             "model_calls": self.model_calls,
                         },
                     )
-                    response = await self.model.complete(messages, schemas)
+                    try:
+                        response = await self.model.complete(messages, schemas)
+                    except ModelError as exc:
+                        provider_failures += 1
+                        if not exc.retryable or provider_failures > 2:
+                            raise
+                        await self.events(
+                            "status",
+                            {
+                                "message": "Model request interrupted; retrying within the run budget",
+                                "code": exc.code,
+                            },
+                        )
+                        await asyncio.sleep(provider_failures)
+                        continue
+                    provider_failures = 0
                     for key, value in response.usage.items():
                         self.usage[key] = self.usage.get(key, 0) + value
                     if response.finish_reason in {"length", "content_filter"}:

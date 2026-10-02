@@ -11,11 +11,12 @@ import {
   MessageSquarePlus,
   Plus,
   RefreshCw,
-  Search,
   Sparkles,
   Table2,
 } from "lucide-react";
 import ChatPanel from "./ChatPanel";
+import SourceWorkbench from "./SourceWorkbench";
+import { DatasetSummary, structuredApi } from "./structuredApi";
 
 type ComponentState = { status: string; message: string };
 type Readiness = {
@@ -64,6 +65,10 @@ function App() {
   const [workspaceId, setWorkspaceId] = useState("");
   const [threads, setThreads] = useState<Thread[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
+  const [datasets, setDatasets] = useState<DatasetSummary[]>([]);
+  const [datasetErrors, setDatasetErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [threadId, setThreadId] = useState("");
   const [loadingWorkspace, setLoadingWorkspace] = useState(false);
   const [error, setError] = useState("");
@@ -109,6 +114,14 @@ function App() {
     }
   }, []);
 
+  const refreshSources = useCallback(async () => {
+    if (!workspaceId) return;
+    const nextSources = await api<Source[]>(
+      `/api/workspaces/${workspaceId}/sources`,
+    );
+    setSources(nextSources);
+  }, [workspaceId]);
+
   useEffect(() => {
     void loadStatus();
     void loadWorkspaces();
@@ -118,11 +131,16 @@ function App() {
     if (!workspaceId) {
       setThreads([]);
       setSources([]);
+      setDatasets([]);
+      setDatasetErrors({});
       setThreadId("");
       return;
     }
     let active = true;
     setLoadingWorkspace(true);
+    setSources([]);
+    setDatasets([]);
+    setDatasetErrors({});
     Promise.all([
       api<Thread[]>(`/api/workspaces/${workspaceId}/threads`),
       api<Source[]>(`/api/workspaces/${workspaceId}/sources`),
@@ -149,6 +167,47 @@ function App() {
       active = false;
     };
   }, [workspaceId]);
+
+  useEffect(() => {
+    let active = true;
+    if (!sources.length) {
+      setDatasets([]);
+      return;
+    }
+    Promise.all(
+      sources.map(async (source) => {
+        try {
+          return {
+            sourceId: source.id,
+            datasets: await structuredApi.datasets(source.id),
+          };
+        } catch (reason) {
+          return {
+            sourceId: source.id,
+            datasets: [],
+            error:
+              reason instanceof Error
+                ? reason.message
+                : "Could not load datasets.",
+          };
+        }
+      }),
+    ).then((allDatasets) => {
+      if (active) {
+        setDatasets(allDatasets.flatMap((result) => result.datasets));
+        setDatasetErrors(
+          Object.fromEntries(
+            allDatasets.flatMap((result) =>
+              result.error ? [[result.sourceId, result.error]] : [],
+            ),
+          ),
+        );
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [sources]);
 
   async function createWorkspace(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -354,7 +413,21 @@ function App() {
           <div className="breadcrumbs">
             <span>Workspaces</span>
             <ArrowDownLeft size={13} />
-            <strong>{workspace?.label ?? "New workspace"}</strong>
+            {selectedThread ? (
+              <>
+                <button
+                  className="breadcrumb-workspace"
+                  onClick={() => setThreadId("")}
+                  title="Return to the source catalog"
+                >
+                  {workspace?.label ?? "Workspace"}
+                </button>
+                <ArrowDownLeft size={13} />
+                <strong>{selectedThread.label}</strong>
+              </>
+            ) : (
+              <strong>{workspace?.label ?? "New workspace"}</strong>
+            )}
           </div>
           <div className="topbar-right">
             <div className={`system-chip ${readiness?.status ?? health}`}>
@@ -387,6 +460,7 @@ function App() {
               <ChatPanel
                 threadId={selectedThread.id}
                 sources={sources}
+                datasets={datasets}
                 modelAvailable={
                   readiness?.components.model.status === "configured"
                 }
@@ -456,7 +530,7 @@ function App() {
                 <div className="workspace-overview">
                   <div className="overview-head">
                     <div>
-                      <span className="mini-label">Workspace contents</span>
+                      <span className="mini-label">Source catalog</span>
                       <span className="overview-caption">
                         {workspace
                           ? "A live view of this workspace"
@@ -469,44 +543,14 @@ function App() {
                     </span>
                   </div>
                   <div className="overview-divider" />
-                  {sources.length > 0 ? (
-                    <div
-                      className="source-table"
-                      role="list"
-                      aria-label="Selected workspace sources"
-                    >
-                      {sources.map((source, index) => (
-                        <div
-                          className="source-row"
-                          role="listitem"
-                          key={source.id}
-                        >
-                          <span className="source-index">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          <span className="source-kind-icon">
-                            {source.kind.toLowerCase().includes("csv") ||
-                            source.kind.toLowerCase().includes("sheet") ||
-                            source.kind.toLowerCase().includes("database") ? (
-                              <Table2 size={17} />
-                            ) : (
-                              <FileText size={17} />
-                            )}
-                          </span>
-                          <div className="source-meta">
-                            <strong>{source.display_name}</strong>
-                            <span>
-                              {source.kind} <i>·</i> {source.version}
-                            </span>
-                          </div>
-                          <span
-                            className={`source-state ${source.state.toLowerCase()}`}
-                          >
-                            {source.state}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                  {workspace ? (
+                    <SourceWorkbench
+                      workspaceId={workspace.id}
+                      sources={sources}
+                      datasets={datasets}
+                      datasetErrors={datasetErrors}
+                      onSourcesChanged={refreshSources}
+                    />
                   ) : (
                     <div className="empty-sources">
                       <div className="empty-illustration">
@@ -554,14 +598,6 @@ function App() {
                             <FolderPlus size={15} /> Create workspace
                           </button>
                         </form>
-                      )}
-                      {workspace && (
-                        <div className="no-upload-yet">
-                          <span className="upload-mark">
-                            <Search size={15} />
-                          </span>
-                          <span>Source upload arrives in a later phase</span>
-                        </div>
                       )}
                     </div>
                   )}

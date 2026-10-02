@@ -199,3 +199,37 @@ async def test_prose_after_artifact_result_requires_referenced_final_answer():
         ignore,
     ).run([], "en-IN")
     assert answer.artifact_ids == [artifact_id] and len(model.requests) == 3
+
+
+async def test_retryable_provider_failure_does_not_repeat_tools():
+    from app.agent.model import ModelError
+
+    class InterruptedModel(ScriptedModel):
+        async def complete(self, messages, tools):
+            item = await super().complete(messages, tools)
+            if isinstance(item, Exception):
+                raise item
+            return item
+
+    calls = []
+
+    async def execute(*_):
+        calls.append(1)
+        return ToolResult(status="ok", summary="2")
+
+    model = InterruptedModel(
+        [
+            response("run_python", {"code": "print(2)"}),
+            ModelError("model_provider_error", "HTTP 503", retryable=True),
+            response("finish_answer", {"text": "2"}),
+        ]
+    )
+    loop = AgentLoop(
+        model,
+        settings(),
+        [Tool("run_python", "Python", PythonInput, execute)],
+        ignore,
+        ignore,
+    )
+    answer = await loop.run([], "en-IN")
+    assert answer.text == "2" and calls == [1] and loop.model_calls == 3

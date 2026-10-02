@@ -125,7 +125,7 @@ class OpenAICompatibleModel:
                 )
                 raise ModelError(
                     "model_provider_error",
-                    "The model provider rejected the request.",
+                    f"The model provider rejected the request (HTTP {response.status_code}).",
                     retryable=retryable,
                 )
             if self._streaming:

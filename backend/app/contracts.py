@@ -122,6 +122,8 @@ class ThreadView(WorkspaceView):
 
 
 class SourceView(Contract):
+    description: str | None = None
+    metric_hints: dict[str, str] = Field(default_factory=dict)
     id: str
     display_name: str
     kind: str

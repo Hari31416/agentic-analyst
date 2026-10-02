@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.contracts import Contract, RunEvent, RunState, TERMINAL_STATES
-from app.db.models import Artifact, Job, Message, Run, Source, Thread, now
+from app.db.models import Artifact, Dataset, Job, Message, Run, Source, Thread, now
 from app.db.repository import append_event, audit, events_after
 from app.db.session import factory, get_session
 from app.language.metadata import LanguageMetadata
@@ -26,6 +26,7 @@ Db = Annotated[Session, Depends(get_session)]
 class RunRequest(Contract):
     text: str = Field(min_length=1, max_length=20000)
     selected_source_ids: list[UUID] = Field(default_factory=list, max_length=100)
+    selected_dataset_ids: list[UUID] = Field(default_factory=list, max_length=100)
     answer_language: str = "en-IN"
     request_id: UUID = Field(default_factory=uuid4)
 
@@ -50,6 +51,7 @@ def run_view(run: Run) -> dict[str, Any]:
         "created_at": run.created_at,
         "outcome": run.outcome,
         "selected_source_ids": run.selected_source_ids,
+        "selected_dataset_ids": run.config.get("selected_dataset_ids", []),
         "answer_language": run.config.get("answer_language", "en-IN"),
     }
 
@@ -113,6 +115,8 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
     )
     if thread is None:
         raise HTTPException(404, "Thread not found")
+    selected = list(dict.fromkeys(str(i) for i in body.selected_source_ids))
+    selected_datasets = list(dict.fromkeys(str(i) for i in body.selected_dataset_ids))
     existing = session.get(Run, str(body.request_id))
     if existing:
         original = session.scalar(
@@ -122,8 +126,8 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             existing.thread_id != thread_id
             or original is None
             or original.content != body.text
-            or existing.selected_source_ids
-            != [str(i) for i in body.selected_source_ids]
+            or existing.selected_source_ids != selected
+            or existing.config.get("selected_dataset_ids", []) != selected_datasets
             or existing.config.get("answer_language") != body.answer_language
         ):
             raise HTTPException(409, "Request ID is already used by another input")
@@ -135,7 +139,6 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
     )
     if active:
         raise HTTPException(409, "This thread already has an active run")
-    selected = list(dict.fromkeys(str(i) for i in body.selected_source_ids))
     source_rows = (
         list(
             session.scalars(
@@ -149,12 +152,29 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
     )
     if len(source_rows) != len(selected):
         raise HTTPException(422, "Selected sources must belong to this workspace")
+    if selected_datasets:
+        dataset_rows = list(
+            session.scalars(
+                select(Dataset).where(
+                    Dataset.id.in_(selected_datasets), Dataset.source_id.in_(selected)
+                )
+            )
+        )
+        versions = {source.id: source.version for source in source_rows}
+        if len(dataset_rows) != len(selected_datasets) or any(
+            row.source_version != versions[row.source_id] for row in dataset_rows
+        ):
+            raise HTTPException(
+                422,
+                "Selected datasets must belong to the current selected source versions",
+            )
     run = Run(
         id=str(body.request_id),
         thread_id=thread_id,
         selected_source_ids=selected,
         config={
             "answer_language": body.answer_language,
+            "selected_dataset_ids": selected_datasets,
             "model": settings.openai_model,
             "prompt_version": "analyst-v1",
             "source_versions": {source.id: source.version for source in source_rows},
@@ -207,6 +227,8 @@ def run_status(run_id: str, session: Db) -> dict[str, Any]:
 
 @router.post("/runs/{run_id}/cancel")
 def cancel(run_id: str, session: Db) -> dict[str, Any]:
+    # Match the worker lock order so cancellation and finalization are serialized.
+    session.scalars(select(Job).where(Job.run_id == run_id).with_for_update()).all()
     run = session.scalar(select(Run).where(Run.id == run_id).with_for_update())
     if run is None:
         raise HTTPException(404, "Run not found")

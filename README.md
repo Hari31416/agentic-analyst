@@ -104,7 +104,7 @@ The worker validates tool calls and records progress, generated code, artifacts,
 and final answers. Artifact rows provide downloads and bounded text or PNG/JPEG
 previews. Stop requests cancellation and keeps progress connected until guest
 cleanup is recorded. Retry creates a new run; reconnecting replays saved events.
-Source uploads and database connections are introduced in phase 02.
+The source panel supports file uploads and encrypted database connections.
 
 `make live-agent` uses synthetic grant amounts in two saved threads. It checks
 count 2 and INR 25,000, English/Hindi answers, output hashes after guest cleanup,
@@ -123,3 +123,38 @@ The image is pinned as `ghcr.io/rustfs/rustfs:1.0.0-glibc` at digest
 See the [release list](https://github.com/rustfs/rustfs/releases),
 [official package](https://github.com/rustfs/rustfs/pkgs/container/rustfs), and
 [container setup docs](https://docs.rustfs.com/en/installation/container).
+
+## Structured sources
+
+Upload CSV, XLSX, or legacy XLS in the source panel. Originals remain immutable
+in RustFS. Profiles report exact row counts, sampled type inference, missingness,
+bounded examples, and formula-cache warnings. CSV decoding/delimiter detection
+is explicit; leading-zero identifiers stay text. Workbook macros and unsafe
+archives are rejected. File SQL stages canonical UTF-8 working copies and treats
+columns as VARCHAR; numeric/date casts must be explicit.
+
+Run `make analysis-image` once to build and register the DuckDB 1.4.4 / xlrd 2.0.2
+microVM image. This builds a guest image and records its microsandbox digest in
+`.env`. Restart host apps afterward. `make eval-infra` starts the optional MySQL
+8.4 fixture database on port 33306. PostgreSQL remains on port 55432. Application
+processes run through `make dev` directly on the host.
+
+Database credentials use Fernet encryption with `DATABASE_ENCRYPTION_KEY`.
+Connection setup discovers tables, columns, keys, and relationships. The UI
+supports TLS modes and explicit schema refresh. Queries parse as one selected-table
+read statement, with an allowlist of scalar/aggregate functions. Writes, unsafe
+functions, file/network readers, optimizer hints, and system schemas are rejected.
+Read-only transactions and server query deadlines add database enforcement.
+Queries retain at most 5,000 tool rows and run for at most 30 seconds. Limits apply
+to returned rows after aggregation; decimal values serialize as exact strings.
+
+Use selected sources and optionally narrow to particular sheets/tables. Source
+descriptions and metric hints are optional. `run_sql` retains SQL, result CSV,
+input/schema versions, hashes, and calculation evidence. `run_python` can stage
+selected file datasets or retained result artifacts; database credentials never
+enter the guest. `register_dataset` turns a CSV artifact into a derived source
+for selection in a later run and retains its lineage.
+
+Repeat the five synthetic live source cases with
+`cd backend && uv run python -m app.structured_probes`. Reports are saved under
+`evals/reports`. Complete browser verification is deferred.

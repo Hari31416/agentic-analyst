@@ -169,6 +169,10 @@ class RunRuntime:
             if name == "run_python":
                 assert isinstance(arguments, PythonInput)
                 result = await self.run_python(workspace_id, run_id, tool_id, arguments)
+            elif name in {"search_documents", "source_passage"}:
+                from app.tools.documents import DocumentTools
+
+                result = await DocumentTools(self).execute(name, arguments, tool_id)
             elif name in {
                 "list_sources",
                 "dataset_profile",
@@ -571,7 +575,19 @@ class RunRuntime:
 
                 return Tool(name, description, schema, execute)
 
+            from app.tools.documents import PassageInput, SearchInput
+
             structured_tools = [
+                structured_tool(
+                    "search_documents",
+                    "Search selected PDF/DOCX versions using lexical, local dense, or hybrid retrieval. Returns original passages and evidence IDs with locations. Reformulate if evidence is missing; never infer eligibility rules without supporting passages.",
+                    SearchInput,
+                ),
+                structured_tool(
+                    "source_passage",
+                    "Inspect an exact selected document chunk with bounded neighboring original passages, stable locations, and evidence.",
+                    PassageInput,
+                ),
                 structured_tool(
                     "list_sources",
                     "List selected sources and datasets, with SQL table names. Start here before source analysis.",

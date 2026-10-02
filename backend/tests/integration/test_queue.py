@@ -8,7 +8,7 @@ import pytest
 from sqlalchemy import create_engine, func, select, text, update
 from sqlalchemy.orm import sessionmaker
 
-from app.db.models import Artifact, Base, Job, Run, Thread, Workspace
+from app.db.models import Artifact, Base, Document, Job, Run, Source, Thread, Workspace
 from app.db.repository import append_event
 from app.workers.queue import LeaseLost, claim, finish, heartbeat, fail
 from app.workers.main import maintenance
@@ -26,8 +26,11 @@ def db_factory():
     admin = create_engine(url)
     with admin.begin() as conn:
         conn.execute(text(f'CREATE SCHEMA "{schema}"'))
-    engine = create_engine(url, connect_args={"options": f"-csearch_path={schema}"})
-    Base.metadata.create_all(engine)
+    engine = create_engine(
+        url, connect_args={"options": f"-csearch_path={schema},public"}
+    )
+    # Force creation in the new schema; public is visible only for pgvector.
+    Base.metadata.create_all(engine, checkfirst=False)
     try:
         yield sessionmaker(engine, expire_on_commit=False)
     finally:
@@ -98,6 +101,52 @@ def test_retry_limit_and_delayed_retry(db_factory):
     with db_factory() as session, session.begin():
         assert claim(session, "two", 60) is None
         assert session.get(Job, leased.id).state == "failed"
+
+
+@pytest.mark.parametrize("kind", ["ingest_document", "index_document"])
+def test_exhausted_document_jobs_have_terminal_visible_status(db_factory, kind):
+    with db_factory() as session, session.begin():
+        workspace = Workspace(label="exhausted document")
+        session.add(workspace)
+        session.flush()
+        source = Source(
+            workspace_id=workspace.id, kind="pdf", display_name="fixture.pdf"
+        )
+        session.add(source)
+        session.flush()
+        document = Document(
+            source_id=source.id,
+            source_version=1,
+            extractor_version="test",
+            chunker_version="test",
+            state="running",
+            stage="indexing",
+            progress=85,
+        )
+        session.add(document)
+        session.flush()
+        document_id = document.id
+        session.add(
+            Job(
+                kind=kind,
+                payload={"document_id": document_id},
+                dedupe_key=str(uuid4()),
+                state="running",
+                attempts=3,
+                max_attempts=3,
+                lease_expires_at=func.now() - timedelta(seconds=1),
+            )
+        )
+    with db_factory() as session, session.begin():
+        assert claim(session, "replacement", 60) is None
+    with db_factory() as session:
+        document = session.get(Document, document_id)
+        assert document.state == ("failed" if kind == "ingest_document" else "ready")
+        assert document.stage == (
+            "failed" if kind == "ingest_document" else "index_degraded"
+        )
+        assert document.progress == 100
+        assert document.details["error"]["code"] == "retry_limit_exceeded"
 
 
 def test_concurrent_event_sequences_are_unique(db_factory):

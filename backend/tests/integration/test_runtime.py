@@ -28,8 +28,11 @@ def db_factory():
     admin = create_engine(url)
     with admin.begin() as connection:
         connection.execute(text(f'CREATE SCHEMA "{schema}"'))
-    engine = create_engine(url, connect_args={"options": f"-csearch_path={schema}"})
-    Base.metadata.create_all(engine)
+    engine = create_engine(
+        url, connect_args={"options": f"-csearch_path={schema},public"}
+    )
+    # Force creation in the new schema; public is visible only for pgvector.
+    Base.metadata.create_all(engine, checkfirst=False)
     try:
         yield sessionmaker(engine, expire_on_commit=False)
     finally:

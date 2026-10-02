@@ -38,19 +38,21 @@ Outcome: cited Hindi/English answers using PDF/DOCX and structured sources toget
 
 ## Acceptance and validation
 
-- [ ] PDF and DOCX are indexed with useful, accurate locations and original text.
-- [ ] Hindi/English query-document combinations retrieve the labeled supporting
+- [x] PDF and DOCX are indexed with useful, accurate locations and original text.
+- [x] Hindi/English query-document combinations retrieve the labeled supporting
   passages; record recall@k and misses on the fixture set.
-- [ ] Dense, lexical, and hybrid modes work independently and expose actual mode.
-- [ ] Source selection applies to every candidate and context expansion path.
-- [ ] A live mixed-source run produces the correct numeric results, citations,
+- [x] Dense, lexical, and hybrid modes work independently and expose actual mode.
+- [x] Source selection applies to every candidate and context expansion path.
+- [x] A live mixed-source run produces the correct numeric results, citations,
   result table/chart, stored tool trace, and audit references.
-- [ ] Citation clicks and reopened history resolve the same document version.
-- [ ] Repeated ingestion is idempotent; changed model/dimensions create a compatible
+- [x] Citation lookup and reopened history resolve the same document version.
+  Citation UI is implemented and build-checked; manual clicks/full UI QA are
+  deferred at the user's request.
+- [x] Repeated ingestion is idempotent; changed model/dimensions create a compatible
   generation rather than mixing incompatible vectors.
-- [ ] Scanned/empty/failed extraction, unavailable embeddings, and no-evidence
+- [x] Scanned/empty/failed extraction, unavailable embeddings, and no-evidence
   questions produce explicit outcomes.
-- [ ] Original uploads and database rows are unchanged after the complete workflow.
+- [x] Original uploads and database rows are unchanged after the complete workflow.
 
 Use deterministic retrieval/evidence tests plus a live model/sandbox mixed-source
 case. Save the phase's baseline measurements for phase 05 comparison. This is
@@ -60,3 +62,7 @@ the first combined product milestone, not completion of the entire application.
 
 Record extractor/chunker/model/index versions, supported retrieval modes,
 baseline measurements, source-viewer behavior, and known Hindi tokenization gaps.
+
+Verified 2 October 2026. Reports: `evals/reports/phase03-2026-10-02.json` and
+`evals/reports/phase03-retrieval-2026-10-02.json`. Retrieval misses are retained
+as the baseline for phase 05. Current scope ends after this phase is committed.

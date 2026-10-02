@@ -158,3 +158,45 @@ for selection in a later run and retains its lineage.
 Repeat the five synthetic live source cases with
 `cd backend && uv run python -m app.structured_probes`. Reports are saved under
 `evals/reports`. Complete browser verification is deferred.
+
+## Document retrieval
+
+Upload digital PDF or DOCX in the source panel. RustFS retains the original
+bytes. The worker stores extracted blocks, stable page/paragraph/table locations,
+script metadata, warnings, and separate versioned chunks. Scanned PDFs report
+`ocr_needed`; OCR is scheduled for phase 04. Extraction is bounded to 2,000 PDF
+pages, 12 MiB of text, 100,000 blocks, and 512 chunks per document. Unsupported
+or oversized documents receive a visible failure instead of an empty index.
+
+Run `make embedding-model` once to download the pinned quantized
+`intfloat/multilingual-e5-small` assets and record their SHA-256 manifest and
+configuration in `.env`. Restart `make dev` afterward. Inference runs locally
+on the host CPU and produces 384-dimensional normalized vectors. Assets are
+loaded from the configured directory; ingestion never downloads missing models.
+Without compatible assets, documents remain available for lexical retrieval and
+report `index_degraded`. Dense requests report unavailable, and hybrid responses
+identify the lexical fallback in their trace.
+
+The `structure-token-v2` chunker groups narrative blocks under headings and
+keeps table groups separate. With the pinned tokenizer, body windows contain at
+most 384 tokens with 48-token overlap and bounded heading context. Without a
+matching tokenizer, conservative UTF-8 byte windows bound the input instead.
+Original Unicode excerpts remain separate from normalized search text.
+
+Retrieval supports English stemming, Hindi/simple PostgreSQL full-text search,
+exact cosine search, and reciprocal rank fusion. Selected document versions
+scope candidates and neighbor expansion. Every index generation records its
+source hash, extractor/chunker, model revision, dimensions, and adapter version.
+`POST /api/documents/{id}/reindex` indexes existing chunks without changing saved
+extraction or citation locations.
+
+Document search and passage tools retain evidence IDs, original excerpts,
+locations, rank/score metadata, actual retrieval mode, and bounded context.
+Saved answers reopen the same citation version through `/api/evidence/{id}`.
+The source panel includes extraction inspection and the chat includes citation
+previews and retrieval traces. Full browser verification remains deferred.
+
+Run `make live-documents` with host apps and infrastructure running to measure
+Hindi/English fixture recall and execute live mixed-source cases. The report in
+`evals/reports/phase03-2026-10-02.json` includes misses, document plus calculation
+citations, retained CSV/PNG outputs, and original-file/database integrity checks.

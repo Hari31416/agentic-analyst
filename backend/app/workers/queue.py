@@ -6,7 +6,7 @@ from uuid import uuid4
 from sqlalchemy import and_, func, or_, select, update
 from sqlalchemy.orm import Session
 
-from app.db.models import Job, Run, now
+from app.db.models import Document, Job, Run, now
 from app.db.repository import append_event, audit
 
 
@@ -32,7 +32,7 @@ def claim(session: Session, owner: str, lease_seconds: int) -> Claim | None:
         and_(Job.state == "running", Job.lease_expires_at <= func.now()),
     )
     # Exhausted jobs cannot remain invisibly running forever after the last worker dies.
-    exhausted_runs = session.scalars(
+    exhausted_jobs = session.execute(
         update(Job)
         .where(eligible, Job.attempts >= Job.max_attempts)
         .values(
@@ -42,9 +42,24 @@ def claim(session: Session, owner: str, lease_seconds: int) -> Claim | None:
             lease_expires_at=None,
             result={"error": "retry_limit_exceeded"},
         )
-        .returning(Job.run_id)
+        .returning(Job.run_id, Job.kind, Job.payload)
     )
-    for run_id in set(exhausted_runs):
+    for run_id, kind, payload in exhausted_jobs:
+        if kind in {"ingest_document", "index_document"}:
+            document = session.get(Document, payload.get("document_id"))
+            if document is not None:
+                document.state = "failed" if kind == "ingest_document" else "ready"
+                document.stage = (
+                    "failed" if kind == "ingest_document" else "index_degraded"
+                )
+                document.progress = 100
+                document.details = {
+                    **document.details,
+                    "error": {
+                        "code": "retry_limit_exceeded",
+                        "message": "Worker attempts were exhausted before document processing finished.",
+                    },
+                }
         if run_id is None:
             continue
         run = session.scalar(select(Run).where(Run.id == run_id).with_for_update())

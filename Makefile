@@ -4,7 +4,7 @@ COMPOSE = docker compose $(if $(wildcard .env),--env-file .env) -f infra/compose
 BACKEND = cd backend && uv run
 
 .PHONY: setup up up-all dev api worker frontend sandbox down logs health migrate format check test frontend-check \
-	test-integration live-model live-sandbox live-agent fixtures analysis-image eval-infra
+	test-integration live-model live-sandbox live-agent fixtures analysis-image eval-infra embedding-model live-documents
 
 setup:
 	@test -f .env || cp .env.example .env
@@ -84,3 +84,9 @@ analysis-image:
 
 eval-infra:
 	$(COMPOSE) --profile eval up -d --wait
+
+embedding-model:
+	backend/.venv/bin/python scripts/setup-embeddings.py
+
+live-documents:
+	$(BACKEND) python -m app.document_probes

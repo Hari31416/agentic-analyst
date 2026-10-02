@@ -155,3 +155,15 @@ from app.api.connections import router as connections_router
 
 app.include_router(files_router)
 app.include_router(connections_router)
+
+from app.api.evidence import router as evidence_router
+
+app.include_router(evidence_router)
+
+from app.api.documents import router as documents_router
+
+app.include_router(documents_router)
+
+from app.api.document_indexes import router as indexes_router
+
+app.include_router(indexes_router)

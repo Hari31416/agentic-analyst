@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     sandbox_image: str | None = None
     external_provider_policy: Literal["local_only", "configured"] = "local_only"
     embedding_model: str | None = None
+    embedding_model_path: Path | None = None
+    embedding_dimension: int = 384
+    embedding_revision: str | None = None
+    embedding_batch_size: int = 16
+    embedding_threads: int = 2
     reranker_model: str | None = None
     supported_languages: list[str] = ["en-IN", "hi-IN"]
     max_tool_calls: int = 20
@@ -85,6 +90,9 @@ class Settings(BaseSettings):
             "run_timeout_seconds",
             "job_lease_seconds",
             "job_max_attempts",
+            "embedding_dimension",
+            "embedding_batch_size",
+            "embedding_threads",
         ):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} must be positive")

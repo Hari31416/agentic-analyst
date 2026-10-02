@@ -1,6 +1,7 @@
 import {
   FormEvent,
   KeyboardEvent,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -22,6 +23,7 @@ import {
   RotateCcw,
   ShieldCheck,
   Sparkles,
+  X,
 } from "lucide-react";
 import {
   AnalysisRun,
@@ -33,6 +35,7 @@ import {
   chatApi,
 } from "./chatApi";
 import { DatasetSummary } from "./structuredApi";
+import { EvidenceView, documentApi } from "./documentApi";
 import "./chat.css";
 
 export type ChatSource = {
@@ -220,6 +223,10 @@ function ChatPanel({
   const [cancelling, setCancelling] = useState(false);
   const [retryingRunId, setRetryingRunId] = useState("");
   const [error, setError] = useState("");
+  const [evidenceId, setEvidenceId] = useState("");
+  const [evidence, setEvidence] = useState<EvidenceView | null>(null);
+  const [loadingEvidence, setLoadingEvidence] = useState(false);
+  const [evidenceError, setEvidenceError] = useState("");
   const [optimisticMessage, setOptimisticMessage] =
     useState<ChatMessage | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -228,6 +235,24 @@ function ChatPanel({
   const retryInputsRef = useRef(new Map<string, RetryInput>());
   const selectedSourceIdsRef = useRef(selectedSourceIds);
   selectedSourceIdsRef.current = selectedSourceIds;
+
+  async function openEvidence(id: string) {
+    setEvidenceId(id);
+    setEvidence(null);
+    setEvidenceError("");
+    setLoadingEvidence(true);
+    try {
+      setEvidence(await documentApi.evidence(id));
+    } catch (reason) {
+      setEvidenceError(
+        reason instanceof Error
+          ? reason.message
+          : "Could not resolve this evidence reference.",
+      );
+    } finally {
+      setLoadingEvidence(false);
+    }
+  }
 
   const refreshHistory = useCallback(async () => {
     const [nextMessages, nextRuns] = await Promise.all([
@@ -248,6 +273,9 @@ function ChatPanel({
     let active = true;
     setLoading(true);
     setError("");
+    setEvidenceId("");
+    setEvidence(null);
+    setEvidenceError("");
     setMessages([]);
     setRuns([]);
     setActiveRun(null);
@@ -727,18 +755,30 @@ function ChatPanel({
                         </span>
                       )}
                     </div>
-                    <div className="message-content">{message.content}</div>
-                    {!!message.references?.evidence_ids?.length && (
-                      <div className="evidence-references">
-                        <ShieldCheck size={12} />
-                        <span>Evidence</span>
-                        {message.references.evidence_ids.map((id) => (
-                          <span className="evidence-id" key={id}>
-                            {id}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <div className="message-content">
+                      <CitationText
+                        content={message.content}
+                        evidenceIds={message.references?.evidence_ids ?? []}
+                        onOpen={openEvidence}
+                      />
+                    </div>
+                    {!!message.references?.evidence_ids?.length &&
+                      !hasInlineEvidence(message.content) && (
+                        <div className="evidence-references">
+                          <ShieldCheck size={12} />
+                          <span>Evidence</span>
+                          {message.references.evidence_ids.map((id, index) => (
+                            <button
+                              className="evidence-id"
+                              key={id}
+                              type="button"
+                              onClick={() => void openEvidence(id)}
+                            >
+                              [{index + 1}]
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     {artifacts.length > 0 && (
                       <ArtifactLinks
                         artifacts={artifactLists[message.run_id ?? ""] ?? []}
@@ -768,6 +808,7 @@ function ChatPanel({
                 <MessageBubble
                   message={liveAnswer}
                   artifacts={artifactLists[liveAnswer.run_id ?? ""] ?? []}
+                  onOpenEvidence={openEvidence}
                 />
               )}
           </div>
@@ -958,16 +999,221 @@ function ChatPanel({
           <span>ANSWERS KEEP THEIR REFERENCES</span>
         </div>
       </div>
+      {evidenceId && (
+        <EvidenceViewer
+          evidenceId={evidenceId}
+          evidence={evidence}
+          loading={loadingEvidence}
+          error={evidenceError}
+          onClose={() => setEvidenceId("")}
+        />
+      )}
     </section>
+  );
+}
+
+function hasInlineEvidence(content: string): boolean {
+  return /\[evidence:[0-9a-f-]{36}\]/i.test(content);
+}
+
+function CitationText({
+  content,
+  evidenceIds,
+  onOpen,
+}: {
+  content: string;
+  evidenceIds: string[];
+  onOpen: (id: string) => void;
+}) {
+  const allowed = new Set(evidenceIds.map((id) => id.toLowerCase()));
+  const pattern = /\[evidence:([0-9a-f-]{36})\]/gi;
+  const nodes: ReactNode[] = [];
+  let cursor = 0;
+  let index = 0;
+  for (const match of content.matchAll(pattern)) {
+    const start = match.index ?? 0;
+    const id = match[1];
+    if (start > cursor) nodes.push(content.slice(cursor, start));
+    if (allowed.has(id.toLowerCase())) {
+      const label = evidenceIds.findIndex(
+        (evidenceId) => evidenceId.toLowerCase() === id.toLowerCase(),
+      );
+      nodes.push(
+        <button
+          className="inline-citation"
+          key={`${id}-${index}`}
+          type="button"
+          title="Open cited evidence"
+          onClick={() => onOpen(id)}
+        >
+          [{label + 1}]
+        </button>,
+      );
+    } else {
+      nodes.push(match[0]);
+    }
+    cursor = start + match[0].length;
+    index += 1;
+  }
+  if (!nodes.length) return <>{content}</>;
+  if (cursor < content.length) nodes.push(content.slice(cursor));
+  return <>{nodes}</>;
+}
+
+function locationText(
+  location: Record<string, unknown> | null | undefined,
+): string {
+  if (!location) return "Location not provided";
+  const parts = Object.entries(location)
+    .filter(
+      ([, value]) => value !== null && value !== undefined && value !== "",
+    )
+    .map(([key, value]) => `${key.replaceAll("_", " ")} ${String(value)}`);
+  return parts.join(" · ") || "Location not provided";
+}
+
+function EvidenceViewer({
+  evidenceId,
+  evidence,
+  loading,
+  error,
+  onClose,
+}: {
+  evidenceId: string;
+  evidence: EvidenceView | null;
+  loading: boolean;
+  error: string;
+  onClose: () => void;
+}) {
+  const details = evidence?.details ?? {};
+  const trace = evidence?.trace ?? details.trace ?? details.retrieval_trace;
+  const structuredDetails = [
+    ["Query", details.query],
+    ["Source versions", details.source_versions],
+    ["Result hash", details.result_sha256],
+    ["Result artifact", details.result_artifact_id ?? details.artifact_id],
+  ].filter(([, value]) => value !== null && value !== undefined);
+  return (
+    <aside
+      className="evidence-viewer"
+      role="dialog"
+      aria-label="Evidence reference"
+    >
+      <header className="evidence-viewer-header">
+        <div>
+          <span className="mini-label">SOURCE EVIDENCE</span>
+          <strong>
+            {evidence?.display_name ?? `Evidence ${evidenceId.slice(0, 8)}`}
+          </strong>
+        </div>
+        <button
+          className="icon-button"
+          type="button"
+          onClick={onClose}
+          aria-label="Close evidence viewer"
+        >
+          <X size={15} />
+        </button>
+      </header>
+      <div className="evidence-viewer-body">
+        {loading ? (
+          <div className="evidence-viewer-state">
+            <LoaderCircle size={15} className="spin" /> Resolving saved evidence
+          </div>
+        ) : error ? (
+          <div className="evidence-viewer-state error" role="alert">
+            <AlertCircle size={14} /> {error}
+          </div>
+        ) : evidence ? (
+          <>
+            <div className="evidence-source-meta">
+              <span>{evidence.kind?.replaceAll("_", " ") ?? "Evidence"}</span>
+              {evidence.document_version !== null &&
+                evidence.document_version !== undefined && (
+                  <span>Document v{evidence.document_version}</span>
+                )}
+              {evidence.retrieval_mode && (
+                <span>{evidence.retrieval_mode}</span>
+              )}
+            </div>
+            {!!evidence.source_ids.length && (
+              <div className="evidence-source-ids">
+                Sources{" "}
+                {evidence.source_ids.map((id) => id.slice(0, 8)).join(" · ")}
+              </div>
+            )}
+            <div className="evidence-location">
+              {locationText(evidence.location)}
+            </div>
+            {evidence.excerpt ? (
+              <blockquote className="evidence-excerpt">
+                {evidence.excerpt}
+              </blockquote>
+            ) : (
+              <p className="evidence-empty-excerpt">
+                This calculation evidence does not contain a document passage.
+              </p>
+            )}
+            {evidence.context && evidence.context !== evidence.excerpt && (
+              <details className="evidence-context">
+                <summary>Wider passage context</summary>
+                <p>{evidence.context}</p>
+              </details>
+            )}
+            {(typeof evidence.score === "number" ||
+              typeof evidence.rank === "number") && (
+              <div className="evidence-retrieval-meta">
+                {typeof evidence.rank === "number" && (
+                  <span>Rank {evidence.rank}</span>
+                )}
+                {typeof evidence.score === "number" && (
+                  <span>Score {evidence.score.toFixed(3)}</span>
+                )}
+              </div>
+            )}
+            {!!structuredDetails.length && (
+              <section className="evidence-trace-section">
+                <span className="mini-label">CALCULATION RECORD</span>
+                <dl>
+                  {structuredDetails.map(([label, value]) => (
+                    <div key={String(label)}>
+                      <dt>{String(label)}</dt>
+                      <dd>
+                        {typeof value === "string"
+                          ? value
+                          : JSON.stringify(value)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            )}
+            {trace !== undefined && trace !== null && (
+              <details className="evidence-trace">
+                <summary>Retrieval trace</summary>
+                <pre>
+                  {typeof trace === "string"
+                    ? trace.slice(0, 6000)
+                    : JSON.stringify(trace, null, 2).slice(0, 6000)}
+                </pre>
+              </details>
+            )}
+            <small className="evidence-id-full">Reference {evidence.id}</small>
+          </>
+        ) : null}
+      </div>
+    </aside>
   );
 }
 
 function MessageBubble({
   message,
   artifacts,
+  onOpenEvidence,
 }: {
   message: ChatMessage;
   artifacts: RunArtifact[];
+  onOpenEvidence: (id: string) => void;
 }) {
   return (
     <div className="message-row assistant">
@@ -979,18 +1225,30 @@ function MessageBubble({
           <span>FIELDNOTE</span>
           <span className="message-run-state running">Answer</span>
         </div>
-        <div className="message-content">{message.content}</div>
-        {!!message.references?.evidence_ids?.length && (
-          <div className="evidence-references">
-            <ShieldCheck size={12} />
-            <span>Evidence</span>
-            {message.references.evidence_ids.map((id) => (
-              <span className="evidence-id" key={id}>
-                {id}
-              </span>
-            ))}
-          </div>
-        )}
+        <div className="message-content">
+          <CitationText
+            content={message.content}
+            evidenceIds={message.references?.evidence_ids ?? []}
+            onOpen={onOpenEvidence}
+          />
+        </div>
+        {!!message.references?.evidence_ids?.length &&
+          !hasInlineEvidence(message.content) && (
+            <div className="evidence-references">
+              <ShieldCheck size={12} />
+              <span>Evidence</span>
+              {message.references.evidence_ids.map((id, index) => (
+                <button
+                  className="evidence-id"
+                  key={id}
+                  type="button"
+                  onClick={() => onOpenEvidence(id)}
+                >
+                  [{index + 1}]
+                </button>
+              ))}
+            </div>
+          )}
         {!!message.references?.artifact_ids?.length && (
           <ArtifactLinks
             artifacts={artifacts}

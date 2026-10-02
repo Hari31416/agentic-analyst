@@ -13,7 +13,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | 00    | Verified | 20 deterministic tests, 6 PostgreSQL/RustFS integration tests, 5 Linux fixture tests, healthy Compose, migration/schema and restart checks | None |
 | 01    | Verified | 57 deterministic tests, 14 PostgreSQL/RustFS tests, 2 live provider cases, 3 live microVM cases, bilingual full-agent/follow-up/cancellation and app restart checks | Full UI QA deferred by user |
 | 02    | Verified | Five live source cases; real DuckDB, PostgreSQL/MySQL safety/deadline/cancellation and RustFS checks | Full UI QA deferred by user |
-| 03    | Not started | Not run                     | All phase checks |
+| 03    | Verified | PDF/DOCX ingestion, measured bilingual retrieval, two live mixed-source cases, citation history, CSV/PNG and source integrity checks | Full UI QA deferred by user; ranking improvements in phase 05 |
 | 04    | Not started | Not run                     | All phase checks |
 | 05    | Not started | Not run                     | All phase checks |
 | 06    | Not started | Not run                     | All phase checks |
@@ -178,3 +178,63 @@ Keep secrets and raw client data out of this file.
   Docker was restarted at the user's request; infrastructure volumes persist.
 - Full UI QA remains deferred. Next step is phase 03 document extraction, local
   multilingual embeddings, lexical/dense/hybrid retrieval and mixed-source citations.
+
+## 2 October 2026: phase 03 document RAG
+
+- Added leased digital PDF/DOCX ingestion, extraction states/progress, warnings,
+  paginated block inspection, upload idempotency, and immutable originals in
+  RustFS. Extractor `pdf-docx-text-v1` preserves Unicode and page, paragraph,
+  heading, and table locations. Scanned/empty PDFs report `ocr_needed`; OCR
+  remains phase 04. Unsupported/oversized extraction produces a terminal error.
+- Added `structure-token-v2` chunks with grouped narrative/table blocks, bounded
+  headings, actual-tokenizer windows of 384 body tokens and 48-token overlap,
+  and a conservative 480-byte fallback. Chunk block IDs and locations describe
+  their actual slices. Existing ready document versions remain unchanged.
+- Selected local multilingual E5 small, 384 dimensions, quantized ONNX from
+  `Xenova/multilingual-e5-small`, revision
+  `761b726dd34fb83930e26aab4e9ac3899aa1fa78`. `make embedding-model` downloads
+  pinned assets and writes a checksum manifest. FastEmbed 0.7.4 adds the E5
+  query/passage prefixes, mean pooling and normalization. Inference uses host
+  CPU only, verified local files, and no remote embedding fallback.
+- Migrations `6d92b49bc139` and `98657a061bfe` add document/block/chunk/index
+  records, pgvector, and partial English/simple lexical GIN indexes. Index
+  generations fingerprint source/chunk/model/revision/dimensions. Changed
+  revisions/dimensions retain separate generations and prior chunks/vectors.
+  Missing assets explicitly degrade to lexical search. Local inference finishes
+  before the worker locks its lease for publication; lease loss rejects writes.
+- Added lexical, exact cosine, and hybrid reciprocal-rank retrieval, selected
+  source-version filtering, bounded neighbor expansion with overlap removal,
+  evidence tools, citation resolution and saved history. UI supports document
+  upload/status, extraction inspection, source selection, citation previews and
+  retrieval traces. Citation lookup/reopened history are HTTP-tested; complete
+  browser verification remains deferred by the user.
+- Per-document baseline covers both query languages against all four fixtures.
+  Dense/hybrid supporting-passage recall at 3/5/10 is 1.00; lexical is 0.25 for
+  the recorded long keyword queries. The previous byte-window chunker missed
+  both Hindi DOCX queries at rank 3, with the rule at rank 7.
+- With all four documents selected, the longer bilingual diagnostic queries
+  produce dense/hybrid supporting recall at 3 of 0.50 in each language. English
+  recall at 5/10 is 1.00/1.00; Hindi is 0.75/1.00. Lexical AND queries return
+  zero candidates when some query words are absent; shorter `income` and `आय`
+  queries return candidates. These misses and query strings are saved for
+  phase 05. Hindi uses PostgreSQL's simple configuration and Unicode-aware
+  normalization, so native Hindi stemming and cross-language lexical matches
+  remain limited. The user accepted an imperfect baseline at this stage.
+- Two live configured-model runs passed: Hindi PDF plus CSV answered in English,
+  and English DOCX plus PostgreSQL answered in Hindi. Both retained eligible
+  count 2, INR 25,000, five application-level exclusion rows, a PNG chart,
+  document/calculation evidence, tool/audit references, and complete guest
+  cleanup. Citation excerpts/locations reopen unchanged. Original file hashes
+  and all source database rows remain unchanged. A third question for absent
+  scheme Z9 correctly asked for the missing document.
+- Reports: `evals/reports/phase03-2026-10-02.json` and
+  `evals/reports/phase03-retrieval-2026-10-02.json`. Repeat only when needed via
+  `make live-documents`; routine edits use saved live results. No live model
+  cases were repeated after the user's request to limit live testing.
+- Final checks: 128 deterministic tests, 35 infrastructure integration tests,
+  one pinned local-embedding fixture test, Black/mypy, frontend typecheck/build/
+  formatting, and `alembic check` pass. Integration fixtures now force their
+  tables into isolated schemas while exposing public pgvector types.
+- Saved the user's development/testing/commit instructions in `AGENTS.md` before
+  this phase's commit. Host API/worker/frontend and infrastructure are running.
+  Stop after committing phase 03. Phase 04 and later remain unstarted.

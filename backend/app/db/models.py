@@ -11,9 +11,11 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    text as sql_text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
+from pgvector.sqlalchemy import Vector  # type: ignore[import-untyped]
 
 
 def now() -> datetime:
@@ -190,3 +192,92 @@ class AuditEvent(Identity, Base):
     decision: Mapped[str] = mapped_column(String(30))
     reason_code: Mapped[str] = mapped_column(String(80))
     details: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+
+
+class Document(Identity, Base):
+    __tablename__ = "documents"
+    __table_args__ = (UniqueConstraint("source_id", "source_version"),)
+    source_id: Mapped[str] = mapped_column(ForeignKey("sources.id"), index=True)
+    source_version: Mapped[int] = mapped_column(Integer)
+    extractor_version: Mapped[str] = mapped_column(String(120))
+    chunker_version: Mapped[str] = mapped_column(String(120))
+    state: Mapped[str] = mapped_column(String(30), default="queued")
+    stage: Mapped[str] = mapped_column(String(40), default="queued")
+    progress: Mapped[int] = mapped_column(Integer, default=0)
+    details: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+    index_generation_id: Mapped[str | None] = mapped_column(String(36))
+
+
+class DocumentBlock(Identity, Base):
+    __tablename__ = "document_blocks"
+    __table_args__ = (UniqueConstraint("document_id", "ordinal"),)
+    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)
+    ordinal: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(30))
+    text: Mapped[str] = mapped_column(Text)
+    heading: Mapped[str | None] = mapped_column(Text)
+    location: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+    language: Mapped[str] = mapped_column(String(20))
+    scripts: Mapped[list[str]] = mapped_column(Json, default=list)
+
+
+class DocumentChunk(Identity, Base):
+    __tablename__ = "document_chunks"
+    __table_args__ = (
+        UniqueConstraint("document_id", "chunker_version", "ordinal"),
+        Index(
+            "ix_document_chunks_english_fts",
+            sql_text(
+                "to_tsvector('english'::regconfig, (coalesce(heading, '') || ' ') || normalized_text)"
+            ),
+            postgresql_using="gin",
+            postgresql_where=sql_text("language ILIKE 'en%'"),
+        ).ddl_if(dialect="postgresql"),
+        Index(
+            "ix_document_chunks_simple_fts",
+            sql_text(
+                "to_tsvector('simple'::regconfig, (coalesce(heading, '') || ' ') || normalized_text)"
+            ),
+            postgresql_using="gin",
+            postgresql_where=sql_text("language NOT ILIKE 'en%'"),
+        ).ddl_if(dialect="postgresql"),
+    )
+    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)
+    ordinal: Mapped[int] = mapped_column(Integer)
+    chunker_version: Mapped[str] = mapped_column(String(120))
+    text: Mapped[str] = mapped_column(Text)
+    normalized_text: Mapped[str] = mapped_column(Text)
+    heading: Mapped[str | None] = mapped_column(Text)
+    location: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+    language: Mapped[str] = mapped_column(String(20))
+    block_ids: Mapped[list[str]] = mapped_column(Json, default=list)
+    token_count: Mapped[int] = mapped_column(Integer)
+    parent_id: Mapped[str | None] = mapped_column(String(36))
+    previous_id: Mapped[str | None] = mapped_column(String(36))
+    next_id: Mapped[str | None] = mapped_column(String(36))
+
+
+class IndexGeneration(Identity, Base):
+    __tablename__ = "index_generations"
+    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)
+    source_version: Mapped[int] = mapped_column(Integer)
+    content_sha256: Mapped[str] = mapped_column(String(64))
+    extractor_version: Mapped[str] = mapped_column(String(120))
+    chunker_version: Mapped[str] = mapped_column(String(120))
+    model_id: Mapped[str] = mapped_column(String(255))
+    dimensions: Mapped[int] = mapped_column(Integer)
+    vector_metric: Mapped[str] = mapped_column(String(30), default="cosine")
+    status: Mapped[str] = mapped_column(String(30), default="building")
+    config_json: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+    fingerprint: Mapped[str] = mapped_column(String(64), unique=True)
+    ready_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ChunkEmbedding(Identity, Base):
+    __tablename__ = "chunk_embeddings"
+    __table_args__ = (UniqueConstraint("generation_id", "chunk_id"),)
+    generation_id: Mapped[str] = mapped_column(
+        ForeignKey("index_generations.id"), index=True
+    )
+    chunk_id: Mapped[str] = mapped_column(ForeignKey("document_chunks.id"), index=True)
+    embedding: Mapped[Any] = mapped_column(Vector())

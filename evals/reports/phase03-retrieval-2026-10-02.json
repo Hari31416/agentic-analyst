@@ -1,0 +1,216 @@
+{
+  "chunker_version": "structure-token-v2",
+  "extractor_version": "pdf-docx-text-v1",
+  "documents": [
+    "en.docx",
+    "en.pdf",
+    "hi.docx",
+    "hi.pdf"
+  ],
+  "queries": {
+    "en": "scheme S1 active annual income maximum eligibility inclusive threshold",
+    "hi": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+  },
+  "support_metrics": {
+    "en/text": {
+      "ranks": {
+        "en.docx": null,
+        "hi.docx": null,
+        "en.pdf": null,
+        "hi.pdf": null
+      },
+      "recall_at": {
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "document_recall_at_20": 0.0,
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 0
+        }
+      ]
+    },
+    "en/vector": {
+      "ranks": {
+        "en.docx": 2,
+        "hi.docx": 5,
+        "en.pdf": 1,
+        "hi.pdf": 4
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "document_recall_at_20": 1.0,
+      "trace": [
+        {
+          "stage": "dense",
+          "status": "ready",
+          "model_id": "intfloat/multilingual-e5-small",
+          "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimensions": 384,
+          "candidate_count": 8,
+          "selected_document_count": 4,
+          "matching_generation_count": 4
+        }
+      ]
+    },
+    "en/hybrid": {
+      "ranks": {
+        "en.docx": 2,
+        "hi.docx": 5,
+        "en.pdf": 1,
+        "hi.pdf": 4
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "document_recall_at_20": 1.0,
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 0
+        },
+        {
+          "stage": "dense",
+          "status": "ready",
+          "model_id": "intfloat/multilingual-e5-small",
+          "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimensions": 384,
+          "candidate_count": 8,
+          "selected_document_count": 4,
+          "matching_generation_count": 4
+        },
+        {
+          "stage": "fusion",
+          "status": "ready",
+          "rrf_k": 60
+        }
+      ]
+    },
+    "hi/text": {
+      "ranks": {
+        "en.docx": null,
+        "hi.docx": null,
+        "en.pdf": null,
+        "hi.pdf": null
+      },
+      "recall_at": {
+        "3": 0.0,
+        "5": 0.0,
+        "10": 0.0
+      },
+      "document_recall_at_20": 0.0,
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 0
+        }
+      ]
+    },
+    "hi/vector": {
+      "ranks": {
+        "en.docx": 6,
+        "hi.docx": 2,
+        "en.pdf": 4,
+        "hi.pdf": 3
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 0.75,
+        "10": 1.0
+      },
+      "document_recall_at_20": 1.0,
+      "trace": [
+        {
+          "stage": "dense",
+          "status": "ready",
+          "model_id": "intfloat/multilingual-e5-small",
+          "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimensions": 384,
+          "candidate_count": 8,
+          "selected_document_count": 4,
+          "matching_generation_count": 4
+        }
+      ]
+    },
+    "hi/hybrid": {
+      "ranks": {
+        "en.docx": 6,
+        "hi.docx": 2,
+        "en.pdf": 4,
+        "hi.pdf": 3
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 0.75,
+        "10": 1.0
+      },
+      "document_recall_at_20": 1.0,
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 0
+        },
+        {
+          "stage": "dense",
+          "status": "ready",
+          "model_id": "intfloat/multilingual-e5-small",
+          "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimensions": 384,
+          "candidate_count": 8,
+          "selected_document_count": 4,
+          "matching_generation_count": 4
+        },
+        {
+          "stage": "fusion",
+          "status": "ready",
+          "rrf_k": 60
+        }
+      ]
+    }
+  },
+  "short_lexical_diagnostics": {
+    "en": {
+      "query": "income",
+      "candidate_count": 5,
+      "documents": [
+        "en.docx",
+        "en.pdf",
+        "hi.pdf"
+      ],
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 5
+        }
+      ]
+    },
+    "hi": {
+      "query": "आय",
+      "candidate_count": 4,
+      "documents": [
+        "hi.docx",
+        "hi.pdf"
+      ],
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 4
+        }
+      ]
+    }
+  },
+  "previous_chunker_v1_hybrid_support_hits_at_3": "2/8"
+}

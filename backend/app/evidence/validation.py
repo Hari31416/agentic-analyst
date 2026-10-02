@@ -31,6 +31,12 @@ def validate_answer(session: Session, run: Run, answer: FinalAnswer) -> None:
             raise ValueError(
                 "evidence comes from an unselected source or another thread"
             )
+        versions = evidence.details.get("source_versions", {})
+        if any(
+            run.config.get("source_versions", {}).get(identity) != version
+            for identity, version in versions.items()
+        ):
+            raise ValueError("evidence comes from another selected source version")
     inline = re.findall(r"\[(?:evidence|artifact):([a-fA-F0-9-]{36})\]", answer.text)
     declared = {str(i) for i in [*answer.evidence_ids, *answer.artifact_ids]}
     if not set(inline).issubset(declared):

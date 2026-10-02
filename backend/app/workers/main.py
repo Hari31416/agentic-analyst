@@ -10,7 +10,7 @@ from app.config import get_settings
 from app.db.models import Artifact
 from app.db.session import factory
 from app.storage.factory import get_storage
-from app.workers.queue import Claim, LeaseLost, claim, fail, finish, heartbeat
+from app.workers.queue import Claim, LeaseLost, claim, fail, finish, heartbeat, owned
 from app.agent.runtime import RunRuntime, RunCancelled
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,8 @@ async def run_worker() -> None:
                 if task.kind == "agent_run":
                     await execute_run(task, stop)
                     result = {"run_id": task.run_id}
+                elif task.kind in {"ingest_document", "index_document"}:
+                    result = await execute_document(task, stop)
                 else:
                     result = await asyncio.to_thread(maintenance, task)
                 with factory()() as session, session.begin():
@@ -98,6 +100,41 @@ async def run_worker() -> None:
                                         },
                                     },
                                 )
+                        if task.kind in {"ingest_document", "index_document"}:
+                            from app.db.models import Document, Job
+                            from sqlalchemy import select
+
+                            if (
+                                session.scalar(
+                                    select(Job)
+                                    .where(owned(task.id, task.token))
+                                    .with_for_update()
+                                )
+                                is None
+                            ):
+                                raise LeaseLost("document job ownership lost")
+                            document = session.get(
+                                Document, task.payload.get("document_id")
+                            )
+                            if document is not None:
+                                document.state = (
+                                    "failed"
+                                    if task.kind == "ingest_document"
+                                    else "ready"
+                                )
+                                document.stage = (
+                                    "failed"
+                                    if task.kind == "ingest_document"
+                                    else "index_degraded"
+                                )
+                                document.progress = 100
+                                document.details = {
+                                    **document.details,
+                                    "error": {
+                                        "code": "worker_failed",
+                                        "message": "Document processing stopped unexpectedly; retained extraction remains inspectable.",
+                                    },
+                                }
                         fail(
                             session,
                             task.id,
@@ -147,6 +184,49 @@ async def execute_run(task: Claim, stop: asyncio.Event) -> None:
         observer.cancel()
         with suppress(asyncio.CancelledError, RunCancelled, LeaseLost):
             await observer
+
+
+async def execute_document(task: Claim, stop: asyncio.Event) -> dict[str, object]:
+    from app.sources.documents import process_document
+    from app.db.models import Job
+    from sqlalchemy import select
+    from sqlalchemy.orm import Session
+
+    settings = get_settings()
+
+    def guard(session: Session) -> None:
+        if (
+            stop.is_set()
+            or session.scalar(
+                select(Job).where(owned(task.id, task.token)).with_for_update()
+            )
+            is None
+        ):
+            raise LeaseLost("document job ownership lost")
+
+    from app.api.document_indexes import process_index
+
+    operation = process_index if task.kind == "index_document" else process_document
+    work = asyncio.create_task(
+        asyncio.to_thread(
+            operation,
+            str(task.payload["document_id"]),
+            settings,
+            factory(),
+            guard,
+        )
+    )
+    try:
+        while not work.done():
+            done, _ = await asyncio.wait({work}, timeout=settings.job_lease_seconds / 3)
+            if done:
+                break
+            with factory()() as session, session.begin():
+                heartbeat(session, task.id, task.token, settings.job_lease_seconds)
+        return await work
+    finally:
+        if not work.done():
+            work.cancel()
 
 
 if __name__ == "__main__":

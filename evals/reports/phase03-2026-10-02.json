@@ -1,0 +1,613 @@
+{
+  "phase": "03",
+  "timestamp": "2026-10-02T14:00:58.952088+00:00",
+  "model": "gpt-oss-120b",
+  "embedding_model": "intfloat/multilingual-e5-small",
+  "embedding_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+  "embedding_dimensions": 384,
+  "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609",
+  "workspace_id": "5bd0be0a-c3aa-4d3a-a1ed-849d0e8f34a6",
+  "retrieval": {
+    "scope": "one selected source version per query",
+    "cases": [
+      {
+        "document": "applications-hi.docx",
+        "document_id": "f821da57-3c13-4733-8536-b0d142b921ca",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-hi.docx",
+        "document_id": "f821da57-3c13-4733-8536-b0d142b921ca",
+        "query_language": "en",
+        "mode": "vector",
+        "actual_mode": "vector",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "a951a00a-6469-4ead-8d05-f7097ce8b7ea"
+        ]
+      },
+      {
+        "document": "applications-hi.docx",
+        "document_id": "f821da57-3c13-4733-8536-b0d142b921ca",
+        "query_language": "en",
+        "mode": "hybrid",
+        "actual_mode": "hybrid",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "a951a00a-6469-4ead-8d05-f7097ce8b7ea"
+        ]
+      },
+      {
+        "document": "applications-hi.docx",
+        "document_id": "f821da57-3c13-4733-8536-b0d142b921ca",
+        "query_language": "hi",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "a951a00a-6469-4ead-8d05-f7097ce8b7ea"
+        ]
+      },
+      {
+        "document": "applications-hi.docx",
+        "document_id": "f821da57-3c13-4733-8536-b0d142b921ca",
+        "query_language": "hi",
+        "mode": "vector",
+        "actual_mode": "vector",
+        "support_rank": 2,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "a951a00a-6469-4ead-8d05-f7097ce8b7ea"
+        ]
+      },
+      {
+        "document": "applications-hi.docx",
+        "document_id": "f821da57-3c13-4733-8536-b0d142b921ca",
+        "query_language": "hi",
+        "mode": "hybrid",
+        "actual_mode": "hybrid",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "a951a00a-6469-4ead-8d05-f7097ce8b7ea"
+        ]
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "en",
+        "mode": "vector",
+        "actual_mode": "vector",
+        "support_rank": 2,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080"
+        ]
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "en",
+        "mode": "hybrid",
+        "actual_mode": "hybrid",
+        "support_rank": 2,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080"
+        ]
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "hi",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "hi",
+        "mode": "vector",
+        "actual_mode": "vector",
+        "support_rank": 2,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080"
+        ]
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "hi",
+        "mode": "hybrid",
+        "actual_mode": "hybrid",
+        "support_rank": 2,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080"
+        ]
+      },
+      {
+        "document": "applications-hi.pdf",
+        "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-hi.pdf",
+        "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+        "query_language": "en",
+        "mode": "vector",
+        "actual_mode": "vector",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44"
+        ]
+      },
+      {
+        "document": "applications-hi.pdf",
+        "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+        "query_language": "en",
+        "mode": "hybrid",
+        "actual_mode": "hybrid",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44"
+        ]
+      },
+      {
+        "document": "applications-hi.pdf",
+        "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+        "query_language": "hi",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44"
+        ]
+      },
+      {
+        "document": "applications-hi.pdf",
+        "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+        "query_language": "hi",
+        "mode": "vector",
+        "actual_mode": "vector",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44"
+        ]
+      },
+      {
+        "document": "applications-hi.pdf",
+        "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+        "query_language": "hi",
+        "mode": "hybrid",
+        "actual_mode": "hybrid",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44"
+        ]
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "en",
+        "mode": "vector",
+        "actual_mode": "vector",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "e4c32426-3965-4c44-a816-a30bec350f38"
+        ]
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "en",
+        "mode": "hybrid",
+        "actual_mode": "hybrid",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "e4c32426-3965-4c44-a816-a30bec350f38"
+        ]
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "hi",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "hi",
+        "mode": "vector",
+        "actual_mode": "vector",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "e4c32426-3965-4c44-a816-a30bec350f38"
+        ]
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "hi",
+        "mode": "hybrid",
+        "actual_mode": "hybrid",
+        "support_rank": 1,
+        "recall_at_3": 1,
+        "recall_at_5": 1,
+        "recall_at_10": 1,
+        "supporting_chunk_ids": [
+          "e4c32426-3965-4c44-a816-a30bec350f38"
+        ]
+      }
+    ],
+    "recall": {
+      "text": {
+        "at_3": 0.25,
+        "at_5": 0.25,
+        "at_10": 0.25
+      },
+      "vector": {
+        "at_3": 1.0,
+        "at_5": 1.0,
+        "at_10": 1.0
+      },
+      "hybrid": {
+        "at_3": 1.0,
+        "at_5": 1.0,
+        "at_10": 1.0
+      }
+    },
+    "misses_at_3": [
+      {
+        "document": "applications-hi.docx",
+        "document_id": "f821da57-3c13-4733-8536-b0d142b921ca",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "hi",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-hi.pdf",
+        "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "hi",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      }
+    ],
+    "misses_at_10": [
+      {
+        "document": "applications-hi.docx",
+        "document_id": "f821da57-3c13-4733-8536-b0d142b921ca",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.docx",
+        "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+        "query_language": "hi",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-hi.pdf",
+        "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "en",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      },
+      {
+        "document": "applications-en.pdf",
+        "document_id": "1c3523c3-f173-4036-a968-280ff7c61f4c",
+        "query_language": "hi",
+        "mode": "text",
+        "actual_mode": "text",
+        "support_rank": null,
+        "recall_at_3": 0,
+        "recall_at_5": 0,
+        "recall_at_10": 0,
+        "supporting_chunk_ids": []
+      }
+    ],
+    "scope_and_no_evidence_checked": true,
+    "previous_chunker_baseline": {
+      "chunker": "utf8-byte-window-v1",
+      "scope": "one selected source version per query",
+      "dense_and_hybrid_recall_at_3": 0.75,
+      "misses": [
+        {
+          "document": "applications-hi.docx",
+          "query_language": "en",
+          "support_rank": 7
+        },
+        {
+          "document": "applications-hi.docx",
+          "query_language": "hi",
+          "support_rank": 7
+        }
+      ],
+      "change": "Group narrative blocks and bound chunks with the pinned tokenizer."
+    }
+  },
+  "cases": [
+    {
+      "run_id": "a5bd2b1a-e194-450a-a858-999ac51042fa",
+      "thread_id": "ac2094ac-f98b-4291-9efa-4329390ae9e8",
+      "language": "en-IN",
+      "document_id": "29414200-17ea-432e-a0e1-a9a952762dfe",
+      "source_id": "b5e0b055-30f4-40b0-bc9b-3172be17b92b",
+      "eligible_count": 2,
+      "total_inr": "25000.00",
+      "summary_artifact_id": "2dc76292-1d0b-531e-8dc1-78ebb8b0a81c",
+      "exclusions_artifact_id": "c5ca6024-63c6-5f1b-aede-0dc705ec080e",
+      "chart_artifact_id": "755bb48e-7499-5c0c-af83-be4d055cd322",
+      "evidence_ids": [
+        "3027013a-26e7-48dd-99cf-cbdaa58e7aaa",
+        "d0ebd593-3b40-40e8-90e7-f19e447e1d0d",
+        "d61b19a1-6a27-4a7c-bc3c-0bca0ac51694"
+      ],
+      "citation_history_verified": true,
+      "tools": [
+        "list_sources",
+        "search_documents",
+        "dataset_profile",
+        "run_sql",
+        "register_dataset",
+        "run_sql",
+        "run_python",
+        "inspect_artifact",
+        "inspect_artifact",
+        "run_python",
+        "run_python",
+        "run_python"
+      ],
+      "cleanup": "complete",
+      "exclusion_rows_verified": true
+    },
+    {
+      "run_id": "f71fe6af-aae7-4d06-8ef5-d861e3fd1e94",
+      "thread_id": "5a1c28d5-badf-4ae3-a578-0e2ec97ab6d5",
+      "language": "hi-IN",
+      "document_id": "95db3000-6990-4fc4-b81b-1678d60b8b94",
+      "source_id": "f8b7ce19-18c8-4aaa-8c43-4a716db4411d",
+      "eligible_count": 2,
+      "total_inr": "25000.00",
+      "summary_artifact_id": "038cdfb2-33d2-464a-a10b-2948297ac336",
+      "exclusions_artifact_id": "eff43447-0e34-400d-98d9-a4df0d52c4fc",
+      "chart_artifact_id": "587d0e95-399e-5397-bb03-10334d585eaa",
+      "evidence_ids": [
+        "004749e8-dc34-4438-acea-c27c21097a0d",
+        "843484d6-4700-4851-bf77-87f8ef73387d",
+        "83f769e3-efd5-4560-836f-7d65bcf42e3c",
+        "6d5fc060-540d-451c-8382-684fb261ef13",
+        "ba1da0f7-ce2a-4ec4-a338-a5caf5ddeb0c"
+      ],
+      "citation_history_verified": true,
+      "tools": [
+        "list_sources",
+        "search_documents",
+        "search_documents",
+        "search_documents",
+        "search_documents",
+        "dataset_profile",
+        "run_sql",
+        "run_sql",
+        "run_sql",
+        "run_python"
+      ],
+      "cleanup": "complete",
+      "exclusion_rows_verified": true
+    }
+  ],
+  "database_rows_unchanged": {
+    "before": "74ff8a25da8e5c565c655401b804fa7152445a8906159769f776afc1a33eeddf",
+    "after": "74ff8a25da8e5c565c655401b804fa7152445a8906159769f776afc1a33eeddf"
+  },
+  "original_hashes_unchanged": true,
+  "unsupported_question": {
+    "run_id": "06bda29a-b1b0-4d43-b2c7-6d87092c8a3a",
+    "state": "awaiting_clarification",
+    "answer": "I couldn't find any mention of scheme Z9 or its annual income threshold in the currently selected documents. Could you please provide the specific document that contains the criteria for scheme Z9?"
+  },
+  "extractor_version": "pdf-docx-text-v1",
+  "chunker_version": "structure-token-v2",
+  "cross_document_retrieval_report": "evals/reports/phase03-retrieval-2026-10-02.json",
+  "verification": {
+    "deterministic_tests_passed": 128,
+    "infrastructure_tests_passed": 35,
+    "local_embedding_fixture_tests_passed": 1,
+    "frontend_typecheck_build_format": "passed",
+    "full_ui_verification": "deferred by user"
+  }
+}

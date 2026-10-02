@@ -7,7 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react'
 import {
   AlertCircle,
   ArrowDown,
@@ -24,7 +24,7 @@ import {
   ShieldCheck,
   Sparkles,
   X,
-} from "lucide-react";
+} from 'lucide-react'
 import {
   AnalysisRun,
   AnswerLanguage,
@@ -33,147 +33,147 @@ import {
   RunArtifact,
   RunEvent,
   chatApi,
-} from "./chatApi";
-import { DatasetSummary } from "./structuredApi";
-import { EvidenceView, documentApi } from "./documentApi";
-import "./chat.css";
+} from './chatApi'
+import { DatasetSummary } from './structuredApi'
+import { EvidenceView, documentApi } from './documentApi'
+import './chat.css'
 
 export type ChatSource = {
-  id: string;
-  display_name: string;
-  kind: string;
-  state: string;
-  version: number;
-};
+  id: string
+  display_name: string
+  kind: string
+  state: string
+  version: number
+}
 
 type ChatPanelProps = {
-  threadId: string;
-  sources: ChatSource[];
-  datasets: DatasetSummary[];
-  modelAvailable: boolean;
-  modelMessage?: string;
-};
+  threadId: string
+  sources: ChatSource[]
+  datasets: DatasetSummary[]
+  modelAvailable: boolean
+  modelMessage?: string
+}
 
 type RetryInput = {
-  text: string;
-  selectedSourceIds: string[];
-  selectedDatasetIds: string[];
-  language: AnswerLanguage;
-};
+  text: string
+  selectedSourceIds: string[]
+  selectedDatasetIds: string[]
+  language: AnswerLanguage
+}
 
-type ProgressItem = { id: string; text: string; kind: string };
+type ProgressItem = { id: string; text: string; kind: string }
 
-const liveStates = new Set(["queued", "running"]);
+const liveStates = new Set(['queued', 'running'])
 
 function isLive(run: AnalysisRun): boolean {
-  return liveStates.has(run.state) || run.outcome?.cleanup === "pending";
+  return liveStates.has(run.state) || run.outcome?.cleanup === 'pending'
 }
 
 function labelForState(runOrState: AnalysisRun | string): string {
-  const state = typeof runOrState === "string" ? runOrState : runOrState.state;
+  const state = typeof runOrState === 'string' ? runOrState : runOrState.state
   if (
-    typeof runOrState !== "string" &&
-    runOrState.outcome?.cleanup === "pending"
+    typeof runOrState !== 'string' &&
+    runOrState.outcome?.cleanup === 'pending'
   ) {
-    return "Stopping sandbox";
+    return 'Stopping sandbox'
   }
   const labels: Record<string, string> = {
-    queued: "Waiting to start",
-    running: "Working through the sources",
-    awaiting_clarification: "Needs a follow-up",
-    completed: "Complete",
-    failed: "Run failed",
-    cancelled: "Stopped",
-    budget_exhausted: "Run limit reached",
-  };
-  return labels[state] ?? state.replaceAll("_", " ");
+    queued: 'Waiting to start',
+    running: 'Working through the sources',
+    awaiting_clarification: 'Needs a follow-up',
+    completed: 'Complete',
+    failed: 'Run failed',
+    cancelled: 'Stopped',
+    budget_exhausted: 'Run limit reached',
+  }
+  return labels[state] ?? state.replaceAll('_', ' ')
 }
 
 function safeText(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim()
+  return typeof value === 'string' && value.trim()
     ? value.trim().slice(0, 300)
-    : undefined;
+    : undefined
 }
 
 function retrySelectionKey(threadId: string, runId: string): string {
-  return `fieldnote:retry-selection:${threadId}:${runId}`;
+  return `fieldnote:retry-selection:${threadId}:${runId}`
 }
 
 function eventSummary(event: RunEvent): string {
-  const payload = event.payload ?? {};
+  const payload = event.payload ?? {}
   switch (event.type) {
-    case "status":
+    case 'status':
       return (
         safeText(payload.message) ??
         safeText(payload.status) ??
-        "Updating run status"
-      );
-    case "tool_started": {
-      const name = safeText(payload.tool_name) ?? safeText(payload.name);
-      return name ? `Started ${name}` : "Started a source operation";
+        'Updating run status'
+      )
+    case 'tool_started': {
+      const name = safeText(payload.tool_name) ?? safeText(payload.name)
+      return name ? `Started ${name}` : 'Started a source operation'
     }
-    case "tool_finished": {
-      const name = safeText(payload.tool_name) ?? safeText(payload.name);
-      return name ? `Finished ${name}` : "Source operation finished";
+    case 'tool_finished': {
+      const name = safeText(payload.tool_name) ?? safeText(payload.name)
+      return name ? `Finished ${name}` : 'Source operation finished'
     }
-    case "answer":
-      return "Answer ready";
-    case "error":
-      return safeText(payload.message) ?? "The run reported an error";
-    case "terminal":
-      return labelForState(safeText(payload.state) ?? "completed");
+    case 'answer':
+      return 'Answer ready'
+    case 'error':
+      return safeText(payload.message) ?? 'The run reported an error'
+    case 'terminal':
+      return labelForState(safeText(payload.state) ?? 'completed')
     default:
-      return "Run updated";
+      return 'Run updated'
   }
 }
 
 function answerFromEvent(event: RunEvent): ChatMessage | null {
   const textValue =
-    event.payload.text ?? event.payload.answer ?? event.payload.content;
+    event.payload.text ?? event.payload.answer ?? event.payload.content
   const text =
-    typeof textValue === "string" && textValue.trim()
+    typeof textValue === 'string' && textValue.trim()
       ? textValue.trim().slice(0, 20_000)
-      : undefined;
-  if (!text) return null;
-  const references = event.payload.references;
+      : undefined
+  if (!text) return null
+  const references = event.payload.references
   const referenceObject =
-    references && typeof references === "object"
+    references && typeof references === 'object'
       ? (references as Record<string, unknown>)
-      : {};
+      : {}
   const evidenceValues =
-    referenceObject.evidence_ids ?? event.payload.evidence_ids;
+    referenceObject.evidence_ids ?? event.payload.evidence_ids
   const artifactValues =
-    referenceObject.artifact_ids ?? event.payload.artifact_ids;
+    referenceObject.artifact_ids ?? event.payload.artifact_ids
   const evidenceIds = Array.isArray(evidenceValues)
-    ? evidenceValues.filter((item): item is string => typeof item === "string")
-    : [];
+    ? evidenceValues.filter((item): item is string => typeof item === 'string')
+    : []
   const artifactIds = Array.isArray(artifactValues)
-    ? artifactValues.filter((item): item is string => typeof item === "string")
-    : [];
+    ? artifactValues.filter((item): item is string => typeof item === 'string')
+    : []
   return {
     id: `event-${event.id}`,
-    role: "assistant",
+    role: 'assistant',
     content: text,
     run_id: event.run_id,
     references: { evidence_ids: evidenceIds, artifact_ids: artifactIds },
-  };
+  }
 }
 
 function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 function SourceGlyph({ kind }: { kind: string }) {
-  const structured = /csv|sheet|spreadsheet|table|database/i.test(kind);
-  return structured ? <FileSpreadsheet size={15} /> : <FileText size={15} />;
+  const structured = /csv|sheet|spreadsheet|table|database/i.test(kind)
+  return structured ? <FileSpreadsheet size={15} /> : <FileText size={15} />
 }
 
 function datasetLabel(dataset: DatasetSummary): string {
-  if (typeof dataset.identity === "string") return dataset.identity;
-  const values = Object.values(dataset.identity);
-  return values.length ? values.map(String).join(" · ") : "Dataset";
+  if (typeof dataset.identity === 'string') return dataset.identity
+  const values = Object.values(dataset.identity)
+  return values.length ? values.map(String).join(' · ') : 'Dataset'
 }
 
 function effectiveDatasetIds(
@@ -181,22 +181,20 @@ function effectiveDatasetIds(
   selectedDatasetIds: string[],
   datasets: DatasetSummary[],
 ): string[] {
-  const selected = new Set(selectedDatasetIds);
+  const selected = new Set(selectedDatasetIds)
   const sourceHasSpecificSelection = sourceIds.some((sourceId) =>
     datasets.some(
       (dataset) => dataset.source_id === sourceId && selected.has(dataset.id),
     ),
-  );
-  if (!sourceHasSpecificSelection) return [];
+  )
+  if (!sourceHasSpecificSelection) return []
   return sourceIds.flatMap((sourceId) => {
     const available = datasets.filter(
       (dataset) => dataset.source_id === sourceId,
-    );
-    const specific = available.filter((dataset) => selected.has(dataset.id));
-    return (specific.length ? specific : available).map(
-      (dataset) => dataset.id,
-    );
-  });
+    )
+    const specific = available.filter((dataset) => selected.has(dataset.id))
+    return (specific.length ? specific : available).map((dataset) => dataset.id)
+  })
 }
 
 function ChatPanel({
@@ -206,51 +204,51 @@ function ChatPanel({
   modelAvailable,
   modelMessage,
 }: ChatPanelProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [runs, setRuns] = useState<AnalysisRun[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [runs, setRuns] = useState<AnalysisRun[]>([])
   const [artifactLists, setArtifactLists] = useState<
     Record<string, RunArtifact[]>
-  >({});
-  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
-  const [selectedDatasetIds, setSelectedDatasetIds] = useState<string[]>([]);
-  const [language, setLanguage] = useState<AnswerLanguage>("en-IN");
-  const [draft, setDraft] = useState("");
-  const [activeRun, setActiveRun] = useState<AnalysisRun | null>(null);
-  const [progress, setProgress] = useState<ProgressItem[]>([]);
-  const [liveAnswer, setLiveAnswer] = useState<ChatMessage | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
-  const [retryingRunId, setRetryingRunId] = useState("");
-  const [error, setError] = useState("");
-  const [evidenceId, setEvidenceId] = useState("");
-  const [evidence, setEvidence] = useState<EvidenceView | null>(null);
-  const [loadingEvidence, setLoadingEvidence] = useState(false);
-  const [evidenceError, setEvidenceError] = useState("");
+  >({})
+  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([])
+  const [selectedDatasetIds, setSelectedDatasetIds] = useState<string[]>([])
+  const [language, setLanguage] = useState<AnswerLanguage>('en-IN')
+  const [draft, setDraft] = useState('')
+  const [activeRun, setActiveRun] = useState<AnalysisRun | null>(null)
+  const [progress, setProgress] = useState<ProgressItem[]>([])
+  const [liveAnswer, setLiveAnswer] = useState<ChatMessage | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [retryingRunId, setRetryingRunId] = useState('')
+  const [error, setError] = useState('')
+  const [evidenceId, setEvidenceId] = useState('')
+  const [evidence, setEvidence] = useState<EvidenceView | null>(null)
+  const [loadingEvidence, setLoadingEvidence] = useState(false)
+  const [evidenceError, setEvidenceError] = useState('')
   const [optimisticMessage, setOptimisticMessage] =
-    useState<ChatMessage | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const sequenceRef = useRef(0);
-  const activeRunIdRef = useRef("");
-  const retryInputsRef = useRef(new Map<string, RetryInput>());
-  const selectedSourceIdsRef = useRef(selectedSourceIds);
-  selectedSourceIdsRef.current = selectedSourceIds;
+    useState<ChatMessage | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const sequenceRef = useRef(0)
+  const activeRunIdRef = useRef('')
+  const retryInputsRef = useRef(new Map<string, RetryInput>())
+  const selectedSourceIdsRef = useRef(selectedSourceIds)
+  selectedSourceIdsRef.current = selectedSourceIds
 
   async function openEvidence(id: string) {
-    setEvidenceId(id);
-    setEvidence(null);
-    setEvidenceError("");
-    setLoadingEvidence(true);
+    setEvidenceId(id)
+    setEvidence(null)
+    setEvidenceError('')
+    setLoadingEvidence(true)
     try {
-      setEvidence(await documentApi.evidence(id));
+      setEvidence(await documentApi.evidence(id))
     } catch (reason) {
       setEvidenceError(
         reason instanceof Error
           ? reason.message
-          : "Could not resolve this evidence reference.",
-      );
+          : 'Could not resolve this evidence reference.',
+      )
     } finally {
-      setLoadingEvidence(false);
+      setLoadingEvidence(false)
     }
   }
 
@@ -258,52 +256,52 @@ function ChatPanel({
     const [nextMessages, nextRuns] = await Promise.all([
       chatApi.messages(threadId),
       chatApi.runs(threadId),
-    ]);
-    setMessages(nextMessages);
-    setRuns(nextRuns);
-    setOptimisticMessage(null);
-    const current = nextRuns.find(isLive) ?? null;
-    setActiveRun(current);
-    setLiveAnswer(null);
-    setProgress([]);
-    activeRunIdRef.current = current?.id ?? "";
-  }, [threadId]);
+    ])
+    setMessages(nextMessages)
+    setRuns(nextRuns)
+    setOptimisticMessage(null)
+    const current = nextRuns.find(isLive) ?? null
+    setActiveRun(current)
+    setLiveAnswer(null)
+    setProgress([])
+    activeRunIdRef.current = current?.id ?? ''
+  }, [threadId])
 
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError("");
-    setEvidenceId("");
-    setEvidence(null);
-    setEvidenceError("");
-    setMessages([]);
-    setRuns([]);
-    setActiveRun(null);
-    setLiveAnswer(null);
-    setOptimisticMessage(null);
-    setProgress([]);
-    activeRunIdRef.current = "";
-    retryInputsRef.current.clear();
+    let active = true
+    setLoading(true)
+    setError('')
+    setEvidenceId('')
+    setEvidence(null)
+    setEvidenceError('')
+    setMessages([])
+    setRuns([])
+    setActiveRun(null)
+    setLiveAnswer(null)
+    setOptimisticMessage(null)
+    setProgress([])
+    activeRunIdRef.current = ''
+    retryInputsRef.current.clear()
     Promise.all([chatApi.messages(threadId), chatApi.runs(threadId)])
       .then(([nextMessages, nextRuns]) => {
-        if (!active) return;
-        setMessages(nextMessages);
-        setRuns(nextRuns);
-        const current = nextRuns.find(isLive) ?? null;
-        setActiveRun(current);
-        activeRunIdRef.current = current?.id ?? "";
+        if (!active) return
+        setMessages(nextMessages)
+        setRuns(nextRuns)
+        const current = nextRuns.find(isLive) ?? null
+        setActiveRun(current)
+        activeRunIdRef.current = current?.id ?? ''
         for (const run of nextRuns) {
-          if (run.state !== "failed") continue;
+          if (run.state !== 'failed') continue
           const userMessage = [...nextMessages]
             .reverse()
-            .find((item) => item.run_id === run.id && item.role === "user");
+            .find((item) => item.run_id === run.id && item.role === 'user')
           if (userMessage) {
-            let saved: Partial<RetryInput> = {};
+            let saved: Partial<RetryInput> = {}
             try {
               saved = JSON.parse(
                 sessionStorage.getItem(retrySelectionKey(threadId, run.id)) ??
-                  "{}",
-              );
+                  '{}',
+              )
             } catch {
               // Use the visible message and current source selection if browser storage is unavailable.
             }
@@ -313,8 +311,8 @@ function ChatPanel({
                 run.selected_source_ids ?? saved.selectedSourceIds ?? [],
               selectedDatasetIds:
                 run.selected_dataset_ids ?? saved.selectedDatasetIds ?? [],
-              language: run.answer_language ?? saved.language ?? "en-IN",
-            });
+              language: run.answer_language ?? saved.language ?? 'en-IN',
+            })
           }
         }
       })
@@ -323,32 +321,32 @@ function ChatPanel({
           setError(
             reason instanceof Error
               ? reason.message
-              : "Could not load this conversation.",
-          );
+              : 'Could not load this conversation.',
+          )
       })
-      .finally(() => active && setLoading(false));
+      .finally(() => active && setLoading(false))
     return () => {
-      active = false;
-    };
-  }, [threadId]);
+      active = false
+    }
+  }, [threadId])
 
   useEffect(() => {
-    const allowed = new Set(sources.map((source) => source.id));
-    setSelectedSourceIds((current) => current.filter((id) => allowed.has(id)));
-  }, [sources]);
+    const allowed = new Set(sources.map((source) => source.id))
+    setSelectedSourceIds((current) => current.filter((id) => allowed.has(id)))
+  }, [sources])
 
   useEffect(() => {
-    const checkedSources = new Set(selectedSourceIds);
+    const checkedSources = new Set(selectedSourceIds)
     const allowed = new Set(
       datasets
         .filter((dataset) => checkedSources.has(dataset.source_id))
         .map((dataset) => dataset.id),
-    );
-    setSelectedDatasetIds((current) => current.filter((id) => allowed.has(id)));
-  }, [datasets, selectedSourceIds]);
+    )
+    setSelectedDatasetIds((current) => current.filter((id) => allowed.has(id)))
+  }, [datasets, selectedSourceIds])
 
   useEffect(() => {
-    let active = true;
+    let active = true
     const runsWithArtifacts = new Set(
       messages
         .filter(
@@ -357,7 +355,7 @@ function ChatPanel({
             message.run_id,
         )
         .map((message) => message.run_id as string),
-    );
+    )
     const runIds = runs
       .filter(
         (run) =>
@@ -365,31 +363,31 @@ function ChatPanel({
           runsWithArtifacts.has(run.id),
       )
       .slice(0, 12)
-      .map((run) => run.id);
+      .map((run) => run.id)
     if (!runIds.length) {
-      setArtifactLists({});
-      return;
+      setArtifactLists({})
+      return
     }
     Promise.all(
       runIds.map(async (runId) => {
         try {
-          return [runId, await chatApi.artifacts(runId)] as const;
+          return [runId, await chatApi.artifacts(runId)] as const
         } catch {
-          return [runId, []] as const;
+          return [runId, []] as const
         }
       }),
     ).then((entries) => {
-      if (active) setArtifactLists(Object.fromEntries(entries));
-    });
+      if (active) setArtifactLists(Object.fromEntries(entries))
+    })
     return () => {
-      active = false;
-    };
-  }, [messages, runs]);
+      active = false
+    }
+  }, [messages, runs])
 
   useEffect(() => {
-    if (!activeRun || !isLive(activeRun)) return;
-    const runId = activeRun.id;
-    sequenceRef.current = 0;
+    if (!activeRun || !isLive(activeRun)) return
+    const runId = activeRun.id
+    sequenceRef.current = 0
     const close = chatApi.subscribe(
       runId,
       (event) => {
@@ -398,26 +396,26 @@ function ChatPanel({
           event.run_id !== runId ||
           event.sequence <= sequenceRef.current
         )
-          return;
-        sequenceRef.current = event.sequence;
+          return
+        sequenceRef.current = event.sequence
         setProgress((current) =>
           [
             ...current,
             { id: event.id, text: eventSummary(event), kind: event.type },
           ].slice(-5),
-        );
-        if (event.type === "status") {
-          const state = safeText(event.payload.state);
-          const eventOutcome = event.payload.outcome;
+        )
+        if (event.type === 'status') {
+          const state = safeText(event.payload.state)
+          const eventOutcome = event.payload.outcome
           const outcome =
-            eventOutcome && typeof eventOutcome === "object"
+            eventOutcome && typeof eventOutcome === 'object'
               ? (eventOutcome as Record<string, unknown>)
-              : {};
+              : {}
           const cleanup =
-            safeText(event.payload.cleanup) ?? safeText(outcome.cleanup);
+            safeText(event.payload.cleanup) ?? safeText(outcome.cleanup)
           if (state || cleanup) {
             setActiveRun((current) => {
-              if (!current || current.id !== runId) return current;
+              if (!current || current.id !== runId) return current
               const next: AnalysisRun = {
                 ...current,
                 state: state ?? current.state,
@@ -425,105 +423,103 @@ function ChatPanel({
                   ...current.outcome,
                   cleanup: cleanup ?? current.outcome?.cleanup,
                 },
-              };
-              return next;
-            });
+              }
+              return next
+            })
           }
         }
-        if (event.type === "answer") {
-          const answer = answerFromEvent(event);
-          if (answer) setLiveAnswer(answer);
+        if (event.type === 'answer') {
+          const answer = answerFromEvent(event)
+          if (answer) setLiveAnswer(answer)
         }
-        if (event.type === "terminal") {
+        if (event.type === 'terminal') {
           void chatApi
             .run(runId)
             .then((finalRun) => {
               setRuns((current) => [
                 finalRun,
                 ...current.filter((item) => item.id !== runId),
-              ]);
-              setActiveRun(null);
-              activeRunIdRef.current = "";
-              return refreshHistory();
+              ])
+              setActiveRun(null)
+              activeRunIdRef.current = ''
+              return refreshHistory()
             })
             .catch((reason: unknown) => {
               setError(
                 reason instanceof Error
                   ? reason.message
-                  : "Could not load the completed run.",
-              );
-              setActiveRun(null);
-            });
+                  : 'Could not load the completed run.',
+              )
+              setActiveRun(null)
+            })
         }
       },
       () => {
         if (activeRunIdRef.current === runId) {
           setProgress((current) =>
-            current.some((item) => item.id === "reconnect")
+            current.some((item) => item.id === 'reconnect')
               ? current
               : [
                   ...current,
                   {
-                    id: "reconnect",
-                    text: "Reconnecting to run updates",
-                    kind: "status",
+                    id: 'reconnect',
+                    text: 'Reconnecting to run updates',
+                    kind: 'status',
                   },
                 ].slice(-5),
-          );
+          )
         }
       },
-    );
-    return close;
-  }, [activeRun?.id, refreshHistory]);
+    )
+    return close
+  }, [activeRun?.id, refreshHistory])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, activeRun, liveAnswer, progress]);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [messages, activeRun, liveAnswer, progress])
 
   const sortedMessages = useMemo(() => {
-    const all = [...messages];
+    const all = [...messages]
     if (
       optimisticMessage &&
       !all.some((item) => item.id === optimisticMessage.id)
     )
-      all.push(optimisticMessage);
-    return all;
-  }, [messages, optimisticMessage]);
+      all.push(optimisticMessage)
+    return all
+  }, [messages, optimisticMessage])
 
   const toggleSource = (sourceId: string) => {
     if (selectedSourceIds.includes(sourceId)) {
-      setSelectedSourceIds((current) =>
-        current.filter((id) => id !== sourceId),
-      );
+      setSelectedSourceIds((current) => current.filter((id) => id !== sourceId))
       setSelectedDatasetIds((current) =>
         current.filter(
           (datasetId) =>
             datasets.find((dataset) => dataset.id === datasetId)?.source_id !==
             sourceId,
         ),
-      );
+      )
     } else {
-      setSelectedSourceIds((current) => [...current, sourceId]);
+      setSelectedSourceIds((current) => [...current, sourceId])
     }
-  };
+  }
 
   const toggleDataset = (datasetId: string) => {
     setSelectedDatasetIds((current) =>
       current.includes(datasetId)
         ? current.filter((id) => id !== datasetId)
         : [...current, datasetId],
-    );
-  };
+    )
+  }
 
   async function sendMessage(
     text: string,
     retryFor?: string,
     explicitInput?: RetryInput,
   ) {
-    const cleanText = text.trim();
-    if (!cleanText || !modelAvailable || activeRun || sending) return;
-    setSending(true);
-    setError("");
+    const cleanText = text.trim()
+    if (!cleanText || !modelAvailable || activeRun || sending) return
+    setSending(true)
+    setError('')
     const input: RetryInput = explicitInput ?? {
       text: cleanText,
       selectedSourceIds: [...selectedSourceIdsRef.current],
@@ -533,7 +529,7 @@ function ChatPanel({
         datasets,
       ),
       language,
-    };
+    }
     try {
       const run = await chatApi.createRun(threadId, {
         text: input.text,
@@ -541,9 +537,9 @@ function ChatPanel({
         selected_dataset_ids: input.selectedDatasetIds,
         answer_language: input.language,
         request_id: crypto.randomUUID(),
-      });
-      if (retryFor) retryInputsRef.current.delete(retryFor);
-      retryInputsRef.current.set(run.id, input);
+      })
+      if (retryFor) retryInputsRef.current.delete(retryFor)
+      retryInputsRef.current.set(run.id, input)
       try {
         sessionStorage.setItem(
           retrySelectionKey(threadId, run.id),
@@ -552,77 +548,77 @@ function ChatPanel({
             selectedDatasetIds: input.selectedDatasetIds,
             language: input.language,
           }),
-        );
+        )
       } catch {
         // Retry still works in the current view when browser storage is unavailable.
       }
       const userMessage: ChatMessage = {
         id: `pending-${run.id}`,
-        role: "user",
+        role: 'user',
         content: cleanText,
         run_id: run.id,
         references: { evidence_ids: [], artifact_ids: [] },
-      };
-      setOptimisticMessage(userMessage);
-      setDraft("");
+      }
+      setOptimisticMessage(userMessage)
+      setDraft('')
       setRuns((current) => [
         run,
         ...current.filter((item) => item.id !== run.id),
-      ]);
-      setActiveRun(isLive(run) ? run : null);
-      activeRunIdRef.current = isLive(run) ? run.id : "";
-      if (!isLive(run)) await refreshHistory();
+      ])
+      setActiveRun(isLive(run) ? run : null)
+      activeRunIdRef.current = isLive(run) ? run.id : ''
+      if (!isLive(run)) await refreshHistory()
     } catch (reason) {
       if (reason instanceof ApiError && reason.status === 503) {
         setError(
-          reason.message || "Chat is unavailable until a model is configured.",
-        );
+          reason.message || 'Chat is unavailable until a model is configured.',
+        )
       } else {
         setError(
           reason instanceof Error
             ? reason.message
-            : "Could not start this run.",
-        );
+            : 'Could not start this run.',
+        )
       }
     } finally {
-      setSending(false);
+      setSending(false)
     }
   }
 
   async function stopRun() {
-    if (!activeRun || cancelling) return;
-    setCancelling(true);
-    setError("");
+    if (!activeRun || cancelling) return
+    setCancelling(true)
+    setError('')
     try {
-      const stopped = await chatApi.cancelRun(activeRun.id);
+      const stopped = await chatApi.cancelRun(activeRun.id)
       setRuns((current) => [
         stopped,
         ...current.filter((item) => item.id !== stopped.id),
-      ]);
-      setActiveRun(stopped);
-      activeRunIdRef.current = stopped.id;
+      ])
+      setActiveRun(stopped)
+      activeRunIdRef.current = stopped.id
     } catch (reason) {
       setError(
-        reason instanceof Error ? reason.message : "Could not stop this run.",
-      );
+        reason instanceof Error ? reason.message : 'Could not stop this run.',
+      )
     } finally {
-      setCancelling(false);
+      setCancelling(false)
     }
   }
 
   async function retryRun(run: AnalysisRun) {
-    if (activeRun || sending || retryingRunId) return;
-    let input = retryInputsRef.current.get(run.id);
+    if (activeRun || sending || retryingRunId) return
+    let input = retryInputsRef.current.get(run.id)
     if (!input) {
       const userMessage = [...messages]
         .reverse()
-        .find((item) => item.run_id === run.id && item.role === "user");
-      if (!userMessage) return;
-      let saved: Partial<RetryInput> = {};
+        .find((item) => item.run_id === run.id && item.role === 'user')
+      if (!userMessage) return
+      let saved: Partial<RetryInput> = {}
       try {
         saved = JSON.parse(
-          sessionStorage.getItem(retrySelectionKey(threadId, run.id)) ?? "{}",
-        );
+          sessionStorage.getItem(retrySelectionKey(threadId, run.id)) ?? '{}',
+        )
       } catch {
         // Retry from the stored user message with the current selection.
       }
@@ -633,38 +629,38 @@ function ChatPanel({
         selectedDatasetIds: run.selected_dataset_ids ??
           saved.selectedDatasetIds ?? [...selectedDatasetIds],
         language: run.answer_language ?? saved.language ?? language,
-      };
+      }
     }
-    setRetryingRunId(run.id);
-    setDraft(input.text);
-    setLanguage(input.language);
-    setSelectedSourceIds(input.selectedSourceIds);
-    setSelectedDatasetIds(input.selectedDatasetIds);
-    await sendMessage(input.text, run.id, input);
-    setRetryingRunId("");
+    setRetryingRunId(run.id)
+    setDraft(input.text)
+    setLanguage(input.language)
+    setSelectedSourceIds(input.selectedSourceIds)
+    setSelectedDatasetIds(input.selectedDatasetIds)
+    await sendMessage(input.text, run.id, input)
+    setRetryingRunId('')
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    void sendMessage(draft);
+    event.preventDefault()
+    void sendMessage(draft)
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      void sendMessage(draft);
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      void sendMessage(draft)
     }
   }
 
-  const messageByRun = new Map<string, ChatMessage[]>();
+  const messageByRun = new Map<string, ChatMessage[]>()
   for (const message of sortedMessages) {
-    if (!message.run_id) continue;
+    if (!message.run_id) continue
     messageByRun.set(message.run_id, [
       ...(messageByRun.get(message.run_id) ?? []),
       message,
-    ]);
+    ])
   }
-  const latestFailedRun = runs.find((run) => run.state === "failed");
+  const latestFailedRun = runs.find((run) => run.state === 'failed')
 
   return (
     <section className="chat-panel" aria-label="Research conversation">
@@ -676,8 +672,8 @@ function ChatPanel({
           <h2>Research conversation</h2>
         </div>
         <div className="chat-header-status">
-          <span className={activeRun ? "chat-live-pulse" : "chat-ready-dot"} />
-          {activeRun ? labelForState(activeRun) : "Saved to this thread"}
+          <span className={activeRun ? 'chat-live-pulse' : 'chat-ready-dot'} />
+          {activeRun ? labelForState(activeRun) : 'Saved to this thread'}
         </div>
       </header>
 
@@ -690,7 +686,7 @@ function ChatPanel({
             <strong>Chat is unavailable</strong>
             <p>
               {modelMessage ||
-                "Configure a model endpoint and credentials to start a run."}
+                'Configure a model endpoint and credentials to start a run.'}
             </p>
           </div>
         </div>
@@ -700,7 +696,7 @@ function ChatPanel({
         <div className="chat-error" role="alert">
           <AlertCircle size={15} />
           <span>{error}</span>
-          <button onClick={() => setError("")} aria-label="Dismiss error">
+          <button onClick={() => setError('')} aria-label="Dismiss error">
             ×
           </button>
         </div>
@@ -728,14 +724,14 @@ function ChatPanel({
             {sortedMessages.map((message) => {
               const run = message.run_id
                 ? runs.find((item) => item.id === message.run_id)
-                : undefined;
+                : undefined
               const related = message.run_id
                 ? (messageByRun.get(message.run_id) ?? [])
-                : [];
-              const artifacts = message.references?.artifact_ids ?? [];
+                : []
+              const artifacts = message.references?.artifact_ids ?? []
               return (
                 <div className={`message-row ${message.role}`} key={message.id}>
-                  {message.role === "assistant" && (
+                  {message.role === 'assistant' && (
                     <span className="assistant-seal">
                       <Sparkles size={13} />
                     </span>
@@ -743,11 +739,11 @@ function ChatPanel({
                   <article className={`message-card ${message.role}`}>
                     <div className="message-topline">
                       <span>
-                        {message.role === "user"
-                          ? "YOU"
-                          : message.role === "assistant"
-                            ? "FIELDNOTE"
-                            : "SYSTEM"}
+                        {message.role === 'user'
+                          ? 'YOU'
+                          : message.role === 'assistant'
+                            ? 'FIELDNOTE'
+                            : 'SYSTEM'}
                       </span>
                       {run && (
                         <span className={`message-run-state ${run.state}`}>
@@ -781,14 +777,14 @@ function ChatPanel({
                       )}
                     {artifacts.length > 0 && (
                       <ArtifactLinks
-                        artifacts={artifactLists[message.run_id ?? ""] ?? []}
+                        artifacts={artifactLists[message.run_id ?? ''] ?? []}
                         ids={artifacts}
                       />
                     )}
                   </article>
-                  {message.role === "user" &&
-                    run?.state === "failed" &&
-                    !related.some((item) => item.role === "assistant") && (
+                  {message.role === 'user' &&
+                    run?.state === 'failed' &&
+                    !related.some((item) => item.role === 'assistant') && (
                       <RunFailure
                         run={run}
                         retrying={retryingRunId === run.id}
@@ -796,18 +792,18 @@ function ChatPanel({
                       />
                     )}
                 </div>
-              );
+              )
             })}
             {liveAnswer &&
               !messages.some(
                 (item) =>
                   item.id === liveAnswer.id ||
                   (item.run_id === liveAnswer.run_id &&
-                    item.role === "assistant"),
+                    item.role === 'assistant'),
               ) && (
                 <MessageBubble
                   message={liveAnswer}
-                  artifacts={artifactLists[liveAnswer.run_id ?? ""] ?? []}
+                  artifacts={artifactLists[liveAnswer.run_id ?? ''] ?? []}
                   onOpenEvidence={openEvidence}
                 />
               )}
@@ -819,14 +815,14 @@ function ChatPanel({
             <div className="run-progress-head">
               <LoaderCircle size={14} className="spin" />
               <strong>{labelForState(activeRun)}</strong>
-              {activeRun.state !== "cancelled" && (
+              {activeRun.state !== 'cancelled' && (
                 <button
                   className="stop-run"
                   onClick={() => void stopRun()}
                   disabled={cancelling}
                 >
                   <CircleStop size={14} />
-                  {cancelling ? "Stopping" : "Stop"}
+                  {cancelling ? 'Stopping' : 'Stop'}
                 </button>
               )}
             </div>
@@ -845,7 +841,7 @@ function ChatPanel({
         {latestFailedRun &&
           !sortedMessages.some(
             (message) =>
-              message.run_id === latestFailedRun.id && message.role === "user",
+              message.run_id === latestFailedRun.id && message.role === 'user',
           ) && (
             <RunFailure
               run={latestFailedRun}
@@ -865,19 +861,19 @@ function ChatPanel({
               </span>
               <span>Use sources</span>
               <span className="selected-source-count">
-                {selectedSourceIds.length} sources ·{" "}
+                {selectedSourceIds.length} sources ·{' '}
                 {selectedDatasetIds.length
                   ? `${selectedDatasetIds.length} sheets`
-                  : "all sheets"}
+                  : 'all sheets'}
               </span>
               <ArrowDown size={13} className="selector-chevron" />
             </summary>
             <div className="source-check-list">
               {sources.map((source) => {
-                const checked = selectedSourceIds.includes(source.id);
+                const checked = selectedSourceIds.includes(source.id)
                 const sourceDatasets = datasets.filter(
                   (dataset) => dataset.source_id === source.id,
-                );
+                )
                 return (
                   <div className="source-check-group" key={source.id}>
                     <label className="source-check-row">
@@ -927,21 +923,21 @@ function ChatPanel({
                       </div>
                     )}
                   </div>
-                );
+                )
               })}
             </div>
           </details>
         )}
         <form
-          className={`chat-composer ${!modelAvailable ? "disabled" : ""}`}
+          className={`chat-composer ${!modelAvailable ? 'disabled' : ''}`}
           onSubmit={submit}
         >
           <textarea
             aria-label="Ask a question about your sources"
             placeholder={
               modelAvailable
-                ? "Ask a question about your sources…"
-                : "Configure a model to start a conversation"
+                ? 'Ask a question about your sources…'
+                : 'Configure a model to start a conversation'
             }
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -968,8 +964,8 @@ function ChatPanel({
               </label>
               <span className="composer-hint">
                 {activeRun
-                  ? "A run is active"
-                  : "Enter to send · Shift + Enter for a new line"}
+                  ? 'A run is active'
+                  : 'Enter to send · Shift + Enter for a new line'}
               </span>
             </div>
             <button
@@ -1005,15 +1001,15 @@ function ChatPanel({
           evidence={evidence}
           loading={loadingEvidence}
           error={evidenceError}
-          onClose={() => setEvidenceId("")}
+          onClose={() => setEvidenceId('')}
         />
       )}
     </section>
-  );
+  )
 }
 
 function hasInlineEvidence(content: string): boolean {
-  return /\[evidence:[0-9a-f-]{36}\]/i.test(content);
+  return /\[evidence:[0-9a-f-]{36}\]/i.test(content)
 }
 
 function CitationText({
@@ -1021,23 +1017,23 @@ function CitationText({
   evidenceIds,
   onOpen,
 }: {
-  content: string;
-  evidenceIds: string[];
-  onOpen: (id: string) => void;
+  content: string
+  evidenceIds: string[]
+  onOpen: (id: string) => void
 }) {
-  const allowed = new Set(evidenceIds.map((id) => id.toLowerCase()));
-  const pattern = /\[evidence:([0-9a-f-]{36})\]/gi;
-  const nodes: ReactNode[] = [];
-  let cursor = 0;
-  let index = 0;
+  const allowed = new Set(evidenceIds.map((id) => id.toLowerCase()))
+  const pattern = /\[evidence:([0-9a-f-]{36})\]/gi
+  const nodes: ReactNode[] = []
+  let cursor = 0
+  let index = 0
   for (const match of content.matchAll(pattern)) {
-    const start = match.index ?? 0;
-    const id = match[1];
-    if (start > cursor) nodes.push(content.slice(cursor, start));
+    const start = match.index ?? 0
+    const id = match[1]
+    if (start > cursor) nodes.push(content.slice(cursor, start))
     if (allowed.has(id.toLowerCase())) {
       const label = evidenceIds.findIndex(
         (evidenceId) => evidenceId.toLowerCase() === id.toLowerCase(),
-      );
+      )
       nodes.push(
         <button
           className="inline-citation"
@@ -1048,28 +1044,28 @@ function CitationText({
         >
           [{label + 1}]
         </button>,
-      );
+      )
     } else {
-      nodes.push(match[0]);
+      nodes.push(match[0])
     }
-    cursor = start + match[0].length;
-    index += 1;
+    cursor = start + match[0].length
+    index += 1
   }
-  if (!nodes.length) return <>{content}</>;
-  if (cursor < content.length) nodes.push(content.slice(cursor));
-  return <>{nodes}</>;
+  if (!nodes.length) return <>{content}</>
+  if (cursor < content.length) nodes.push(content.slice(cursor))
+  return <>{nodes}</>
 }
 
 function locationText(
   location: Record<string, unknown> | null | undefined,
 ): string {
-  if (!location) return "Location not provided";
+  if (!location) return 'Location not provided'
   const parts = Object.entries(location)
     .filter(
-      ([, value]) => value !== null && value !== undefined && value !== "",
+      ([, value]) => value !== null && value !== undefined && value !== '',
     )
-    .map(([key, value]) => `${key.replaceAll("_", " ")} ${String(value)}`);
-  return parts.join(" · ") || "Location not provided";
+    .map(([key, value]) => `${key.replaceAll('_', ' ')} ${String(value)}`)
+  return parts.join(' · ') || 'Location not provided'
 }
 
 function EvidenceViewer({
@@ -1079,20 +1075,20 @@ function EvidenceViewer({
   error,
   onClose,
 }: {
-  evidenceId: string;
-  evidence: EvidenceView | null;
-  loading: boolean;
-  error: string;
-  onClose: () => void;
+  evidenceId: string
+  evidence: EvidenceView | null
+  loading: boolean
+  error: string
+  onClose: () => void
 }) {
-  const details = evidence?.details ?? {};
-  const trace = evidence?.trace ?? details.trace ?? details.retrieval_trace;
+  const details = evidence?.details ?? {}
+  const trace = evidence?.trace ?? details.trace ?? details.retrieval_trace
   const structuredDetails = [
-    ["Query", details.query],
-    ["Source versions", details.source_versions],
-    ["Result hash", details.result_sha256],
-    ["Result artifact", details.result_artifact_id ?? details.artifact_id],
-  ].filter(([, value]) => value !== null && value !== undefined);
+    ['Query', details.query],
+    ['Source versions', details.source_versions],
+    ['Result hash', details.result_sha256],
+    ['Result artifact', details.result_artifact_id ?? details.artifact_id],
+  ].filter(([, value]) => value !== null && value !== undefined)
   return (
     <aside
       className="evidence-viewer"
@@ -1127,7 +1123,7 @@ function EvidenceViewer({
         ) : evidence ? (
           <>
             <div className="evidence-source-meta">
-              <span>{evidence.kind?.replaceAll("_", " ") ?? "Evidence"}</span>
+              <span>{evidence.kind?.replaceAll('_', ' ') ?? 'Evidence'}</span>
               {evidence.document_version !== null &&
                 evidence.document_version !== undefined && (
                   <span>Document v{evidence.document_version}</span>
@@ -1138,11 +1134,11 @@ function EvidenceViewer({
             </div>
             {!!evidence.source_ids.length && (
               <div className="evidence-source-ids">
-                Sources{" "}
-                {evidence.source_ids.map((id) => id.slice(0, 8)).join(" · ")}
+                Sources{' '}
+                {evidence.source_ids.map((id) => id.slice(0, 8)).join(' · ')}
               </div>
             )}
-            {evidence.source_state === "archived" && (
+            {evidence.source_state === 'archived' && (
               <div className="evidence-archived-notice" role="status">
                 This source has been archived. This saved citation still points
                 to its original evidence.
@@ -1166,13 +1162,13 @@ function EvidenceViewer({
                 <p>{evidence.context}</p>
               </details>
             )}
-            {(typeof evidence.score === "number" ||
-              typeof evidence.rank === "number") && (
+            {(typeof evidence.score === 'number' ||
+              typeof evidence.rank === 'number') && (
               <div className="evidence-retrieval-meta">
-                {typeof evidence.rank === "number" && (
+                {typeof evidence.rank === 'number' && (
                   <span>Rank {evidence.rank}</span>
                 )}
-                {typeof evidence.score === "number" && (
+                {typeof evidence.score === 'number' && (
                   <span>Score {evidence.score.toFixed(3)}</span>
                 )}
               </div>
@@ -1185,7 +1181,7 @@ function EvidenceViewer({
                     <div key={String(label)}>
                       <dt>{String(label)}</dt>
                       <dd>
-                        {typeof value === "string"
+                        {typeof value === 'string'
                           ? value
                           : JSON.stringify(value)}
                       </dd>
@@ -1198,7 +1194,7 @@ function EvidenceViewer({
               <details className="evidence-trace">
                 <summary>Retrieval trace</summary>
                 <pre>
-                  {typeof trace === "string"
+                  {typeof trace === 'string'
                     ? trace.slice(0, 6000)
                     : JSON.stringify(trace, null, 2).slice(0, 6000)}
                 </pre>
@@ -1209,7 +1205,7 @@ function EvidenceViewer({
         ) : null}
       </div>
     </aside>
-  );
+  )
 }
 
 function MessageBubble({
@@ -1217,9 +1213,9 @@ function MessageBubble({
   artifacts,
   onOpenEvidence,
 }: {
-  message: ChatMessage;
-  artifacts: RunArtifact[];
-  onOpenEvidence: (id: string) => void;
+  message: ChatMessage
+  artifacts: RunArtifact[]
+  onOpenEvidence: (id: string) => void
 }) {
   return (
     <div className="message-row assistant">
@@ -1263,71 +1259,70 @@ function MessageBubble({
         )}
       </article>
     </div>
-  );
+  )
 }
 
 function ArtifactLinks({
   artifacts,
   ids,
 }: {
-  artifacts: RunArtifact[];
-  ids: string[];
+  artifacts: RunArtifact[]
+  ids: string[]
 }) {
   return (
     <div className="artifact-list" aria-label="Run artifacts">
       {ids.map((id) => {
-        const artifact = artifacts.find((item) => item.id === id);
-        return <ArtifactItem key={id} id={id} artifact={artifact} />;
+        const artifact = artifacts.find((item) => item.id === id)
+        return <ArtifactItem key={id} id={id} artifact={artifact} />
       })}
     </div>
-  );
+  )
 }
 
 function ArtifactItem({
   id,
   artifact,
 }: {
-  id: string;
-  artifact?: RunArtifact;
+  id: string
+  artifact?: RunArtifact
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [previewError, setPreviewError] = useState("");
+  const [expanded, setExpanded] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [previewError, setPreviewError] = useState('')
   const [preview, setPreview] = useState<{
-    id: string;
-    display_name: string;
-    media_type: string;
-    byte_size: number;
-    text: string | null;
-    truncated: boolean;
-  } | null>(null);
+    id: string
+    display_name: string
+    media_type: string
+    byte_size: number
+    text: string | null
+    truncated: boolean
+  } | null>(null)
 
   async function togglePreview() {
     if (expanded) {
-      setExpanded(false);
-      return;
+      setExpanded(false)
+      return
     }
-    setExpanded(true);
-    if (preview || loading) return;
-    setLoading(true);
-    setPreviewError("");
+    setExpanded(true)
+    if (preview || loading) return
+    setLoading(true)
+    setPreviewError('')
     try {
-      setPreview(await chatApi.previewArtifact(id, 4000));
+      setPreview(await chatApi.previewArtifact(id, 4000))
     } catch (reason) {
       setPreviewError(
-        reason instanceof Error ? reason.message : "Could not load preview.",
-      );
+        reason instanceof Error ? reason.message : 'Could not load preview.',
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  const mediaType = (preview?.media_type ?? artifact?.media_type ?? "")
+  const mediaType = (preview?.media_type ?? artifact?.media_type ?? '')
     .toLowerCase()
-    .split(";")[0]
-    .trim();
-  const isPreviewImage =
-    mediaType === "image/png" || mediaType === "image/jpeg";
+    .split(';')[0]
+    .trim()
+  const isPreviewImage = mediaType === 'image/png' || mediaType === 'image/jpeg'
 
   return (
     <div className="artifact-entry">
@@ -1347,7 +1342,7 @@ function ArtifactItem({
             <small>
               {artifact
                 ? `${artifact.media_type} · ${formatSize(artifact.byte_size)}`
-                : "Download output"}
+                : 'Download output'}
             </small>
           </span>
           <Download size={14} />
@@ -1357,9 +1352,9 @@ function ArtifactItem({
           type="button"
           onClick={() => void togglePreview()}
           aria-expanded={expanded}
-          aria-label={`${expanded ? "Hide" : "Preview"} ${artifact?.display_name ?? "artifact"}`}
+          aria-label={`${expanded ? 'Hide' : 'Preview'} ${artifact?.display_name ?? 'artifact'}`}
         >
-          <Eye size={13} /> {expanded ? "Hide" : "Preview"}
+          <Eye size={13} /> {expanded ? 'Hide' : 'Preview'}
         </button>
       </div>
       {expanded && (
@@ -1396,7 +1391,7 @@ function ArtifactItem({
         </div>
       )}
     </div>
-  );
+  )
 }
 
 function RunFailure({
@@ -1404,9 +1399,9 @@ function RunFailure({
   retrying,
   onRetry,
 }: {
-  run: AnalysisRun;
-  retrying: boolean;
-  onRetry: () => void;
+  run: AnalysisRun
+  retrying: boolean
+  onRetry: () => void
 }) {
   return (
     <div className="run-failure">
@@ -1416,21 +1411,21 @@ function RunFailure({
       <div>
         <strong>{labelForState(run)}</strong>
         <p>
-          {safeText(run.outcome?.text) ?? "This run did not produce an answer."}
+          {safeText(run.outcome?.text) ?? 'This run did not produce an answer.'}
         </p>
       </div>
-      {run.state === "failed" && (
+      {run.state === 'failed' && (
         <button
           onClick={onRetry}
           disabled={retrying}
           aria-label="Retry this run"
         >
           <RotateCcw size={13} />
-          {retrying ? "Retrying" : "Retry"}
+          {retrying ? 'Retrying' : 'Retry'}
         </button>
       )}
     </div>
-  );
+  )
 }
 
-export default ChatPanel;
+export default ChatPanel

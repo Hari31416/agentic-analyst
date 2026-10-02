@@ -5,7 +5,7 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react'
 import {
   AlertCircle,
   ArrowLeft,
@@ -21,7 +21,7 @@ import {
   RefreshCw,
   Server,
   Upload,
-} from "lucide-react";
+} from 'lucide-react'
 import {
   ConnectionDraft,
   ConnectionTestResult,
@@ -31,7 +31,7 @@ import {
   SourceSchema,
   SourceView,
   structuredApi,
-} from "./structuredApi";
+} from './structuredApi'
 import {
   DocumentBlock,
   IngestionCapabilities,
@@ -39,56 +39,56 @@ import {
   DocumentTableCandidate,
   DocumentView,
   documentApi,
-} from "./documentApi";
-import "./structured.css";
+} from './documentApi'
+import './structured.css'
 
 type SourceWorkbenchProps = {
-  workspaceId: string;
-  sources: SourceView[];
-  datasets: DatasetSummary[];
-  datasetErrors: Record<string, string>;
-  onSourcesChanged: () => Promise<void>;
-};
+  workspaceId: string
+  sources: SourceView[]
+  datasets: DatasetSummary[]
+  datasetErrors: Record<string, string>
+  onSourcesChanged: () => Promise<void>
+}
 
 const emptyConnection: ConnectionDraft = {
-  dialect: "postgresql",
-  host: "localhost",
+  dialect: 'postgresql',
+  host: 'localhost',
   port: 5432,
-  database_name: "",
-  username: "",
-  password: "",
-  options: { ssl_mode: "verify-full" },
-};
+  database_name: '',
+  username: '',
+  password: '',
+  options: { ssl_mode: 'verify-full' },
+}
 
-function identityLabel(identity: DatasetSummary["identity"]): string {
-  if (typeof identity === "string") return identity;
-  const values = Object.values(identity);
-  return values.length ? values.map(String).join(" · ") : "Dataset";
+function identityLabel(identity: DatasetSummary['identity']): string {
+  if (typeof identity === 'string') return identity
+  const values = Object.values(identity)
+  return values.length ? values.map(String).join(' · ') : 'Dataset'
 }
 
 function displayCell(value: unknown): string {
-  if (value === null || value === undefined) return "—";
-  if (typeof value === "string") return value;
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
+  if (value === null || value === undefined) return '—'
+  if (typeof value === 'string') return value
+  if (typeof value === 'object') return JSON.stringify(value)
+  return String(value)
 }
 
 function isDatabase(source: SourceView): boolean {
-  return /mysql|postgres|database|connection/i.test(source.kind);
+  return /mysql|postgres|database|connection/i.test(source.kind)
 }
 
 function isDocument(source: SourceView): boolean {
-  return /pdf|docx|txt|text|markdown|html|pptx|document/i.test(source.kind);
+  return /pdf|docx|txt|text|markdown|html|pptx|document/i.test(source.kind)
 }
 
 type UploadItem = {
-  file: File;
-  progress: number;
-  state: "queued" | "uploading" | "uploaded" | "failed";
-  error?: string;
-};
+  file: File
+  progress: number
+  state: 'queued' | 'uploading' | 'uploaded' | 'failed'
+  error?: string
+}
 
-type CrawlJobProgress = IngestionJob & { polls: number; pollError?: string };
+type CrawlJobProgress = IngestionJob & { polls: number; pollError?: string }
 
 function SourceWorkbench({
   workspaceId,
@@ -97,149 +97,146 @@ function SourceWorkbench({
   datasetErrors,
   onSourcesChanged,
 }: SourceWorkbenchProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
   const [documentUploadItems, setDocumentUploadItems] = useState<UploadItem[]>(
     [],
-  );
-  const [selectedDocumentFiles, setSelectedDocumentFiles] = useState<File[]>(
-    [],
-  );
-  const [uploadingDocuments, setUploadingDocuments] = useState(false);
-  const [chunkStrategy, setChunkStrategy] = useState("structure");
-  const [documents, setDocuments] = useState<DocumentView[]>([]);
-  const [documentsError, setDocumentsError] = useState("");
-  const [selectedDocumentId, setSelectedDocumentId] = useState("");
-  const [documentBlocks, setDocumentBlocks] = useState<DocumentBlock[]>([]);
-  const [documentBlockTotal, setDocumentBlockTotal] = useState(0);
-  const [documentBlockOffset, setDocumentBlockOffset] = useState(0);
-  const [loadingDocumentBlocks, setLoadingDocumentBlocks] = useState(false);
-  const [documentBlocksError, setDocumentBlocksError] = useState("");
+  )
+  const [selectedDocumentFiles, setSelectedDocumentFiles] = useState<File[]>([])
+  const [uploadingDocuments, setUploadingDocuments] = useState(false)
+  const [chunkStrategy, setChunkStrategy] = useState('structure')
+  const [documents, setDocuments] = useState<DocumentView[]>([])
+  const [documentsError, setDocumentsError] = useState('')
+  const [selectedDocumentId, setSelectedDocumentId] = useState('')
+  const [documentBlocks, setDocumentBlocks] = useState<DocumentBlock[]>([])
+  const [documentBlockTotal, setDocumentBlockTotal] = useState(0)
+  const [documentBlockOffset, setDocumentBlockOffset] = useState(0)
+  const [loadingDocumentBlocks, setLoadingDocumentBlocks] = useState(false)
+  const [documentBlocksError, setDocumentBlocksError] = useState('')
   const [ingestionCapabilities, setIngestionCapabilities] =
-    useState<IngestionCapabilities | null>(null);
-  const [crawlUrl, setCrawlUrl] = useState("");
-  const [crawlMaxPages, setCrawlMaxPages] = useState(10);
-  const [crawlMaxDepth, setCrawlMaxDepth] = useState(1);
-  const [crawlMaxBytes, setCrawlMaxBytes] = useState(2_000_000);
-  const [crawlSitemap, setCrawlSitemap] = useState(false);
-  const [queueingCrawl, setQueueingCrawl] = useState(false);
-  const [crawlError, setCrawlError] = useState("");
-  const [crawlJobs, setCrawlJobs] = useState<CrawlJobProgress[]>([]);
-  const pollingJobIds = useRef(new Set<string>());
-  const [connection, setConnection] =
-    useState<ConnectionDraft>(emptyConnection);
-  const [connectionName, setConnectionName] = useState("");
-  const [testingConnection, setTestingConnection] = useState(false);
-  const [savingConnection, setSavingConnection] = useState(false);
+    useState<IngestionCapabilities | null>(null)
+  const [crawlUrl, setCrawlUrl] = useState('')
+  const [crawlMaxPages, setCrawlMaxPages] = useState(10)
+  const [crawlMaxDepth, setCrawlMaxDepth] = useState(1)
+  const [crawlMaxBytes, setCrawlMaxBytes] = useState(2_000_000)
+  const [crawlSitemap, setCrawlSitemap] = useState(false)
+  const [queueingCrawl, setQueueingCrawl] = useState(false)
+  const [crawlError, setCrawlError] = useState('')
+  const [crawlJobs, setCrawlJobs] = useState<CrawlJobProgress[]>([])
+  const pollingJobIds = useRef(new Set<string>())
+  const [connection, setConnection] = useState<ConnectionDraft>(emptyConnection)
+  const [connectionName, setConnectionName] = useState('')
+  const [testingConnection, setTestingConnection] = useState(false)
+  const [savingConnection, setSavingConnection] = useState(false)
   const [testResult, setTestResult] = useState<ConnectionTestResult | null>(
     null,
-  );
-  const [connectionError, setConnectionError] = useState("");
-  const [selectedSourceId, setSelectedSourceId] = useState("");
-  const [selectedDatasetId, setSelectedDatasetId] = useState("");
-  const [profile, setProfile] = useState<DatasetProfile | null>(null);
-  const [rows, setRows] = useState<DatasetRows | null>(null);
-  const [offset, setOffset] = useState(0);
-  const [loadingProfile, setLoadingProfile] = useState(false);
-  const [loadingRows, setLoadingRows] = useState(false);
-  const [inspectorError, setInspectorError] = useState("");
-  const [schema, setSchema] = useState<SourceSchema | null>(null);
-  const [loadingSchema, setLoadingSchema] = useState(false);
-  const [schemaError, setSchemaError] = useState("");
-  const [sourceDescription, setSourceDescription] = useState("");
+  )
+  const [connectionError, setConnectionError] = useState('')
+  const [selectedSourceId, setSelectedSourceId] = useState('')
+  const [selectedDatasetId, setSelectedDatasetId] = useState('')
+  const [profile, setProfile] = useState<DatasetProfile | null>(null)
+  const [rows, setRows] = useState<DatasetRows | null>(null)
+  const [offset, setOffset] = useState(0)
+  const [loadingProfile, setLoadingProfile] = useState(false)
+  const [loadingRows, setLoadingRows] = useState(false)
+  const [inspectorError, setInspectorError] = useState('')
+  const [schema, setSchema] = useState<SourceSchema | null>(null)
+  const [loadingSchema, setLoadingSchema] = useState(false)
+  const [schemaError, setSchemaError] = useState('')
+  const [sourceDescription, setSourceDescription] = useState('')
   const [metricHints, setMetricHints] = useState<
     { key: string; value: string }[]
-  >([]);
-  const [savingMetadata, setSavingMetadata] = useState(false);
-  const [metadataMessage, setMetadataMessage] = useState("");
-  const [metadataError, setMetadataError] = useState("");
+  >([])
+  const [savingMetadata, setSavingMetadata] = useState(false)
+  const [metadataMessage, setMetadataMessage] = useState('')
+  const [metadataError, setMetadataError] = useState('')
 
   const selectedSource = sources.find(
     (source) => source.id === selectedSourceId,
-  );
+  )
   const sourceDatasets = useMemo(
     () => datasets.filter((dataset) => dataset.source_id === selectedSourceId),
     [datasets, selectedSourceId],
-  );
+  )
   const selectedDataset = sourceDatasets.find(
     (dataset) => dataset.id === selectedDatasetId,
-  );
+  )
   const sourceDocuments = useMemo(
     () =>
       documents.filter((document) => document.source_id === selectedSourceId),
     [documents, selectedSourceId],
-  );
+  )
   const selectedDocument = sourceDocuments.find(
     (document) => document.id === selectedDocumentId,
-  );
-  const hasDocument = Boolean(selectedSource && isDocument(selectedSource));
+  )
+  const hasDocument = Boolean(selectedSource && isDocument(selectedSource))
 
   async function loadDocuments() {
-    if (!workspaceId) return;
+    if (!workspaceId) return
     try {
-      setDocuments(await documentApi.list(workspaceId));
-      setDocumentsError("");
+      setDocuments(await documentApi.list(workspaceId))
+      setDocumentsError('')
     } catch (reason) {
       setDocumentsError(
-        reason instanceof Error ? reason.message : "Could not load documents.",
-      );
+        reason instanceof Error ? reason.message : 'Could not load documents.',
+      )
     }
   }
 
   useEffect(() => {
-    setDocuments([]);
-    setSelectedDocumentId("");
-    setDocumentBlocks([]);
-    setDocumentsError("");
-    void loadDocuments();
-  }, [workspaceId]);
+    setDocuments([])
+    setSelectedDocumentId('')
+    setDocumentBlocks([])
+    setDocumentsError('')
+    void loadDocuments()
+  }, [workspaceId])
 
   useEffect(() => {
-    let active = true;
-    setCrawlJobs([]);
+    let active = true
+    setCrawlJobs([])
     documentApi
       .capabilities()
       .then((result) => {
-        if (!active) return;
-        setIngestionCapabilities(result);
+        if (!active) return
+        setIngestionCapabilities(result)
         setChunkStrategy((current) =>
           result.chunk_strategies.includes(current)
             ? current
-            : (result.chunk_strategies[0] ?? "structure"),
-        );
+            : (result.chunk_strategies[0] ?? 'structure'),
+        )
       })
       .catch(() => {
-        if (active) setIngestionCapabilities(null);
-      });
+        if (active) setIngestionCapabilities(null)
+      })
     return () => {
-      active = false;
-    };
-  }, [workspaceId]);
+      active = false
+    }
+  }, [workspaceId])
 
   useEffect(() => {
     const processing = documents.some((document) =>
-      ["queued", "pending", "running", "processing", "indexing"].includes(
+      ['queued', 'pending', 'running', 'processing', 'indexing'].includes(
         document.state.toLowerCase(),
       ),
-    );
-    if (!processing) return;
-    const timer = window.setInterval(() => void loadDocuments(), 2500);
-    return () => window.clearInterval(timer);
-  }, [documents, workspaceId]);
+    )
+    if (!processing) return
+    const timer = window.setInterval(() => void loadDocuments(), 2500)
+    return () => window.clearInterval(timer)
+  }, [documents, workspaceId])
 
   useEffect(() => {
     const activeJobs = crawlJobs.filter(
       (job) =>
-        ["queued", "pending", "running", "processing"].includes(
+        ['queued', 'pending', 'running', 'processing'].includes(
           job.state.toLowerCase(),
         ) && job.polls < 120,
-    );
-    if (!activeJobs.length) return;
+    )
+    if (!activeJobs.length) return
     const timer = window.setInterval(() => {
       for (const job of activeJobs) {
-        if (pollingJobIds.current.has(job.id)) continue;
-        pollingJobIds.current.add(job.id);
+        if (pollingJobIds.current.has(job.id)) continue
+        pollingJobIds.current.add(job.id)
         void documentApi
           .ingestionJob(job.id)
           .then(async (latest) => {
@@ -249,9 +246,9 @@ function SourceWorkbench({
                   ? { ...latest, polls: item.polls + 1, pollError: undefined }
                   : item,
               ),
-            );
-            if (["completed", "failed", "cancelled"].includes(latest.state)) {
-              await Promise.all([onSourcesChanged(), loadDocuments()]);
+            )
+            if (['completed', 'failed', 'cancelled'].includes(latest.state)) {
+              await Promise.all([onSourcesChanged(), loadDocuments()])
             }
           })
           .catch((reason: unknown) => {
@@ -264,58 +261,58 @@ function SourceWorkbench({
                       pollError:
                         reason instanceof Error
                           ? reason.message
-                          : "Could not refresh crawl status.",
+                          : 'Could not refresh crawl status.',
                     }
                   : item,
               ),
-            );
+            )
           })
-          .finally(() => pollingJobIds.current.delete(job.id));
+          .finally(() => pollingJobIds.current.delete(job.id))
       }
-    }, 1800);
-    return () => window.clearInterval(timer);
-  }, [crawlJobs, workspaceId]);
+    }, 1800)
+    return () => window.clearInterval(timer)
+  }, [crawlJobs, workspaceId])
 
   useEffect(() => {
     if (
       !sourceDocuments.some((document) => document.id === selectedDocumentId)
     ) {
-      setSelectedDocumentId(sourceDocuments[0]?.id ?? "");
+      setSelectedDocumentId(sourceDocuments[0]?.id ?? '')
     }
-  }, [sourceDocuments, selectedDocumentId]);
+  }, [sourceDocuments, selectedDocumentId])
 
   useEffect(() => {
     if (!selectedDocumentId) {
-      setDocumentBlocks([]);
-      setDocumentBlockTotal(0);
-      return;
+      setDocumentBlocks([])
+      setDocumentBlockTotal(0)
+      return
     }
-    let active = true;
-    setLoadingDocumentBlocks(true);
-    setDocumentBlocksError("");
+    let active = true
+    setLoadingDocumentBlocks(true)
+    setDocumentBlocksError('')
     documentApi
       .blocks(selectedDocumentId, documentBlockOffset, 50)
       .then((result) => {
-        if (!active) return;
-        setDocumentBlocks(result.blocks);
-        setDocumentBlockTotal(result.total);
+        if (!active) return
+        setDocumentBlocks(result.blocks)
+        setDocumentBlockTotal(result.total)
       })
       .catch((reason: unknown) => {
         if (active)
           setDocumentBlocksError(
             reason instanceof Error
               ? reason.message
-              : "Could not inspect extracted text.",
-          );
+              : 'Could not inspect extracted text.',
+          )
       })
-      .finally(() => active && setLoadingDocumentBlocks(false));
+      .finally(() => active && setLoadingDocumentBlocks(false))
     return () => {
-      active = false;
-    };
-  }, [selectedDocumentId, documentBlockOffset]);
+      active = false
+    }
+  }, [selectedDocumentId, documentBlockOffset])
 
   useEffect(() => {
-    setSourceDescription(selectedSource?.description ?? "");
+    setSourceDescription(selectedSource?.description ?? '')
     setMetricHints(
       Object.entries(selectedSource?.metric_hints ?? {}).map(
         ([key, value]) => ({
@@ -323,123 +320,123 @@ function SourceWorkbench({
           value,
         }),
       ),
-    );
-    setMetadataMessage("");
-    setMetadataError("");
+    )
+    setMetadataMessage('')
+    setMetadataError('')
   }, [
     selectedSource?.id,
     selectedSource?.description,
     selectedSource?.metric_hints,
-  ]);
+  ])
 
   useEffect(() => {
     if (!sources.some((source) => source.id === selectedSourceId)) {
-      setSelectedSourceId(sources[0]?.id ?? "");
-      setSelectedDatasetId("");
-      setProfile(null);
-      setRows(null);
-      setSchema(null);
+      setSelectedSourceId(sources[0]?.id ?? '')
+      setSelectedDatasetId('')
+      setProfile(null)
+      setRows(null)
+      setSchema(null)
     }
-  }, [selectedSourceId, sources]);
+  }, [selectedSourceId, sources])
 
   useEffect(() => {
     if (!sourceDatasets.some((dataset) => dataset.id === selectedDatasetId)) {
-      setSelectedDatasetId(sourceDatasets[0]?.id ?? "");
+      setSelectedDatasetId(sourceDatasets[0]?.id ?? '')
     }
-  }, [selectedDatasetId, sourceDatasets]);
+  }, [selectedDatasetId, sourceDatasets])
 
   useEffect(() => {
     if (!selectedDatasetId) {
-      setProfile(null);
-      setRows(null);
-      return;
+      setProfile(null)
+      setRows(null)
+      return
     }
-    let active = true;
-    setLoadingProfile(true);
-    setInspectorError("");
+    let active = true
+    setLoadingProfile(true)
+    setInspectorError('')
     Promise.all([
       structuredApi.profile(selectedDatasetId),
       structuredApi.rows(selectedDatasetId, 0, 50),
     ])
       .then(([nextProfile, nextRows]) => {
-        if (!active) return;
-        setProfile(nextProfile);
-        setRows(nextRows);
-        setOffset(0);
+        if (!active) return
+        setProfile(nextProfile)
+        setRows(nextRows)
+        setOffset(0)
       })
       .catch((reason: unknown) => {
         if (active)
           setInspectorError(
             reason instanceof Error
               ? reason.message
-              : "Could not inspect this dataset.",
-          );
+              : 'Could not inspect this dataset.',
+          )
       })
-      .finally(() => active && setLoadingProfile(false));
+      .finally(() => active && setLoadingProfile(false))
     return () => {
-      active = false;
-    };
-  }, [selectedDataset, selectedDatasetId]);
+      active = false
+    }
+  }, [selectedDataset, selectedDatasetId])
 
   async function loadRows(nextOffset: number) {
-    if (!selectedDatasetId) return;
-    setLoadingRows(true);
-    setInspectorError("");
+    if (!selectedDatasetId) return
+    setLoadingRows(true)
+    setInspectorError('')
     try {
-      setRows(await structuredApi.rows(selectedDatasetId, nextOffset, 50));
-      setOffset(nextOffset);
+      setRows(await structuredApi.rows(selectedDatasetId, nextOffset, 50))
+      setOffset(nextOffset)
     } catch (reason) {
       setInspectorError(
-        reason instanceof Error ? reason.message : "Could not load these rows.",
-      );
+        reason instanceof Error ? reason.message : 'Could not load these rows.',
+      )
     } finally {
-      setLoadingRows(false);
+      setLoadingRows(false)
     }
   }
 
   async function uploadFile(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!selectedFile) return;
+    event.preventDefault()
+    if (!selectedFile) return
     const input =
-      event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]');
-    setUploading(true);
-    setUploadError("");
+      event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')
+    setUploading(true)
+    setUploadError('')
     try {
-      const added = await structuredApi.uploadFile(workspaceId, selectedFile);
-      setSelectedFile(null);
-      if (input) input.value = "";
-      await onSourcesChanged();
-      setSelectedSourceId(added.id);
-      setSelectedDatasetId("");
+      const added = await structuredApi.uploadFile(workspaceId, selectedFile)
+      setSelectedFile(null)
+      if (input) input.value = ''
+      await onSourcesChanged()
+      setSelectedSourceId(added.id)
+      setSelectedDatasetId('')
     } catch (reason) {
       setUploadError(
         reason instanceof Error
           ? reason.message
-          : "Could not upload this file.",
-      );
+          : 'Could not upload this file.',
+      )
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
   }
 
   async function uploadDocuments(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    event.preventDefault()
     const input =
-      event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]');
-    const files = input?.files ? Array.from(input.files) : [];
-    if (!files.length) return;
+      event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')
+    const files = input?.files ? Array.from(input.files) : []
+    if (!files.length) return
     setDocumentUploadItems(
-      files.map((file) => ({ file, progress: 0, state: "queued" })),
-    );
-    setUploadingDocuments(true);
-    setSelectedDocumentFiles([]);
-    const uploaded: Awaited<ReturnType<typeof documentApi.upload>>[] = [];
+      files.map((file) => ({ file, progress: 0, state: 'queued' })),
+    )
+    setUploadingDocuments(true)
+    setSelectedDocumentFiles([])
+    const uploaded: Awaited<ReturnType<typeof documentApi.upload>>[] = []
     for (const [index, file] of files.entries()) {
       setDocumentUploadItems((items) =>
         items.map((item, itemIndex) =>
-          itemIndex === index ? { ...item, state: "uploading" } : item,
+          itemIndex === index ? { ...item, state: 'uploading' } : item,
         ),
-      );
+      )
       try {
         const added = await documentApi.upload(
           workspaceId,
@@ -451,47 +448,47 @@ function SourceWorkbench({
               ),
             ),
           chunkStrategy,
-        );
-        uploaded.push(added);
+        )
+        uploaded.push(added)
         setDocumentUploadItems((items) =>
           items.map((item, itemIndex) =>
             itemIndex === index
-              ? { ...item, progress: 100, state: "uploaded" }
+              ? { ...item, progress: 100, state: 'uploaded' }
               : item,
           ),
-        );
+        )
       } catch (reason) {
         setDocumentUploadItems((items) =>
           items.map((item, itemIndex) =>
             itemIndex === index
               ? {
                   ...item,
-                  state: "failed",
+                  state: 'failed',
                   error:
                     reason instanceof Error
                       ? reason.message
-                      : "Could not upload this document.",
+                      : 'Could not upload this document.',
                 }
               : item,
           ),
-        );
+        )
       }
     }
     if (uploaded.length) {
-      await onSourcesChanged();
-      await loadDocuments();
-      setSelectedSourceId(uploaded[0].source.id);
-      setSelectedDocumentId(uploaded[0].document.id);
-      setSelectedDatasetId("");
+      await onSourcesChanged()
+      await loadDocuments()
+      setSelectedSourceId(uploaded[0].source.id)
+      setSelectedDocumentId(uploaded[0].document.id)
+      setSelectedDatasetId('')
     }
-    setUploadingDocuments(false);
-    if (input) input.value = "";
+    setUploadingDocuments(false)
+    if (input) input.value = ''
   }
 
   async function queueCrawl(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setQueueingCrawl(true);
-    setCrawlError("");
+    event.preventDefault()
+    setQueueingCrawl(true)
+    setCrawlError('')
     try {
       const result = await documentApi.queueCrawl(workspaceId, {
         url: crawlUrl.trim(),
@@ -499,7 +496,7 @@ function SourceWorkbench({
         max_depth: crawlMaxDepth,
         max_bytes: crawlMaxBytes,
         sitemap: crawlSitemap,
-      });
+      })
       setCrawlJobs((current) => [
         {
           id: result.job_id,
@@ -509,31 +506,31 @@ function SourceWorkbench({
           polls: 0,
         },
         ...current,
-      ]);
-      setCrawlUrl("");
+      ])
+      setCrawlUrl('')
     } catch (reason) {
       setCrawlError(
         reason instanceof Error
           ? reason.message
-          : "Could not queue this crawl.",
-      );
+          : 'Could not queue this crawl.',
+      )
     } finally {
-      setQueueingCrawl(false);
+      setQueueingCrawl(false)
     }
   }
 
   async function refreshCrawlJob(jobId: string) {
     try {
-      const latest = await documentApi.ingestionJob(jobId);
+      const latest = await documentApi.ingestionJob(jobId)
       setCrawlJobs((current) =>
         current.map((job) =>
           job.id === jobId
             ? { ...latest, polls: 0, pollError: undefined }
             : job,
         ),
-      );
-      if (["completed", "failed", "cancelled"].includes(latest.state)) {
-        await Promise.all([onSourcesChanged(), loadDocuments()]);
+      )
+      if (['completed', 'failed', 'cancelled'].includes(latest.state)) {
+        await Promise.all([onSourcesChanged(), loadDocuments()])
       }
     } catch (reason) {
       setCrawlJobs((current) =>
@@ -544,194 +541,192 @@ function SourceWorkbench({
                 pollError:
                   reason instanceof Error
                     ? reason.message
-                    : "Could not refresh crawl status.",
+                    : 'Could not refresh crawl status.',
               }
             : job,
         ),
-      );
+      )
     }
   }
 
   async function documentAction(
-    action: "retry" | "reindex" | "archive",
+    action: 'retry' | 'reindex' | 'archive',
     documentId: string,
   ) {
     try {
-      if (action === "retry") await documentApi.retry(documentId);
-      else if (action === "reindex") await documentApi.reindex(documentId);
-      else await documentApi.archive(documentId);
-      await loadDocuments();
-      if (action === "archive") {
-        setSelectedDocumentId("");
-        await onSourcesChanged();
+      if (action === 'retry') await documentApi.retry(documentId)
+      else if (action === 'reindex') await documentApi.reindex(documentId)
+      else await documentApi.archive(documentId)
+      await loadDocuments()
+      if (action === 'archive') {
+        setSelectedDocumentId('')
+        await onSourcesChanged()
       }
     } catch (reason) {
       setDocumentBlocksError(
-        reason instanceof Error ? reason.message : "Document action failed.",
-      );
+        reason instanceof Error ? reason.message : 'Document action failed.',
+      )
     }
   }
 
   function chooseFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] ?? null;
-    setSelectedFile(file);
-    setUploadError("");
+    const file = event.target.files?.[0] ?? null
+    setSelectedFile(file)
+    setUploadError('')
   }
 
-  function changeDialect(dialect: ConnectionDraft["dialect"]) {
+  function changeDialect(dialect: ConnectionDraft['dialect']) {
     setConnection((current) => ({
       ...current,
       dialect,
-      port: dialect === "mysql" ? 3306 : 5432,
-    }));
-    setTestResult(null);
-    setConnectionError("");
+      port: dialect === 'mysql' ? 3306 : 5432,
+    }))
+    setTestResult(null)
+    setConnectionError('')
   }
 
   async function testConnection() {
-    setTestingConnection(true);
-    setTestResult(null);
-    setConnectionError("");
+    setTestingConnection(true)
+    setTestResult(null)
+    setConnectionError('')
     try {
-      setTestResult(
-        await structuredApi.testConnection(workspaceId, connection),
-      );
+      setTestResult(await structuredApi.testConnection(workspaceId, connection))
     } catch (reason) {
       setConnectionError(
-        reason instanceof Error ? reason.message : "Connection test failed.",
-      );
+        reason instanceof Error ? reason.message : 'Connection test failed.',
+      )
     } finally {
-      setTestingConnection(false);
+      setTestingConnection(false)
     }
   }
 
   async function saveConnection(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSavingConnection(true);
-    setConnectionError("");
+    event.preventDefault()
+    setSavingConnection(true)
+    setConnectionError('')
     try {
       const created = await structuredApi.saveConnection(workspaceId, {
         ...connection,
         display_name:
           connectionName.trim() ||
-          `${connection.dialect === "mysql" ? "MySQL" : "PostgreSQL"} · ${connection.database_name}`,
-      });
+          `${connection.dialect === 'mysql' ? 'MySQL' : 'PostgreSQL'} · ${connection.database_name}`,
+      })
       setConnection({
         ...emptyConnection,
         dialect: connection.dialect,
-        port: connection.dialect === "mysql" ? 3306 : 5432,
-      });
-      setConnectionName("");
-      setTestResult(null);
-      await onSourcesChanged();
-      setSelectedSourceId(created.source.id);
-      setSelectedDatasetId("");
+        port: connection.dialect === 'mysql' ? 3306 : 5432,
+      })
+      setConnectionName('')
+      setTestResult(null)
+      await onSourcesChanged()
+      setSelectedSourceId(created.source.id)
+      setSelectedDatasetId('')
     } catch (reason) {
       setConnectionError(
         reason instanceof Error
           ? reason.message
-          : "Could not save this connection.",
-      );
+          : 'Could not save this connection.',
+      )
     } finally {
-      setSavingConnection(false);
+      setSavingConnection(false)
     }
   }
 
   async function openSchema() {
-    if (!selectedSource) return;
-    setLoadingSchema(true);
-    setSchemaError("");
+    if (!selectedSource) return
+    setLoadingSchema(true)
+    setSchemaError('')
     try {
-      setSchema(await structuredApi.schema(selectedSource.id));
+      setSchema(await structuredApi.schema(selectedSource.id))
     } catch (reason) {
       setSchemaError(
-        reason instanceof Error ? reason.message : "Could not load the schema.",
-      );
+        reason instanceof Error ? reason.message : 'Could not load the schema.',
+      )
     } finally {
-      setLoadingSchema(false);
+      setLoadingSchema(false)
     }
   }
 
   async function refreshSchema() {
-    if (!selectedSource) return;
-    setLoadingSchema(true);
-    setSchemaError("");
+    if (!selectedSource) return
+    setLoadingSchema(true)
+    setSchemaError('')
     try {
-      const refreshed = await structuredApi.refreshSchema(selectedSource.id);
+      const refreshed = await structuredApi.refreshSchema(selectedSource.id)
       setSchema({
         source_id: refreshed.source.id,
         source_version: refreshed.source.version,
-        schema_version: refreshed.source.schema_version ?? "updated",
+        schema_version: refreshed.source.schema_version ?? 'updated',
         datasets: refreshed.datasets,
-      });
-      await onSourcesChanged();
+      })
+      await onSourcesChanged()
     } catch (reason) {
       setSchemaError(
         reason instanceof Error
           ? reason.message
-          : "Could not refresh the schema.",
-      );
+          : 'Could not refresh the schema.',
+      )
     } finally {
-      setLoadingSchema(false);
+      setLoadingSchema(false)
     }
   }
 
   async function saveSourceMetadata(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!selectedSource) return;
-    setSavingMetadata(true);
-    setMetadataError("");
-    setMetadataMessage("");
-    const normalizedHints: Record<string, string> = {};
+    event.preventDefault()
+    if (!selectedSource) return
+    setSavingMetadata(true)
+    setMetadataError('')
+    setMetadataMessage('')
+    const normalizedHints: Record<string, string> = {}
     for (const hint of metricHints) {
-      const key = hint.key.trim();
-      const value = hint.value.trim();
-      if (!key && !value) continue;
+      const key = hint.key.trim()
+      const value = hint.value.trim()
+      if (!key && !value) continue
       if (!key || !value) {
-        setMetadataError("Add both a column or metric name and its meaning.");
-        setSavingMetadata(false);
-        return;
+        setMetadataError('Add both a column or metric name and its meaning.')
+        setSavingMetadata(false)
+        return
       }
       if (key.length > 128 || value.length > 500) {
         setMetadataError(
-          "Names must be 128 characters or fewer; meanings 500 or fewer.",
-        );
-        setSavingMetadata(false);
-        return;
+          'Names must be 128 characters or fewer; meanings 500 or fewer.',
+        )
+        setSavingMetadata(false)
+        return
       }
       if (normalizedHints[key]) {
-        setMetadataError(`“${key}” appears more than once.`);
-        setSavingMetadata(false);
-        return;
+        setMetadataError(`“${key}” appears more than once.`)
+        setSavingMetadata(false)
+        return
       }
-      normalizedHints[key] = value;
+      normalizedHints[key] = value
     }
     if (Object.keys(normalizedHints).length > 32) {
-      setMetadataError("A source can have up to 32 metric hints.");
-      setSavingMetadata(false);
-      return;
+      setMetadataError('A source can have up to 32 metric hints.')
+      setSavingMetadata(false)
+      return
     }
     try {
       await structuredApi.updateSourceMetadata(workspaceId, selectedSource.id, {
         description: sourceDescription.trim() || null,
         metric_hints: normalizedHints,
-      });
-      await onSourcesChanged();
+      })
+      await onSourcesChanged()
       setMetadataMessage(
-        "Source context saved. It will be used in future analyses.",
-      );
+        'Source context saved. It will be used in future analyses.',
+      )
     } catch (reason) {
       setMetadataError(
         reason instanceof Error
           ? reason.message
-          : "Could not save source context.",
-      );
+          : 'Could not save source context.',
+      )
     } finally {
-      setSavingMetadata(false);
+      setSavingMetadata(false)
     }
   }
 
-  const columns = profile?.details.columns ?? [];
+  const columns = profile?.details.columns ?? []
 
   return (
     <section className="source-workbench" aria-label="Sources and datasets">
@@ -739,7 +734,7 @@ function SourceWorkbench({
         <form className="file-upload-form" onSubmit={uploadFile}>
           <label className="upload-pick">
             <Upload size={15} />
-            <span>{selectedFile?.name ?? "Choose a data file"}</span>
+            <span>{selectedFile?.name ?? 'Choose a data file'}</span>
             <input
               type="file"
               accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -756,7 +751,7 @@ function SourceWorkbench({
             ) : (
               <Plus size={14} />
             )}
-            {uploading ? "Uploading" : "Add file"}
+            {uploading ? 'Uploading' : 'Add file'}
           </button>
           <span className="supported-formats">CSV · XLSX · XLS</span>
         </form>
@@ -765,8 +760,8 @@ function SourceWorkbench({
             <FileText size={15} />
             <span>
               {selectedDocumentFiles.length
-                ? `${selectedDocumentFiles.length} document${selectedDocumentFiles.length === 1 ? "" : "s"} selected`
-                : "Choose research documents"}
+                ? `${selectedDocumentFiles.length} document${selectedDocumentFiles.length === 1 ? '' : 's'} selected`
+                : 'Choose research documents'}
             </span>
             <input
               type="file"
@@ -779,9 +774,9 @@ function SourceWorkbench({
           </label>
           {(
             ingestionCapabilities?.chunk_strategies ?? [
-              "structure",
-              "recursive",
-              "parent_child",
+              'structure',
+              'recursive',
+              'parent_child',
             ]
           ).length > 1 && (
             <label className="chunk-strategy-select">
@@ -792,13 +787,13 @@ function SourceWorkbench({
               >
                 {(
                   ingestionCapabilities?.chunk_strategies ?? [
-                    "structure",
-                    "recursive",
-                    "parent_child",
+                    'structure',
+                    'recursive',
+                    'parent_child',
                   ]
                 ).map((strategy) => (
                   <option key={strategy} value={strategy}>
-                    {strategy.replaceAll("_", " ")}
+                    {strategy.replaceAll('_', ' ')}
                   </option>
                 ))}
               </select>
@@ -814,7 +809,7 @@ function SourceWorkbench({
             ) : (
               <Plus size={14} />
             )}
-            {uploadingDocuments ? "Uploading" : "Add documents"}
+            {uploadingDocuments ? 'Uploading' : 'Add documents'}
           </button>
           <span className="supported-formats">
             PDF · DOCX · TXT · MD · HTML · PPTX
@@ -836,13 +831,13 @@ function SourceWorkbench({
                 <span title={item.file.name}>{item.file.name}</span>
                 <span>
                   {item.error ??
-                    (item.state === "uploaded"
-                      ? "Added"
-                      : item.state === "failed"
-                        ? "Failed"
+                    (item.state === 'uploaded'
+                      ? 'Added'
+                      : item.state === 'failed'
+                        ? 'Failed'
                         : `${item.progress}%`)}
                 </span>
-                {item.state !== "failed" && (
+                {item.state !== 'failed' && (
                   <span className="upload-item-progress">
                     <i style={{ width: `${item.progress}%` }} />
                   </span>
@@ -864,9 +859,9 @@ function SourceWorkbench({
             <div className="crawl-form-heading">
               <strong>Import an approved website</strong>
               <span>
-                Allowed hosts:{" "}
-                {ingestionCapabilities.crawl.approved_hosts.join(", ") ||
-                  "none"}
+                Allowed hosts:{' '}
+                {ingestionCapabilities.crawl.approved_hosts.join(', ') ||
+                  'none'}
               </span>
             </div>
             <label className="crawl-url-field">
@@ -937,7 +932,7 @@ function SourceWorkbench({
                 ) : (
                   <Plus size={14} />
                 )}
-                {queueingCrawl ? "Queueing" : "Queue website import"}
+                {queueingCrawl ? 'Queueing' : 'Queue website import'}
               </button>
             </div>
             {crawlError && (
@@ -951,12 +946,12 @@ function SourceWorkbench({
           <div className="crawl-job-list" aria-live="polite">
             {crawlJobs.map((job) => {
               const active = [
-                "queued",
-                "pending",
-                "running",
-                "processing",
-              ].includes(job.state.toLowerCase());
-              const pages = job.result?.pages ?? [];
+                'queued',
+                'pending',
+                'running',
+                'processing',
+              ].includes(job.state.toLowerCase())
+              const pages = job.result?.pages ?? []
               return (
                 <article
                   className={`crawl-job ${job.state.toLowerCase()}`}
@@ -965,17 +960,17 @@ function SourceWorkbench({
                   <header>
                     <strong>Website import</strong>
                     <span className="crawl-job-state">
-                      {job.state.replaceAll("_", " ")}
+                      {job.state.replaceAll('_', ' ')}
                     </span>
                   </header>
                   <p>
                     {
                       pages.filter((page) =>
-                        ["fetched", "queued"].includes(page.state),
+                        ['fetched', 'queued'].includes(page.state),
                       ).length
-                    }{" "}
-                    pages reached ingestion ·{" "}
-                    {pages.filter((page) => page.state === "failed").length}{" "}
+                    }{' '}
+                    pages reached ingestion ·{' '}
+                    {pages.filter((page) => page.state === 'failed').length}{' '}
                     page failures
                   </p>
                   {job.pollError && (
@@ -994,7 +989,7 @@ function SourceWorkbench({
                     <ul>
                       {pages.map((page, index) => (
                         <li
-                          className={page.state === "failed" ? "failed" : ""}
+                          className={page.state === 'failed' ? 'failed' : ''}
                           key={`${page.url}-${index}`}
                         >
                           <span title={page.url}>{page.url}</span>
@@ -1004,7 +999,7 @@ function SourceWorkbench({
                     </ul>
                   )}
                 </article>
-              );
+              )
             })}
           </div>
         )}
@@ -1027,7 +1022,7 @@ function SourceWorkbench({
                   value={connection.dialect}
                   onChange={(event) =>
                     changeDialect(
-                      event.target.value as ConnectionDraft["dialect"],
+                      event.target.value as ConnectionDraft['dialect'],
                     )
                   }
                 >
@@ -1128,7 +1123,7 @@ function SourceWorkbench({
                     options: {
                       ...connection.options,
                       ssl_mode: event.target
-                        .value as ConnectionDraft["options"]["ssl_mode"],
+                        .value as ConnectionDraft['options']['ssl_mode'],
                     },
                   })
                 }
@@ -1148,7 +1143,7 @@ function SourceWorkbench({
             )}
             {testResult && (
               <p
-                className={`connection-test-result ${testResult.ok ? "success" : "failure"}`}
+                className={`connection-test-result ${testResult.ok ? 'success' : 'failure'}`}
                 role="status"
               >
                 {testResult.ok ? (
@@ -1157,7 +1152,7 @@ function SourceWorkbench({
                   <AlertCircle size={14} />
                 )}
                 {testResult.message}
-                {typeof testResult.latency_ms === "number" && (
+                {typeof testResult.latency_ms === 'number' && (
                   <span>{testResult.latency_ms} ms</span>
                 )}
               </p>
@@ -1181,7 +1176,7 @@ function SourceWorkbench({
                 ) : (
                   <Server size={13} />
                 )}
-                {testingConnection ? "Testing" : "Test connection"}
+                {testingConnection ? 'Testing' : 'Test connection'}
               </button>
               <button
                 className="source-primary-button"
@@ -1200,7 +1195,7 @@ function SourceWorkbench({
                 ) : (
                   <Plus size={13} />
                 )}
-                {savingConnection ? "Saving" : "Save connection"}
+                {savingConnection ? 'Saving' : 'Save connection'}
               </button>
             </div>
           </form>
@@ -1224,16 +1219,16 @@ function SourceWorkbench({
         <div className="catalog-layout">
           <nav className="catalog-source-list" aria-label="Workspace sources">
             <div className="catalog-label">
-              Sources <span>{String(sources.length).padStart(2, "0")}</span>
+              Sources <span>{String(sources.length).padStart(2, '0')}</span>
             </div>
             {sources.map((source) => (
               <button
-                className={`catalog-source ${source.id === selectedSourceId ? "selected" : ""}`}
+                className={`catalog-source ${source.id === selectedSourceId ? 'selected' : ''}`}
                 key={source.id}
                 onClick={() => {
-                  setSelectedSourceId(source.id);
-                  setSelectedDatasetId("");
-                  setSchema(null);
+                  setSelectedSourceId(source.id)
+                  setSelectedDatasetId('')
+                  setSchema(null)
                 }}
               >
                 <span className="catalog-source-icon">
@@ -1306,17 +1301,17 @@ function SourceWorkbench({
                     loadingBlocks={loadingDocumentBlocks}
                     blocksError={documentBlocksError}
                     onRetry={() =>
-                      void documentAction("retry", selectedDocument?.id ?? "")
+                      void documentAction('retry', selectedDocument?.id ?? '')
                     }
                     onReindex={() =>
-                      void documentAction("reindex", selectedDocument?.id ?? "")
+                      void documentAction('reindex', selectedDocument?.id ?? '')
                     }
                     onArchive={() =>
-                      void documentAction("archive", selectedDocument?.id ?? "")
+                      void documentAction('archive', selectedDocument?.id ?? '')
                     }
                     onSelect={(id) => {
-                      setSelectedDocumentId(id);
-                      setDocumentBlockOffset(0);
+                      setSelectedDocumentId(id)
+                      setDocumentBlockOffset(0)
                     }}
                     onPage={(offset) => setDocumentBlockOffset(offset)}
                   />
@@ -1352,7 +1347,7 @@ function SourceWorkbench({
                             onClick={() =>
                               setMetricHints((current) => [
                                 ...current,
-                                { key: "", value: "" },
+                                { key: '', value: '' },
                               ])
                             }
                             disabled={
@@ -1416,10 +1411,10 @@ function SourceWorkbench({
                         <p
                           className={
                             metadataError
-                              ? "source-form-error"
-                              : "source-context-saved"
+                              ? 'source-form-error'
+                              : 'source-context-saved'
                           }
-                          role={metadataError ? "alert" : "status"}
+                          role={metadataError ? 'alert' : 'status'}
                         >
                           {metadataError ? (
                             <AlertCircle size={13} />
@@ -1439,7 +1434,7 @@ function SourceWorkbench({
                           {savingMetadata ? (
                             <LoaderCircle size={13} className="spin" />
                           ) : null}
-                          {savingMetadata ? "Saving context" : "Save context"}
+                          {savingMetadata ? 'Saving context' : 'Save context'}
                         </button>
                       </div>
                     </form>
@@ -1453,7 +1448,7 @@ function SourceWorkbench({
                     <div className="dataset-strip-head">
                       <span className="mini-label">Datasets / sheets</span>
                       <span>
-                        {String(sourceDatasets.length).padStart(2, "0")}
+                        {String(sourceDatasets.length).padStart(2, '0')}
                       </span>
                     </div>
                     {sourceDatasets.length ? (
@@ -1465,7 +1460,7 @@ function SourceWorkbench({
                         {sourceDatasets.map((dataset) => (
                           <button
                             role="listitem"
-                            className={`dataset-choice ${selectedDatasetId === dataset.id ? "selected" : ""}`}
+                            className={`dataset-choice ${selectedDatasetId === dataset.id ? 'selected' : ''}`}
                             key={dataset.id}
                             onClick={() => setSelectedDatasetId(dataset.id)}
                           >
@@ -1481,11 +1476,11 @@ function SourceWorkbench({
                       </p>
                     ) : (
                       <p className="no-datasets">
-                        {selectedSource.state !== "ready"
+                        {selectedSource.state !== 'ready'
                           ? `This source is ${selectedSource.state.toLowerCase()}. Datasets are unavailable until it is ready.`
                           : isDatabase(selectedSource)
-                            ? "Inspect or refresh the schema to discover tables."
-                            : "No sheets were found in this source."}
+                            ? 'Inspect or refresh the schema to discover tables.'
+                            : 'No sheets were found in this source.'}
                       </p>
                     )}
 
@@ -1508,7 +1503,7 @@ function SourceWorkbench({
                             <strong>
                               {profile.details.row_count === null ||
                               profile.details.row_count === undefined
-                                ? "Unknown"
+                                ? 'Unknown'
                                 : profile.details.row_count.toLocaleString()}
                               {profile.details.row_count_exact === false && (
                                 <i> est.</i>
@@ -1555,10 +1550,21 @@ function SourceWorkbench({
                             >
                               <strong>{column.name}</strong>
                               <span>
-                                {column.type || column.duckdb_type || "Unknown"}
+                                {column.type || column.duckdb_type || 'Unknown'}
                               </span>
-                              <span>{column.missing_count ?? "—"}</span>
-                              <span>{column.hints?.join(", ") || "—"}</span>
+                              <span>{column.missing_count ?? '—'}</span>
+                              <span>
+                                {Array.isArray(column.hints)
+                                  ? column.hints.join(', ') || '—'
+                                  : typeof column.hints === 'string'
+                                    ? column.hints || '—'
+                                    : typeof column.hints === 'object' &&
+                                        column.hints
+                                      ? Object.values(column.hints)
+                                          .map(String)
+                                          .join(', ') || '—'
+                                      : '—'}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -1567,7 +1573,7 @@ function SourceWorkbench({
                           <span>
                             {rows
                               ? `${rows.total_rows.toLocaleString()} total`
-                              : ""}
+                              : ''}
                           </span>
                         </div>
                         {rows && columns.length > 0 && (
@@ -1608,8 +1614,8 @@ function SourceWorkbench({
                             <span>
                               {rows.rows.length
                                 ? `${offset + 1}–${Math.min(offset + rows.rows.length, rows.total_rows)} of ${rows.total_rows.toLocaleString()}`
-                                : "No rows"}
-                              {rows.truncated && " · result truncated"}
+                                : 'No rows'}
+                              {rows.truncated && ' · result truncated'}
                             </span>
                             <div>
                               <button
@@ -1656,25 +1662,25 @@ function SourceWorkbench({
         </div>
       )}
     </section>
-  );
+  )
 }
 
 function documentLocation(location: Record<string, unknown>): string {
   const parts = Object.entries(location)
     .filter(
-      ([, value]) => value !== null && value !== undefined && value !== "",
+      ([, value]) => value !== null && value !== undefined && value !== '',
     )
-    .map(([key, value]) => `${key.replaceAll("_", " ")} ${String(value)}`);
-  return parts.join(" · ") || "Location not provided";
+    .map(([key, value]) => `${key.replaceAll('_', ' ')} ${String(value)}`)
+  return parts.join(' · ') || 'Location not provided'
 }
 
 function documentWarnings(document: DocumentView): string[] {
-  const warnings = document.details.warnings;
+  const warnings = document.details.warnings
   return Array.isArray(warnings)
     ? warnings.filter(
-        (warning): warning is string => typeof warning === "string",
+        (warning): warning is string => typeof warning === 'string',
       )
-    : [];
+    : []
 }
 
 function DocumentInspector({
@@ -1692,68 +1698,68 @@ function DocumentInspector({
   onSelect,
   onPage,
 }: {
-  documents: DocumentView[];
-  selectedDocument: DocumentView | undefined;
-  selectedDocumentId: string;
-  blocks: DocumentBlock[];
-  blockTotal: number;
-  blockOffset: number;
-  loadingBlocks: boolean;
-  blocksError: string;
-  onRetry: () => void;
-  onReindex: () => void;
-  onArchive: () => void;
-  onSelect: (id: string) => void;
-  onPage: (offset: number) => void;
+  documents: DocumentView[]
+  selectedDocument: DocumentView | undefined
+  selectedDocumentId: string
+  blocks: DocumentBlock[]
+  blockTotal: number
+  blockOffset: number
+  loadingBlocks: boolean
+  blocksError: string
+  onRetry: () => void
+  onReindex: () => void
+  onArchive: () => void
+  onSelect: (id: string) => void
+  onPage: (offset: number) => void
 }) {
-  const [tables, setTables] = useState<DocumentTableCandidate[]>([]);
-  const [tablesError, setTablesError] = useState("");
-  const [acceptingTable, setAcceptingTable] = useState("");
-  const [tableActionError, setTableActionError] = useState("");
+  const [tables, setTables] = useState<DocumentTableCandidate[]>([])
+  const [tablesError, setTablesError] = useState('')
+  const [acceptingTable, setAcceptingTable] = useState('')
+  const [tableActionError, setTableActionError] = useState('')
   useEffect(() => {
-    if (!selectedDocument || selectedDocument.state !== "ready") {
-      setTables([]);
-      setTablesError("");
-      return;
+    if (!selectedDocument || selectedDocument.state !== 'ready') {
+      setTables([])
+      setTablesError('')
+      return
     }
-    let active = true;
+    let active = true
     documentApi
       .tables(selectedDocument.id)
       .then((result) => {
         if (active) {
-          setTables(result.tables);
-          setTablesError("");
+          setTables(result.tables)
+          setTablesError('')
         }
       })
       .catch((reason: unknown) => {
         if (active) {
-          setTables([]);
+          setTables([])
           setTablesError(
-            reason instanceof Error ? reason.message : "Could not load tables.",
-          );
+            reason instanceof Error ? reason.message : 'Could not load tables.',
+          )
         }
-      });
+      })
     return () => {
-      active = false;
-    };
-  }, [selectedDocument?.id, selectedDocument?.state]);
+      active = false
+    }
+  }, [selectedDocument?.id, selectedDocument?.state])
 
   async function acceptTable(tableId: string) {
-    if (!selectedDocument) return;
-    setAcceptingTable(tableId);
-    setTableActionError("");
+    if (!selectedDocument) return
+    setAcceptingTable(tableId)
+    setTableActionError('')
     try {
-      await documentApi.acceptTable(selectedDocument.id, tableId);
-      const result = await documentApi.tables(selectedDocument.id);
-      setTables(result.tables);
+      await documentApi.acceptTable(selectedDocument.id, tableId)
+      const result = await documentApi.tables(selectedDocument.id)
+      setTables(result.tables)
     } catch (reason) {
       setTableActionError(
         reason instanceof Error
           ? reason.message
-          : "Could not accept this table.",
-      );
+          : 'Could not accept this table.',
+      )
     } finally {
-      setAcceptingTable("");
+      setAcceptingTable('')
     }
   }
   if (!selectedDocument) {
@@ -1768,14 +1774,14 @@ function DocumentInspector({
           </p>
         </div>
       </div>
-    );
+    )
   }
-  const warnings = documentWarnings(selectedDocument);
+  const warnings = documentWarnings(selectedDocument)
   const progress =
-    typeof selectedDocument.progress === "number"
+    typeof selectedDocument.progress === 'number'
       ? Math.max(0, Math.min(100, selectedDocument.progress))
-      : null;
-  const canReindex = selectedDocument.state === "ready";
+      : null
+  const canReindex = selectedDocument.state === 'ready'
   return (
     <div className="document-inspector">
       <div className="document-toolbar">
@@ -1786,7 +1792,7 @@ function DocumentInspector({
             Version {selectedDocument.source_version}
             {selectedDocument.extractor_version
               ? ` · extractor ${selectedDocument.extractor_version}`
-              : ""}
+              : ''}
           </small>
         </div>
         {documents.length > 1 && (
@@ -1805,7 +1811,7 @@ function DocumentInspector({
           </label>
         )}
         <div className="document-actions">
-          {["failed", "ocr_needed", "needs_ocr"].includes(
+          {['failed', 'ocr_needed', 'needs_ocr'].includes(
             selectedDocument.state,
           ) && (
             <button type="button" onClick={onRetry}>
@@ -1828,10 +1834,10 @@ function DocumentInspector({
         <span
           className={`document-state ${selectedDocument.state.toLowerCase()}`}
         >
-          {selectedDocument.state.replaceAll("_", " ")}
+          {selectedDocument.state.replaceAll('_', ' ')}
         </span>
         <span>
-          {selectedDocument.stage?.replaceAll("_", " ") || "Extraction"}
+          {selectedDocument.stage?.replaceAll('_', ' ') || 'Extraction'}
         </span>
         {progress !== null && <span>{Math.round(progress)}%</span>}
       </div>
@@ -1885,10 +1891,10 @@ function DocumentInspector({
               <header>
                 <div>
                   <strong>
-                    {table.title || `Table on page ${table.page ?? "?"}`}
+                    {table.title || `Table on page ${table.page ?? '?'}`}
                   </strong>
                   <small>
-                    {table.row_count.toLocaleString()} rows ·{" "}
+                    {table.row_count.toLocaleString()} rows ·{' '}
                     {table.column_count} columns
                   </small>
                 </div>
@@ -1936,9 +1942,9 @@ function DocumentInspector({
                           {table.columns.map((_, index) => (
                             <td
                               key={`${row.row_index}-${index}`}
-                              title={String(row.cells[index]?.value ?? "")}
+                              title={String(row.cells[index]?.value ?? '')}
                             >
-                              {String(row.cells[index]?.value ?? "—")}
+                              {String(row.cells[index]?.value ?? '—')}
                             </td>
                           ))}
                         </tr>
@@ -1964,7 +1970,7 @@ function DocumentInspector({
           {blocks.map((block) => (
             <article className="document-block" key={block.id}>
               <div className="document-block-meta">
-                <span>{block.kind.replaceAll("_", " ")}</span>
+                <span>{block.kind.replaceAll('_', ' ')}</span>
                 <span>{documentLocation(block.location)}</span>
               </div>
               {block.heading && <h4>{block.heading}</h4>}
@@ -1973,7 +1979,7 @@ function DocumentInspector({
                 <small>
                   {[block.language, ...(block.scripts ?? [])]
                     .filter(Boolean)
-                    .join(" · ")}
+                    .join(' · ')}
                 </small>
               )}
             </article>
@@ -1981,18 +1987,18 @@ function DocumentInspector({
         </div>
       ) : (
         <p className="no-datasets">
-          {selectedDocument.state === "failed"
-            ? "Extraction failed. See the warning above for details."
-            : selectedDocument.state === "needs_ocr"
-              ? "This document needs OCR before its text can be inspected."
-              : "Text blocks will appear here when extraction is complete."}
+          {selectedDocument.state === 'failed'
+            ? 'Extraction failed. See the warning above for details.'
+            : selectedDocument.state === 'needs_ocr'
+              ? 'This document needs OCR before its text can be inspected.'
+              : 'Text blocks will appear here when extraction is complete.'}
         </p>
       )}
       {blockTotal > 50 && (
         <div className="rows-pagination">
           <span>
             {blockOffset + 1}–
-            {Math.min(blockOffset + blocks.length, blockTotal)} of{" "}
+            {Math.min(blockOffset + blocks.length, blockTotal)} of{' '}
             {blockTotal.toLocaleString()}
           </span>
           <div>
@@ -2014,7 +2020,7 @@ function DocumentInspector({
         </div>
       )}
     </div>
-  );
+  )
 }
 
 function SchemaSummary({ schema }: { schema: SourceSchema }) {
@@ -2028,11 +2034,11 @@ function SchemaSummary({ schema }: { schema: SourceSchema }) {
         {schema.datasets.map((dataset) => {
           const columns = Array.isArray(dataset.details.columns)
             ? (dataset.details.columns as {
-                name?: string;
-                type?: string;
-                duckdb_type?: string;
+                name?: string
+                type?: string
+                duckdb_type?: string
               }[])
-            : [];
+            : []
           return (
             <div className="schema-dataset" key={dataset.id}>
               <strong>{identityLabel(dataset.identity)}</strong>
@@ -2040,16 +2046,16 @@ function SchemaSummary({ schema }: { schema: SourceSchema }) {
                 {columns
                   .map(
                     (column) =>
-                      `${column.name ?? "Column"} (${column.type ?? column.duckdb_type ?? "?"})`,
+                      `${column.name ?? 'Column'} (${column.type ?? column.duckdb_type ?? '?'})`,
                   )
-                  .join(" · ") || "No column details"}
+                  .join(' · ') || 'No column details'}
               </span>
             </div>
-          );
+          )
         })}
       </div>
     </details>
-  );
+  )
 }
 
-export default SourceWorkbench;
+export default SourceWorkbench

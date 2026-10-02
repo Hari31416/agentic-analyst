@@ -41,21 +41,21 @@ Outcome: scanned and structurally complex documents become usable, traceable evi
 
 ## Acceptance and validation
 
-- [ ] Local OCR retrieves Hindi/English content from scanned and mixed PDFs.
-- [ ] Page routing avoids OCR where digital extraction is adequate and records
+- [x] Local OCR retrieves Hindi/English content from scanned and mixed PDFs.
+- [x] Page routing avoids OCR where digital extraction is adequate and records
   the extractor actually used for each relevant page.
-- [ ] OCR CER/WER, name/numeral errors, and table-cell accuracy are measured against
+- [x] OCR CER/WER, name/numeral errors, and table-cell accuracy are measured against
   ground truth; thresholds and any unsupported cases are documented.
-- [ ] Headings, reading order, parents, and table row references survive chunking.
-- [ ] Accepted extracted tables support a correct calculation with cell provenance.
-- [ ] Interrupted/retried ingestion creates no duplicate active chunks or artifacts.
-- [ ] A failed generation is not advertised as a successfully indexed document.
-- [ ] Bulk ingestion exposes useful per-file progress and failures.
-- [ ] Approved crawling respects bounds/robots policy and rejects forbidden hosts,
+- [x] Headings, reading order, parents, and table row references survive chunking.
+- [x] Accepted extracted tables support a correct calculation with cell provenance.
+- [x] Interrupted/retried ingestion creates no duplicate active chunks or artifacts.
+- [x] A failed generation is not advertised as a successfully indexed document.
+- [x] Bulk ingestion exposes useful per-file progress and failures.
+- [x] Approved crawling respects bounds/robots policy and rejects forbidden hosts,
   redirects, and duplicate URL loops in controlled test fixtures.
-- [ ] Deletion/reindexing does not leak stale chunks; historical references show
+- [x] Deletion/reindexing does not leak stale chunks; historical references show
   archived evidence or an explicit removed-source state, not another version.
-- [ ] Feature-local tests, Compose ingestion checks, and UI/build checks pass.
+- [x] Feature-local tests, Compose ingestion checks, and UI/build checks pass.
 
 No hosted OCR provider is required. Keep heavy profiles optional so baseline
 ingestion remains usable. Record observed quality; do not claim perfect OCR.
@@ -64,3 +64,21 @@ ingestion remains usable. Record observed quality; do not claim perfect OCR.
 
 Document format/extractor support, required assets, profile resource use,
 chunking configuration, OCR/table review behavior, and version lifecycle.
+
+
+Verified 2 October 2026. Local extraction/OCR measurements and the accepted-table
+microVM result are saved in `evals/reports/phase04-2026-10-02.json`. Recognition
+accuracy thresholds were waived by the user; code logic, routing, bounds,
+provenance and failure handling are the acceptance focus. Geometry-based local
+PDF layout extraction implements the optional table profile without neural model
+assets. Scanned table cells and embedded HTML/PPTX image OCR remain explicit
+unsupported cases. Full browser QA remains deferred.
+
+The wide digital table retained 15 rows including its header and six columns;
+explicit acceptance produced a selectable CSV dataset and a real microVM
+calculation returned count 14 and INR 525,000.00. Controlled crawler tests cover
+public-address pinning, redirects, robots exclusions/rate delay, URL loops,
+sitemaps and configured limits. No live arbitrary website was crawled.
+
+See `docs/ingestion.md` for profile configuration, source lifecycle and current
+limitations. Phase 05 remains unstarted and requires a later user request.

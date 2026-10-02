@@ -200,3 +200,5 @@ Run `make live-documents` with host apps and infrastructure running to measure
 Hindi/English fixture recall and execute live mixed-source cases. The report in
 `evals/reports/phase03-2026-10-02.json` includes misses, document plus calculation
 citations, retained CSV/PNG outputs, and original-file/database integrity checks.
+
+Document extraction, table review, retry/removal, and approved website imports are documented in [docs/ingestion.md](docs/ingestion.md).

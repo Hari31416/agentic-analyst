@@ -14,7 +14,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | 01    | Verified | 57 deterministic tests, 14 PostgreSQL/RustFS tests, 2 live provider cases, 3 live microVM cases, bilingual full-agent/follow-up/cancellation and app restart checks | Full UI QA deferred by user |
 | 02    | Verified | Five live source cases; real DuckDB, PostgreSQL/MySQL safety/deadline/cancellation and RustFS checks | Full UI QA deferred by user |
 | 03    | Verified | PDF/DOCX ingestion, measured bilingual retrieval, two live mixed-source cases, citation history, CSV/PNG and source integrity checks | Full UI QA deferred by user; ranking improvements in phase 05 |
-| 04    | Not started | Not run                     | All phase checks |
+| 04    | Verified | Local Hindi/English scanned/mixed/rotated extraction; accepted PDF table calculated in real microVM; lifecycle/crawler/API tests, PostgreSQL/RustFS and frontend checks | OCR accuracy descriptive; full UI QA deferred; explicit format limitations recorded |
 | 05    | Not started | Not run                     | All phase checks |
 | 06    | Not started | Not run                     | All phase checks |
 | 07    | Not started | Not run                     | All phase checks |
@@ -238,3 +238,62 @@ Keep secrets and raw client data out of this file.
 - Saved the user's development/testing/commit instructions in `AGENTS.md` before
   this phase's commit. Host API/worker/frontend and infrastructure are running.
   Stop after committing phase 03. Phase 04 and later remain unstarted.
+
+
+## 2 October 2026: phase 04 ingestion and OCR
+
+- Added local per-page PDF OCR routing with English/Hindi Tesseract assets,
+  orientation correction, bounded rendering/subprocesses, actual extractor
+  metadata, recognizer confidence/word boxes, and missing/uncertain-page warnings.
+  Originals remain immutable. OCR quality is recorded without an accuracy gate,
+  per the user's instruction. The noisy Hindi fixture retains numeral/name
+  misses instead of prompting recognition-model tuning.
+- Added TXT/Markdown/HTML/PPTX ingestion, native heading/slide/table anchors,
+  PDF outline/numbering hierarchy, safe archive/XML checks, HTML sanitization,
+  and explicit embedded-image limitations. Extractor `document-extract-v2` and
+  chunker `structure-token-v3` apply to new uploads; older ready versions remain
+  unchanged. Selectable structure/recursive/parent-child strategies record their
+  effective token/byte bounds and keep row/parent/neighbor references.
+- Added the optional local `layout` profile using pdfplumber 0.11.9, with typed
+  digital table candidates and cell bounding boxes. Tesseract 5.5.1, pypdfium2
+  5.13.0 and traineddata checksums are recorded in the saved report. This profile
+  uses geometry rather than Docling neural assets. Scanned cells and embedded
+  HTML/PPTX image OCR are explicitly unavailable; OCR text supports reading.
+- Table preview/accept creates an idempotent derived CSV dataset with document,
+  block and cell lineage. Exact decimals, leading-zero identifiers, currency
+  hints and parsing warnings survive acceptance. Accepted sources are selectable
+  through the existing dataset APIs. The agent requests acceptance before using
+  extracted cells for arithmetic. A real microVM SQL calculation over the
+  accepted wide-table fixture returned count 14 and INR 525,000.00, exported its
+  CSV result, and cleaned up the guest session.
+- Added multi-file upload progress/failures, failed-stage retry, extraction reuse,
+  explicit embedding reindex controls, and archival removal. Retried publication
+  keeps block/chunk IDs; removed sources disappear from selection/retrieval while
+  saved citations retain their original versions and show an archived notice.
+  Job/document lock ordering matches worker publication. No schema migration was
+  needed because phase metadata uses the existing versioned JSON contracts.
+- Added opt-in approved website/sitemap jobs, per-page status, robots checks and
+  rate delay, URL normalization/deduplication, page/depth/byte/time bounds, redirect
+  revalidation, and vetted-IP connections with Host/TLS SNI. Public-address-only
+  network policy rejects private/mixed DNS answers; environment proxies are
+  disabled. Crawling remains disabled until exact hosts are configured. Sitemap
+  indexes and unavailable robots policies fail explicitly.
+- Verification: 158 deterministic tests, 26 PostgreSQL/RustFS integration tests,
+  one real accepted-table microVM test, Black/mypy and frontend formatting/
+  typecheck/build pass. Eleven integration checks were skipped: ten unchanged
+  database-connector fixtures lacked explicit source test URLs, and one pinned
+  embedding fixture was not rerun. Saved phase 02/03 live results remain valid;
+  no chat-model calls were repeated. Controlled crawler fixtures use mocked
+  transports, without requesting arbitrary public sites. Full browser QA remains
+  deferred by the user.
+- Saved report `evals/reports/phase04-2026-10-02.json` includes CER/WER, identifier/
+  numeral misses, mixed-page routing and table-cell accuracy. The clean/rotated
+  English CER is about 0.01, clean Hindi about 0.09, and noisy Hindi about 0.49;
+  these are observations, not release thresholds. Wide-table cell accuracy was
+  1.00 for this synthetic fixture. Instructions and local configuration are in
+  `docs/ingestion.md` and `.env.example`; repeat only when needed with
+  `make live-ingestion` and the explicit microVM table test.
+- `alembic check` reports no upgrade operations. Host API/worker/frontend were
+  refreshed after confirming zero running jobs; infrastructure remains healthy.
+- The authorized implementation stops after the phase 04 commits. Phase 05 and
+  later remain unstarted.

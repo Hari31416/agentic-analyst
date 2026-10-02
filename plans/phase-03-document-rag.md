@@ -65,4 +65,4 @@ baseline measurements, source-viewer behavior, and known Hindi tokenization gaps
 
 Verified 2 October 2026. Reports: `evals/reports/phase03-2026-10-02.json` and
 `evals/reports/phase03-retrieval-2026-10-02.json`. Retrieval misses are retained
-as the baseline for phase 05. Current scope ends after this phase is committed.
+as the baseline for phase 05. The original scope ended after this phase was committed; phase 04 was subsequently authorized.

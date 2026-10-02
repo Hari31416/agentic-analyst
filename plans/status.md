@@ -1,6 +1,6 @@
 # Implementation status
 
-Phase 00 is implemented. Final Compose/RustFS integration checks are in progress.
+Phase 00 is verified, including Compose startup, RustFS, and restart persistence.
 Phase 01 implementation has begun against the shared foundation contracts.
 
 Allowed statuses: not started, in progress, implemented / integration pending,
@@ -8,7 +8,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 
 | Phase | Status      | Verification evidence | Remaining gate   |
 | ----- | ----------- | --------------------- | ---------------- |
-| 00    | Implemented / integration pending | 20 deterministic tests, 5 real PostgreSQL tests; backend types and frontend checks pass | Full-stack startup, RustFS and restart checks |
+| 00    | Verified | 20 deterministic tests, 6 PostgreSQL/RustFS integration tests, 5 Linux fixture tests, healthy Compose, migration/schema and restart checks | None |
 | 01    | In progress | Not run | Runtime, UI, sandbox/model integration |
 | 02    | Not started | Not run                     | All phase checks |
 | 03    | Not started | Not run                     | All phase checks |
@@ -69,3 +69,27 @@ Keep secrets and raw client data out of this file.
   stack health and restart persistence, portable Linux fixture regeneration.
   Model credentials are absent and sandbox execution has not yet been probed.
 
+
+## 2 October 2026: phase 00 verification complete
+
+- Real PostgreSQL/RustFS integration suite: 6 passed. Conditional S3 writes
+  reject overwriting original keys; identical writes remain idempotent. Bounded
+  reads, byte sizes, and SHA-256 checks pass against the running RustFS service.
+- Full Compose build/start succeeds. Database, RustFS, API, and Vite frontend
+  health checks pass, and the worker executes a real `verify_storage` job.
+  Its retained result reports `verified: true`.
+- Applied migration inside the API container; `alembic check` reports no pending
+  upgrade operations. Restarted db, RustFS, API, and worker. The UI-created
+  workspace, artifact record, completed job, and exact RustFS object hash remain.
+- Ran the fixture suite in the Linux API container with read-only mounted evals:
+  5 passed, including byte-for-byte regeneration against the macOS-produced pack.
+- User supplied the model configuration and authorized live calls. English/Hindi
+  tool round trips passed for `gpt-oss-120b` at `cloud.olakrutrim.com`, using the
+  configured Chat Completions endpoint and correlated tool IDs. This is a model
+  adapter capability check; the complete live agent/sandbox gate remains phase 01.
+- Resolved the sandbox analysis image to digest
+  `sha256:73520043dc5aa0a30475b8b8a11bf8cc9fea1236540c54b83055d9e876d32fec`.
+  The standalone service revision remains
+  `b3f032b6a0ce1fab7cebc75250073f58b5b6c63c`.
+- Foundation committed as `c694a57`. Phase 01 adds worker-driven agent runs,
+  persisted history, SSE replay, microVM execution, and output inspection.

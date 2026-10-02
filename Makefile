@@ -247,6 +247,7 @@ app-start:
 	@$(MAKE) start-backend
 	@$(MAKE) start-worker
 	@$(MAKE) start-frontend
+	@$(MAKE) start-sandbox
 	@echo "Application services started"
 
 app-stop:

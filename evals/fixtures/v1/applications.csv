@@ -1,0 +1,6 @@
+application_id,scheme_id,scheme_status,annual_income_inr,grant_amount_inr
+APP-001,S1,active,180000.00,10000.00
+APP-002,S1,active,200000.00,15000.00
+APP-003,S1,active,200000.01,9000.01
+APP-004,S1,inactive,120000.00,8000.00
+APP-005,S2,active,150000.00,5000.50

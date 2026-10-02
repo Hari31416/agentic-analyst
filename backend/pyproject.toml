@@ -1,0 +1,39 @@
+[project]
+name = "agentic-rag-analyst"
+version = "0.1.0"
+description = "An evidence-backed analytical workspace"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.34,<1",
+  "pydantic>=2.10,<3", "pydantic-settings>=2.7,<3",
+  "sqlalchemy>=2.0,<2.1", "alembic>=1.14,<2", "psycopg[binary]>=3.2,<4",
+  "httpx>=0.28,<1", "cryptography>=44", "python-multipart>=0.0.20",
+  "indic-language-utils", "boto3>=1.36,<2",
+]
+
+[dependency-groups]
+dev = ["black>=25", "mypy>=1.15", "pytest>=8.3", "pytest-asyncio>=0.25",
+  "openpyxl>=3.1", "python-docx>=1.1", "reportlab>=5.0", "pypdf>=5", "uharfbuzz>=0.49", "boto3-stubs[s3]>=1.36,<2"]
+
+[tool.uv.sources]
+indic-language-utils = { git = "https://github.com/Hari31416/indic-language-utils", rev = "39921fa66670b2da40c8638b701f29895467e4a2" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "../evals/tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+asyncio_mode = "auto"
+markers = ["integration: requires TEST_DATABASE_URL pointing to a developer PostgreSQL database", "live: requires explicitly configured external services", "live_model: requires configured model", "live_sandbox: requires configured sandbox"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+files = ["app"]
+
+[[tool.mypy.overrides]]
+module = ["indic_language_utils.*"]
+follow_untyped_imports = true
+
+[tool.black]
+target-version = ["py312"]

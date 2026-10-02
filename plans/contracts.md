@@ -52,6 +52,10 @@ repository paths are not production imports or required Docker build contexts.
 | Artifact       | ID, storage key, MIME/type, byte size, hash, producer run/tool, input lineage, durable status                 |
 | Audit event    | Run/tool/source IDs, action, decision/reason code, timestamp, redacted metadata                               |
 
+RustFS/S3 blob storage is the default for Compose, selected by the user during
+phase 00. PostgreSQL stores metadata and object keys; original and derived bytes
+use separate prefixes. The filesystem adapter remains a development option.
+
 Original bytes remain immutable until explicit source deletion. Generated work
 never overwrites an original. A live database result records query time and
 result provenance; reproducing it requires a retained result or source snapshot.

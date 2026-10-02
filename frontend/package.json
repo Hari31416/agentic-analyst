@@ -1,0 +1,26 @@
+{
+  "name": "agentic-rag-analyst-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write 'src/**/*.{ts,tsx,css}' index.html package.json pnpm-lock.yaml tsconfig.json vite.config.ts",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx,css}' index.html package.json pnpm-lock.yaml tsconfig.json vite.config.ts"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "prettier": "^3.4.2",
+    "typescript": "~5.7.2"
+  }
+}

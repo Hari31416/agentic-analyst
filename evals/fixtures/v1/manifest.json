@@ -1,0 +1,21 @@
+{
+  "version": "v1",
+  "algorithm": "sha256",
+  "files": {
+    "applications-en.docx": "7fe46c7ad1e1a7ab84ac984465e77d4d763a53bad7f4e8d4339da30a98d0784c",
+    "applications-en.pdf": "030dd74dcb687076e679efef5f547a1d913781c01a26c8472c0d61e1a21ceacc",
+    "applications-hi.docx": "95313bb32955551f7f3dc193315e2d13518f6bfd87b25553e78ca8e1af99060d",
+    "applications-hi.pdf": "a3f5d388e13dd7926dce9bd151986c4aa7b7bca41980906bfeecee07a9dfeeac",
+    "applications.csv": "2fc9bdda40c5dc4065684e3b55e780ad7a61203cca056f203a20eca2701a4fd3",
+    "applications.xlsx": "7bfdad9a4dd902879b08ce87550e487e00f811a1577dafe3616aaea3417955df",
+    "expected.json": "0ccbe443fcfbccde0363c255eeb663dbb3ed2a6a4c3fe4ba2d8cf050fc789001",
+    "seed-mysql.sql": "b0873649a5a2bb5ca8ab726412557bfb0d4d4a2bbc8274adec0405cc114f55e6",
+    "seed-postgresql.sql": "c2d25819472618ee9027a733dfe08bd2aa3d4b6c2b323f845390739859cb5834"
+  },
+  "font_inputs": {
+    "NotoSans-Regular.ttf": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+    "NotoSansDevanagari-Regular.ttf": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+    "OFL-NotoSans.txt": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+    "OFL-NotoSansDevanagari.txt": "a216f6f8d85c7228093e0ee5e258d9d377e6671f68acb4db1930b29583d0f331"
+  }
+}

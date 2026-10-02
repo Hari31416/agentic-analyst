@@ -51,7 +51,8 @@ language metadata start in phases 00 through 03; later phases deepen those capab
   The user confirms it works on Mac out of the box. Follow that setup.
 - Use Docker Compose for local development, with infrastructure-only and full
   stack Makefile targets following the reference applications.
-- Use PostgreSQL with pgvector and text search; store files separately.
+- Use PostgreSQL with pgvector and text search; store file bytes in RustFS
+  through an S3 adapter by default. Filesystem is a development option.
 - Start with PDF, DOCX, CSV, Excel, MySQL, and PostgreSQL.
 - Preserve originals. Cleaning and analysis create derived outputs.
 - Internet is available. Process source content locally by default, apart from

@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "currency": "INR",
+  "qualifying_rule": "scheme_id = S1 AND scheme_status = active AND annual_income_inr <= 200000.00",
+  "threshold_inr": "200000.00",
+  "qualifying_application_ids": [
+    "APP-001",
+    "APP-002"
+  ],
+  "qualifying_count": 2,
+  "qualifying_grant_total_inr": "25000.00"
+}

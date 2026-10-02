@@ -1,4 +1,11 @@
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -25,7 +32,14 @@ import {
   SourceView,
   structuredApi,
 } from "./structuredApi";
-import { DocumentBlock, DocumentView, documentApi } from "./documentApi";
+import {
+  DocumentBlock,
+  IngestionCapabilities,
+  IngestionJob,
+  DocumentTableCandidate,
+  DocumentView,
+  documentApi,
+} from "./documentApi";
 import "./structured.css";
 
 type SourceWorkbenchProps = {
@@ -64,8 +78,17 @@ function isDatabase(source: SourceView): boolean {
 }
 
 function isDocument(source: SourceView): boolean {
-  return /pdf|docx|document/i.test(source.kind);
+  return /pdf|docx|txt|text|markdown|html|pptx|document/i.test(source.kind);
 }
+
+type UploadItem = {
+  file: File;
+  progress: number;
+  state: "queued" | "uploading" | "uploaded" | "failed";
+  error?: string;
+};
+
+type CrawlJobProgress = IngestionJob & { polls: number; pollError?: string };
 
 function SourceWorkbench({
   workspaceId,
@@ -77,11 +100,14 @@ function SourceWorkbench({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
-  const [selectedDocumentFile, setSelectedDocumentFile] = useState<File | null>(
-    null,
+  const [documentUploadItems, setDocumentUploadItems] = useState<UploadItem[]>(
+    [],
   );
-  const [uploadingDocument, setUploadingDocument] = useState(false);
-  const [documentUploadError, setDocumentUploadError] = useState("");
+  const [selectedDocumentFiles, setSelectedDocumentFiles] = useState<File[]>(
+    [],
+  );
+  const [uploadingDocuments, setUploadingDocuments] = useState(false);
+  const [chunkStrategy, setChunkStrategy] = useState("structure");
   const [documents, setDocuments] = useState<DocumentView[]>([]);
   const [documentsError, setDocumentsError] = useState("");
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
@@ -90,6 +116,17 @@ function SourceWorkbench({
   const [documentBlockOffset, setDocumentBlockOffset] = useState(0);
   const [loadingDocumentBlocks, setLoadingDocumentBlocks] = useState(false);
   const [documentBlocksError, setDocumentBlocksError] = useState("");
+  const [ingestionCapabilities, setIngestionCapabilities] =
+    useState<IngestionCapabilities | null>(null);
+  const [crawlUrl, setCrawlUrl] = useState("");
+  const [crawlMaxPages, setCrawlMaxPages] = useState(10);
+  const [crawlMaxDepth, setCrawlMaxDepth] = useState(1);
+  const [crawlMaxBytes, setCrawlMaxBytes] = useState(2_000_000);
+  const [crawlSitemap, setCrawlSitemap] = useState(false);
+  const [queueingCrawl, setQueueingCrawl] = useState(false);
+  const [crawlError, setCrawlError] = useState("");
+  const [crawlJobs, setCrawlJobs] = useState<CrawlJobProgress[]>([]);
+  const pollingJobIds = useRef(new Set<string>());
   const [connection, setConnection] =
     useState<ConnectionDraft>(emptyConnection);
   const [connectionName, setConnectionName] = useState("");
@@ -159,6 +196,28 @@ function SourceWorkbench({
   }, [workspaceId]);
 
   useEffect(() => {
+    let active = true;
+    setCrawlJobs([]);
+    documentApi
+      .capabilities()
+      .then((result) => {
+        if (!active) return;
+        setIngestionCapabilities(result);
+        setChunkStrategy((current) =>
+          result.chunk_strategies.includes(current)
+            ? current
+            : (result.chunk_strategies[0] ?? "structure"),
+        );
+      })
+      .catch(() => {
+        if (active) setIngestionCapabilities(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [workspaceId]);
+
+  useEffect(() => {
     const processing = documents.some((document) =>
       ["queued", "pending", "running", "processing", "indexing"].includes(
         document.state.toLowerCase(),
@@ -168,6 +227,54 @@ function SourceWorkbench({
     const timer = window.setInterval(() => void loadDocuments(), 2500);
     return () => window.clearInterval(timer);
   }, [documents, workspaceId]);
+
+  useEffect(() => {
+    const activeJobs = crawlJobs.filter(
+      (job) =>
+        ["queued", "pending", "running", "processing"].includes(
+          job.state.toLowerCase(),
+        ) && job.polls < 120,
+    );
+    if (!activeJobs.length) return;
+    const timer = window.setInterval(() => {
+      for (const job of activeJobs) {
+        if (pollingJobIds.current.has(job.id)) continue;
+        pollingJobIds.current.add(job.id);
+        void documentApi
+          .ingestionJob(job.id)
+          .then(async (latest) => {
+            setCrawlJobs((current) =>
+              current.map((item) =>
+                item.id === job.id
+                  ? { ...latest, polls: item.polls + 1, pollError: undefined }
+                  : item,
+              ),
+            );
+            if (["completed", "failed", "cancelled"].includes(latest.state)) {
+              await Promise.all([onSourcesChanged(), loadDocuments()]);
+            }
+          })
+          .catch((reason: unknown) => {
+            setCrawlJobs((current) =>
+              current.map((item) =>
+                item.id === job.id
+                  ? {
+                      ...item,
+                      polls: item.polls + 1,
+                      pollError:
+                        reason instanceof Error
+                          ? reason.message
+                          : "Could not refresh crawl status.",
+                    }
+                  : item,
+              ),
+            );
+          })
+          .finally(() => pollingJobIds.current.delete(job.id));
+      }
+    }, 1800);
+    return () => window.clearInterval(timer);
+  }, [crawlJobs, workspaceId]);
 
   useEffect(() => {
     if (
@@ -315,30 +422,153 @@ function SourceWorkbench({
     }
   }
 
-  async function uploadDocument(event: FormEvent<HTMLFormElement>) {
+  async function uploadDocuments(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedDocumentFile) return;
     const input =
       event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]');
-    setUploadingDocument(true);
-    setDocumentUploadError("");
-    try {
-      const added = await documentApi.upload(workspaceId, selectedDocumentFile);
-      setSelectedDocumentFile(null);
-      if (input) input.value = "";
+    const files = input?.files ? Array.from(input.files) : [];
+    if (!files.length) return;
+    setDocumentUploadItems(
+      files.map((file) => ({ file, progress: 0, state: "queued" })),
+    );
+    setUploadingDocuments(true);
+    setSelectedDocumentFiles([]);
+    const uploaded: Awaited<ReturnType<typeof documentApi.upload>>[] = [];
+    for (const [index, file] of files.entries()) {
+      setDocumentUploadItems((items) =>
+        items.map((item, itemIndex) =>
+          itemIndex === index ? { ...item, state: "uploading" } : item,
+        ),
+      );
+      try {
+        const added = await documentApi.upload(
+          workspaceId,
+          file,
+          (progress) =>
+            setDocumentUploadItems((items) =>
+              items.map((item, itemIndex) =>
+                itemIndex === index ? { ...item, progress } : item,
+              ),
+            ),
+          chunkStrategy,
+        );
+        uploaded.push(added);
+        setDocumentUploadItems((items) =>
+          items.map((item, itemIndex) =>
+            itemIndex === index
+              ? { ...item, progress: 100, state: "uploaded" }
+              : item,
+          ),
+        );
+      } catch (reason) {
+        setDocumentUploadItems((items) =>
+          items.map((item, itemIndex) =>
+            itemIndex === index
+              ? {
+                  ...item,
+                  state: "failed",
+                  error:
+                    reason instanceof Error
+                      ? reason.message
+                      : "Could not upload this document.",
+                }
+              : item,
+          ),
+        );
+      }
+    }
+    if (uploaded.length) {
       await onSourcesChanged();
       await loadDocuments();
-      setSelectedSourceId(added.source.id);
-      setSelectedDocumentId(added.document.id);
+      setSelectedSourceId(uploaded[0].source.id);
+      setSelectedDocumentId(uploaded[0].document.id);
       setSelectedDatasetId("");
+    }
+    setUploadingDocuments(false);
+    if (input) input.value = "";
+  }
+
+  async function queueCrawl(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setQueueingCrawl(true);
+    setCrawlError("");
+    try {
+      const result = await documentApi.queueCrawl(workspaceId, {
+        url: crawlUrl.trim(),
+        max_pages: crawlMaxPages,
+        max_depth: crawlMaxDepth,
+        max_bytes: crawlMaxBytes,
+        sitemap: crawlSitemap,
+      });
+      setCrawlJobs((current) => [
+        {
+          id: result.job_id,
+          state: result.state,
+          attempts: 0,
+          result: { pages: [] },
+          polls: 0,
+        },
+        ...current,
+      ]);
+      setCrawlUrl("");
     } catch (reason) {
-      setDocumentUploadError(
+      setCrawlError(
         reason instanceof Error
           ? reason.message
-          : "Could not upload this document.",
+          : "Could not queue this crawl.",
       );
     } finally {
-      setUploadingDocument(false);
+      setQueueingCrawl(false);
+    }
+  }
+
+  async function refreshCrawlJob(jobId: string) {
+    try {
+      const latest = await documentApi.ingestionJob(jobId);
+      setCrawlJobs((current) =>
+        current.map((job) =>
+          job.id === jobId
+            ? { ...latest, polls: 0, pollError: undefined }
+            : job,
+        ),
+      );
+      if (["completed", "failed", "cancelled"].includes(latest.state)) {
+        await Promise.all([onSourcesChanged(), loadDocuments()]);
+      }
+    } catch (reason) {
+      setCrawlJobs((current) =>
+        current.map((job) =>
+          job.id === jobId
+            ? {
+                ...job,
+                pollError:
+                  reason instanceof Error
+                    ? reason.message
+                    : "Could not refresh crawl status.",
+              }
+            : job,
+        ),
+      );
+    }
+  }
+
+  async function documentAction(
+    action: "retry" | "reindex" | "archive",
+    documentId: string,
+  ) {
+    try {
+      if (action === "retry") await documentApi.retry(documentId);
+      else if (action === "reindex") await documentApi.reindex(documentId);
+      else await documentApi.archive(documentId);
+      await loadDocuments();
+      if (action === "archive") {
+        setSelectedDocumentId("");
+        await onSourcesChanged();
+      }
+    } catch (reason) {
+      setDocumentBlocksError(
+        reason instanceof Error ? reason.message : "Document action failed.",
+      );
     }
   }
 
@@ -530,34 +760,65 @@ function SourceWorkbench({
           </button>
           <span className="supported-formats">CSV · XLSX · XLS</span>
         </form>
-        <form className="document-upload-form" onSubmit={uploadDocument}>
+        <form className="document-upload-form" onSubmit={uploadDocuments}>
           <label className="upload-pick document-upload-pick">
             <FileText size={15} />
             <span>
-              {selectedDocumentFile?.name ?? "Choose a research document"}
+              {selectedDocumentFiles.length
+                ? `${selectedDocumentFiles.length} document${selectedDocumentFiles.length === 1 ? "" : "s"} selected`
+                : "Choose research documents"}
             </span>
             <input
               type="file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(event) => {
-                setSelectedDocumentFile(event.target.files?.[0] ?? null);
-                setDocumentUploadError("");
-              }}
+              multiple
+              accept=".pdf,.docx,.txt,.md,.html,.htm,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+              onChange={(event) =>
+                setSelectedDocumentFiles(Array.from(event.target.files ?? []))
+              }
             />
           </label>
+          {(
+            ingestionCapabilities?.chunk_strategies ?? [
+              "structure",
+              "recursive",
+              "parent_child",
+            ]
+          ).length > 1 && (
+            <label className="chunk-strategy-select">
+              <span>Chunking</span>
+              <select
+                value={chunkStrategy}
+                onChange={(event) => setChunkStrategy(event.target.value)}
+              >
+                {(
+                  ingestionCapabilities?.chunk_strategies ?? [
+                    "structure",
+                    "recursive",
+                    "parent_child",
+                  ]
+                ).map((strategy) => (
+                  <option key={strategy} value={strategy}>
+                    {strategy.replaceAll("_", " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <button
             className="source-primary-button"
             type="submit"
-            disabled={!selectedDocumentFile || uploadingDocument}
+            disabled={uploadingDocuments}
           >
-            {uploadingDocument ? (
+            {uploadingDocuments ? (
               <LoaderCircle size={14} className="spin" />
             ) : (
               <Plus size={14} />
             )}
-            {uploadingDocument ? "Adding" : "Add document"}
+            {uploadingDocuments ? "Uploading" : "Add documents"}
           </button>
-          <span className="supported-formats">PDF · DOCX</span>
+          <span className="supported-formats">
+            PDF · DOCX · TXT · MD · HTML · PPTX
+          </span>
         </form>
         {uploadError && (
           <p className="source-form-error" role="alert">
@@ -565,17 +826,187 @@ function SourceWorkbench({
             {uploadError}
           </p>
         )}
-        {documentUploadError && (
-          <p className="source-form-error" role="alert">
-            <AlertCircle size={13} />
-            {documentUploadError}
-          </p>
+        {documentUploadItems.length > 0 && (
+          <div className="document-upload-queue" aria-live="polite">
+            {documentUploadItems.map((item) => (
+              <div
+                className={`document-upload-item ${item.state}`}
+                key={`${item.file.name}-${item.file.lastModified}`}
+              >
+                <span title={item.file.name}>{item.file.name}</span>
+                <span>
+                  {item.error ??
+                    (item.state === "uploaded"
+                      ? "Added"
+                      : item.state === "failed"
+                        ? "Failed"
+                        : `${item.progress}%`)}
+                </span>
+                {item.state !== "failed" && (
+                  <span className="upload-item-progress">
+                    <i style={{ width: `${item.progress}%` }} />
+                  </span>
+                )}
+                {item.error && <small role="alert">{item.error}</small>}
+              </div>
+            ))}
+          </div>
         )}
         {documentsError && (
           <p className="source-form-error" role="alert">
             <AlertCircle size={13} />
             {documentsError}
           </p>
+        )}
+
+        {ingestionCapabilities?.crawl.enabled && (
+          <form className="crawl-form" onSubmit={queueCrawl}>
+            <div className="crawl-form-heading">
+              <strong>Import an approved website</strong>
+              <span>
+                Allowed hosts:{" "}
+                {ingestionCapabilities.crawl.approved_hosts.join(", ") ||
+                  "none"}
+              </span>
+            </div>
+            <label className="crawl-url-field">
+              <span>Website URL</span>
+              <input
+                type="url"
+                required
+                value={crawlUrl}
+                onChange={(event) => setCrawlUrl(event.target.value)}
+                placeholder="https://docs.example.com/guide"
+              />
+            </label>
+            <div className="crawl-limits">
+              <label>
+                <span>Pages</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={crawlMaxPages}
+                  onChange={(event) =>
+                    setCrawlMaxPages(Number(event.target.value))
+                  }
+                />
+              </label>
+              <label>
+                <span>Depth</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={3}
+                  value={crawlMaxDepth}
+                  onChange={(event) =>
+                    setCrawlMaxDepth(Number(event.target.value))
+                  }
+                />
+              </label>
+              <label>
+                <span>Byte limit (MB)</span>
+                <input
+                  type="number"
+                  min={0.01}
+                  max={10}
+                  step={0.25}
+                  value={Number((crawlMaxBytes / 1_000_000).toFixed(2))}
+                  onChange={(event) =>
+                    setCrawlMaxBytes(
+                      Math.round(Number(event.target.value) * 1_000_000),
+                    )
+                  }
+                />
+              </label>
+              <label className="crawl-sitemap-option">
+                <input
+                  type="checkbox"
+                  checked={crawlSitemap}
+                  onChange={(event) => setCrawlSitemap(event.target.checked)}
+                />
+                <span>Read a sitemap URL set</span>
+              </label>
+              <button
+                className="source-primary-button"
+                type="submit"
+                disabled={queueingCrawl}
+              >
+                {queueingCrawl ? (
+                  <LoaderCircle size={14} className="spin" />
+                ) : (
+                  <Plus size={14} />
+                )}
+                {queueingCrawl ? "Queueing" : "Queue website import"}
+              </button>
+            </div>
+            {crawlError && (
+              <p className="source-form-error" role="alert">
+                <AlertCircle size={13} /> {crawlError}
+              </p>
+            )}
+          </form>
+        )}
+        {crawlJobs.length > 0 && (
+          <div className="crawl-job-list" aria-live="polite">
+            {crawlJobs.map((job) => {
+              const active = [
+                "queued",
+                "pending",
+                "running",
+                "processing",
+              ].includes(job.state.toLowerCase());
+              const pages = job.result?.pages ?? [];
+              return (
+                <article
+                  className={`crawl-job ${job.state.toLowerCase()}`}
+                  key={job.id}
+                >
+                  <header>
+                    <strong>Website import</strong>
+                    <span className="crawl-job-state">
+                      {job.state.replaceAll("_", " ")}
+                    </span>
+                  </header>
+                  <p>
+                    {
+                      pages.filter((page) =>
+                        ["fetched", "queued"].includes(page.state),
+                      ).length
+                    }{" "}
+                    pages reached ingestion ·{" "}
+                    {pages.filter((page) => page.state === "failed").length}{" "}
+                    page failures
+                  </p>
+                  {job.pollError && (
+                    <small className="crawl-job-error">{job.pollError}</small>
+                  )}
+                  {active && job.polls >= 120 && (
+                    <button
+                      type="button"
+                      className="crawl-refresh-button"
+                      onClick={() => void refreshCrawlJob(job.id)}
+                    >
+                      Refresh status
+                    </button>
+                  )}
+                  {pages.length > 0 && (
+                    <ul>
+                      {pages.map((page, index) => (
+                        <li
+                          className={page.state === "failed" ? "failed" : ""}
+                          key={`${page.url}-${index}`}
+                        >
+                          <span title={page.url}>{page.url}</span>
+                          <strong>{page.message ?? page.state}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </article>
+              );
+            })}
+          </div>
         )}
 
         <details className="connection-details">
@@ -874,6 +1305,15 @@ function SourceWorkbench({
                     blockOffset={documentBlockOffset}
                     loadingBlocks={loadingDocumentBlocks}
                     blocksError={documentBlocksError}
+                    onRetry={() =>
+                      void documentAction("retry", selectedDocument?.id ?? "")
+                    }
+                    onReindex={() =>
+                      void documentAction("reindex", selectedDocument?.id ?? "")
+                    }
+                    onArchive={() =>
+                      void documentAction("archive", selectedDocument?.id ?? "")
+                    }
                     onSelect={(id) => {
                       setSelectedDocumentId(id);
                       setDocumentBlockOffset(0);
@@ -1246,6 +1686,9 @@ function DocumentInspector({
   blockOffset,
   loadingBlocks,
   blocksError,
+  onRetry,
+  onReindex,
+  onArchive,
   onSelect,
   onPage,
 }: {
@@ -1257,9 +1700,62 @@ function DocumentInspector({
   blockOffset: number;
   loadingBlocks: boolean;
   blocksError: string;
+  onRetry: () => void;
+  onReindex: () => void;
+  onArchive: () => void;
   onSelect: (id: string) => void;
   onPage: (offset: number) => void;
 }) {
+  const [tables, setTables] = useState<DocumentTableCandidate[]>([]);
+  const [tablesError, setTablesError] = useState("");
+  const [acceptingTable, setAcceptingTable] = useState("");
+  const [tableActionError, setTableActionError] = useState("");
+  useEffect(() => {
+    if (!selectedDocument || selectedDocument.state !== "ready") {
+      setTables([]);
+      setTablesError("");
+      return;
+    }
+    let active = true;
+    documentApi
+      .tables(selectedDocument.id)
+      .then((result) => {
+        if (active) {
+          setTables(result.tables);
+          setTablesError("");
+        }
+      })
+      .catch((reason: unknown) => {
+        if (active) {
+          setTables([]);
+          setTablesError(
+            reason instanceof Error ? reason.message : "Could not load tables.",
+          );
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedDocument?.id, selectedDocument?.state]);
+
+  async function acceptTable(tableId: string) {
+    if (!selectedDocument) return;
+    setAcceptingTable(tableId);
+    setTableActionError("");
+    try {
+      await documentApi.acceptTable(selectedDocument.id, tableId);
+      const result = await documentApi.tables(selectedDocument.id);
+      setTables(result.tables);
+    } catch (reason) {
+      setTableActionError(
+        reason instanceof Error
+          ? reason.message
+          : "Could not accept this table.",
+      );
+    } finally {
+      setAcceptingTable("");
+    }
+  }
   if (!selectedDocument) {
     return (
       <div className="document-inspector empty">
@@ -1279,6 +1775,7 @@ function DocumentInspector({
     typeof selectedDocument.progress === "number"
       ? Math.max(0, Math.min(100, selectedDocument.progress))
       : null;
+  const canReindex = selectedDocument.state === "ready";
   return (
     <div className="document-inspector">
       <div className="document-toolbar">
@@ -1307,6 +1804,25 @@ function DocumentInspector({
             </select>
           </label>
         )}
+        <div className="document-actions">
+          {["failed", "ocr_needed", "needs_ocr"].includes(
+            selectedDocument.state,
+          ) && (
+            <button type="button" onClick={onRetry}>
+              Retry
+            </button>
+          )}
+          <button type="button" onClick={onReindex} disabled={!canReindex}>
+            Reindex
+          </button>
+          <button
+            type="button"
+            className="archive-document-button"
+            onClick={onArchive}
+          >
+            Archive
+          </button>
+        </div>
       </div>
       <div className="document-state-line">
         <span
@@ -1344,6 +1860,96 @@ function DocumentInspector({
         <p className="source-form-error" role="alert">
           <AlertCircle size={13} /> {blocksError}
         </p>
+      )}
+      {tablesError && !/404|not found/i.test(tablesError) && (
+        <p className="source-form-error" role="alert">
+          <AlertCircle size={13} /> {tablesError}
+        </p>
+      )}
+      {tableActionError && (
+        <p className="source-form-error" role="alert">
+          <AlertCircle size={13} /> {tableActionError}
+        </p>
+      )}
+      {tables.length > 0 && (
+        <section
+          className="document-table-candidates"
+          aria-label="Extracted tables"
+        >
+          <div className="document-block-heading">
+            <span className="mini-label">TABLE CANDIDATES</span>
+            <span>{tables.length} found · review before analysis</span>
+          </div>
+          {tables.map((table) => (
+            <article className="document-table-candidate" key={table.table_id}>
+              <header>
+                <div>
+                  <strong>
+                    {table.title || `Table on page ${table.page ?? "?"}`}
+                  </strong>
+                  <small>
+                    {table.row_count.toLocaleString()} rows ·{" "}
+                    {table.column_count} columns
+                  </small>
+                </div>
+                {table.accepted_dataset_id ? (
+                  <span className="table-accepted">
+                    <CheckCircle2 size={13} /> Accepted
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void acceptTable(table.table_id)}
+                    disabled={acceptingTable === table.table_id}
+                  >
+                    {acceptingTable === table.table_id ? (
+                      <LoaderCircle size={13} className="spin" />
+                    ) : (
+                      <CheckCircle2 size={13} />
+                    )}
+                    Accept for analysis
+                  </button>
+                )}
+              </header>
+              {table.warnings.length > 0 && (
+                <div className="document-warnings">
+                  {table.warnings.map((warning) => (
+                    <p key={warning}>
+                      <AlertCircle size={12} /> {warning}
+                    </p>
+                  ))}
+                </div>
+              )}
+              {table.preview.length > 0 && (
+                <div className="sample-table-wrap table-candidate-preview">
+                  <table className="sample-table">
+                    <thead>
+                      <tr>
+                        {table.columns.map((column, index) => (
+                          <th key={`${column.name}-${index}`}>{column.name}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {table.preview.map((row) => (
+                        <tr key={row.row_index}>
+                          {table.columns.map((_, index) => (
+                            <td
+                              key={`${row.row_index}-${index}`}
+                              title={String(row.cells[index]?.value ?? "")}
+                            >
+                              {String(row.cells[index]?.value ?? "—")}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </article>
+          ))}
+        </section>
       )}
       <div className="document-block-heading">
         <span className="mini-label">EXTRACTED BLOCKS</span>

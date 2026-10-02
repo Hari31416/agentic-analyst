@@ -4,7 +4,7 @@ COMPOSE = docker compose $(if $(wildcard .env),--env-file .env) -f infra/compose
 BACKEND = cd backend && uv run
 
 .PHONY: setup up up-all dev api worker frontend sandbox down logs health migrate format check test frontend-check \
-	test-integration live-model live-sandbox live-agent fixtures analysis-image eval-infra embedding-model live-documents
+	test-integration live-model live-sandbox live-agent fixtures analysis-image eval-infra embedding-model live-documents ocr-fixtures live-ingestion
 
 setup:
 	@test -f .env || cp .env.example .env
@@ -90,3 +90,10 @@ embedding-model:
 
 live-documents:
 	$(BACKEND) python -m app.document_probes
+
+# Local extraction/OCR metrics. Does not call the chat model or sandbox.
+ocr-fixtures:
+	backend/.venv/bin/python evals/generators/generate_v2.py
+
+live-ingestion:
+	$(BACKEND) python -m app.ingestion_probes

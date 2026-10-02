@@ -19,12 +19,14 @@ def get_evidence(evidence_id: str, session: Db) -> dict[str, Any]:
         raise HTTPException(404, "Evidence not found")
     details = evidence.details
     display_name = None
+    source_state = None
     if evidence.kind == "document":
         document = session.get(Document, details.get("document_id"))
         if document is None or document.source_version != details.get("source_version"):
             raise HTTPException(409, "The citation document version is unavailable")
         source = session.get(Source, document.source_id)
         display_name = source.display_name if source else None
+        source_state = "archived" if source and source.state == "deleted" else "active"
     return {
         "id": evidence.id,
         "kind": evidence.kind,
@@ -48,4 +50,5 @@ def get_evidence(evidence_id: str, session: Db) -> dict[str, Any]:
         },
         "document_version": details.get("source_version"),
         "display_name": display_name,
+        "source_state": source_state,
     }

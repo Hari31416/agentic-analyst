@@ -380,6 +380,14 @@
   color: #a1a398;
   font: 7px var(--mono);
 }
+.evidence-archived-notice {
+  margin-top: 10px;
+  padding: 8px 9px;
+  border-left: 2px solid #bc8b67;
+  background: #f8f1e9;
+  color: #88684f;
+  font: 9px/1.5 var(--serif);
+}
 .evidence-excerpt {
   margin: 12px 0;
   padding: 13px 14px;

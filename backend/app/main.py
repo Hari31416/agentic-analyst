@@ -141,7 +141,7 @@ def sources(workspace_id: str, session: Db) -> Any:
     workspace_or_404(session, workspace_id)
     return session.scalars(
         select(Source)
-        .where(Source.workspace_id == workspace_id)
+        .where(Source.workspace_id == workspace_id, Source.state != "deleted")
         .order_by(Source.created_at)
     ).all()
 
@@ -167,3 +167,15 @@ app.include_router(documents_router)
 from app.api.document_indexes import router as indexes_router
 
 app.include_router(indexes_router)
+
+from app.api.document_tables import router as document_tables_router
+
+app.include_router(document_tables_router)
+
+from app.api.document_lifecycle import router as lifecycle_router
+
+app.include_router(lifecycle_router)
+
+from app.api.document_crawl import router as crawl_router
+
+app.include_router(crawl_router)

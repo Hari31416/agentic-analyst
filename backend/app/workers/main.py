@@ -49,7 +49,11 @@ async def run_worker() -> None:
                 if task.kind == "agent_run":
                     await execute_run(task, stop)
                     result = {"run_id": task.run_id}
-                elif task.kind in {"ingest_document", "index_document"}:
+                elif task.kind in {
+                    "ingest_document",
+                    "index_document",
+                    "crawl_documents",
+                }:
                     result = await execute_document(task, stop)
                 else:
                     result = await asyncio.to_thread(maintenance, task)
@@ -203,19 +207,35 @@ async def execute_document(task: Claim, stop: asyncio.Event) -> dict[str, object
             is None
         ):
             raise LeaseLost("document job ownership lost")
+        if task.kind != "crawl_documents":
+            from app.db.models import Document
+
+            document = session.scalar(
+                select(Document)
+                .where(Document.id == str(task.payload["document_id"]))
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
+            if document is None or document.state == "deleted":
+                raise LeaseLost("document was removed")
 
     from app.api.document_indexes import process_index
 
-    operation = process_index if task.kind == "index_document" else process_document
-    work = asyncio.create_task(
-        asyncio.to_thread(
-            operation,
-            str(task.payload["document_id"]),
-            settings,
-            factory(),
-            guard,
+    if task.kind == "crawl_documents":
+        from app.api.document_crawl import process_crawl
+
+        work = asyncio.create_task(
+            asyncio.to_thread(
+                process_crawl, task.id, task.payload, settings, factory(), guard
+            )
         )
-    )
+    else:
+        operation = process_index if task.kind == "index_document" else process_document
+        work = asyncio.create_task(
+            asyncio.to_thread(
+                operation, str(task.payload["document_id"]), settings, factory(), guard
+            )
+        )
     try:
         while not work.done():
             done, _ = await asyncio.wait({work}, timeout=settings.job_lease_seconds / 3)

@@ -1,0 +1,3 @@
+
+# Keep immutable PDF fixtures binary, including ASCII-encoded image streams.
+*.pdf binary

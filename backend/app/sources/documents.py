@@ -31,8 +31,8 @@ from app.db.models import (
 )
 from app.storage.filesystem import Storage
 
-EXTRACTOR_VERSION = "pdf-docx-text-v1"
-CHUNKER_VERSION = "structure-token-v2"
+EXTRACTOR_VERSION = "document-extract-v2"
+CHUNKER_VERSION = "structure-token-v3"
 BLOCK_SCHEMA_VERSION = "document-block-v1"
 MAX_ARCHIVE_MEMBERS = 4_096
 MAX_ARCHIVE_BYTES = 100 * 1024 * 1024
@@ -136,13 +136,44 @@ def validate_document_upload(filename: str, content: bytes, max_bytes: int) -> s
     if suffix == ".docx" and content.startswith(b"PK"):
         _validate_docx_archive(content)
         return "docx"
-    if suffix in {".pdf", ".docx"}:
+    if suffix in {".txt", ".md", ".html", ".htm"}:
+        try:
+            decoded = content.decode("utf-8-sig")
+        except UnicodeDecodeError as error:
+            raise DocumentIngestionError(
+                "file_type_mismatch", "Text documents must be UTF-8 encoded."
+            ) from error
+        if "\x00" in decoded:
+            raise DocumentIngestionError(
+                "file_type_mismatch",
+                "Text document contains prohibited NUL characters.",
+            )
+        if suffix in {".html", ".htm"} and not re.search(
+            r"<\s*(?:html|body|p|h[1-6]|div|table)\b", decoded, re.IGNORECASE
+        ):
+            raise DocumentIngestionError(
+                "file_type_mismatch", "HTML extension does not match HTML content."
+            )
+        if suffix in {".txt", ".md"} and content.startswith(b"PK"):
+            raise DocumentIngestionError(
+                "file_type_mismatch",
+                "The file extension does not match a text document.",
+            )
+        return {".txt": "txt", ".md": "md", ".html": "html", ".htm": "html"}[suffix]
+    if suffix == ".pptx" and content.startswith(b"PK"):
+        from app.ingestion.extractors import _safe_archive
+
+        names = _safe_archive(content, "pptx")
+        if "[Content_Types].xml" in names and "ppt/presentation.xml" in names:
+            return "pptx"
+    if suffix in {".pdf", ".docx", ".pptx"}:
         raise DocumentIngestionError(
             "file_type_mismatch",
-            "The file extension does not match a supported PDF or DOCX document.",
+            "The file extension does not match a supported document format.",
         )
     raise DocumentIngestionError(
-        "file_type_unsupported", "Only PDF and DOCX documents are supported."
+        "file_type_unsupported",
+        "Supported documents are PDF, DOCX, TXT, Markdown, HTML, and PPTX.",
     )
 
 
@@ -408,6 +439,11 @@ def _extract_docx(content: bytes) -> tuple[list[ExtractedBlock], list[str], list
                             "table": table_index,
                             "row": row_index,
                             "cell_count": len(values),
+                            "cells": values,
+                            "cell_locations": [
+                                {"row": row_index, "column": column_index}
+                                for column_index in range(len(values))
+                            ],
                         },
                     )
                 )
@@ -426,11 +462,40 @@ def _extract_docx(content: bytes) -> tuple[list[ExtractedBlock], list[str], list
 
 
 def extract_document(
-    filename: str, content: bytes
+    filename: str,
+    content: bytes,
+    *,
+    ocr_enabled: bool = True,
+    ocr_languages: str = "eng+hin",
+    ocr_timeout_seconds: int = 20,
+    profile: str = "baseline",
 ) -> tuple[list[ExtractedBlock], list[str], list[str]]:
     kind = validate_document_upload(filename, content, max(len(content), 1))
     if kind == "pdf":
-        return _extract_pdf(content)
+        from app.ingestion.extractors import extract_pdf, extract_pdf_layout
+
+        if profile == "layout":
+            return extract_pdf_layout(
+                content,
+                ocr_enabled=ocr_enabled,
+                ocr_languages=ocr_languages,
+                ocr_timeout_seconds=ocr_timeout_seconds,
+            )
+
+        return extract_pdf(
+            content,
+            ocr_enabled=ocr_enabled,
+            ocr_languages=ocr_languages,
+            ocr_timeout_seconds=ocr_timeout_seconds,
+        )
+    if kind in {"txt", "md", "html"}:
+        from app.ingestion.extractors import extract_text
+
+        return extract_text(filename, content)
+    if kind == "pptx":
+        from app.ingestion.extractors import extract_pptx
+
+        return extract_pptx(content)
     return _extract_docx(content)
 
 
@@ -576,7 +641,12 @@ def _bounded_heading(heading: str | None, profile: TokenizerProfile) -> str | No
     return raw.decode("utf-8", errors="ignore").rstrip()
 
 
-def _actual_windows(text: str, profile: TokenizerProfile) -> list[tuple[int, int, int]]:
+def _actual_windows(
+    text: str,
+    profile: TokenizerProfile,
+    body_tokens: int = CHUNK_BODY_TOKENS,
+    overlap_tokens: int = CHUNK_OVERLAP_TOKENS,
+) -> list[tuple[int, int, int]]:
     tokenizer = profile.tokenizer
     assert tokenizer is not None
     offsets = tokenizer.encode(text, add_special_tokens=False).offsets
@@ -585,18 +655,22 @@ def _actual_windows(text: str, profile: TokenizerProfile) -> list[tuple[int, int
     windows: list[tuple[int, int, int]] = []
     body_start = 0
     while body_start < len(offsets):
-        start = max(0, body_start - CHUNK_OVERLAP_TOKENS)
-        end = min(len(offsets), body_start + CHUNK_BODY_TOKENS)
+        start = max(0, body_start - overlap_tokens)
+        end = min(len(offsets), body_start + body_tokens)
         char_start = 0 if start == 0 else offsets[start][0]
         char_end = len(text) if end == len(offsets) else offsets[end][0]
         windows.append((char_start, char_end, end - start))
         if end == len(offsets):
             break
-        body_start += CHUNK_BODY_TOKENS
+        body_start += body_tokens
     return windows
 
 
-def _fallback_windows(text: str) -> list[tuple[int, int, int]]:
+def _fallback_windows(
+    text: str,
+    body_bytes: int = FALLBACK_BODY_BYTES,
+    overlap_bytes: int = FALLBACK_OVERLAP_BYTES,
+) -> list[tuple[int, int, int]]:
     offsets = [
         (index, index + 1, len(char.encode("utf-8"))) for index, char in enumerate(text)
     ]
@@ -607,9 +681,7 @@ def _fallback_windows(text: str) -> list[tuple[int, int, int]]:
         start = window_start
         end = window_start
         byte_count = 0
-        while (
-            end < len(offsets) and byte_count + offsets[end][2] <= FALLBACK_BODY_BYTES
-        ):
+        while end < len(offsets) and byte_count + offsets[end][2] <= body_bytes:
             byte_count += offsets[end][2]
             end += 1
         if end == start:
@@ -622,8 +694,7 @@ def _fallback_windows(text: str) -> list[tuple[int, int, int]]:
         window_start = body_start
         overlap = 0
         while (
-            window_start > 0
-            and overlap + offsets[window_start - 1][2] <= FALLBACK_OVERLAP_BYTES
+            window_start > 0 and overlap + offsets[window_start - 1][2] <= overlap_bytes
         ):
             window_start -= 1
             overlap += offsets[window_start][2]
@@ -639,12 +710,33 @@ def _group_location(group: TextGroup, used_block_ids: list[int]) -> dict[str, An
     ]
     if group.table_id is not None:
         rows = [int(location.get("row", 0)) for location in selected]
-        return {
+        result: dict[str, Any] = {
             "type": "table",
             "table": group.table_id,
             "row_start": min(rows, default=0),
             "row_end": max(rows, default=0),
+            "cell_rows": [
+                {
+                    "row": int(location.get("row", 0)),
+                    "cell_count": len(location["cells"]),
+                }
+                for location in selected
+                if isinstance(location.get("cells"), list)
+            ],
         }
+        pages = [int(location["page"]) for location in selected if "page" in location]
+        if pages:
+            result["page_start"] = min(pages)
+            result["page_end"] = max(pages)
+            if min(pages) == max(pages):
+                result["page"] = pages[0]
+        slides = [
+            int(location["slide"]) for location in selected if "slide" in location
+        ]
+        if slides:
+            result["slide_start"] = min(slides)
+            result["slide_end"] = max(slides)
+        return result
     pages = [int(location["page"]) for location in selected if "page" in location]
     if pages:
         location: dict[str, Any] = {
@@ -655,6 +747,16 @@ def _group_location(group: TextGroup, used_block_ids: list[int]) -> dict[str, An
         if min(pages) == max(pages):
             location["page"] = pages[0]
         return location
+    slides = [int(location["slide"]) for location in selected if "slide" in location]
+    if slides:
+        result = {
+            "type": "slides",
+            "slide_start": min(slides),
+            "slide_end": max(slides),
+        }
+        if min(slides) == max(slides):
+            result["slide"] = slides[0]
+        return result
     paragraphs = [
         int(location["paragraph"]) for location in selected if "paragraph" in location
     ]
@@ -672,15 +774,66 @@ def _group_location(group: TextGroup, used_block_ids: list[int]) -> dict[str, An
 
 
 def _make_chunks(
-    blocks: Sequence[ExtractedBlock], profile: TokenizerProfile | None = None
+    blocks: Sequence[ExtractedBlock],
+    profile: TokenizerProfile | None = None,
+    strategy: str = "structure",
 ) -> list[ChunkData]:
+    if strategy == "semantic":
+        raise DocumentIngestionError(
+            "strategy_unavailable",
+            "Semantic chunking requires an installed local semantic-boundary model.",
+        )
+    if strategy not in {"structure", "recursive", "parent_child"}:
+        raise DocumentIngestionError(
+            "invalid_chunk_strategy", "Unknown document chunking strategy."
+        )
     profile = profile or TokenizerProfile(None, "utf8-byte-fallback-480-v2", None)
     chunks: list[ChunkData] = []
-    for group in _group_blocks(blocks):
+    groups = _group_blocks(blocks)
+    if strategy == "recursive":
+        groups = [
+            TextGroup(
+                text=block.text,
+                heading=block.heading,
+                language=block.language,
+                block_ids=[index],
+                spans=[(0, len(block.text), index)],
+                locations=[block.location],
+                table_id=(
+                    int(block.location.get("table", -1))
+                    if block.kind == "table_row"
+                    else None
+                ),
+            )
+            for index, block in enumerate(blocks)
+        ]
+    for group in groups:
+        child_strategy = strategy == "parent_child"
         windows = (
-            _actual_windows(group.text, profile)
+            _actual_windows(
+                group.text,
+                profile,
+                body_tokens=(
+                    CHUNK_BODY_TOKENS // 2 if child_strategy else CHUNK_BODY_TOKENS
+                ),
+                overlap_tokens=(
+                    CHUNK_OVERLAP_TOKENS // 2
+                    if child_strategy
+                    else CHUNK_OVERLAP_TOKENS
+                ),
+            )
             if profile.tokenizer is not None
-            else _fallback_windows(group.text)
+            else _fallback_windows(
+                group.text,
+                body_bytes=(
+                    FALLBACK_BODY_BYTES // 2 if child_strategy else FALLBACK_BODY_BYTES
+                ),
+                overlap_bytes=(
+                    FALLBACK_OVERLAP_BYTES // 2
+                    if child_strategy
+                    else FALLBACK_OVERLAP_BYTES
+                ),
+            )
         )
         heading = _bounded_heading(group.heading, profile)
         for start, end, token_count in windows:
@@ -703,7 +856,10 @@ def _make_chunks(
                     text=text,
                     normalized_text=unicodedata.normalize("NFKC", text).casefold(),
                     heading=heading,
-                    location=_group_location(group, used),
+                    location={
+                        **_group_location(group, used),
+                        "chunk_strategy": strategy,
+                    },
                     language=group.language,
                     block_ids=[str(value) for value in block_ids],
                     token_count=token_count,
@@ -735,6 +891,43 @@ def process_document(
             raise DocumentIngestionError(
                 "source_unavailable", "Document source bytes are unavailable."
             )
+        if source.state == "deleted" or document.state == "deleted":
+            from app.workers.queue import LeaseLost
+
+            raise LeaseLost("Document was removed")
+        # Extraction publication is atomic. Resume indexing with the same block
+        # and chunk IDs after interruption instead of invalidating saved lineage.
+        retained = session.scalar(
+            select(func.count())
+            .select_from(DocumentChunk)
+            .where(DocumentChunk.document_id == document.id)
+        )
+        if retained and document.state != "ready":
+            from app.retrieval.service import build_index_generation
+
+            _guard(lease_guard, session)
+            session.commit()
+            generation = build_index_generation(
+                session, document.id, settings, lease_guard=lease_guard
+            )
+            _guard(lease_guard, session)
+            document.state = source.state = "ready"
+            document.progress = 100
+            document.stage = (
+                "indexed" if generation.status == "ready" else "index_degraded"
+            )
+            document.details = {
+                **document.details,
+                "index_status": generation.status,
+                "extraction_reused": True,
+            }
+            session.commit()
+            return {
+                "document_id": document.id,
+                "state": document.state,
+                "stage": document.stage,
+                "extraction_reused": True,
+            }
         if document.state == "ready" and document.stage in {
             "indexed",
             "index_degraded",
@@ -758,7 +951,12 @@ def process_document(
         content = storage.read(source.storage_key, settings.max_upload_bytes)
         try:
             blocks, warnings, language_tags = extract_document(
-                source.display_name, content
+                source.display_name,
+                content,
+                ocr_enabled=settings.ocr_enabled,
+                ocr_languages=settings.ocr_languages,
+                ocr_timeout_seconds=settings.ocr_timeout_seconds,
+                profile=settings.ingestion_profile,
             )
         except DocumentIngestionError as error:
             return _fail_document(session, document, source, error, lease_guard)
@@ -796,7 +994,11 @@ def process_document(
             )
         profile = _tokenizer_profile(settings)
         try:
-            chunks = _make_chunks(blocks, profile)
+            chunks = _make_chunks(
+                blocks,
+                profile,
+                strategy=document.details.get("chunk_strategy", "structure"),
+            )
         except DocumentIngestionError as error:
             return _fail_document(session, document, source, error, lease_guard)
 
@@ -862,6 +1064,9 @@ def process_document(
         document.stage = "indexing"
         document.progress = 85
         document.details = {
+            **document.details,
+            "chunk_strategy": document.details.get("chunk_strategy", "structure"),
+            "ingestion_profile": settings.ingestion_profile,
             "extractor_version": document.extractor_version,
             "chunker_version": document.chunker_version,
             "languages": language_tags,
@@ -871,14 +1076,24 @@ def process_document(
             "tokenization_method": profile.method,
             "tokenizer_sha256": profile.sha256,
             "chunk_body_token_limit": (
-                CHUNK_BODY_TOKENS
-                if profile.tokenizer is not None
-                else FALLBACK_BODY_BYTES
+                (
+                    CHUNK_BODY_TOKENS
+                    if profile.tokenizer is not None
+                    else FALLBACK_BODY_BYTES
+                )
+                // (
+                    2 if document.details.get("chunk_strategy") == "parent_child" else 1
+                )
             ),
             "chunk_overlap_token_limit": (
-                CHUNK_OVERLAP_TOKENS
-                if profile.tokenizer is not None
-                else FALLBACK_OVERLAP_BYTES
+                (
+                    CHUNK_OVERLAP_TOKENS
+                    if profile.tokenizer is not None
+                    else FALLBACK_OVERLAP_BYTES
+                )
+                // (
+                    2 if document.details.get("chunk_strategy") == "parent_child" else 1
+                )
             ),
         }
         source.state = "ready"
@@ -949,7 +1164,7 @@ def list_documents(
     statement = (
         select(Document, Source)
         .join(Source, Source.id == Document.source_id)
-        .where(Source.workspace_id == workspace_id)
+        .where(Source.workspace_id == workspace_id, Source.state != "deleted")
         .order_by(Document.created_at.desc(), Document.id)
     )
     return [(row[0], row[1]) for row in session.execute(statement).all()]

@@ -1,0 +1,133 @@
+{
+  "version": "v2",
+  "review": "Synthetic strings and coordinates are the source of ground truth. Human corpus review remains separate.",
+  "wide_table": {
+    "headers": [
+      "application_id",
+      "name",
+      "district",
+      "grant_inr",
+      "income_inr",
+      "status"
+    ],
+    "rows": [
+      [
+        "APP-001",
+        "Applicant 1",
+        "Delhi",
+        "5000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-002",
+        "Applicant 2",
+        "Delhi",
+        "10000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-003",
+        "Applicant 3",
+        "Delhi",
+        "15000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-004",
+        "Applicant 4",
+        "Delhi",
+        "20000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-005",
+        "Applicant 5",
+        "Delhi",
+        "25000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-006",
+        "Applicant 6",
+        "Delhi",
+        "30000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-007",
+        "Applicant 7",
+        "Delhi",
+        "35000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-008",
+        "Applicant 8",
+        "Delhi",
+        "40000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-009",
+        "Applicant 9",
+        "Delhi",
+        "45000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-010",
+        "Applicant 10",
+        "Delhi",
+        "50000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-011",
+        "Applicant 11",
+        "Delhi",
+        "55000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-012",
+        "Applicant 12",
+        "Delhi",
+        "60000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-013",
+        "Applicant 13",
+        "Delhi",
+        "65000",
+        "180000",
+        "active"
+      ],
+      [
+        "APP-014",
+        "Applicant 14",
+        "Delhi",
+        "70000",
+        "180000",
+        "active"
+      ]
+    ],
+    "grant_total": 525000
+  },
+  "scans": {
+    "en": "Synthetic beneficiary fixture (v1)\n\nDeveloper-only synthetic data; no real people or records are represented.\nQualifies when scheme S1 is active and annual income is at most INR 200,000.00 (inclusive).\n\n\n\nApplication                   Scheme                  Status                  Income INR                  Grant INR\n\nAPP-001                       S1                      active                  180000.00                   10000.00\n\nAPP-002                       S1                      active                  200000.00                   15000.00\n\nAPP-003                       S1                      active                  200000.01                   9000.01\n\nAPP-004                       S1                      inactive                120000.00                   8000.00\n\nAPP-005                       S2                      active                  150000.00                   5000.50\n\n\n\nAPP-002 is exactly on the inclusive threshold. Decimal values retain two places.",
+    "hi": "काल्पनिक लाभार्थी नमूना\nv1\nकेवल डेवलपर के लिए काल्पनिक डेटा; इसमें किसी वास्तविक व्यक्ति या रिकॉर्ड का उपयोग नहीं है।\n\nयोजना संख्या एक सक्रिय हो और वार्षिक आय अधिकतम 200000.00 रुपये हो (सीमा शामिल है), तो आवेदन पात्र है।\n\nआवेदन | योजना | स्थिति | वार्षिक आय (रुपये) | अनुदान (रुपये)\n\nApplication                  Scheme                Status               Income INR                  Grant INR\n\nAPP-001                      S1                    active               180000.00                   10000.00\n\nAPP-002                      S1                    active               200000.00                   15000.00\n\nAPP-003                      S1                    active               200000.01                   9000.01\n\nAPP-004                      S1                    inactive             120000.00                   8000.00\n\nAPP-005                      S2                    active               150000.00                   5000.50\n\n\nदूसरे आवेदन की आय समावेशी सीमा के बराबर है।\n\nराशियां दो दशमलव अंकों वाले सटीक दशमलव मान हैं।"
+  }
+}

@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Annotated, Any
+import json
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, Form
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -81,6 +82,9 @@ async def upload_document(
     workspace_id: UUID,
     file: Annotated[UploadFile, File()],
     session: Db,
+    chunk_strategy: Annotated[
+        Literal["structure", "recursive", "parent_child"], Form()
+    ] = "structure",
 ) -> dict[str, Any]:
     settings = get_settings()
     workspace = session.get(Workspace, str(workspace_id))
@@ -110,11 +114,14 @@ async def upload_document(
             )
         except DocumentIngestionError as error:
             raise _upload_error(error) from error
-        media_type = (
-            "application/pdf"
-            if kind == "pdf"
-            else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+        media_type = {
+            "pdf": "application/pdf",
+            "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "html": "text/html",
+            "md": "text/markdown",
+            "txt": "text/plain",
+        }[kind]
         digest = hashlib.sha256(content).hexdigest()
         # Serialize same-workspace duplicate checks with the Workspace row lock.
         locked_workspace = session.scalar(
@@ -129,9 +136,11 @@ async def upload_document(
                 Source.workspace_id == str(workspace_id),
                 Source.kind == kind,
                 Source.content_hash == digest,
+                Source.state != "deleted",
                 Document.source_version == Source.version,
                 Document.extractor_version == EXTRACTOR_VERSION,
                 Document.chunker_version == CHUNKER_VERSION,
+                Document.details["chunk_strategy"].as_string() == chunk_strategy,
             )
             .order_by(Document.created_at.desc(), Document.id)
             .limit(1)
@@ -172,7 +181,7 @@ async def upload_document(
             state="queued",
             stage="queued",
             progress=0,
-            details={"warnings": [], "languages": []},
+            details={"warnings": [], "languages": [], "chunk_strategy": chunk_strategy},
         )
         session.add(document)
         session.flush()
@@ -248,8 +257,13 @@ def document_blocks(
             "language": row.language,
             "scripts": row.scripts,
         }
-        size = len(row.text.encode("utf-8")) + 512
+        size = len(json.dumps(value, ensure_ascii=False).encode("utf-8"))
         if used + size > MAX_BLOCK_RESPONSE_BYTES:
+            if not selected:
+                raise HTTPException(
+                    413,
+                    "This extraction block exceeds the inspection response limit; use its bounded table preview or citation passages",
+                )
             break
         selected.append(value)
         used += size

@@ -1142,6 +1142,12 @@ function EvidenceViewer({
                 {evidence.source_ids.map((id) => id.slice(0, 8)).join(" · ")}
               </div>
             )}
+            {evidence.source_state === "archived" && (
+              <div className="evidence-archived-notice" role="status">
+                This source has been archived. This saved citation still points
+                to its original evidence.
+              </div>
+            )}
             <div className="evidence-location">
               {locationText(evidence.location)}
             </div>

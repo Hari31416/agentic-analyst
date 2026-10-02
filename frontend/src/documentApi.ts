@@ -32,9 +32,34 @@ export type DocumentBlocks = {
   blocks: DocumentBlock[];
 };
 
+export type DocumentTableCell = {
+  value: unknown;
+  type?: string | null;
+  provenance?: Record<string, unknown>;
+};
+
+export type DocumentTableCandidate = {
+  table_id: string;
+  title?: string | null;
+  page?: number | null;
+  row_count: number;
+  column_count: number;
+  columns: { name: string; type?: string | null }[];
+  preview: { row_index: number; cells: DocumentTableCell[] }[];
+  warnings: string[];
+  accepted_dataset_id?: string | null;
+};
+
+export type DocumentTables = {
+  document_id: string;
+  state: string;
+  tables: DocumentTableCandidate[];
+};
+
 export type EvidenceView = {
   id: string;
   kind?: string;
+  source_state?: "active" | "archived" | string;
   source_ids: string[];
   details: Record<string, unknown>;
   document_id?: string | null;
@@ -59,6 +84,72 @@ export type DocumentUpload = {
   };
   document: DocumentView;
 };
+
+export type IngestionCapabilities = {
+  crawl: { enabled: boolean; approved_hosts: string[] };
+  chunk_strategies: string[];
+  ocr: { enabled: boolean; languages: string[]; profile: string };
+};
+
+export type IngestionJob = {
+  id: string;
+  state: string;
+  attempts: number;
+  result?: {
+    pages?: {
+      url: string;
+      state: string;
+      message?: string;
+      document_id?: string;
+    }[];
+    document_ids?: string[];
+    partial?: boolean;
+  } | null;
+};
+
+function uploadWithProgress<T>(
+  path: string,
+  body: FormData,
+  onProgress?: (progress: number) => void,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", path);
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress?.(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+    request.onerror = () => reject(new Error("The upload connection failed."));
+    request.onload = () => {
+      let payload: unknown;
+      try {
+        payload = request.responseText ? JSON.parse(request.responseText) : {};
+      } catch {
+        payload = {};
+      }
+      if (request.status < 200 || request.status >= 300) {
+        const detail =
+          payload && typeof payload === "object" && "detail" in payload
+            ? (payload as { detail: unknown }).detail
+            : undefined;
+        const message =
+          typeof detail === "string"
+            ? detail
+            : detail &&
+                typeof detail === "object" &&
+                "message" in detail &&
+                typeof (detail as { message: unknown }).message === "string"
+              ? (detail as { message: string }).message
+              : `Upload failed (${request.status})`;
+        reject(new Error(message));
+        return;
+      }
+      resolve(payload as T);
+    };
+    request.send(body);
+  });
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -95,12 +186,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const documentApi = {
-  upload: (workspaceId: string, file: File) => {
+  upload: (
+    workspaceId: string,
+    file: File,
+    onProgress?: (progress: number) => void,
+    chunkStrategy = "structure",
+  ) => {
     const body = new FormData();
     body.append("file", file);
-    return request<DocumentUpload>(
+    body.append("chunk_strategy", chunkStrategy);
+    return uploadWithProgress<DocumentUpload>(
       `/api/workspaces/${encodeURIComponent(workspaceId)}/documents`,
-      { method: "POST", body },
+      body,
+      onProgress,
     );
   },
   list: (workspaceId: string) =>
@@ -111,6 +209,48 @@ export const documentApi = {
     request<DocumentBlocks>(
       `/api/documents/${encodeURIComponent(documentId)}/blocks?offset=${offset}&limit=${limit}`,
     ),
+  tables: (documentId: string) =>
+    request<DocumentTables>(
+      `/api/documents/${encodeURIComponent(documentId)}/tables`,
+    ),
+  acceptTable: (documentId: string, tableId: string) =>
+    request<{ document_id: string; table_id: string; dataset_id: string }>(
+      `/api/documents/${encodeURIComponent(documentId)}/tables/${encodeURIComponent(tableId)}/accept`,
+      { method: "POST" },
+    ),
+  retry: (documentId: string) =>
+    request<{ document_id: string; state: string }>(
+      `/api/documents/${encodeURIComponent(documentId)}/retry`,
+      { method: "POST" },
+    ),
+  reindex: (documentId: string) =>
+    request<{ document_id: string; state: string }>(
+      `/api/documents/${encodeURIComponent(documentId)}/reindex`,
+      { method: "POST" },
+    ),
+  archive: (documentId: string) =>
+    request<{ document_id: string; state: string }>(
+      `/api/documents/${encodeURIComponent(documentId)}`,
+      { method: "DELETE" },
+    ),
+  capabilities: () =>
+    request<IngestionCapabilities>("/api/ingestion-capabilities"),
+  queueCrawl: (
+    workspaceId: string,
+    requestBody: {
+      url: string;
+      max_pages: number;
+      max_depth: number;
+      max_bytes: number;
+      sitemap: boolean;
+    },
+  ) =>
+    request<{ job_id: string; state: string }>(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/crawl`,
+      { method: "POST", body: JSON.stringify(requestBody) },
+    ),
+  ingestionJob: (jobId: string) =>
+    request<IngestionJob>(`/api/ingestion-jobs/${encodeURIComponent(jobId)}`),
   evidence: (evidenceId: string) =>
     request<EvidenceView>(`/api/evidence/${encodeURIComponent(evidenceId)}`),
 };

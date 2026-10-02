@@ -143,7 +143,9 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
         list(
             session.scalars(
                 select(Source).where(
-                    Source.id.in_(selected), Source.workspace_id == thread.workspace_id
+                    Source.id.in_(selected),
+                    Source.workspace_id == thread.workspace_id,
+                    Source.state != "deleted",
                 )
             )
         )

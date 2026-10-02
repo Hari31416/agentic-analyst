@@ -111,7 +111,7 @@ def test_upload_validation_matches_extension_and_rejects_unsafe_docx() -> None:
     )
     with pytest.raises(DocumentIngestionError, match="extension"):
         validate_document_upload("criteria.docx", _pdf_bytes(), 1024 * 1024)
-    with pytest.raises(DocumentIngestionError, match="Only PDF and DOCX"):
+    with pytest.raises(DocumentIngestionError, match="Supported documents"):
         validate_document_upload("data.csv", b"a,b\n1,2", 1024 * 1024)
 
     source = _docx_bytes()
@@ -143,7 +143,9 @@ def test_docx_extraction_preserves_unicode_headings_tables_and_order() -> None:
     ]
     assert blocks[0].heading == "Eligibility"
     assert "आवेदक" in blocks[2].text
-    assert blocks[4].location == {"table": 0, "row": 1, "cell_count": 2}
+    assert blocks[4].location["table"] == 0
+    assert blocks[4].location["row"] == 1
+    assert blocks[4].location["cells"] == ["S1", "₹10,000"]
     assert "Scheme: S1" in blocks[4].text
     assert blocks[-1].text == "This follows the table."
 
@@ -196,7 +198,12 @@ def test_fallback_chunker_preserves_unicode_whitespace_and_byte_bound() -> None:
     assert all(chunk.heading == "Heading" for chunk in chunks)
     assert all(
         chunk.location
-        == {"type": "paragraphs", "paragraph_start": 2, "paragraph_end": 2}
+        == {
+            "type": "paragraphs",
+            "paragraph_start": 2,
+            "paragraph_end": 2,
+            "chunk_strategy": "structure",
+        }
         for chunk in chunks
     )
     assert "final exact phrase" in chunks[-1].text
@@ -260,11 +267,19 @@ def test_tokenizer_chunker_groups_narrative_before_tables_and_keeps_anchors() ->
         "type": "paragraphs",
         "paragraph_start": 1,
         "paragraph_end": 2,
+        "chunk_strategy": "structure",
     }
     table = chunks[1]
     assert "Scheme: S1" in table.text
     assert table.block_ids == ["0", "3"]
-    assert table.location == {"type": "table", "table": 0, "row_start": 1, "row_end": 1}
+    assert table.location == {
+        "type": "table",
+        "table": 0,
+        "row_start": 1,
+        "row_end": 1,
+        "cell_rows": [],
+        "chunk_strategy": "structure",
+    }
     assert chunks[2].block_ids == ["0", "4"]
 
     long_block = ExtractedBlock(
@@ -319,6 +334,7 @@ def test_tokenizer_chunker_groups_narrative_before_tables_and_keeps_anchors() ->
         "type": "paragraphs",
         "paragraph_start": 1,
         "paragraph_end": 2,
+        "chunk_strategy": "structure",
     }
     assert section_chunks[-1].location["paragraph_start"] == 2
     assert section_chunks[-1].location["paragraph_end"] == 3
@@ -515,7 +531,7 @@ def test_chunk_limit_is_persisted_as_terminal_document_failure(
     ]
     monkeypatch.setattr(
         "app.sources.documents.extract_document",
-        lambda filename, content: (blocks, [], ["en-IN"]),
+        lambda filename, content, **options: (blocks, [], ["en-IN"]),
     )
 
     result = process_document(document_id, _settings(tmp_path), sessions)

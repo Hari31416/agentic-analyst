@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     embedding_revision: str | None = None
     embedding_batch_size: int = 16
     embedding_threads: int = 2
+    crawl_enabled: bool = False
+    crawl_approved_hosts: list[str] = []
     reranker_model: str | None = None
     supported_languages: list[str] = ["en-IN", "hi-IN"]
     max_tool_calls: int = 20
@@ -43,6 +45,10 @@ class Settings(BaseSettings):
     max_context_characters: int = 60000
     max_result_bytes: int = 65536
     max_upload_bytes: int = 25 * 1024 * 1024
+    ocr_enabled: bool = True
+    ocr_languages: str = "eng+hin"
+    ocr_timeout_seconds: int = 20
+    ingestion_profile: Literal["baseline", "layout"] = "baseline"
     run_timeout_seconds: int = 300
     job_lease_seconds: int = 60
     job_max_attempts: int = 3
@@ -75,6 +81,34 @@ class Settings(BaseSettings):
                 ) from exc
         return value
 
+    @field_validator("crawl_approved_hosts")
+    @classmethod
+    def valid_crawl_hosts(cls, value: list[str]) -> list[str]:
+        from urllib.parse import urlsplit
+
+        normalized = []
+        for host in value:
+            if not host or any(char in host for char in "/:@*?#"):
+                raise ValueError(
+                    "Crawl approval requires exact hostnames without schemes, ports or wildcards"
+                )
+            parsed = urlsplit("https://" + host)
+            if parsed.hostname != host.lower():
+                raise ValueError("Invalid crawl hostname")
+            normalized.append(host.lower().encode("idna").decode("ascii"))
+        return list(dict.fromkeys(normalized))
+
+    @field_validator("ocr_languages")
+    @classmethod
+    def valid_ocr_languages(cls, value: str) -> str:
+        if not value or any(not part.isalnum() for part in value.split("+")):
+            raise ValueError(
+                "OCR languages must be plus-separated Tesseract language codes"
+            )
+        if not {"eng", "hin"}.issubset(set(value.split("+"))):
+            raise ValueError("OCR language assets must include both eng and hin")
+        return value
+
     @model_validator(mode="after")
     def valid_budgets(self) -> "Settings":
         if self.storage_backend == "s3" and not (
@@ -87,6 +121,7 @@ class Settings(BaseSettings):
             "max_context_characters",
             "max_result_bytes",
             "max_upload_bytes",
+            "ocr_timeout_seconds",
             "run_timeout_seconds",
             "job_lease_seconds",
             "job_max_attempts",
@@ -96,6 +131,8 @@ class Settings(BaseSettings):
         ):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} must be positive")
+        if self.ocr_timeout_seconds > 60:
+            raise ValueError("OCR timeout cannot exceed 60 seconds per page")
         if self.job_lease_seconds < 6:
             raise ValueError("job lease must allow at least six seconds")
         return self

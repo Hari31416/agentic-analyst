@@ -24,6 +24,46 @@ waits for infrastructure health, and initializes the S3 bucket from the host.
 stops the apps. API and frontend reload on changes; restart the worker after
 backend changes. `make up-all` combines infrastructure, migrations, and dev.
 
+### Background process management and logs
+
+To run the full stack in the background with persistent logs in `logs/`:
+
+```bash
+make start      # Starts Docker infra, runs migrations, and starts apps in background
+make stop       # Stops background apps and Docker infra
+make restart    # Stops and restarts full stack
+make status     # Shows Docker container status, local processes, and health
+```
+
+To manage host applications separately in the background:
+
+```bash
+make app-start     # Starts backend, worker, and frontend in background
+make app-stop      # Stops backend, worker, frontend, and sandbox
+make app-restart   # Restarts backend, worker, and frontend
+
+make start-backend # Starts backend (logs/backend.log)
+make stop-backend  # Stops backend
+make start-worker  # Starts worker (logs/worker.log)
+make stop-worker   # Stops worker
+make start-frontend# Starts frontend (logs/frontend.log)
+make stop-frontend # Stops frontend
+make start-sandbox # Starts sandbox (logs/sandbox.log)
+make stop-sandbox  # Stops sandbox
+```
+
+To view or manage logs:
+
+```bash
+make logs          # Follow Docker infrastructure logs
+make logs-backend  # Follow local backend logs
+make logs-worker   # Follow local worker logs
+make logs-frontend # Follow local frontend logs
+make logs-sandbox  # Follow local sandbox logs
+make logs-save     # Save timestamped Docker logs to logs/
+make clean-logs    # Remove local log files
+```
+
 Open [the workspace](http://127.0.0.1:5173). API health is at
 [port 8000](http://127.0.0.1:8000/api/health). Individual terminals can instead
 use `make api`, `make worker`, and `make frontend`. Configure `API_PORT` and
@@ -38,9 +78,8 @@ persist in Docker volumes. RustFS runs as UID 10001; its startup service sets
 ownership on the data volume.
 
 `make down` stops infrastructure and preserves volumes. Stop host apps with
-Ctrl-C separately. `make logs` follows infrastructure logs; app logs appear in
-their terminal. Removing Docker volumes deletes saved data and requires running
-`make up` and `make migrate` again.
+Ctrl-C or `make app-stop`. Removing Docker volumes deletes saved data and
+requires running `make up` and `make migrate` again.
 
 ## Sandbox service on macOS
 

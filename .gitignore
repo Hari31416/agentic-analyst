@@ -16,3 +16,5 @@ data/
 volumes/
 .DS_Store
 .pnpm-store/
+logs/
+*.log

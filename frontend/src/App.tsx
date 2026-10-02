@@ -1,186 +1,189 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AlertCircle, Layers, Plus, Sparkles } from 'lucide-react'
+import ChatPanel from './ChatPanel'
+import SourceWorkbench from './SourceWorkbench'
 import {
-  AlertCircle,
-  ArrowDownLeft,
-  ArrowUpRight,
-  BookOpen,
-  ChevronDown,
-  FileText,
-  FolderPlus,
-  Layers3,
-  MessageSquarePlus,
-  Plus,
-  RefreshCw,
-  Sparkles,
-  Table2,
-} from "lucide-react";
-import ChatPanel from "./ChatPanel";
-import SourceWorkbench from "./SourceWorkbench";
-import { DatasetSummary, structuredApi } from "./structuredApi";
-
-type ComponentState = { status: string; message: string };
-type Readiness = {
-  status: "ready" | "degraded";
-  components: {
-    database: ComponentState;
-    storage: ComponentState;
-    model: ComponentState;
-    sandbox: ComponentState;
-  };
-};
-type Workspace = { id: string; label: string; created_at: string };
-type Thread = { id: string; label: string; created_at?: string };
-type Source = {
-  id: string;
-  display_name: string;
-  kind: string;
-  state: string;
-  version: number;
-};
+  LeftSidebar,
+  ThreadItem,
+  WorkspaceItem,
+} from './components/LeftSidebar'
+import { RightSidebar, SourceRecord } from './components/RightSidebar'
+import { TopBar } from './components/layout/TopBar'
+import { WorkspaceDialog } from './components/WorkspaceDialog'
+import { ThreadDialog } from './components/ThreadDialog'
+import { useTheme } from './hooks/useTheme'
+import { useSystemStatus } from './hooks/useSystemStatus'
+import { DatasetSummary, structuredApi } from './structuredApi'
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
-  });
+    headers: { 'Content-Type': 'application/json', ...init?.headers },
+  })
   if (!response.ok) {
-    let message = `Request failed (${response.status})`;
+    let message = `Request failed (${response.status})`
     try {
-      const body = await response.json();
-      if (typeof body.detail === "string") message = body.detail;
+      const body = (await response.json()) as Record<string, unknown>
+      if (typeof body.detail === 'string') message = body.detail
     } catch {
-      // Keep the HTTP status when the server did not return JSON.
+      // Keep HTTP status when response is not JSON
     }
-    throw new Error(message);
+    throw new Error(message)
   }
-  return response.json() as Promise<T>;
+  return response.json() as Promise<T>
 }
 
-function App() {
-  const [health, setHealth] = useState<"checking" | "online" | "offline">(
-    "checking",
-  );
-  const [readiness, setReadiness] = useState<Readiness | null>(null);
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [workspaceId, setWorkspaceId] = useState("");
-  const [threads, setThreads] = useState<Thread[]>([]);
-  const [sources, setSources] = useState<Source[]>([]);
-  const [datasets, setDatasets] = useState<DatasetSummary[]>([]);
-  const [datasetErrors, setDatasetErrors] = useState<Record<string, string>>(
-    {},
-  );
-  const [threadId, setThreadId] = useState("");
-  const [loadingWorkspace, setLoadingWorkspace] = useState(false);
-  const [error, setError] = useState("");
-  const [workspaceName, setWorkspaceName] = useState("");
-  const [threadName, setThreadName] = useState("");
-  const [creatingWorkspace, setCreatingWorkspace] = useState(false);
-  const [creatingThread, setCreatingThread] = useState(false);
+export function App() {
+  const [theme, toggleTheme] = useTheme()
+  const { health, readiness, refreshStatus } = useSystemStatus()
 
-  const workspace = useMemo(
-    () => workspaces.find((item) => item.id === workspaceId) ?? null,
+  const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState<boolean>(
+    () => {
+      return localStorage.getItem('analyst_left_sidebar') === 'true'
+    },
+  )
+
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState<boolean>(() => {
+    return localStorage.getItem('analyst_right_sidebar') !== 'false'
+  })
+
+  const [activeView, setActiveView] = useState<'chat' | 'workbench'>('chat')
+  const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([])
+  const [workspaceId, setWorkspaceId] = useState<string>('')
+  const [threads, setThreads] = useState<ThreadItem[]>([])
+  const [threadId, setThreadId] = useState<string>('')
+  const [sources, setSources] = useState<SourceRecord[]>([])
+  const [datasets, setDatasets] = useState<DatasetSummary[]>([])
+  const [datasetErrors, setDatasetErrors] = useState<Record<string, string>>({})
+  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null)
+  const [error, setError] = useState<string>('')
+
+  const [createWsOpen, setCreateWsOpen] = useState<boolean>(false)
+  const [createThreadOpen, setCreateThreadOpen] = useState<boolean>(false)
+
+  const toggleLeftSidebar = useCallback(() => {
+    setIsLeftSidebarCollapsed((prev) => {
+      const next = !prev
+      localStorage.setItem('analyst_left_sidebar', String(next))
+      return next
+    })
+  }, [])
+
+  const toggleRightSidebar = useCallback(() => {
+    setIsRightSidebarOpen((prev) => {
+      const next = !prev
+      localStorage.setItem('analyst_right_sidebar', String(next))
+      return next
+    })
+  }, [])
+
+  const activeWorkspace = useMemo(
+    () => workspaces.find((w) => w.id === workspaceId) ?? null,
     [workspaces, workspaceId],
-  );
-  const selectedThread = useMemo(
-    () => threads.find((item) => item.id === threadId) ?? null,
-    [threads, threadId],
-  );
+  )
 
-  const loadStatus = useCallback(async () => {
-    const [healthResult, readinessResult] = await Promise.allSettled([
-      api<{ status: "ok" }>("/api/health"),
-      api<Readiness>("/api/readiness"),
-    ]);
-    setHealth(healthResult.status === "fulfilled" ? "online" : "offline");
-    setReadiness(
-      readinessResult.status === "fulfilled" ? readinessResult.value : null,
-    );
-  }, []);
+  const activeThread = useMemo(
+    () => threads.find((t) => t.id === threadId) ?? null,
+    [threads, threadId],
+  )
 
   const loadWorkspaces = useCallback(async () => {
     try {
-      const result = await api<Workspace[]>("/api/workspaces");
-      setWorkspaces(result);
-      setError("");
+      const result = await api<WorkspaceItem[]>('/api/workspaces')
+      setWorkspaces(result)
+      setError('')
       setWorkspaceId((current) =>
         result.some((item) => item.id === current)
           ? current
-          : (result[0]?.id ?? ""),
-      );
+          : (result[0]?.id ?? ''),
+      )
     } catch (reason) {
       setError(
-        reason instanceof Error ? reason.message : "Could not load workspaces.",
-      );
+        reason instanceof Error ? reason.message : 'Could not load workspaces.',
+      )
     }
-  }, []);
+  }, [])
 
   const refreshSources = useCallback(async () => {
-    if (!workspaceId) return;
-    const nextSources = await api<Source[]>(
-      `/api/workspaces/${workspaceId}/sources`,
-    );
-    setSources(nextSources);
-  }, [workspaceId]);
+    if (!workspaceId) return
+    try {
+      const nextSources = await api<SourceRecord[]>(
+        `/api/workspaces/${workspaceId}/sources`,
+      )
+      setSources(nextSources)
+    } catch {
+      // Ignored if network glitch
+    }
+  }, [workspaceId])
 
   useEffect(() => {
-    void loadStatus();
-    void loadWorkspaces();
-  }, [loadStatus, loadWorkspaces]);
+    void loadWorkspaces()
+  }, [loadWorkspaces])
 
   useEffect(() => {
     if (!workspaceId) {
-      setThreads([]);
-      setSources([]);
-      setDatasets([]);
-      setDatasetErrors({});
-      setThreadId("");
-      return;
+      setThreads([])
+      setSources([])
+      setDatasets([])
+      setDatasetErrors({})
+      setThreadId('')
+      setSelectedSourceId(null)
+      return
     }
-    let active = true;
-    setLoadingWorkspace(true);
-    setSources([]);
-    setDatasets([]);
-    setDatasetErrors({});
+
+    let active = true
+    setSources([])
+    setDatasets([])
+    setDatasetErrors({})
+
     Promise.all([
-      api<Thread[]>(`/api/workspaces/${workspaceId}/threads`),
-      api<Source[]>(`/api/workspaces/${workspaceId}/sources`),
+      api<ThreadItem[]>(`/api/workspaces/${workspaceId}/threads`),
+      api<SourceRecord[]>(`/api/workspaces/${workspaceId}/sources`),
     ])
       .then(([nextThreads, nextSources]) => {
-        if (!active) return;
-        setThreads(nextThreads);
-        setSources(nextSources);
-        setThreadId((current) =>
-          nextThreads.some((item) => item.id === current) ? current : "",
-        );
-        setError("");
+        if (!active) return
+        setThreads(nextThreads)
+        setSources(nextSources)
+        setThreadId((curr) =>
+          nextThreads.some((item) => item.id === curr)
+            ? curr
+            : (nextThreads[0]?.id ?? ''),
+        )
+        if (nextSources.length > 0 && !selectedSourceId) {
+          setSelectedSourceId(nextSources[0].id)
+        }
+        setError('')
       })
       .catch((reason: unknown) => {
-        if (active)
+        if (active) {
           setError(
             reason instanceof Error
               ? reason.message
-              : "Could not load this workspace.",
-          );
+              : 'Could not load workspace items.',
+          )
+        }
       })
-      .finally(() => active && setLoadingWorkspace(false));
-    return () => {
-      active = false;
-    };
-  }, [workspaceId]);
 
-  useEffect(() => {
-    let active = true;
-    if (!sources.length) {
-      setDatasets([]);
-      return;
+    return () => {
+      active = false
     }
+  }, [workspaceId, selectedSourceId])
+
+  // Load datasets for sources
+  useEffect(() => {
+    let active = true
+    if (!sources.length) {
+      setDatasets([])
+      return
+    }
+
     Promise.all(
       sources.map(async (source) => {
         try {
           return {
             sourceId: source.id,
             datasets: await structuredApi.datasets(source.id),
-          };
+          }
         } catch (reason) {
           return {
             sourceId: source.id,
@@ -188,531 +191,257 @@ function App() {
             error:
               reason instanceof Error
                 ? reason.message
-                : "Could not load datasets.",
-          };
+                : 'Could not load datasets.',
+          }
         }
       }),
     ).then((allDatasets) => {
       if (active) {
-        setDatasets(allDatasets.flatMap((result) => result.datasets));
+        setDatasets(allDatasets.flatMap((result) => result.datasets))
         setDatasetErrors(
           Object.fromEntries(
             allDatasets.flatMap((result) =>
               result.error ? [[result.sourceId, result.error]] : [],
             ),
           ),
-        );
+        )
       }
-    });
+    })
+
     return () => {
-      active = false;
-    };
-  }, [sources]);
+      active = false
+    }
+  }, [sources])
 
-  async function createWorkspace(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const label = workspaceName.trim();
-    if (!label) return;
-    setCreatingWorkspace(true);
-    try {
-      const created = await api<Workspace>("/api/workspaces", {
-        method: "POST",
+  const handleCreateWorkspace = async (label: string) => {
+    const created = await api<WorkspaceItem>('/api/workspaces', {
+      method: 'POST',
+      body: JSON.stringify({ label }),
+    })
+    setWorkspaces((prev) => [created, ...prev])
+    setWorkspaceId(created.id)
+    setError('')
+  }
+
+  const handleCreateThread = async (label: string) => {
+    if (!workspaceId) return
+    const created = await api<ThreadItem>(
+      `/api/workspaces/${workspaceId}/threads`,
+      {
+        method: 'POST',
         body: JSON.stringify({ label }),
-      });
-      setWorkspaceName("");
-      setWorkspaces((current) => [created, ...current]);
-      setWorkspaceId(created.id);
-      setError("");
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Could not create workspace.",
-      );
-    } finally {
-      setCreatingWorkspace(false);
+      },
+    )
+    setThreads((prev) => [created, ...prev])
+    setThreadId(created.id)
+    setActiveView('chat')
+    setError('')
+  }
+
+  const handleDeleteThread = (id: string) => {
+    setThreads((prev) => prev.filter((t) => t.id !== id))
+    if (threadId === id) {
+      const remaining = threads.filter((t) => t.id !== id)
+      setThreadId(remaining[0]?.id ?? '')
     }
   }
 
-  async function createThread(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const label = threadName.trim();
-    if (!workspaceId || !label) return;
-    setCreatingThread(true);
-    try {
-      const created = await api<Thread>(
-        `/api/workspaces/${workspaceId}/threads`,
-        {
-          method: "POST",
-          body: JSON.stringify({ label }),
-        },
-      );
-      setThreads((current) => [created, ...current]);
-      setThreadId(created.id);
-      setThreadName("");
-      setError("");
-    } catch (reason) {
-      setError(
-        reason instanceof Error ? reason.message : "Could not create thread.",
-      );
-    } finally {
-      setCreatingThread(false);
-    }
+  const handleUploadFile = async (file: File) => {
+    if (!workspaceId) return
+    const added = await structuredApi.uploadFile(workspaceId, file)
+    await refreshSources()
+    setSelectedSourceId(added.id)
   }
 
-  const components = readiness
-    ? ([
-        ["Database", readiness.components.database],
-        ["File store", readiness.components.storage],
-        ["Model", readiness.components.model],
-        ["Sandbox", readiness.components.sandbox],
-      ] as const)
-    : [];
+  const handleOpenInWorkbench = (sourceId: string) => {
+    setSelectedSourceId(sourceId)
+    setActiveView('workbench')
+  }
+
+  const modelAvailable =
+    readiness?.components?.model?.status === 'ready' ||
+    readiness?.components?.model?.status === 'configured'
+  const modelMessage = readiness?.components?.model?.message
 
   return (
-    <main className="app-shell">
-      <aside className="rail">
-        <div className="brand-mark" aria-label="Fieldnote home">
-          f<span>.</span>
-        </div>
-        <div className="rail-rule" />
-        <div
-          className="rail-icon active"
-          aria-label="Research workspace"
-          title="Research workspace"
-        >
-          <Layers3 size={18} strokeWidth={1.7} />
-        </div>
-        <div className="rail-bottom">
-          <span>FN</span>
-        </div>
-      </aside>
+    <div className="app-shell">
+      {/* Column 1: Collapsible Left Sidebar */}
+      <LeftSidebar
+        workspaces={workspaces}
+        activeWorkspaceId={workspaceId}
+        onSelectWorkspace={setWorkspaceId}
+        onCreateWorkspaceClick={() => setCreateWsOpen(true)}
+        threads={threads}
+        activeThreadId={threadId}
+        onSelectThread={setThreadId}
+        onCreateThreadClick={() => setCreateThreadOpen(true)}
+        onDeleteThread={handleDeleteThread}
+        activeView={activeView}
+        onSelectView={setActiveView}
+        isCollapsed={isLeftSidebarCollapsed}
+        onToggleCollapse={toggleLeftSidebar}
+        health={health}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        sourcesCount={sources.length}
+      />
 
-      <aside className="sidebar">
-        <header className="sidebar-head">
-          <div className="eyebrow">FIELDNOTE / 01</div>
-          <button
-            className="icon-button quiet"
-            onClick={() => void loadWorkspaces()}
-            title="Refresh workspaces"
-            aria-label="Refresh workspaces"
-          >
-            <RefreshCw size={15} />
-          </button>
-        </header>
-
-        <div className="workspace-picker-wrap">
-          <label className="mini-label" htmlFor="workspace-picker">
-            Workspace
-          </label>
-          <div className="select-frame">
-            <select
-              id="workspace-picker"
-              value={workspaceId}
-              onChange={(event) => setWorkspaceId(event.target.value)}
-            >
-              {workspaces.length === 0 && (
-                <option value="">No workspaces yet</option>
-              )}
-              {workspaces.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={15} aria-hidden="true" />
-          </div>
-          <form className="quick-create" onSubmit={createWorkspace}>
-            <input
-              aria-label="New workspace name"
-              placeholder="Name a workspace"
-              value={workspaceName}
-              onChange={(event) => setWorkspaceName(event.target.value)}
-              maxLength={120}
-            />
-            <button
-              disabled={!workspaceName.trim() || creatingWorkspace}
-              aria-label="Create workspace"
-              title="Create workspace"
-            >
-              <FolderPlus size={16} />
-            </button>
-          </form>
-        </div>
-
-        <div className="section-heading">
-          <span className="mini-label">Threads</span>
-          <span className="count">
-            {threads.length.toString().padStart(2, "0")}
-          </span>
-        </div>
-        <form className="thread-create" onSubmit={createThread}>
-          <input
-            aria-label="New thread name"
-            placeholder="Start a research thread"
-            value={threadName}
-            onChange={(event) => setThreadName(event.target.value)}
-            maxLength={120}
-            disabled={!workspaceId}
-          />
-          <button
-            disabled={!workspaceId || !threadName.trim() || creatingThread}
-            aria-label="Create thread"
-            title="Create thread"
-          >
-            <Plus size={16} />
-          </button>
-        </form>
-        <nav className="thread-list" aria-label="Workspace threads">
-          {threads.map((item, index) => (
-            <button
-              key={item.id}
-              className={`thread-item ${threadId === item.id ? "selected" : ""}`}
-              onClick={() => setThreadId(item.id)}
-            >
-              <span className="thread-glyph">
-                {index % 2 === 0 ? (
-                  <BookOpen size={15} />
-                ) : (
-                  <MessageSquarePlus size={15} />
-                )}
-              </span>
-              <span className="thread-label">{item.label}</span>
-              {threadId === item.id && (
-                <ArrowUpRight className="thread-arrow" size={14} />
-              )}
-            </button>
-          ))}
-          {workspace && threads.length === 0 && !loadingWorkspace && (
-            <p className="sidebar-empty">
-              No threads here yet. Give the first one a name above.
-            </p>
-          )}
-          {!workspace && workspaces.length === 0 && (
-            <p className="sidebar-empty">
-              Create a workspace to keep research and sources together.
-            </p>
-          )}
-        </nav>
-        <footer className="sidebar-footer">
-          <span className={`connection-dot ${health}`} />
-          <span>
-            {health === "online"
-              ? "API connected"
-              : health === "offline"
-                ? "API unavailable"
-                : "Checking API"}
-          </span>
-          <span className="footer-spacer" />
-          <span className="mono">LOCAL</span>
-        </footer>
-      </aside>
-
-      <section className="main-panel">
-        <header className="topbar">
-          <div className="breadcrumbs">
-            <span>Workspaces</span>
-            <ArrowDownLeft size={13} />
-            {selectedThread ? (
-              <>
-                <button
-                  className="breadcrumb-workspace"
-                  onClick={() => setThreadId("")}
-                  title="Return to the source catalog"
-                >
-                  {workspace?.label ?? "Workspace"}
-                </button>
-                <ArrowDownLeft size={13} />
-                <strong>{selectedThread.label}</strong>
-              </>
-            ) : (
-              <strong>{workspace?.label ?? "New workspace"}</strong>
-            )}
-          </div>
-          <div className="topbar-right">
-            <div className={`system-chip ${readiness?.status ?? health}`}>
-              <span className="status-light" />
-              {readiness?.status === "ready"
-                ? "Systems ready"
-                : readiness
-                  ? "Needs setup"
-                  : health === "offline"
-                    ? "Disconnected"
-                    : "Connecting"}
-            </div>
-            <span className="topbar-date">RESEARCH / WORKSPACE</span>
-          </div>
-        </header>
+      {/* Column 2: Center Main Panel */}
+      <main className="main-col">
+        <TopBar
+          isLeftSidebarCollapsed={isLeftSidebarCollapsed}
+          onToggleLeftSidebar={toggleLeftSidebar}
+          isRightSidebarOpen={isRightSidebarOpen}
+          onToggleRightSidebar={toggleRightSidebar}
+          activeWorkspaceLabel={activeWorkspace?.label ?? 'Select Workspace'}
+          activeThreadLabel={activeThread?.label}
+          activeView={activeView}
+          onSelectView={setActiveView}
+          readiness={readiness}
+          health={health}
+          onRefresh={() => {
+            void refreshStatus()
+            void refreshSources()
+          }}
+          sourcesCount={sources.length}
+        />
 
         {error && (
-          <div className="error-banner" role="alert">
-            <AlertCircle size={16} />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 16px',
+              backgroundColor: 'var(--status-bg-danger)',
+              color: 'var(--status-danger)',
+              fontSize: '12px',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            <AlertCircle size={15} />
             <span>{error}</span>
-            <button onClick={() => setError("")} aria-label="Dismiss error">
-              ×
-            </button>
           </div>
         )}
 
-        <div className={`content-grid ${selectedThread ? "chat-active" : ""}`}>
-          <div className={`center-column ${selectedThread ? "chat-mode" : ""}`}>
-            {selectedThread ? (
+        <div className="main-content">
+          {activeView === 'chat' ? (
+            threadId ? (
               <ChatPanel
-                threadId={selectedThread.id}
+                threadId={threadId}
                 sources={sources}
                 datasets={datasets}
-                modelAvailable={
-                  readiness?.components.model.status === "configured"
-                }
-                modelMessage={
-                  readiness?.components.model.message ??
-                  (health === "offline"
-                    ? "The API is unavailable. Reconnect to continue."
-                    : "Checking model configuration...")
-                }
+                modelAvailable={modelAvailable}
+                modelMessage={modelMessage}
               />
             ) : (
-              <>
-                <div className="hero-kicker">
-                  <span className="kicker-line" /> ANALYST DESK{" "}
-                  <span className="kicker-index">/ 001</span>
-                </div>
-                <h1>
-                  {workspace
-                    ? "A clearer view\nof your sources."
-                    : "Make room for\na new inquiry."}
-                </h1>
-                <p className="hero-copy">
-                  {workspace
-                    ? "Bring documents and data together, then trace each answer back to the material behind it."
-                    : "Create a workspace to collect source material and start a research thread."}
-                </p>
-
-                {readiness?.components.model.status === "unavailable" && (
-                  <div className="model-notice">
-                    <span className="notice-icon">
-                      <Sparkles size={15} />
-                    </span>
-                    <div>
-                      <strong>Chat is not configured yet</strong>
-                      <p>
-                        {readiness.components.model.message ||
-                          "Add model credentials to enable assistant responses."}
-                      </p>
-                    </div>
-                    <span className="notice-state">OFFLINE</span>
+              <div className="center-empty-wrap">
+                <div className="empty-card">
+                  <div className="empty-card-icon">
+                    <Sparkles size={24} />
                   </div>
-                )}
-                {health === "offline" && (
-                  <div className="model-notice connection-notice">
-                    <span className="notice-icon">
-                      <AlertCircle size={15} />
-                    </span>
-                    <div>
-                      <strong>Could not reach the API</strong>
-                      <p>
-                        Check that the backend is running, then refresh this
-                        page.
-                      </p>
-                    </div>
+                  <h2 className="empty-card-title">
+                    Evidence-Backed Research Studio
+                  </h2>
+                  <p className="empty-card-desc">
+                    {workspaceId
+                      ? 'Launch a new thread or select an existing conversation to analyze documents, execute Python code, and evaluate SQL data.'
+                      : 'Create or choose a research workspace to begin analyzing evidence.'}
+                  </p>
+                  <div className="empty-card-actions">
+                    {workspaceId ? (
+                      <button
+                        type="button"
+                        className="primary-action-btn"
+                        onClick={() => setCreateThreadOpen(true)}
+                      >
+                        <Plus size={15} />
+                        <span>Start research thread</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="primary-action-btn"
+                        onClick={() => setCreateWsOpen(true)}
+                      >
+                        <Plus size={15} />
+                        <span>Create workspace</span>
+                      </button>
+                    )}
                     <button
-                      className="text-action"
-                      onClick={() => {
-                        void loadStatus();
-                        void loadWorkspaces();
-                      }}
+                      type="button"
+                      className="secondary-action-btn"
+                      onClick={() => setActiveView('workbench')}
                     >
-                      Retry
+                      <Layers size={15} />
+                      <span>Explore sources</span>
                     </button>
                   </div>
-                )}
-
-                <div className="workspace-overview">
-                  <div className="overview-head">
-                    <div>
-                      <span className="mini-label">Source catalog</span>
-                      <span className="overview-caption">
-                        {workspace
-                          ? "A live view of this workspace"
-                          : "Nothing collected yet"}
-                      </span>
-                    </div>
-                    <span className="overview-number">
-                      {String(sources.length).padStart(2, "0")}{" "}
-                      <small>SOURCES</small>
-                    </span>
-                  </div>
-                  <div className="overview-divider" />
-                  {workspace ? (
-                    <SourceWorkbench
-                      workspaceId={workspace.id}
-                      sources={sources}
-                      datasets={datasets}
-                      datasetErrors={datasetErrors}
-                      onSourcesChanged={refreshSources}
-                    />
-                  ) : (
-                    <div className="empty-sources">
-                      <div className="empty-illustration">
-                        <div className="paper paper-back" />
-                        <div className="paper paper-front">
-                          <span />
-                          <span />
-                          <span />
-                        </div>
-                        <div className="empty-plus">
-                          <Plus size={16} />
-                        </div>
-                      </div>
-                      <div className="empty-copy">
-                        <strong>
-                          {workspace
-                            ? "Your source list is empty"
-                            : "Start with a workspace"}
-                        </strong>
-                        <p>
-                          {workspace
-                            ? "Sources added to this workspace will appear here with their current processing state."
-                            : "A workspace gives related sources and research threads one place to live."}
-                        </p>
-                      </div>
-                      {!workspace && (
-                        <form
-                          className="empty-create"
-                          onSubmit={createWorkspace}
-                        >
-                          <input
-                            aria-label="Workspace name"
-                            placeholder="e.g. Scheme review, Q3"
-                            value={workspaceName}
-                            onChange={(event) =>
-                              setWorkspaceName(event.target.value)
-                            }
-                            maxLength={120}
-                          />
-                          <button
-                            disabled={
-                              !workspaceName.trim() || creatingWorkspace
-                            }
-                          >
-                            <FolderPlus size={15} /> Create workspace
-                          </button>
-                        </form>
-                      )}
-                    </div>
-                  )}
                 </div>
-
-                <div className="below-note">
-                  <span className="note-index">01</span>
-                  <span>
-                    Original files stay unchanged. Analysis outputs will be
-                    stored separately.
-                  </span>
-                  <span className="note-rule" />
-                </div>
-              </>
-            )}
-          </div>
-
-          <aside className="right-column">
-            <div className="right-head">
-              <span className="mini-label">System check</span>
-              <span className="live-label">
-                <span className="live-dot" />
-                LIVE
-              </span>
-            </div>
-            <p className="right-intro">
-              Service status from this development environment.
-            </p>
-            <div className="service-list">
-              {components.length ? (
-                components.map(([label, detail]) => (
-                  <div className="service-row" key={label}>
-                    <span className={`service-marker ${detail.status}`} />
-                    <div>
-                      <strong>{label}</strong>
-                      <span>{detail.message || detail.status}</span>
-                    </div>
-                    <span className="service-status">{detail.status}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="service-loading">
-                  <span
-                    className={`service-marker ${health === "offline" ? "unavailable" : "checking"}`}
-                  />
-                  <div>
-                    <strong>
-                      {health === "offline"
-                        ? "API unavailable"
-                        : "Checking services"}
-                    </strong>
-                    <span>
-                      {health === "offline"
-                        ? "Backend did not respond"
-                        : "Waiting for readiness response"}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="right-separator" />
-            <div className="sources-side-head">
-              <span className="mini-label">Selected sources</span>
-              <span className="source-count">
-                {String(sources.length).padStart(2, "0")}
-              </span>
-            </div>
-            {sources.length ? (
-              <div className="compact-sources">
-                {sources.map((source) => (
-                  <div className="compact-source" key={source.id}>
-                    <span className="compact-icon">
-                      {source.kind.toLowerCase().includes("csv") ||
-                      source.kind.toLowerCase().includes("sheet") ? (
-                        <Table2 size={15} />
-                      ) : (
-                        <FileText size={15} />
-                      )}
-                    </span>
-                    <span>{source.display_name}</span>
-                    <i className={`tiny-state ${source.state.toLowerCase()}`} />
-                  </div>
-                ))}
               </div>
-            ) : (
-              <p className="selected-empty">
-                Sources connected to this workspace will be listed here.
-              </p>
-            )}
-
-            <div className="workspace-card">
-              <div className="card-topline">
-                <span>FIELDNOTE NOTE</span>
-                <span>01 / 03</span>
-              </div>
-              <div className="card-mark">“</div>
-              <p>
-                Every result should lead you back to the source that supports
-                it.
-              </p>
-              <div className="card-footer">
-                <span>RESEARCH PRINCIPLE</span>
-                <span className="card-line" />
+            )
+          ) : workspaceId ? (
+            <SourceWorkbench
+              workspaceId={workspaceId}
+              sources={sources}
+              datasets={datasets}
+              datasetErrors={datasetErrors}
+              onSourcesChanged={refreshSources}
+            />
+          ) : (
+            <div className="center-empty-wrap">
+              <div className="empty-card">
+                <div className="empty-card-icon">
+                  <Layers size={24} />
+                </div>
+                <h2 className="empty-card-title">Source Catalog</h2>
+                <p className="empty-card-desc">
+                  Select a workspace to view and manage ingested files,
+                  structured datasets, and database connections.
+                </p>
+                <button
+                  type="button"
+                  className="primary-action-btn"
+                  onClick={() => setCreateWsOpen(true)}
+                >
+                  <Plus size={15} />
+                  <span>Create workspace</span>
+                </button>
               </div>
             </div>
-            <div className="right-footer">
-              <span>BUILD 00.1</span>
-              <span>LOCAL INSTANCE</span>
-            </div>
-          </aside>
+          )}
         </div>
-      </section>
-    </main>
-  );
+      </main>
+
+      {/* Column 3: Collapsible Right Sidebar (Inspector) */}
+      <RightSidebar
+        isOpen={isRightSidebarOpen}
+        onToggleOpen={toggleRightSidebar}
+        sources={sources}
+        datasets={datasets}
+        selectedSourceId={selectedSourceId}
+        onSelectSource={setSelectedSourceId}
+        onOpenInWorkbench={handleOpenInWorkbench}
+        onUploadFile={handleUploadFile}
+        readiness={readiness}
+        health={health}
+        onRefreshStatus={refreshStatus}
+      />
+
+      {/* Modals */}
+      <WorkspaceDialog
+        isOpen={createWsOpen}
+        onClose={() => setCreateWsOpen(false)}
+        onCreate={handleCreateWorkspace}
+      />
+
+      <ThreadDialog
+        isOpen={createThreadOpen}
+        onClose={() => setCreateThreadOpen(false)}
+        onCreate={handleCreateThread}
+      />
+    </div>
+  )
 }
 
-export default App;
+export default App

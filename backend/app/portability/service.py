@@ -438,6 +438,7 @@ def import_workspace(
                 config={
                     "imported": True,
                     "original_state": _safe_run_state(row.get("state")),
+                    **_remap_json(_safe_run_config(row.get("config")), id_map),
                 },
                 outcome=_remap_json(_safe_outcome(row.get("outcome")), id_map),
                 event_sequence=0,
@@ -455,7 +456,9 @@ def import_workspace(
                 thread_id=_mapped(id_map, row.get("thread_id")),
                 run_id=_mapped_optional(id_map, row.get("run_id")),
                 role=_required_string(row.get("role"), "message.role", 20),
-                content=_string(row.get("content"), "message.content"),
+                content=_remap_citation_tokens(
+                    _string(row.get("content"), "message.content"), id_map
+                ),
                 selected_source_ids=_mapped_list(
                     id_map,
                     row.get("selected_source_ids"),
@@ -996,6 +999,7 @@ def _run_record(row: Run) -> dict[str, Any]:
         "thread_id": row.thread_id,
         "state": row.state,
         "selected_source_ids": row.selected_source_ids,
+        "config": _safe_run_config(row.config),
         "outcome": _safe_outcome(row.outcome),
         "finished_at": _iso(row.finished_at),
         "created_at": _iso(row.created_at),
@@ -1088,12 +1092,66 @@ def _safe_outcome(value: Any) -> dict[str, Any] | None:
         return None
     allowed = {
         "answer",
+        "text",
+        "clarification",
         "status",
         "evidence_ids",
         "artifact_ids",
         "language",
     }
     return {key: value[key] for key in allowed if key in value}
+
+
+def _safe_run_config(value: Any) -> dict[str, Any]:
+    """Keep only non-secret settings needed to explain imported run provenance."""
+    if not isinstance(value, dict):
+        return {}
+    safe: dict[str, Any] = {}
+    profile = value.get("retrieval_profile")
+    if isinstance(profile, str) and profile in {"basic", "advanced"}:
+        safe["retrieval_profile"] = profile
+    for key, maximum in (("answer_language", 20), ("prompt_version", 120)):
+        item = value.get(key)
+        if isinstance(item, str) and item and len(item) <= maximum:
+            safe[key] = item
+    selected = value.get("selected_dataset_ids")
+    if isinstance(selected, list) and len(selected) <= 100:
+        safe_ids = []
+        for item in selected:
+            try:
+                safe_ids.append(_required_uuid(item, "config.selected_dataset_ids"))
+            except PortabilityError:
+                continue
+        safe["selected_dataset_ids"] = safe_ids
+    versions = value.get("source_versions")
+    if isinstance(versions, dict) and len(versions) <= 100:
+        safe_versions = {}
+        for identity, version in versions.items():
+            if (
+                isinstance(identity, str)
+                and isinstance(version, int)
+                and not isinstance(version, bool)
+                and version >= 1
+            ):
+                try:
+                    safe_versions[
+                        _required_uuid(identity, "config.source_versions")
+                    ] = version
+                except PortabilityError:
+                    continue
+        safe["source_versions"] = safe_versions
+    return safe
+
+
+def _remap_citation_tokens(content: str, id_map: dict[str, str]) -> str:
+    token = re.compile(
+        r"\[(evidence|artifact):([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-"
+        r"[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\]"
+    )
+    return token.sub(
+        lambda match: f"[{match.group(1)}:{id_map.get(match.group(2), match.group(2))}]",
+        content,
+    )
 
 
 def _supported_summary(value: Any) -> bool:
@@ -1122,7 +1180,12 @@ def _remap_json(value: Any, id_map: dict[str, str]) -> Any:
     if isinstance(value, list):
         return [_remap_json(item, id_map) for item in value]
     if isinstance(value, dict):
-        return {key: _remap_json(item, id_map) for key, item in value.items()}
+        return {
+            id_map.get(key, key) if isinstance(key, str) else key: _remap_json(
+                item, id_map
+            )
+            for key, item in value.items()
+        }
     return value
 
 

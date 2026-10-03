@@ -73,7 +73,17 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
             state="ready",
             details={"table_count": 1},
         )
-        session.add_all([source, db_source])
+        unavailable_source = Source(
+            workspace_id=workspace.id,
+            kind="pdf",
+            version=1,
+            display_name="archived.pdf",
+            state="archived",
+            content_hash="b" * 64,
+            storage_key=None,
+            details={},
+        )
+        session.add_all([source, db_source, unavailable_source])
         session.flush()
         connection = Connection(
             source_id=db_source.id,
@@ -112,9 +122,15 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
                 "sandbox_auth_token": "secret-config",
                 "profile": "advanced",
                 "retrieval": {"rerank": True},
+                "source_versions": {source.id: 2, db_source.id: 3},
+                "answer_language": "en-IN",
+                "prompt_version": "analyst-v4",
+                "retrieval_profile": "advanced",
             },
             outcome={
                 "answer": "Applicants qualify.",
+                "text": "Applicants qualify.",
+                "clarification": None,
                 "evidence_ids": [],
                 "other_secret": "omit",
             },
@@ -159,6 +175,7 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
         )
         session.add_all([chunk, dataset])
         session.flush()
+        run.config = {**run.config, "selected_dataset_ids": [dataset.id]}
         evidence = Evidence(
             run_id=run.id,
             kind="document",
@@ -166,6 +183,8 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
             details={
                 "document_id": document.id,
                 "chunk_id": chunk.id,
+                "source_versions": {source.id: 2},
+                "schema_versions": {source.id: "schema-v1"},
                 "excerpt": chunk.text,
             },
         )
@@ -197,6 +216,23 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
             durable=True,
         )
         session.add(artifact)
+        unavailable_artifact = Artifact(
+            run_id=run.id,
+            storage_key="derived/expired/report.pdf",
+            display_name="expired.pdf",
+            media_type="application/pdf",
+            byte_size=4,
+            sha256="c" * 64,
+            lineage=[],
+            durable=False,
+        )
+        session.add(unavailable_artifact)
+        session.flush()
+        expired_evidence_id = str(uuid4())
+        message.content = (
+            f"Applicants qualify. [evidence:{evidence.id}] "
+            f"[artifact:{artifact.id}] [evidence:{expired_evidence_id}]"
+        )
         session.add(
             Job(kind="agent_run", run_id=run.id, dedupe_key="no-replay", payload={})
         )
@@ -226,6 +262,8 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
             message.id,
             artifact.id,
         )
+        unavailable_source_id = unavailable_source.id
+        unavailable_artifact_id = unavailable_artifact.id
         summary_id = summary.id
 
     with db_factory() as session:
@@ -246,12 +284,16 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
 
         copied_source = session.get(Source, ids[source_id])
         copied_db_source = session.get(Source, ids[db_source_id])
+        copied_unavailable_source = session.get(Source, ids[unavailable_source_id])
         assert copied_source and copied_source.details == {
             "media_type": "application/docx",
             "description": "Policy",
         }
         assert copied_db_source and copied_db_source.state == "disconnected"
         assert copied_db_source.details["portability"]["reconnection_required"] is True
+        assert copied_unavailable_source and copied_unavailable_source.details == {
+            "portability": {"original_unavailable": True}
+        }
         assert (
             session.scalar(
                 select(func.count())
@@ -284,17 +326,46 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
         copied_artifact = session.get(Artifact, ids[artifact_id])
         copied_run = session.get(Run, ids[run_id])
         assert copied_message and copied_message.thread_id == ids[thread_id]
+        assert copied_message.content == (
+            f"Applicants qualify. [evidence:{ids[evidence_id]}] "
+            f"[artifact:{ids[artifact_id]}] [evidence:{expired_evidence_id}]"
+        )
         assert copied_message.references["evidence_ids"] == [ids[evidence_id]]
         assert copied_message.references["citations"][0]["chunk_id"] == ids[chunk_id]
         assert (
             copied_evidence
             and copied_evidence.details["document_id"] == ids[document_id]
         )
+        assert copied_evidence.details["source_versions"] == {ids[source_id]: 2}
+        assert copied_evidence.details["schema_versions"] == {
+            ids[source_id]: "schema-v1"
+        }
         assert copied_run and copied_run.state == "imported"
-        assert copied_run.config == {"imported": True, "original_state": "completed"}
+        assert copied_run.config == {
+            "imported": True,
+            "original_state": "completed",
+            "source_versions": {ids[source_id]: 2, ids[db_source_id]: 3},
+            "selected_dataset_ids": [ids[dataset_id]],
+            "answer_language": "en-IN",
+            "prompt_version": "analyst-v4",
+            "retrieval_profile": "advanced",
+        }
+        assert copied_run.outcome == {
+            "answer": "Applicants qualify.",
+            "text": "Applicants qualify.",
+            "clarification": None,
+            "evidence_ids": [],
+        }
         assert (
             copied_artifact
             and storage.read(copied_artifact.storage_key) == artifact_bytes
+        )
+        copied_unavailable_artifact = session.get(
+            Artifact, ids[unavailable_artifact_id]
+        )
+        assert copied_unavailable_artifact and not copied_unavailable_artifact.durable
+        assert copied_unavailable_artifact.storage_key.startswith(
+            "derived/imported-unavailable/"
         )
         assert (
             session.scalar(

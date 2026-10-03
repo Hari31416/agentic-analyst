@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     crawl_enabled: bool = False
     crawl_approved_hosts: list[str] = []
     reranker_model: str | None = None
+    reranker_model_path: Path | None = None
+    reranker_revision: str | None = None
     supported_languages: list[str] = ["en-IN", "hi-IN"]
     max_tool_calls: int = 20
     max_model_calls: int = 20

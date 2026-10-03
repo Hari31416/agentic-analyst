@@ -250,3 +250,47 @@ async def test_provider_timeout_closes_admission_until_process_restart(
         await speech.transcribe_audio(b"audio", None)
     with pytest.raises(speech.QueueFullError, match="recovering"):
         await speech.transcribe_audio(b"audio", None)
+
+
+@pytest.mark.asyncio
+async def test_cancelled_provider_work_closes_admission(monkeypatch) -> None:
+    class CancelledProvider:
+        async def transcribe_batch(self, *args, **kwargs):
+            raise asyncio.CancelledError
+
+    monkeypatch.setattr(speech, "_admitted_requests", 0)
+    monkeypatch.setattr(speech, "_worker_may_still_be_running", False)
+    monkeypatch.setattr(speech, "_speech_semaphore", asyncio.Semaphore(1))
+    monkeypatch.setattr(
+        speech, "get_speech_provider", lambda *args: CancelledProvider()
+    )
+    monkeypatch.setattr(speech, "get_settings", lambda: Settings())
+    monkeypatch.setattr(
+        speech, "decode_audio", lambda *args, **kwargs: speech.DecodedAudio(_wav(), 0.2)
+    )
+    with pytest.raises(asyncio.CancelledError):
+        await speech.transcribe_audio(b"audio", "en-IN")
+    assert speech._admitted_requests == 0
+    with pytest.raises(speech.QueueFullError, match="recovering"):
+        await speech.transcribe_audio(b"audio", "en-IN")
+
+
+@pytest.mark.asyncio
+async def test_provider_declaration_rejects_unavailable_speech_language(monkeypatch):
+    from indic_language_utils.providers import CapabilityDeclaration, CapabilityId
+    from indic_language_utils.languages import DEFAULT_LANGUAGE_REGISTRY
+
+    class Provider:
+        capabilities = (
+            CapabilityDeclaration(
+                CapabilityId.SPEECH_TO_TEXT,
+                languages=frozenset({DEFAULT_LANGUAGE_REGISTRY.normalize("en-IN")}),
+            ),
+        )
+
+    monkeypatch.setattr(
+        speech, "get_settings", lambda: Settings(supported_languages=["brx-IN"])
+    )
+    monkeypatch.setattr(speech, "get_speech_provider", lambda *args: Provider())
+    with pytest.raises(ValueError, match="not supported"):
+        await speech._run_transcription(b"audio", "brx-IN")

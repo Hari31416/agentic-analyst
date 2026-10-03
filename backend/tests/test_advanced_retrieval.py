@@ -155,15 +155,15 @@ def test_search_input_rejects_unbounded_variants():
     assert compress_excerpt("Original sentence.", "unknown") == "Original sentence."
 
 
-def test_literal_keyword_subsets_execute_multiple_queries_and_keep_numbers():
+def test_additive_language_and_keyword_queries_keep_identifiers():
     queries, trace = query_variants(
         "scheme S1 active annual income maximum eligibility inclusive threshold"
     )
     assert len(queries) == 3
     assert all("S1" in query for query in queries)
-    assert all(
-        set(query.split()).issubset(set(queries[0].split())) for query in queries[1:]
-    )
+    assert queries[1].startswith(queries[0])
+    assert "योजना" in queries[1]
+    assert set(queries[2].split()).issubset(set(queries[0].split()))
 
 
 def test_compressed_context_counts_original_and_compressed_text_against_budget():

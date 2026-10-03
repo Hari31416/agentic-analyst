@@ -214,7 +214,7 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             },
             "selected_dataset_ids": selected_datasets,
             "model": settings.openai_model,
-            "prompt_version": "analyst-v4",
+            "prompt_version": "analyst-v5",
             "source_versions": {source.id: source.version for source in source_rows},
             "max_tool_calls": settings.max_tool_calls,
             "max_model_calls": settings.max_model_calls,

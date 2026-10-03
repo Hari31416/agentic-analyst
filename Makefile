@@ -4,7 +4,7 @@ COMPOSE = docker compose $(if $(wildcard .env),--env-file .env) -f infra/compose
 BACKEND = cd backend && uv run
 
 .PHONY: help setup up up-all dev api worker frontend sandbox down logs health migrate format check test frontend-check \
-	test-integration live-model live-sandbox live-agent live-analysis fixtures analysis-image eval-infra embedding-model live-documents ocr-fixtures live-ingestion \
+	test-integration live-model live-sandbox live-agent live-analysis speech-model live-language fixtures analysis-image eval-infra embedding-model live-documents ocr-fixtures live-ingestion \
 	start stop restart app-start app-stop app-restart start-backend stop-backend start-worker stop-worker start-frontend stop-frontend start-sandbox stop-sandbox \
 	status logs-backend logs-worker logs-frontend logs-sandbox logs-save clean-logs
 
@@ -347,3 +347,9 @@ reranker-model:
 
 live-retrieval:
 	$(BACKEND) python -m app.advanced_probes
+
+speech-model:
+	backend/.venv/bin/python scripts/setup-speech.py
+
+live-language:
+	$(BACKEND) python -m app.language_probes

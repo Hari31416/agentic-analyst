@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import Settings
+from app.language.retrieval import language_query_variants
 from app.db.models import DocumentChunk, Document, Source
 from app.retrieval.service import (
     RetrievalError,
@@ -57,6 +58,9 @@ def query_variants(
             )
     if not trace:
         trace.append({"stage": "rewrite", "status": "skipped", "original": original})
+    language_variants, language_trace = language_query_variants(original)
+    result.extend(language_variants)
+    trace.append(language_trace)
     tokens = original.split()
     keyword = " ".join(
         token for token in tokens if token.casefold().strip("?,।.") not in _STOP

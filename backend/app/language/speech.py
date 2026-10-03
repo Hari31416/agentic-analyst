@@ -222,13 +222,38 @@ def set_speech_provider_for_tests(provider: Any | None) -> None:
     _provider = provider
 
 
+def _speech_declaration(provider: Any) -> Any | None:
+    from indic_language_utils.providers import CapabilityId
+
+    return next(
+        (
+            item
+            for item in getattr(provider, "capabilities", ())
+            if item.capability == CapabilityId.SPEECH_TO_TEXT
+        ),
+        None,
+    )
+
+
 def capabilities(settings: Settings | None = None) -> dict[str, object]:
     global _provider_failure
     settings = settings or get_settings()
     from app.language.text import configured_languages
 
     langs = configured_languages(settings.supported_languages)
-    available = get_speech_provider(settings) is not None
+    provider = get_speech_provider(settings)
+    available = provider is not None
+    declaration = _speech_declaration(provider)
+    from indic_language_utils.languages import DEFAULT_LANGUAGE_REGISTRY
+
+    speech_languages = [
+        item["tag"]
+        for item in langs
+        if declaration is not None
+        and declaration.supports(
+            source=DEFAULT_LANGUAGE_REGISTRY.normalize(item["tag"])
+        )
+    ]
     return {
         "languages": langs,
         "audio_limits": {
@@ -238,6 +263,7 @@ def capabilities(settings: Settings | None = None) -> dict[str, object]:
         "stt": {
             "available": available,
             "provider": "faster_whisper" if available else None,
+            "languages": speech_languages,
             "model": str(settings.speech_model_path) if available else None,
             "reason": (
                 None
@@ -248,9 +274,16 @@ def capabilities(settings: Settings | None = None) -> dict[str, object]:
         },
         "translation": {
             "available": False,
+            "provider": None,
+            "model": None,
             "reason": "No translation provider configured",
         },
-        "tts": {"available": False, "reason": "No TTS provider configured"},
+        "tts": {
+            "available": False,
+            "provider": None,
+            "model": None,
+            "reason": "No TTS provider configured",
+        },
     }
 
 
@@ -295,6 +328,13 @@ async def _run_transcription(data: bytes, language: str | None) -> dict[str, obj
     provider = get_speech_provider()
     if provider is None:
         raise LookupError("Local speech recognition is unavailable")
+    declaration = _speech_declaration(provider)
+    if (
+        tag is not None
+        and declaration is not None
+        and not declaration.supports(source=tag)
+    ):
+        raise ValueError("Language is not supported by the local speech provider")
     decoded = await asyncio.to_thread(
         decode_audio, data, max_duration_seconds=settings.speech_max_duration_seconds
     )
@@ -308,6 +348,11 @@ async def _run_transcription(data: bytes, language: str | None) -> dict[str, obj
             request_id=str(uuid4()),
             with_timestamps=True,
         )
+    except asyncio.CancelledError:
+        # The library shields its native worker after caller cancellation too.
+        # Close admission until restart rather than queue behind orphaned work.
+        _worker_may_still_be_running = True
+        raise
     except Exception as exc:
         from indic_language_utils.errors import ProviderTimeoutError
 

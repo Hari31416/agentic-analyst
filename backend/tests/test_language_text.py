@@ -61,3 +61,18 @@ def test_existing_language_metadata_shape_remains_compatible():
     metadata = LanguageMetadata(tags=["hi", "en"])
     assert metadata.tags == ["hi-IN", "en-IN"]
     assert metadata.mixed
+
+
+def test_registry_configured_bengali_reuses_the_chat_contract():
+    from app.api.chat import RunRequest
+
+    request = RunRequest(text="মোট ১২৩ records", answer_language="bn")
+    assert request.answer_language == "bn-IN"
+    metadata = analyze_text(
+        request.text,
+        request.answer_language,
+        supported_languages=["en-IN", "hi-IN", "bn-IN"],
+    )
+    assert "bn-IN" in metadata.tags
+    assert metadata.requested_answer_language == "bn-IN"
+    assert request.text == "মোট ১২৩ records"

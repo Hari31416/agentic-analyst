@@ -150,11 +150,10 @@ def analyze_text(
     tags = list(dict.fromkeys(str(item["language"]) for item in segments))
     script = _script_code(_script_name(text))
     uncertain = not tags or (has_latin and roman_hindi < 2)
-    score = None if not tags else (0.62 if uncertain else 0.78)
     return LanguageMetadata(
         tags=tags,
         confidence="uncertain" if uncertain else "best_effort",
-        confidence_score=score,
+        confidence_score=None,  # Heuristic labels are not calibrated probabilities.
         script=script,
         segments=segments,
         requested_answer_language=requested,

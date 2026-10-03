@@ -5,6 +5,8 @@ import io
 import json
 import wave
 import asyncio
+import sys
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
@@ -49,6 +51,99 @@ def test_decode_audio_rejects_invalid_and_overlong_audio() -> None:
         speech.decode_audio(b"garbage", max_duration_seconds=1)
     with pytest.raises(OverflowError, match="maximum duration"):
         speech.decode_audio(_wav(1.2), max_duration_seconds=1)
+
+
+def test_decoder_closes_container_after_decode_error(monkeypatch) -> None:
+    class Source:
+        streams = SimpleNamespace(
+            audio=[
+                SimpleNamespace(
+                    codec_context=SimpleNamespace(channels=1, sample_rate=16_000),
+                    rate=16_000,
+                )
+            ]
+        )
+        closed = False
+
+        def decode(self, stream):
+            raise RuntimeError("malformed packet")
+
+        def close(self):
+            self.closed = True
+
+    source = Source()
+    fake_av = SimpleNamespace(
+        open=lambda *args, **kwargs: source,
+        AudioResampler=lambda **kwargs: object(),
+    )
+    monkeypatch.setitem(sys.modules, "av", fake_av)
+    with pytest.raises(speech.AudioInputError, match="could not be decoded"):
+        speech.decode_audio(b"audio", max_duration_seconds=1)
+    assert source.closed
+
+
+@pytest.mark.asyncio
+async def test_unsupported_configured_language_rejected_before_provider(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(speech, "_admitted_requests", 0)
+    monkeypatch.setattr(speech, "_worker_may_still_be_running", False)
+    monkeypatch.setattr(speech, "_speech_semaphore", asyncio.Semaphore(1))
+    monkeypatch.setattr(speech, "get_settings", lambda: Settings())
+
+    def provider_must_not_be_loaded(*args):
+        raise AssertionError("provider should not load for unsupported language")
+
+    monkeypatch.setattr(speech, "get_speech_provider", provider_must_not_be_loaded)
+    with pytest.raises(ValueError, match="not enabled"):
+        await speech.transcribe_audio(b"audio", "ta-IN")
+
+
+@pytest.mark.asyncio
+async def test_transcription_response_marks_draft_uncertainty(monkeypatch) -> None:
+    class Provider:
+        async def transcribe_batch(self, *args, **kwargs):
+            return (
+                SimpleNamespace(
+                    text="count 25000",
+                    detected_language="en-IN",
+                    model_id="tiny",
+                    segments=(),
+                ),
+            )
+
+    monkeypatch.setattr(speech, "get_settings", lambda: Settings())
+    monkeypatch.setattr(speech, "get_speech_provider", lambda *args: Provider())
+    monkeypatch.setattr(
+        speech,
+        "decode_audio",
+        lambda *args, **kwargs: speech.DecodedAudio(_wav(), 0.2),
+    )
+    response = await speech._run_transcription(b"audio", "en-IN")
+    assert response["text"] == "count 25000"
+    assert "verify names, numbers" in response["uncertainty"]
+
+
+def test_missing_optional_whisper_dependency_is_unavailable(
+    monkeypatch, tmp_path
+) -> None:
+    from indic_language_utils.errors import MissingOptionalDependencyError
+    import indic_language_utils.stt.whisper as whisper_module
+
+    monkeypatch.setattr(speech, "_provider_failure", None)
+    monkeypatch.setattr(speech, "validate_model_assets", lambda _path: True)
+
+    class MissingProvider:
+        def __init__(self, config):
+            raise MissingOptionalDependencyError(
+                "missing whisper", provider="faster_whisper"
+            )
+
+    monkeypatch.setattr(whisper_module, "FasterWhisperSTTProvider", MissingProvider)
+    assert speech._build_provider(Settings(speech_model_path=tmp_path)) is None
+    assert (
+        speech._provider_failure == "Install the configured faster-whisper dependencies"
+    )
 
 
 def test_capabilities_report_missing_local_assets(monkeypatch) -> None:

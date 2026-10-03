@@ -23,6 +23,7 @@ _admitted_requests = 0
 _admission_capacity = 2
 _speech_semaphore = asyncio.Semaphore(1)
 _worker_may_still_be_running = False
+_provider_failure: str | None = None
 _PROVIDER_MODEL = "Systran/faster-whisper-tiny"
 _PROVIDER_REVISION = "d90ca5fe260221311c53c58e660288d3deb8d356"
 _MODEL_FILES = ("model.bin", "config.json", "tokenizer.json", "vocabulary.txt")
@@ -34,6 +35,10 @@ class DecodedAudio:
     duration_seconds: float
 
 
+class AudioInputError(ValueError):
+    """Audio is malformed or violates the supported decoding bounds."""
+
+
 def decode_audio(data: bytes, *, max_duration_seconds: int) -> DecodedAudio:
     """Decode one uploaded audio stream to bounded mono 16 kHz PCM WAV."""
     try:
@@ -43,12 +48,19 @@ def decode_audio(data: bytes, *, max_duration_seconds: int) -> DecodedAudio:
             "Audio decoding is unavailable (PyAV is not installed)"
         ) from exc
 
+    source = None
     try:
         source = av.open(io.BytesIO(data), mode="r")
         streams = source.streams.audio
         if not streams:
-            raise ValueError("The uploaded file has no audio stream")
+            raise AudioInputError("The uploaded file has no audio stream")
         stream = streams[0]
+        channels = stream.codec_context.channels
+        sample_rate = stream.codec_context.sample_rate or stream.rate
+        if channels is not None and not 1 <= channels <= 2:
+            raise AudioInputError("Audio must have one or two channels")
+        if sample_rate is None or not 8_000 <= sample_rate <= 96_000:
+            raise AudioInputError("Audio sample rate must be between 8 and 96 kHz")
         resampler = av.AudioResampler(format="s16", layout="mono", rate=TARGET_RATE)
         output = bytearray()
         sample_limit = max_duration_seconds * TARGET_RATE
@@ -67,13 +79,17 @@ def decode_audio(data: bytes, *, max_duration_seconds: int) -> DecodedAudio:
             if samples > sample_limit:
                 raise OverflowError("Audio exceeds the maximum duration")
             output.extend(chunk)
-        source.close()
     except OverflowError:
         raise
+    except AudioInputError:
+        raise
     except Exception as exc:
-        raise ValueError("Audio file could not be decoded") from exc
+        raise AudioInputError("Audio file could not be decoded") from exc
+    finally:
+        if source is not None:
+            source.close()
     if samples == 0:
-        raise ValueError("Audio file contains no decodable samples")
+        raise AudioInputError("Audio file contains no decodable samples")
     buffer = io.BytesIO()
     with wave.open(buffer, "wb") as wav:
         wav.setnchannels(1)
@@ -84,8 +100,16 @@ def decode_audio(data: bytes, *, max_duration_seconds: int) -> DecodedAudio:
 
 
 def _build_provider(settings: Settings) -> Any | None:
+    global _provider_failure
+    _provider_failure = None
     model_path = settings.speech_model_path
-    if model_path is None or not validate_model_assets(model_path):
+    if model_path is None:
+        _provider_failure = (
+            "Set SPEECH_MODEL_PATH to the verified local model directory"
+        )
+        return None
+    if not validate_model_assets(model_path):
+        _provider_failure = "Local speech model files or checksum manifest are invalid"
         return None
     try:
         from indic_language_utils.stt.whisper import (
@@ -106,8 +130,21 @@ def _build_provider(settings: Settings) -> Any | None:
                 retry_policy=_no_retry_policy(),
             )
         )
-    except (ImportError, OSError):
+    except ImportError:
+        _provider_failure = (
+            "Install the configured faster-whisper and PyAV dependencies"
+        )
         return None
+    except OSError:
+        _provider_failure = "Local speech model could not be initialized"
+        return None
+    except Exception as exc:
+        from indic_language_utils.errors import MissingOptionalDependencyError
+
+        if isinstance(exc, MissingOptionalDependencyError):
+            _provider_failure = "Install the configured faster-whisper dependencies"
+            return None
+        raise
 
 
 def _no_retry_policy() -> Any:
@@ -186,6 +223,7 @@ def set_speech_provider_for_tests(provider: Any | None) -> None:
 
 
 def capabilities(settings: Settings | None = None) -> dict[str, object]:
+    global _provider_failure
     settings = settings or get_settings()
     from app.language.text import configured_languages
 
@@ -204,7 +242,8 @@ def capabilities(settings: Settings | None = None) -> dict[str, object]:
             "reason": (
                 None
                 if available
-                else "Configure SPEECH_MODEL_PATH to an installed local model directory"
+                else _provider_failure
+                or "Configure SPEECH_MODEL_PATH with the verified local model assets"
             ),
         },
         "translation": {
@@ -242,13 +281,20 @@ async def _run_transcription(data: bytes, language: str | None) -> dict[str, obj
     from indic_language_utils.languages import DEFAULT_LANGUAGE_REGISTRY
 
     settings = get_settings()
-    provider = get_speech_provider()
-    if provider is None:
-        raise LookupError("Local speech recognition is unavailable")
     try:
         tag = DEFAULT_LANGUAGE_REGISTRY.normalize(language) if language else None
     except Exception as exc:
         raise ValueError("Unsupported language tag") from exc
+    if tag is not None:
+        configured = {
+            DEFAULT_LANGUAGE_REGISTRY.normalize(value)
+            for value in settings.supported_languages
+        }
+        if tag not in configured:
+            raise ValueError("Language is not enabled for speech recognition")
+    provider = get_speech_provider()
+    if provider is None:
+        raise LookupError("Local speech recognition is unavailable")
     decoded = await asyncio.to_thread(
         decode_audio, data, max_duration_seconds=settings.speech_max_duration_seconds
     )
@@ -283,5 +329,5 @@ async def _run_transcription(data: bytes, language: str | None) -> dict[str, obj
         "provider": "faster_whisper",
         "model": result.model_id or str(settings.speech_model_path),
         "duration_seconds": decoded.duration_seconds,
-        "uncertainty": None,
+        "uncertainty": "Draft transcript; verify names, numbers, and dates before sending.",
     }

@@ -112,12 +112,15 @@ def test_export_reconstructs_run_and_redacts_nested_secrets():
                     details={"auth": {"refresh_token": "REFRESH_SENTINEL"}},
                 )
             )
+            source.version = 4  # The run selected the older immutable snapshot.
             session.flush()
             result = run_export(session, run)
             serialized = str(result)
             assert result["schema_version"] == 1
             assert result["question"] == "What were sales?"
             assert result["run"]["config"]["source_versions"][source.id] == 3
+            assert result["selected_sources"][0]["selected_version"] == 3
+            assert result["selected_sources"][0]["current_version"] == 4
             assert result["limits"]["policy_unrecorded"] is True
             assert "[redacted]" in serialized
             assert "TOP_SECRET" not in serialized
@@ -216,13 +219,19 @@ def test_export_has_global_byte_cap_and_reports_truncation():
             run = Run(
                 thread_id=thread.id,
                 state="failed",
-                config={
-                    "nested": {
-                        "values": ["SENTINEL_START" + "x" * 100_000 for _ in range(300)]
-                    }
-                },
+                config={"nested": {"values": ["SENTINEL_START" for _ in range(600)]}},
             )
             session.add(run)
+            session.flush()
+            session.add_all(
+                Event(
+                    run_id=run.id,
+                    sequence=index + 1,
+                    type="status",
+                    payload={"blob": "x" * 5_000},
+                )
+                for index in range(501)
+            )
             session.flush()
             result = run_export(session, run)
             encoded = json.dumps(
@@ -231,6 +240,10 @@ def test_export_has_global_byte_cap_and_reports_truncation():
             assert len(encoded) <= 2 * 1024 * 1024
             assert result["limits"]["byte_budget_truncated"] is True
             assert result["limits"]["truncated_content_fields"] > 0
+            assert result["limits"]["nested_limits_truncated"] is True
+            assert result["limits"]["truncated_counts"]["events"] == (
+                501 - len(result["events"])
+            )
             assert "SENTINEL_START" in str(result)
     finally:
         engine.dispose()
@@ -259,6 +272,78 @@ def test_export_removes_configured_sentinel_before_truncating(monkeypatch):
             exported = str(run_export(session, run))
             assert "CONFIG_SENTINEL_123" not in exported
             assert "[redacted]" in exported
+    finally:
+        engine.dispose()
+
+
+def test_export_includes_same_thread_declared_prior_run_references():
+    engine, sessions = make_db()
+    try:
+        with sessions() as session, session.begin():
+            workspace = Workspace(label="lineage")
+            session.add(workspace)
+            session.flush()
+            thread = Thread(workspace_id=workspace.id, label="lineage")
+            session.add(thread)
+            session.flush()
+            prior_run = Run(thread_id=thread.id, state="completed")
+            current_run = Run(thread_id=thread.id, state="completed")
+            other_thread = Thread(workspace_id=workspace.id, label="other")
+            session.add_all([prior_run, current_run, other_thread])
+            session.flush()
+            foreign_run = Run(thread_id=other_thread.id, state="completed")
+            session.add(foreign_run)
+            session.flush()
+            prior_evidence = Evidence(
+                run_id=prior_run.id,
+                kind="document",
+                source_ids=[],
+                details={"excerpt": "Referenced earlier evidence"},
+            )
+            foreign_evidence = Evidence(
+                run_id=foreign_run.id,
+                kind="document",
+                source_ids=[],
+                details={"excerpt": "Must not cross thread boundary"},
+            )
+            prior_artifact = Artifact(
+                run_id=prior_run.id,
+                storage_key="derived/prior/result.csv",
+                display_name="prior-result.csv",
+                media_type="text/csv",
+                byte_size=6,
+                sha256="b" * 64,
+                lineage=[],
+                durable=True,
+            )
+            session.add_all([prior_evidence, foreign_evidence, prior_artifact])
+            session.flush()
+            session.add(
+                Message(
+                    thread_id=thread.id,
+                    run_id=current_run.id,
+                    role="assistant",
+                    content="The prior answer has the result.",
+                    references={
+                        "evidence_ids": [prior_evidence.id, foreign_evidence.id],
+                        "artifact_ids": [prior_artifact.id],
+                    },
+                )
+            )
+            session.flush()
+
+            exported = run_export(session, current_run)
+            evidence = {row["id"]: row for row in exported["evidence"]}
+            artifacts = {row["id"]: row for row in exported["artifacts"]}
+            assert prior_evidence.id in evidence
+            assert evidence[prior_evidence.id]["producing_run_id"] == prior_run.id
+            assert foreign_evidence.id not in evidence
+            assert prior_artifact.id in artifacts
+            assert artifacts[prior_artifact.id]["producing_run_id"] == prior_run.id
+            assert (
+                exported["messages"][0]["references"]["evidence_ids"][0]
+                == prior_evidence.id
+            )
     finally:
         engine.dispose()
 

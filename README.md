@@ -18,7 +18,10 @@ make dev
 ```
 
 `make setup` copies `.env.example` when needed and installs locked backend and
-frontend dependencies. `make up` starts PostgreSQL 17 with pgvector and RustFS,
+frontend dependencies. Before the first API start, set `JWT_SECRET_KEY`,
+`ADMIN_USERNAME`, and `ADMIN_PASSWORD` in `.env`; see
+[local authentication](docs/authentication.md). The first startup seeds the admin,
+which can create admin/user accounts through **Users**. `make up` starts PostgreSQL 17 with pgvector and RustFS,
 waits for infrastructure health, and initializes the S3 bucket from the host.
 `make dev` starts the API, worker, and Vite in one foreground process. Ctrl-C
 stops the apps. API and frontend reload on changes; restart the worker after

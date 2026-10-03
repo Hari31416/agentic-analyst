@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { SystemReadiness } from '../RightSidebar'
 import { cn } from '../../lib/utils'
+import { AuthBar } from '../../auth/AuthGate'
 
 type TopBarProps = {
   isLeftSidebarCollapsed?: boolean
@@ -61,6 +62,7 @@ export const TopBar: FC<TopBarProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
+        <AuthBar />
         <button
           type="button"
           className={cn(

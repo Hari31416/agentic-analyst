@@ -152,7 +152,7 @@ function uploadWithProgress<T>(
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     ...init,
     headers: {
       ...(init?.body && !(init.body instanceof FormData)
@@ -254,3 +254,4 @@ export const documentApi = {
   evidence: (evidenceId: string) =>
     request<EvidenceView>(`/api/evidence/${encodeURIComponent(evidenceId)}`),
 }
+import { apiFetch } from './lib/apiFetch'

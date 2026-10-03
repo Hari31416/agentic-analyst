@@ -41,7 +41,7 @@ async function readError(response: Response): Promise<string> {
 
 export const languageApi = {
   async capabilities(signal?: AbortSignal): Promise<LanguageCapabilities> {
-    const response = await fetch('/api/languages/capabilities', { signal })
+    const response = await apiFetch('/api/languages/capabilities', { signal })
     if (!response.ok) throw new Error(await readError(response))
     return (await response.json()) as LanguageCapabilities
   },
@@ -55,7 +55,7 @@ export const languageApi = {
     const body = new FormData()
     body.append('audio', audio, filename)
     body.append('language', language)
-    const response = await fetch('/api/languages/transcribe', {
+    const response = await apiFetch('/api/languages/transcribe', {
       method: 'POST',
       body,
       signal,
@@ -64,3 +64,4 @@ export const languageApi = {
     return (await response.json()) as Transcription
   },
 }
+import { apiFetch } from './lib/apiFetch'

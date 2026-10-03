@@ -3,6 +3,8 @@
 Status: discussion draft, not an approved implementation plan. Updated 2 October 2026.
 For implementation, follow [the phase plans](../plans/README.md), which incorporate
 the subsequent decisions and define the build order and acceptance gates.
+A later explicit user request added local JWT login and admin/user account
+management; see [authentication](authentication.md). Workspace data remains shared.
 Confirmed orchestration baseline: one tool-using agent.
 Confirmed integration choices: Nexus-style sandbox service, a supplied
 OpenAI-compatible model endpoint, and Docker Compose for local development.

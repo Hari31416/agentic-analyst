@@ -170,3 +170,7 @@ Database worker lease/cancellation checks remain under the service-backed
 trial-count requirement for a chosen case; they do not establish universal release
 thresholds. Preserve all misses and expand reviewed cases before setting those
 thresholds or comparing candidate models.
+
+Authenticated live runs require a regular account plus `EVAL_USERNAME` and
+`EVAL_PASSWORD` in the ignored `.env`. The runner obtains a JWT through login
+and never saves credentials in reports. See [authentication](authentication.md).

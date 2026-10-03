@@ -18,7 +18,7 @@ export type AuditPage = {
 }
 
 async function get<T>(url: string): Promise<T> {
-  const response = await fetch(url)
+  const response = await apiFetch(url)
   if (!response.ok) throw new Error(`Audit request failed (${response.status})`)
   return (await response.json()) as T
 }
@@ -35,3 +35,4 @@ export const auditApi = {
   exportUrl: (runId: string) =>
     `/api/runs/${encodeURIComponent(runId)}/audit/export`,
 }
+import { apiFetch } from './lib/apiFetch'

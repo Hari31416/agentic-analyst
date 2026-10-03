@@ -12,6 +12,7 @@ from app.config import get_settings
 from app.contracts import CreateLabel, SourceView, ThreadView, WorkspaceView
 from app.db.models import Source, Thread, Workspace
 from app.db.session import get_session
+from app.auth.security import require_auth
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
 
@@ -19,12 +20,39 @@ from app.storage.s3 import StorageUnavailable
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging()
-    get_settings()
+    from app.auth.bootstrap import seed_admin
+    from app.db.session import factory
+
+    with factory()() as session:
+        seed_admin(session, get_settings())
     yield
 
 
-app = FastAPI(title="Agentic RAG Analyst", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title="Agentic RAG Analyst",
+    version="0.1.0",
+    lifespan=lifespan,
+    dependencies=[Depends(require_auth)],
+)
 Db = Annotated[Session, Depends(get_session)]
+
+
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+
+@app.exception_handler(RequestValidationError)
+async def invalid_request(request: Any, exc: RequestValidationError) -> JSONResponse:
+    # Validation errors must not echo plaintext login/account passwords.
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": [
+                {"loc": list(error["loc"]), "msg": error["msg"], "type": error["type"]}
+                for error in exc.errors()
+            ]
+        },
+    )
 
 
 @app.exception_handler(SQLAlchemyError)
@@ -201,3 +229,7 @@ app.include_router(audit_router)
 from app.api.resource_lifecycle import router as resource_lifecycle_router
 
 app.include_router(resource_lifecycle_router)
+
+from app.api.auth import router as auth_router
+
+app.include_router(auth_router)

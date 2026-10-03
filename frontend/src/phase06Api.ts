@@ -50,7 +50,7 @@ export type RegisteredArtifactDataset = {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, init)
+  const response = await apiFetch(path, init)
   if (!response.ok) {
     let message = `Request failed (${response.status})`
     try {
@@ -104,3 +104,4 @@ export const phase06Api = {
     })
   },
 }
+import { apiFetch } from './lib/apiFetch'

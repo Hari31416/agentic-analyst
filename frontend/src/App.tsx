@@ -18,9 +18,10 @@ import { useSystemStatus } from './hooks/useSystemStatus'
 import { DatasetSummary, structuredApi } from './structuredApi'
 import ArtifactBrowser from './ArtifactBrowser'
 import { WorkspaceImportResult } from './phase06Api'
+import { apiFetch } from './lib/apiFetch'
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     ...init,
     headers: { 'Content-Type': 'application/json', ...init?.headers },
   })

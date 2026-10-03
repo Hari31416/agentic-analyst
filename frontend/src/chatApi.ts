@@ -1,3 +1,27 @@
+import { apiFetch, SESSION_EXPIRED_EVENT } from './lib/apiFetch'
+
+let streamSessionCheckPending = false
+let lastStreamSessionCheck = 0
+
+function checkSessionAfterStreamError() {
+  const now = Date.now()
+  if (streamSessionCheckPending || now - lastStreamSessionCheck < 15_000) return
+  streamSessionCheckPending = true
+  lastStreamSessionCheck = now
+  void apiFetch('/api/auth/me')
+    .then((response) => {
+      if (response.status === 401) {
+        window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
+      }
+    })
+    .catch(() => {
+      // A temporary network failure should not end a valid session.
+    })
+    .finally(() => {
+      streamSessionCheckPending = false
+    })
+}
+
 export type AnswerLanguage = string
 
 export type ChatMessage = {
@@ -79,7 +103,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     ...init,
     headers: {
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
@@ -158,7 +182,10 @@ export const chatApi = {
         onError()
       }
     }
-    stream.onerror = onError
+    stream.onerror = () => {
+      checkSessionAfterStreamError()
+      onError()
+    }
     return () => stream.close()
   },
 }

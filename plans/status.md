@@ -690,3 +690,50 @@ Keep secrets and raw client data out of this file.
 - General orphan discovery, scheduled retention/quota enforcement and automated
   recovery of previously failed sandbox cleanup remain operations work. No phase
   10 completion or broad deletion stress-testing claim is made.
+
+## 3 October 2026: local JWT authentication
+
+- User explicitly requested a simple JWT method patterned after `codeagent` and
+  `advanced-rag`, with an environment-seeded admin and admin/user accounts. This
+  is a bounded authentication addition, not completion of phase 10 operations.
+- Added local Argon2id password hashes, fixed HS256 access JWTs, typed login/account
+  contracts, `/api/auth/me`, logout revocation and admin-only paginated account
+  creation/update. Accounts can be disabled or have their password/role changed;
+  every account update invalidates previous JWTs. PostgreSQL advisory locking
+  protects initial seeding and serialized last-active-admin changes. Seeding
+  occurs only on an empty accounts table and never resets existing accounts.
+- Global FastAPI authentication protects all business routes, including readiness,
+  uploads, connections, voice, streaming, downloads, exports, audit and deletion.
+  Liveness/login and OpenAPI metadata remain public. Roles are read from current
+  database state. Expiry/signature/issuer/audience/type/claim checks, bounded login
+  admission, safe validation errors, and cookie-Origin checks have deterministic
+  coverage. Stream expiry is checked while streaming; revocation/account changes
+  are rechecked within five seconds. Logout does not cancel already running jobs.
+- Workspaces and their sources/threads/runs/outputs remain shared among all active
+  signed-in users, including editing and deletion. Only account management is
+  admin-only. Per-user ownership, department permissions, SSO, refresh tokens and
+  distributed login limiting are outside this simple implementation.
+- Frontend adds a login gate, useful account/sign-out controls, and a paginated
+  admin account manager with create, roles, enable/disable and password reset.
+  JWTs stay in HttpOnly SameSite=Strict `/api` cookies instead of browser storage
+  or query strings. The existing same-origin Vite proxy, streams and downloads
+  work with cookies; scripts and evaluation use bearer tokens. Failed logout
+  remains visible for retry; own-account updates and expired requests return to
+  login. Evaluation requires explicit `EVAL_USERNAME`/`EVAL_PASSWORD` and never
+  saves the token in reports/checkpoints.
+- Migration `d37e41b5a002` is applied locally; `alembic check` reports no pending
+  operations. Missing local signing/bootstrap values were generated into the
+  ignored `.env` without printing credentials. Local API startup seeded the admin.
+  PostgreSQL/RustFS were started for validation; API/frontend are host processes.
+- Validation: 318 deterministic tests pass; two actual PostgreSQL auth checks pass
+  for concurrent seed + lifespan APIs and isolated-schema migration rollback/reapply
+  preserving workspace data. Both existing lifecycle migration/cleanup checks also
+  pass. Auth unit tests inspect anonymous denial across every business route and
+  actual cookie-authenticated EventSource/download responses. Direct API and Vite
+  proxy HTTP checks pass login, cookie forwarding, admin inspection, workspace
+  access, logout and rejected revoked tokens. Black, strict mypy, frontend typecheck,
+  build and changed-file formatting pass. Existing Vite chunk-size and test-library
+  warnings remain; untouched `structured.css` has an existing formatting discrepancy.
+  Full browser QA remains deferred. No model or microVM calls were needed.
+- See `docs/authentication.md` for credentials, seed semantics, shared access,
+  local/HTTPS cookie configuration, role management, evaluation and limits.

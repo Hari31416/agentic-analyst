@@ -107,7 +107,7 @@ export type SourceDeleteResult = {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     ...init,
     headers: {
       ...(init?.body && !(init.body instanceof FormData)
@@ -205,3 +205,4 @@ export const structuredApi = {
       { method: 'POST' },
     ),
 }
+import { apiFetch } from './lib/apiFetch'

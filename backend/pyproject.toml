@@ -34,6 +34,8 @@ dependencies = [
   "reportlab>=5.0,<6",
   "uharfbuzz>=0.49,<1",
   "pyarrow>=20,<22",
+  "pyjwt>=2.10,<3",
+  "argon2-cffi>=23.1,<26",
 ]
 
 [dependency-groups]
@@ -48,7 +50,7 @@ testpaths = ["tests", "../evals/tests"]
 pythonpath = ["."]
 addopts = "-ra --strict-markers"
 asyncio_mode = "auto"
-markers = ["integration: requires TEST_DATABASE_URL pointing to a developer PostgreSQL database", "live: requires explicitly configured external services", "live_model: requires configured model", "live_sandbox: requires configured sandbox"]
+markers = ["auth: exercises actual JWT authentication without test bypass", "integration: requires TEST_DATABASE_URL pointing to a developer PostgreSQL database", "live: requires explicitly configured external services", "live_model: requires configured model", "live_sandbox: requires configured sandbox"]
 
 [tool.mypy]
 python_version = "3.12"

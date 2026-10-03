@@ -41,6 +41,21 @@ class Workspace(Identity, Base):
     label: Mapped[str] = mapped_column(String(120))
 
 
+class User(Identity, Base):
+    __tablename__ = "users"
+    username: Mapped[str] = mapped_column(String(50), unique=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(10), default="user")
+    is_active: Mapped[bool] = mapped_column(default=True)
+    token_version: Mapped[int] = mapped_column(default=0)
+
+
+class RevokedToken(Base):
+    __tablename__ = "revoked_tokens"
+    jti: Mapped[str] = mapped_column(String(36), primary_key=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+
 class Thread(Identity, Base):
     __tablename__ = "threads"
     workspace_id: Mapped[str] = mapped_column(

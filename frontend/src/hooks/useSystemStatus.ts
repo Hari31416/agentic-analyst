@@ -14,8 +14,8 @@ export function useSystemStatus(): {
   const refreshStatus = useCallback(async () => {
     try {
       const [healthRes, readinessRes] = await Promise.allSettled([
-        fetch('/api/health'),
-        fetch('/api/readiness'),
+        apiFetch('/api/health'),
+        apiFetch('/api/readiness'),
       ])
 
       if (healthRes.status === 'fulfilled' && healthRes.value.ok) {
@@ -42,3 +42,4 @@ export function useSystemStatus(): {
 
   return { health, readiness, refreshStatus }
 }
+import { apiFetch } from '../lib/apiFetch'

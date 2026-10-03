@@ -9,13 +9,24 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=("../.env", ".env"), extra="ignore", env_ignore_empty=True
+        env_file=("../.env", ".env"),
+        extra="ignore",
+        env_ignore_empty=True,
+        hide_input_in_errors=True,
     )
 
     database_url: SecretStr = SecretStr(
         "postgresql+psycopg://analyst:analyst@localhost:55432/analyst"
     )
     database_encryption_key: SecretStr | None = None
+    jwt_secret_key: SecretStr | None = None
+    jwt_access_token_expire_minutes: int = 60
+    auth_cookie_secure: bool = False
+    auth_allowed_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    admin_username: str | None = None
+    admin_password: SecretStr | None = None
+    eval_username: str | None = None
+    eval_password: SecretStr | None = None
     storage_root: Path = Path("../data")
     storage_backend: Literal["filesystem", "s3"] = "filesystem"
     s3_endpoint_url: str | None = None
@@ -88,6 +99,39 @@ class Settings(BaseSettings):
                     "DATABASE_ENCRYPTION_KEY must be a Fernet key"
                 ) from exc
         return value
+
+    @field_validator("jwt_secret_key")
+    @classmethod
+    def jwt_key(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is not None and len(value.get_secret_value().encode()) < 32:
+            raise ValueError("JWT_SECRET_KEY must contain at least 32 bytes")
+        return value
+
+    @field_validator("jwt_access_token_expire_minutes")
+    @classmethod
+    def jwt_lifetime(cls, value: int) -> int:
+        if not 1 <= value <= 1440:
+            raise ValueError("JWT lifetime must be between 1 and 1440 minutes")
+        return value
+
+    @field_validator("auth_allowed_origins")
+    @classmethod
+    def auth_origins(cls, values: list[str]) -> list[str]:
+        from urllib.parse import urlsplit
+
+        for value in values:
+            parts = urlsplit(value)
+            if (
+                parts.scheme not in {"http", "https"}
+                or not parts.hostname
+                or parts.username
+                or parts.password
+                or parts.path
+                or parts.query
+                or parts.fragment
+            ):
+                raise ValueError("Auth origins must be exact HTTP(S) origins")
+        return values
 
     @field_validator("crawl_approved_hosts")
     @classmethod

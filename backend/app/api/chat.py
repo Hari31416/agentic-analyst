@@ -375,7 +375,20 @@ async def stream_events(
 
     async def stream() -> AsyncIterator[str]:
         sequence = after
+        auth_checked = 0.0
         while not await request.is_disconnected():
+            from app.auth.security import stream_authorized
+            from datetime import datetime, timezone
+
+            claims = getattr(request.state, "auth_claims", None)
+            if claims is not None:
+                if datetime.now(timezone.utc).timestamp() >= claims["exp"]:
+                    return
+                now = asyncio.get_running_loop().time()
+                if now - auth_checked >= 5:
+                    if not await asyncio.to_thread(stream_authorized, claims):
+                        return
+                    auth_checked = now
             batch, state, total = await asyncio.to_thread(event_batch, run_id, sequence)
             for event in batch:
                 sequence = event.sequence

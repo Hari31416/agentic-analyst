@@ -46,6 +46,16 @@ class ApplicationClient:
     async def close(self) -> None:
         await self.http.aclose()
 
+    async def login(self, username: str, password: str) -> None:
+        result = await self.request(
+            "POST", "/api/auth/login", json={"username": username, "password": password}
+        )
+        token = result.get("access_token") if isinstance(result, dict) else None
+        if not isinstance(token, str) or not token:
+            raise ApiFailure("invalid_auth_response")
+        self.http.headers["Authorization"] = "Bearer " + token
+        self.http.cookies.clear()
+
     async def request(self, method: str, path: str, **kwargs: Any) -> Any:
         content = await self.bytes(method, path, **kwargs)
         try:

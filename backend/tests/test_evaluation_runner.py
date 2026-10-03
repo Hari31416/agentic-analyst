@@ -239,3 +239,32 @@ def test_rescore_preserves_execution_identity_and_refuses_changed_inputs():
     changed = original.model_copy(update={"question": "Different question"})
     with pytest.raises(ValueError, match="execution inputs"):
         rescore(report, [changed])
+
+
+@pytest.mark.asyncio
+async def test_evaluation_login_uses_bearer_without_retaining_cookie():
+    seen = []
+
+    def handle(request):
+        seen.append(request)
+        if request.url.path == "/api/auth/login":
+            assert json.loads(request.content) == {
+                "username": "evaluator",
+                "password": "test-password",
+            }
+            return httpx.Response(
+                200,
+                json={"access_token": "test-token"},
+                headers={"Set-Cookie": "analyst_access=test-token; Path=/api"},
+            )
+        assert request.headers["Authorization"] == "Bearer test-token"
+        assert "cookie" not in request.headers
+        return httpx.Response(200, json=[])
+
+    client = ApplicationClient("http://test", transport=httpx.MockTransport(handle))
+    try:
+        await client.login("evaluator", "test-password")
+        assert await client.request("GET", "/api/workspaces") == []
+        assert len(seen) == 2
+    finally:
+        await client.close()

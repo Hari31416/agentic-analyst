@@ -100,6 +100,13 @@ async def execute(
         )
         client = ApplicationClient(args.api_url)
         try:
+            if not settings.eval_username or not settings.eval_password:
+                raise ValueError(
+                    "Set EVAL_USERNAME and EVAL_PASSWORD for authenticated evaluation"
+                )
+            await client.login(
+                settings.eval_username, settings.eval_password.get_secret_value()
+            )
             report = await run_experiment(
                 cases,
                 checkpoint,

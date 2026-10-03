@@ -27,6 +27,7 @@ from app.db.models import (
 from app.db.repository import append_event, audit, events_after
 from app.db.session import factory, get_session
 from app.language.metadata import LanguageMetadata
+from app.language.text import analyze_text
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
 
@@ -130,6 +131,11 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
         raise HTTPException(404, "Thread not found")
     selected = list(dict.fromkeys(str(i) for i in body.selected_source_ids))
     selected_datasets = list(dict.fromkeys(str(i) for i in body.selected_dataset_ids))
+    language_metadata = analyze_text(
+        body.text,
+        body.answer_language,
+        supported_languages=settings.supported_languages,
+    )
     existing = session.get(Run, str(body.request_id))
     if existing:
         original = session.scalar(
@@ -191,6 +197,7 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
         selected_source_ids=selected,
         config={
             "answer_language": body.answer_language,
+            "language_metadata": language_metadata.model_dump(mode="json"),
             "retrieval_profile": body.retrieval_profile,
             "retrieval_pipeline_version": "advanced-retrieval-v1",
             "retrieval_settings": {
@@ -222,6 +229,7 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             role="user",
             content=body.text,
             selected_source_ids=selected,
+            references={"language_metadata": language_metadata.model_dump(mode="json")},
         )
     )
     session.add(

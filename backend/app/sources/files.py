@@ -481,11 +481,22 @@ def _check_xlsx_archive(content: bytes) -> tuple[list[str], list[str]]:
             total = 0
             cell_count = 0
             warnings: list[str] = []
+            member_names: set[str] = set()
             for member in members:
+                # ZIP readers can disagree about which copy of a repeated member
+                # wins. Reject ambiguity before openpyxl sees the archive.
+                if member.filename in member_names:
+                    raise FileIngestionError(
+                        "xlsx_unsafe_archive",
+                        "Workbook contains duplicate archive entries.",
+                    )
+                member_names.add(member.filename)
                 path = PurePosixPath(member.filename)
+                raw_parts = member.filename.rstrip("/").split("/")
                 if (
                     path.is_absolute()
                     or ".." in path.parts
+                    or any(part in {"", "."} for part in raw_parts)
                     or "\\" in member.filename
                     or "\x00" in member.filename
                 ):

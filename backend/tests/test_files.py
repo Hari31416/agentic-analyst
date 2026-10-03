@@ -126,6 +126,30 @@ def test_xlsx_macro_payload_and_archive_limits_rejected():
         profile_upload("data.xlsm", content)
 
 
+def test_xlsx_duplicate_and_noncanonical_archive_paths_rejected():
+    content = _xlsx_bytes()
+    with zipfile.ZipFile(io.BytesIO(content)) as source:
+        members = [
+            (item.filename, source.read(item.filename)) for item in source.infolist()
+        ]
+
+    duplicate = io.BytesIO()
+    with zipfile.ZipFile(duplicate, "w") as archive:
+        for name, payload in members:
+            archive.writestr(name, payload)
+        archive.writestr("xl/workbook.xml", b"<workbook/>")
+    with pytest.raises(FileIngestionError, match="duplicate archive entries"):
+        profile_upload("duplicate.xlsx", duplicate.getvalue())
+
+    aliased_path = io.BytesIO()
+    with zipfile.ZipFile(aliased_path, "w") as archive:
+        for name, payload in members:
+            archive.writestr(name, payload)
+        archive.writestr("xl/./workbook.xml", b"<workbook/>")
+    with pytest.raises(FileIngestionError, match="unsafe archive path"):
+        profile_upload("aliased.xlsx", aliased_path.getvalue())
+
+
 def test_xls_profiles_legacy_workbook():
     profile = profile_upload("legacy.xls", _xls_bytes())[0]
     assert profile["identity"] == "Legacy"

@@ -22,6 +22,7 @@ import {
   Globe2,
   LoaderCircle,
   Mic,
+  ListChecks,
   Square,
   RotateCcw,
   ShieldCheck,
@@ -42,6 +43,7 @@ import { EvidenceView, documentApi } from './documentApi'
 import { LanguageCapabilities, languageApi } from './languageApi'
 import { UiLanguage, UiTextKey, uiText } from './uiText'
 import { useUiLanguage } from './hooks/useUiLanguage'
+import { AuditEntry, AuditPage, auditApi } from './auditApi'
 import './chat.css'
 
 export type ChatSource = {
@@ -102,6 +104,32 @@ function safeText(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim()
     ? value.trim().slice(0, 300)
     : undefined
+}
+
+function auditReferences(entry: AuditEntry): {
+  artifactIds: string[]
+  evidenceIds: string[]
+} {
+  const artifactIds = new Set<string>()
+  const evidenceIds = new Set<string>()
+  const visit = (value: unknown, depth = 0) => {
+    if (!value || typeof value !== 'object' || depth > 3) return
+    if (Array.isArray(value)) return
+    const record = value as Record<string, unknown>
+    for (const key of ['artifact_ids', 'evidence_ids', 'code_artifact_id']) {
+      const raw = record[key]
+      const values = key === 'code_artifact_id' ? [raw] : raw
+      if (!Array.isArray(values)) continue
+      for (const id of values) {
+        if (typeof id !== 'string') continue
+        if (key === 'artifact_ids') artifactIds.add(id)
+        else evidenceIds.add(id)
+      }
+    }
+    for (const nested of Object.values(record)) visit(nested, depth + 1)
+  }
+  visit(entry.details)
+  return { artifactIds: [...artifactIds], evidenceIds: [...evidenceIds] }
 }
 
 function retrySelectionKey(threadId: string, runId: string): string {
@@ -245,6 +273,11 @@ function ChatPanel({
   const [evidence, setEvidence] = useState<EvidenceView | null>(null)
   const [loadingEvidence, setLoadingEvidence] = useState(false)
   const [evidenceError, setEvidenceError] = useState('')
+  const [auditRunId, setAuditRunId] = useState('')
+  const [auditPage, setAuditPage] = useState<AuditPage | null>(null)
+  const [auditAction, setAuditAction] = useState('')
+  const [auditState, setAuditState] = useState('')
+  const [auditError, setAuditError] = useState('')
   const [optimisticMessage, setOptimisticMessage] =
     useState<ChatMessage | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -929,6 +962,26 @@ function ChatPanel({
   }
   const latestFailedRun = runs.find((run) => run.state === 'failed')
 
+  useEffect(() => {
+    if (!auditRunId) return
+    let active = true
+    setAuditError('')
+    void auditApi
+      .page(auditRunId, auditAction, auditState)
+      .then((page) => active && setAuditPage(page))
+      .catch((reason: unknown) => {
+        if (active)
+          setAuditError(
+            reason instanceof Error
+              ? reason.message
+              : 'Could not load run audit',
+          )
+      })
+    return () => {
+      active = false
+    }
+  }, [auditRunId, auditAction, auditState])
+
   return (
     <section className="chat-panel" aria-label={copy('conversation')}>
       <header className="chat-header">
@@ -1064,6 +1117,104 @@ function ChatPanel({
                     )}
                     {run && message.role === 'assistant' && (
                       <RetrievalDetails runId={run.id} />
+                    )}
+                    {run && message.role === 'user' && (
+                      <>
+                        <button
+                          className="run-audit-trigger"
+                          type="button"
+                          onClick={() => {
+                            setAuditRunId((current) =>
+                              current === run.id ? '' : run.id,
+                            )
+                            setAuditPage(null)
+                          }}
+                          aria-expanded={auditRunId === run.id}
+                        >
+                          <ListChecks size={14} />{' '}
+                          {auditRunId === run.id
+                            ? 'Hide run audit'
+                            : 'Run audit'}
+                        </button>
+                        {auditRunId === run.id && (
+                          <section className="run-audit" aria-label="Run audit">
+                            <div className="run-audit-heading">
+                              <strong>Run history</strong>
+                              <a
+                                href={auditApi.exportUrl(run.id)}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Export JSON
+                              </a>
+                            </div>
+                            <div className="run-audit-filters">
+                              <label>
+                                Action{' '}
+                                <input
+                                  value={auditAction}
+                                  onChange={(event) =>
+                                    setAuditAction(event.target.value)
+                                  }
+                                  placeholder="All actions"
+                                />
+                              </label>
+                              <label>
+                                State{' '}
+                                <input
+                                  value={auditState}
+                                  onChange={(event) =>
+                                    setAuditState(event.target.value)
+                                  }
+                                  placeholder="All states"
+                                />
+                              </label>
+                            </div>
+                            {auditError ? (
+                              <p role="alert">{auditError}</p>
+                            ) : auditPage ? (
+                              <ol>
+                                {auditPage.entries.map((entry: AuditEntry) => {
+                                  const refs = auditReferences(entry)
+                                  return (
+                                    <li key={`${entry.kind}-${entry.id}`}>
+                                      <span>{entry.action}</span>
+                                      <small>
+                                        {entry.state} · {entry.kind}
+                                      </small>
+                                      {!!refs.evidenceIds.length && (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            void openEvidence(
+                                              refs.evidenceIds[0],
+                                            )
+                                          }
+                                        >
+                                          Open citation
+                                        </button>
+                                      )}
+                                      {!!refs.artifactIds.length && (
+                                        <ArtifactLinks
+                                          artifacts={
+                                            artifactLists[run.id] ?? []
+                                          }
+                                          ids={refs.artifactIds}
+                                        />
+                                      )}
+                                    </li>
+                                  )
+                                })}
+                                {!auditPage.entries.length && (
+                                  <li>No matching audit entries.</li>
+                                )}
+                              </ol>
+                            ) : (
+                              <p>Loading run history…</p>
+                            )}
+                          </section>
+                        )}
+                      </>
                     )}
                   </article>
                   {message.role === 'user' &&

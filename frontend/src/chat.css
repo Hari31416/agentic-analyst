@@ -53,6 +53,85 @@
   font-size: 11px;
 }
 
+.run-audit-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  cursor: pointer;
+}
+.run-audit-trigger:hover {
+  color: var(--foreground);
+}
+.run-audit {
+  width: min(100%, 560px);
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--background);
+  color: var(--foreground);
+}
+.run-audit-heading,
+.run-audit-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.run-audit-heading {
+  font-size: 12px;
+}
+.run-audit-heading a {
+  color: var(--primary);
+  font-size: 11px;
+}
+.run-audit-filters {
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+.run-audit-filters label {
+  display: grid;
+  gap: 3px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.run-audit-filters input {
+  width: 140px;
+  padding: 5px 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 11px;
+}
+.run-audit ol {
+  max-height: 260px;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.run-audit li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+}
+.run-audit li small,
+.run-audit p {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+
 .ui-language-choice select {
   padding: 3px 4px;
   border: 1px solid var(--border);

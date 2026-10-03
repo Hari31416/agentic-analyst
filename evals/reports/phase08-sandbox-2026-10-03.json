@@ -1,0 +1,61 @@
+{
+  "phase": "08",
+  "date": "2026-10-03",
+  "suite": "backend/tests/test_sandbox_adversarial_live.py",
+  "sandbox": {
+    "backend": "microsandbox",
+    "network_policy": "disabled",
+    "image": "configured phase 07 analysis image",
+    "service": "configured localhost service on port 8787"
+  },
+  "results": [
+    {
+      "case": "network_credentials_original_copy_and_console_bound",
+      "status": "passed",
+      "evidence": {
+        "tcp_public_1_1_1_1_80": "blocked",
+        "tcp_metadata_169_254_169_254_80": "blocked",
+        "configured_secret_variable_names_present": [],
+        "original_bytes_and_sha256_unchanged": true,
+        "console_output_truncated_at_application_limit": true
+      }
+    },
+    {
+      "case": "timeout_retains_marker_and_tears_down",
+      "status": "passed",
+      "evidence": {
+        "execution_timeout_seconds": 4,
+        "marker_written_before_timeout": "retained and hash-verified in host storage",
+        "session_after_cleanup": "404"
+      }
+    },
+    {
+      "case": "concurrent_calls_share_one_serialized_session",
+      "status": "passed",
+      "evidence": {
+        "two_concurrent_calls": "both completed",
+        "session_ids": "same",
+        "collected_outputs": ["first", "second"]
+      }
+    },
+    {
+      "case": "output_symlink_and_teardown",
+      "status": "failed",
+      "evidence": {
+        "symlink_target": "/workspace/.agent/program.py",
+        "tool_result": "partial with no artifacts",
+        "collection_error": "output_listing_failed",
+        "stop_request": "sandbox_unavailable after the service disconnected without a response",
+        "fresh_client_session_status_after_stop": "active",
+        "cleanup_followup": "DELETE was issued"
+      },
+      "limitation": "Output listing failed closed for this symlink attempt, but stop did not terminate the session. The active status was observed before DELETE; final guest termination after DELETE was not independently verified."
+    }
+  ],
+  "not_verified": [
+    "Effective guest CPU, memory, and disk enforcement; configured limits are sent but this probe did not measure host enforcement.",
+    "Absence of every possible secret name; only the five configured credential variable names were checked.",
+    "Final microVM teardown after the symlink case's DELETE follow-up."
+  ],
+  "model_calls": 0
+}

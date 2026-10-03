@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import AsyncIterator
 from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
@@ -12,7 +12,17 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.contracts import Contract, RunEvent, RunState, TERMINAL_STATES
-from app.db.models import Artifact, Dataset, Job, Message, Run, Source, Thread, now
+from app.db.models import (
+    Artifact,
+    Dataset,
+    Job,
+    Message,
+    Run,
+    Source,
+    Thread,
+    ToolCall,
+    now,
+)
 from app.db.repository import append_event, audit, events_after
 from app.db.session import factory, get_session
 from app.language.metadata import LanguageMetadata
@@ -28,6 +38,7 @@ class RunRequest(Contract):
     selected_source_ids: list[UUID] = Field(default_factory=list, max_length=100)
     selected_dataset_ids: list[UUID] = Field(default_factory=list, max_length=100)
     answer_language: str = "en-IN"
+    retrieval_profile: Literal["basic", "advanced"] = "basic"
     request_id: UUID = Field(default_factory=uuid4)
 
     @field_validator("answer_language")
@@ -53,6 +64,7 @@ def run_view(run: Run) -> dict[str, Any]:
         "selected_source_ids": run.selected_source_ids,
         "selected_dataset_ids": run.config.get("selected_dataset_ids", []),
         "answer_language": run.config.get("answer_language", "en-IN"),
+        "retrieval_profile": run.config.get("retrieval_profile", "basic"),
     }
 
 
@@ -129,6 +141,8 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             or existing.selected_source_ids != selected
             or existing.config.get("selected_dataset_ids", []) != selected_datasets
             or existing.config.get("answer_language") != body.answer_language
+            or existing.config.get("retrieval_profile", "basic")
+            != body.retrieval_profile
         ):
             raise HTTPException(409, "Request ID is already used by another input")
         return run_view(existing)
@@ -176,9 +190,23 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
         selected_source_ids=selected,
         config={
             "answer_language": body.answer_language,
+            "retrieval_profile": body.retrieval_profile,
+            "retrieval_pipeline_version": "advanced-retrieval-v1",
+            "retrieval_settings": {
+                "variant_limit": 3,
+                "candidate_budget": 60,
+                "rerank_default": False,
+                "aliases": settings.retrieval_aliases,
+                "embedding_model": settings.embedding_model,
+                "embedding_revision": settings.embedding_revision,
+                "reranker_model": settings.reranker_model,
+                "reranker_revision": settings.reranker_revision,
+                "summary_algorithm": "extractive-summary-v3",
+                "token_budget_default": 12000,
+            },
             "selected_dataset_ids": selected_datasets,
             "model": settings.openai_model,
-            "prompt_version": "analyst-v1",
+            "prompt_version": "analyst-v3",
             "source_versions": {source.id: source.version for source in source_rows},
             "max_tool_calls": settings.max_tool_calls,
             "max_model_calls": settings.max_model_calls,
@@ -225,6 +253,40 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
 @router.get("/runs/{run_id}")
 def run_status(run_id: str, session: Db) -> dict[str, Any]:
     return run_view(get_run(session, run_id))
+
+
+@router.get("/runs/{run_id}/retrieval")
+def retrieval_traces(run_id: str, session: Db) -> dict[str, Any]:
+    run = get_run(session, run_id)
+    calls = session.scalars(
+        select(ToolCall)
+        .where(
+            ToolCall.run_id == run_id,
+            ToolCall.name.in_(
+                ["search_documents", "source_passage", "summarize_documents"]
+            ),
+        )
+        .order_by(ToolCall.created_at)
+        .limit(100)
+    )
+    return {
+        "profile": run.config.get("retrieval_profile", "basic"),
+        "pipeline_version": run.config.get("retrieval_pipeline_version"),
+        "settings": run.config.get("retrieval_settings", {}),
+        "tools": [
+            {
+                "tool_call_id": call.id,
+                "name": call.name,
+                "status": call.status,
+                "result_status": (call.result or {}).get("status"),
+                "trace": (call.result or {}).get("data", {}).get("trace", []),
+                "summary_cache": (call.result or {}).get("data", {}).get("cache"),
+                "summary_method": (call.result or {}).get("data", {}).get("method"),
+                "error": (call.result or {}).get("error"),
+            }
+            for call in calls
+        ],
+    }
 
 
 @router.post("/runs/{run_id}/cancel")

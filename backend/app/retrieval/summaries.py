@@ -17,11 +17,12 @@ from typing import Any, Literal
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.db.models import Document, DocumentChunk, Source, SummaryCache
 
 SummaryScope = Literal["document", "section", "overview"]
-ALGORITHM_VERSION = "extractive-summary-v1"
+ALGORITHM_VERSION = "extractive-summary-v3"
 PROMPT_VERSION = "none"
 MODEL_ID = "none"
 MAX_DOCUMENTS = 10
@@ -30,7 +31,7 @@ MAX_TOTAL_CHUNKS = 1000
 MAX_SUPPORT = 12
 MAX_SENTENCES = 6
 MAX_SUMMARY_CHARS = 2400
-MAX_EXCERPT_CHARS = 1200
+MAX_EXCERPT_CHARS = 800
 MAX_ORDINAL_SCAN = 4000
 
 
@@ -225,6 +226,11 @@ def summarize(
         }
 
     selected = _select_sentences(all_chunks)
+    if not selected:
+        raise SummaryError(
+            "no_summary_sentences",
+            "No source sentences fit the summary bounds; inspect original passages.",
+        )
     summary = _join_sentences(selected, MAX_SUMMARY_CHARS)
     support = _support_records(selected, all_chunks)
     truncated = any(
@@ -262,8 +268,20 @@ def summarize(
     if thematic and scope == "overview":
         result["thematic"] = _thematic_summaries(all_chunks)
     cache = SummaryCache(fingerprint=fingerprint, scope=scope, payload=result)
-    session.add(cache)
-    session.flush()
+    try:
+        with session.begin_nested():
+            session.add(cache)
+            session.flush()
+    except IntegrityError:
+        existing = session.scalar(
+            select(SummaryCache).where(SummaryCache.fingerprint == fingerprint)
+        )
+        if existing is None:
+            raise
+        return {
+            **deepcopy(existing.payload),
+            "cache": {"hit": True, "fingerprint": fingerprint},
+        }
     return result
 
 
@@ -292,12 +310,11 @@ def _select_sentences(chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
         for sentence in _sentences(chunk["text"]):
             terms = _terms(sentence)
             seen.update(terms)
-            if 24 <= len(sentence) <= MAX_EXCERPT_CHARS:
+            if 1 <= len(sentence) <= MAX_EXCERPT_CHARS:
                 sentences.append({"text": sentence, "chunk": chunk, "terms": terms})
         df.update(seen)
     if not sentences:
         return []
-    count = len(sentences)
     scored = []
     for position, item in enumerate(sentences):
         terms = item["terms"]
@@ -371,7 +388,7 @@ def _thematic_summaries(chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
     )[:6]
     output = []
     for heading, items in ranked:
-        selection = _select_sentences(items)[:3]
+        selection = _select_sentences(items)[:1]
         output.append(
             {
                 "theme": heading[:160],

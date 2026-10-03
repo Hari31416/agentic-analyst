@@ -171,3 +171,55 @@ def test_download_preview_and_reference_scope(client_db):
         f"/api/artifacts/{artifact_id}/preview?max_characters=5"
     ).json()
     assert preview["text"] == "total" and preview["truncated"] is True
+
+
+def test_retrieval_profile_is_persisted_and_part_of_idempotency(client_db):
+    client, sessions, (_, thread_id), _ = client_db
+    payload = {
+        "text": "overview",
+        "request_id": str(uuid4()),
+        "retrieval_profile": "advanced",
+    }
+    first = client.post(f"/api/threads/{thread_id}/runs", json=payload)
+    assert first.status_code == 201
+    assert first.json()["retrieval_profile"] == "advanced"
+    with sessions() as session:
+        run = session.get(Run, first.json()["id"])
+        assert run.config["retrieval_settings"]["candidate_budget"] == 60
+    payload["retrieval_profile"] = "basic"
+    assert (
+        client.post(f"/api/threads/{thread_id}/runs", json=payload).status_code == 409
+    )
+    payload["retrieval_profile"] = "imaginary"
+    assert (
+        client.post(f"/api/threads/{thread_id}/runs", json=payload).status_code == 422
+    )
+
+
+def test_retrieval_traces_remain_inspectable_without_citations(client_db):
+    from app.db.models import ToolCall
+
+    client, sessions, (_, thread_id), _ = client_db
+    run_id = client.post(
+        f"/api/threads/{thread_id}/runs", json={"text": "missing document"}
+    ).json()["id"]
+    with sessions() as session, session.begin():
+        session.add(
+            ToolCall(
+                run_id=run_id,
+                provider_call_id="empty",
+                decision="allowed",
+                name="search_documents",
+                status="completed",
+                result={
+                    "status": "partial",
+                    "data": {
+                        "trace": [{"stage": "rerank", "status": "unavailable"}],
+                        "passages": [],
+                    },
+                },
+            )
+        )
+    view = client.get(f"/api/runs/{run_id}/retrieval").json()
+    assert view["profile"] == "basic"
+    assert view["tools"][0]["trace"][0]["status"] == "unavailable"

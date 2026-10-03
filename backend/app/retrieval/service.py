@@ -270,6 +270,9 @@ def search(
     mode: RetrievalMode = "hybrid",
     limit: int = 5,
     context_budget: int = 8_000,
+    *,
+    lexical_any: bool = False,
+    candidate_budget: int | None = None,
 ) -> dict[str, Any]:
     """Search only selected source versions and fuse lexical/dense candidates."""
     cleaned = _clean_query(query)
@@ -286,12 +289,21 @@ def search(
         return _empty_search(mode, trace=[{"stage": "scope", "status": "empty"}])
 
     candidate_limit = min(max(limit * 4, limit), _MAX_CANDIDATES)
+    if candidate_budget is not None:
+        if isinstance(candidate_budget, bool) or candidate_budget < 2:
+            raise RetrievalError(
+                "invalid_candidate_budget",
+                "Candidate budget must allow at least two candidates.",
+            )
+        candidate_limit = min(
+            candidate_limit, candidate_budget // (2 if mode == "hybrid" else 1)
+        )
     lexical: list[dict[str, Any]] = []
     dense: list[dict[str, Any]] = []
     trace: list[dict[str, Any]] = []
     if mode in {"text", "hybrid"}:
         lexical = _lexical_candidates(
-            session, cleaned, source_versions, candidate_limit
+            session, cleaned, source_versions, candidate_limit, any_terms=lexical_any
         )
         trace.append(
             {"stage": "lexical", "status": "ready", "candidate_count": len(lexical)}
@@ -569,6 +581,9 @@ def _lexical_candidates(
     query: str,
     source_versions: dict[str, int],
     limit: int,
+    *,
+    any_terms: bool = False,
+    strict_budget: bool = False,
 ) -> list[dict[str, Any]]:
     combined = (
         func.coalesce(DocumentChunk.heading, "")
@@ -576,12 +591,27 @@ def _lexical_candidates(
         + DocumentChunk.normalized_text
     )
     candidates: dict[str, dict[str, Any]] = {}
-    for config, language_filter in (
-        ("english", DocumentChunk.language.ilike("en%")),
-        ("simple", ~DocumentChunk.language.ilike("en%")),
+    for config, language_filter, config_limit in (
+        (
+            "english",
+            DocumentChunk.language.ilike("en%"),
+            (limit + 1) // 2 if strict_budget else limit,
+        ),
+        (
+            "simple",
+            ~DocumentChunk.language.ilike("en%"),
+            limit // 2 if strict_budget else limit,
+        ),
     ):
         config_expression: ColumnElement[Any] = literal_column(f"'{config}'::regconfig")
-        ts_query = func.plainto_tsquery(config_expression, query)
+        ts_query = (
+            func.websearch_to_tsquery(
+                config_expression,
+                " OR ".join(re.findall(r"[^\W_]+", query, re.UNICODE)),
+            )
+            if any_terms
+            else func.plainto_tsquery(config_expression, query)
+        )
         vector = func.to_tsvector(config_expression, combined)
         score = func.ts_rank_cd(vector, ts_query)
         rows = session.execute(
@@ -597,7 +627,7 @@ def _lexical_candidates(
                 vector.op("@@")(ts_query),
             )
             .order_by(score.desc(), DocumentChunk.id)
-            .limit(limit)
+            .limit(config_limit)
         )
         for chunk, document, source, generation, raw_score in rows:
             item = _candidate(chunk, document, source, generation)

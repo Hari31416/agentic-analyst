@@ -201,6 +201,9 @@ def _load_fastembed(settings: Settings, manifest: dict[str, Any]) -> Any:
     # Disable both telemetry channels before loading ONNX Runtime/FastEmbed.
     os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
     os.environ.setdefault("ORT_DISABLE_TELEMETRY_EVENTS", "1")
+    import onnxruntime  # type: ignore[import-untyped]
+
+    onnxruntime.disable_telemetry_events()
     from fastembed import TextEmbedding
     from fastembed.common.model_description import ModelSource, PoolingType
 

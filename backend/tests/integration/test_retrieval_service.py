@@ -377,3 +377,45 @@ def test_new_model_configuration_keeps_generations_separate(
             )
             == original_chunks
         )
+
+
+def test_advanced_context_expands_parents_and_neighbors_without_crossing_scope(
+    session_factory, monkeypatch
+):
+    from app.retrieval.advanced import advanced_search
+
+    monkeypatch.setattr(
+        retrieval, "get_embedding_adapter", lambda settings: FakeAdapter()
+    )
+    with session_factory() as session, session.begin():
+        document = _create_document(session)
+        excluded = _create_document(session, name="excluded.pdf")
+        build_index_generation(session, document.id, _settings())
+        build_index_generation(session, excluded.id, _settings())
+        chunks = list(
+            session.scalars(
+                select(DocumentChunk)
+                .where(DocumentChunk.document_id == document.id)
+                .order_by(DocumentChunk.ordinal)
+            )
+        )
+        forbidden = session.scalar(
+            select(DocumentChunk).where(DocumentChunk.document_id == excluded.id)
+        )
+        chunks[0].parent_id = chunks[1].id
+        chunks[0].next_id = (
+            forbidden.id
+        )  # malformed cross-document link must be ignored
+        session.flush()
+        result = advanced_search(
+            session,
+            "eligibility",
+            {document.source_id: 1},
+            _settings(),
+            mode="text",
+            limit=1,
+            expand=True,
+        )
+        assert any(p.get("expansion") == "parent" for p in result["passages"])
+        assert all(p["source_id"] == document.source_id for p in result["passages"])
+        assert forbidden.id not in {p["chunk_id"] for p in result["passages"]}

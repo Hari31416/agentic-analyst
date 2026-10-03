@@ -114,3 +114,62 @@ async def test_document_summary_cache_and_source_version_evidence(db_factory):
     assert (
         invalidated.data["cache"]["fingerprint"] != first.data["cache"]["fingerprint"]
     )
+
+
+@pytest.mark.parametrize("change", ["content", "chunk", "prompt", "model"])
+async def test_summary_cache_invalidation_dimensions(db_factory, monkeypatch, change):
+    from app.retrieval import summaries
+
+    run_id, task = queued_run(db_factory)
+    with db_factory() as session, session.begin():
+        run = session.get(Run, run_id)
+        thread = session.get(Thread, run.thread_id)
+        source = Source(
+            workspace_id=thread.workspace_id,
+            kind="md",
+            display_name="rules",
+            state="ready",
+            content_hash="d" * 64,
+        )
+        session.add(source)
+        session.flush()
+        doc = Document(
+            source_id=source.id,
+            source_version=1,
+            extractor_version="v1",
+            chunker_version="v1",
+            state="ready",
+        )
+        session.add(doc)
+        session.flush()
+        session.add(
+            DocumentChunk(
+                document_id=doc.id,
+                ordinal=0,
+                chunker_version="v1",
+                text="The household income threshold is INR 200000.",
+                normalized_text="income",
+                heading="Income",
+                language="en",
+                token_count=10,
+                block_ids=[],
+                location={"page": 1},
+            )
+        )
+        session.flush()
+        versions = {source.id: 1}
+        first = summaries.summarize(session, versions)
+        if change == "content":
+            source.content_hash = "e" * 64
+        elif change == "chunk":
+            chunk = session.query(DocumentChunk).filter_by(document_id=doc.id).one()
+            chunk.text = "The household income threshold is INR 300000."
+        elif change == "prompt":
+            monkeypatch.setattr(summaries, "PROMPT_VERSION", "new-prompt")
+        elif change == "model":
+            monkeypatch.setattr(summaries, "MODEL_ID", "new-model")
+        session.flush()
+        second = summaries.summarize(session, versions)
+        assert second["cache"]["fingerprint"] != first["cache"]["fingerprint"]
+        assert not second["cache"]["hit"]
+        assert summaries.summarize(session, versions)["cache"]["hit"]

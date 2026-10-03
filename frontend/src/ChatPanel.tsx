@@ -59,6 +59,7 @@ type RetryInput = {
   selectedSourceIds: string[]
   selectedDatasetIds: string[]
   language: AnswerLanguage
+  retrievalProfile?: 'basic' | 'advanced'
 }
 
 type ProgressItem = { id: string; text: string; kind: string }
@@ -221,6 +222,9 @@ function ChatPanel({
   const [cancelling, setCancelling] = useState(false)
   const [retryingRunId, setRetryingRunId] = useState('')
   const [error, setError] = useState('')
+  const [retrievalProfile, setRetrievalProfile] = useState<
+    'basic' | 'advanced'
+  >('basic')
   const [evidenceId, setEvidenceId] = useState('')
   const [evidence, setEvidence] = useState<EvidenceView | null>(null)
   const [loadingEvidence, setLoadingEvidence] = useState(false)
@@ -312,6 +316,8 @@ function ChatPanel({
               selectedDatasetIds:
                 run.selected_dataset_ids ?? saved.selectedDatasetIds ?? [],
               language: run.answer_language ?? saved.language ?? 'en-IN',
+              retrievalProfile:
+                run.retrieval_profile ?? saved.retrievalProfile ?? 'basic',
             })
           }
         }
@@ -529,6 +535,7 @@ function ChatPanel({
         datasets,
       ),
       language,
+      retrievalProfile,
     }
     try {
       const run = await chatApi.createRun(threadId, {
@@ -536,6 +543,7 @@ function ChatPanel({
         selected_source_ids: input.selectedSourceIds,
         selected_dataset_ids: input.selectedDatasetIds,
         answer_language: input.language,
+        retrieval_profile: input.retrievalProfile ?? 'basic',
         request_id: crypto.randomUUID(),
       })
       if (retryFor) retryInputsRef.current.delete(retryFor)
@@ -629,6 +637,8 @@ function ChatPanel({
         selectedDatasetIds: run.selected_dataset_ids ??
           saved.selectedDatasetIds ?? [...selectedDatasetIds],
         language: run.answer_language ?? saved.language ?? language,
+        retrievalProfile:
+          run.retrieval_profile ?? saved.retrievalProfile ?? 'basic',
       }
     }
     setRetryingRunId(run.id)
@@ -780,6 +790,9 @@ function ChatPanel({
                         artifacts={artifactLists[message.run_id ?? ''] ?? []}
                         ids={artifacts}
                       />
+                    )}
+                    {run && message.role === 'assistant' && (
+                      <RetrievalDetails runId={run.id} />
                     )}
                   </article>
                   {message.role === 'user' &&
@@ -960,6 +973,24 @@ function ChatPanel({
                 >
                   <option value="en-IN">English</option>
                   <option value="hi-IN">हिन्दी</option>
+                </select>
+              </label>
+              <label
+                className="language-choice"
+                title="Advanced searches keyword variants and expands surrounding passages"
+              >
+                <span className="sr-only">Retrieval profile</span>
+                <select
+                  value={retrievalProfile}
+                  onChange={(event) =>
+                    setRetrievalProfile(
+                      event.target.value as 'basic' | 'advanced',
+                    )
+                  }
+                  disabled={!!activeRun}
+                >
+                  <option value="basic">Basic retrieval</option>
+                  <option value="advanced">Advanced retrieval</option>
                 </select>
               </label>
               <span className="composer-hint">
@@ -1429,3 +1460,33 @@ function RunFailure({
 }
 
 export default ChatPanel
+
+function RetrievalDetails({ runId }: { runId: string }) {
+  const [view, setView] = useState<Record<string, unknown> | null>(null)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  return (
+    <details
+      className="evidence-trace"
+      onToggle={(event) => {
+        if (!event.currentTarget.open || view || loading) return
+        setLoading(true)
+        setError('')
+        chatApi
+          .retrieval(runId)
+          .then(setView)
+          .catch(() =>
+            setError(
+              'Retrieval details are unavailable. Close and reopen to retry.',
+            ),
+          )
+          .finally(() => setLoading(false))
+      }}
+    >
+      <summary>Retrieval details</summary>
+      {loading && <p>Loading retrieval stages…</p>}
+      {error && <p role="status">{error}</p>}
+      {view && <pre>{JSON.stringify(view, null, 2)}</pre>}
+    </details>
+  )
+}

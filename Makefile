@@ -338,3 +338,9 @@ logs-save:
 clean-logs:
 	@rm -f logs/*.log
 	@echo "Cleaned log files in logs/"
+
+reranker-model:
+	backend/.venv/bin/python scripts/setup-reranker.py
+
+live-retrieval:
+	$(BACKEND) python -m app.advanced_probes

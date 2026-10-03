@@ -27,6 +27,7 @@ export type AnalysisRun = {
     artifact_ids?: string[]
     cleanup?: 'pending' | 'complete' | 'failed' | string
   } | null
+  retrieval_profile?: 'basic' | 'advanced'
   answer_language?: AnswerLanguage
   selected_source_ids?: string[]
   selected_dataset_ids?: string[]
@@ -114,6 +115,7 @@ export const chatApi = {
       text: string
       selected_source_ids: string[]
       selected_dataset_ids: string[]
+      retrieval_profile?: 'basic' | 'advanced'
       answer_language: AnswerLanguage
       request_id: string
     },
@@ -128,6 +130,10 @@ export const chatApi = {
     }),
   run: (runId: string) =>
     request<AnalysisRun>(`/api/runs/${encodeURIComponent(runId)}`),
+  retrieval: (runId: string) =>
+    request<Record<string, unknown>>(
+      `/api/runs/${encodeURIComponent(runId)}/retrieval`,
+    ),
   artifacts: (runId: string) =>
     request<RunArtifact[]>(`/api/runs/${encodeURIComponent(runId)}/artifacts`),
   previewArtifact: (artifactId: string, maxCharacters = 4000) =>

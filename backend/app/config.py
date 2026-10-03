@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     embedding_threads: int = 2
     crawl_enabled: bool = False
     crawl_approved_hosts: list[str] = []
+    retrieval_aliases: dict[str, list[str]] = {}
     reranker_model: str | None = None
     reranker_model_path: Path | None = None
     reranker_revision: str | None = None
@@ -99,6 +100,19 @@ class Settings(BaseSettings):
                 raise ValueError("Invalid crawl hostname")
             normalized.append(host.lower().encode("idna").decode("ascii"))
         return list(dict.fromkeys(normalized))
+
+    @field_validator("retrieval_aliases")
+    @classmethod
+    def valid_aliases(cls, value: dict[str, list[str]]) -> dict[str, list[str]]:
+        if len(value) > 50 or any(
+            not key.strip()
+            or len(key) > 100
+            or len(aliases) > 5
+            or any(not alias.strip() or len(alias) > 100 for alias in aliases)
+            for key, aliases in value.items()
+        ):
+            raise ValueError("Retrieval aliases exceed bounded domain vocabulary")
+        return value
 
     @field_validator("ocr_languages")
     @classmethod

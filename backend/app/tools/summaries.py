@@ -77,10 +77,18 @@ class SummaryTools:
         # Summary prose itself is never stored as evidence. The evidence IDs
         # returned here identify the original, version-pinned chunks only.
         evidence_ids: list[UUID] = []
-        support = summary.get("supporting_passages", [])
+        support = list(summary.get("supporting_passages", []))
+        for theme in summary.get("thematic", []):
+            support.extend(theme.get("supporting_passages", []))
+        # Identical excerpt/anchor pairs share an evidence ID within this result.
+        saved_ids: dict[tuple[str, str], str] = {}
         with self.runtime.db() as session, session.begin():
             self.runtime.guard(session)
             for passage in support:
+                anchor = (passage["chunk_id"], passage["excerpt"])
+                if anchor in saved_ids:
+                    passage["evidence_id"] = saved_ids[anchor]
+                    continue
                 identity = passage["source_id"]
                 if versions.get(identity) != passage["source_version"]:
                     raise ValueError("summary crossed the selected source version")
@@ -109,6 +117,7 @@ class SummaryTools:
                     )
                 )
                 passage["evidence_id"] = evidence_id
+                saved_ids[anchor] = evidence_id
 
         partial = bool(summary.get("truncated"))
         return ToolResult(

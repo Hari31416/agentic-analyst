@@ -169,6 +169,10 @@ class RunRuntime:
             if name == "run_python":
                 assert isinstance(arguments, PythonInput)
                 result = await self.run_python(workspace_id, run_id, tool_id, arguments)
+            elif name == "summarize_documents":
+                from app.tools.summaries import SummaryTools
+
+                result = await SummaryTools(self).execute(name, arguments, tool_id)
             elif name in {"search_documents", "source_passage"}:
                 from app.tools.documents import DocumentTools
 
@@ -521,9 +525,16 @@ class RunRuntime:
                         "content": row.content,
                         "selected_source_ids": row.selected_source_ids,
                         "references": row.references,
+                        "selected_dataset_ids": (message_config or {}).get(
+                            "selected_dataset_ids", []
+                        ),
+                        "source_versions": (message_config or {}).get(
+                            "source_versions", {}
+                        ),
                     }
-                    for row in session.scalars(
-                        select(Message)
+                    for row, message_config in session.execute(
+                        select(Message, Run.config)
+                        .outerjoin(Run, Run.id == Message.run_id)
                         .where(
                             Message.thread_id == run.thread_id,
                             Message.created_at <= run.created_at,
@@ -546,6 +557,10 @@ class RunRuntime:
                             "content": current.content,
                             "selected_source_ids": current.selected_source_ids,
                             "references": current.references,
+                            "selected_dataset_ids": run.config.get(
+                                "selected_dataset_ids", []
+                            ),
+                            "source_versions": run.config.get("source_versions", {}),
                         }
                     )
                 language = str(run.config["answer_language"])
@@ -582,11 +597,17 @@ class RunRuntime:
                 return Tool(name, description, schema, execute)
 
             from app.tools.documents import PassageInput, SearchInput
+            from app.tools.summaries import SummaryInput
 
             structured_tools = [
                 structured_tool(
+                    "summarize_documents",
+                    "Get cached document, section or multi-document overview summaries with original supporting evidence. Summaries are navigation aids; cite original passages for claims. Optional thematic headings group the bounded sample.",
+                    SummaryInput,
+                ),
+                structured_tool(
                     "search_documents",
-                    "Search selected PDF/DOCX versions using lexical, local dense, or hybrid retrieval. Returns original passages and evidence IDs with locations. Reformulate if evidence is missing; never infer eligibility rules without supporting passages.",
+                    "Search selected document versions using lexical, dense or hybrid retrieval. Advanced profile fuses up to three queries with optional local rerank, context expansion, extractive compression, and independent subquestions. For dependent hops supply hop_evidence_ids and hop_terms copied verbatim from earlier evidence to locate the next passage. Returns original excerpts and stage traces. Never infer unsupported criteria.",
                     SearchInput,
                 ),
                 structured_tool(

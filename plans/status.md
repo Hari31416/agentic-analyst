@@ -15,7 +15,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | 02    | Verified | Five live source cases; real DuckDB, PostgreSQL/MySQL safety/deadline/cancellation and RustFS checks | Full UI QA deferred by user |
 | 03    | Verified | PDF/DOCX ingestion, measured bilingual retrieval, two live mixed-source cases, citation history, CSV/PNG and source integrity checks | Full UI QA deferred by user; ranking improvements in phase 05 |
 | 04    | Verified | Local Hindi/English scanned/mixed/rotated extraction; accepted PDF table calculated in real microVM; lifecycle/crawler/API tests, PostgreSQL/RustFS and frontend checks | OCR accuracy descriptive; full UI QA deferred; explicit format limitations recorded |
-| 05    | Not started | Not run                     | All phase checks |
+| 05    | Verified | 179 deterministic tests; 34 PostgreSQL/RustFS integration tests; 32 local stage trials; four bilingual live dependent-hop/summary cases; historical artifact follow-up; frontend and schema checks | Full UI QA deferred; one follow-up language miss recorded |
 | 06    | Not started | Not run                     | All phase checks |
 | 07    | Not started | Not run                     | All phase checks |
 | 08    | Not started | Not run                     | All phase checks |
@@ -297,3 +297,79 @@ Keep secrets and raw client data out of this file.
   refreshed after confirming zero running jobs; infrastructure remains healthy.
 - The authorized implementation stops after the phase 04 commits. Phase 05 and
   later remain unstarted.
+
+
+## 3 October 2026: phase 05 advanced retrieval
+
+- Added `advanced-retrieval-v1` behind the existing document tools, with additive
+  conversational rewriting, literal keyword variants, deployment-owned aliases,
+  bounded multi-query/independent subquestions, reciprocal-rank fusion, optional
+  consensus, document coverage, and parent/neighbor expansion. Original queries
+  always execute; invalid variant transformations retain the original. The total
+  lexical/dense candidate quota is 60 over at most three queries. Each expanded
+  original passage receives its own versioned evidence. Extractive compression
+  retains original excerpts and counts both texts against context bounds.
+- Added real local FastEmbed cross-encoder inference. The optional int8 Jina
+  multilingual assets are pinned to `9cfeff2df7d40d1b78e75e5e9cebec92a99813c9`
+  with file hashes. English/Hindi pair scoring ran locally. Missing assets,
+  checksum/load failures and invalid scores are explicit unavailable stages,
+  with retained fused evidence. Runtime downloads are disabled, and ONNX
+  telemetry is explicitly disabled. The public Jina model has CC-BY-NC-4.0 terms;
+  production deployments must select suitable licensed assets.
+- Added evidence-dependent hops requiring exact discovered terms and earlier
+  document evidence from this thread and selected source versions. A synthetic
+  Scheme S7 policy identifies NIRVAAN, then a second search finds the bilingual
+  definition handbook. Superseded S0 material is excluded from selection.
+  Independent questions are labelled separately. The main agent owns the hops;
+  no additional production supervisor was introduced.
+- Added cached document/section/overview extractive summaries and optional
+  heading-based thematic summaries. Migration `a8c204d39f51` creates `summary_cache`.
+  Fingerprints include source/version/hash, extraction/chunking/chunk hashes,
+  algorithm/prompt/model versions, scope and bounds. Duplicate concurrent inserts
+  reuse the winning cache row. Summary evidence contains original sentences,
+  including thematic support, and never treats summary prose as primary evidence.
+  Default summary cost is zero model calls/tokens. Neural clustering and
+  generative map-reduce remain optional alternatives, not enabled implementations.
+- Added a separate model-context view preserving all user corrections, selected
+  sources/datasets and versions, detected definitions/assumptions/units, and
+  evidence/artifact IDs. Durable messages remain unchanged. Compaction emits
+  counts and explicitly exhausts the budget if protected content cannot fit.
+  Fact detection is heuristic; it cannot identify every possible interpretation.
+  Prompt `analyst-v3` explains summaries, independent questions and dependent hops.
+- Chat offers Basic/Advanced profiles and collapsed retrieval details. Each run
+  captures its profile, pipeline/model settings, aliases and bounds. Citation
+  traces remain inspectable, and `/api/runs/{id}/retrieval` exposes empty/failed
+  stages even when there are no citation IDs. Expert controls remain tool inputs.
+- The same four-document phase 03 corpus ran two local trials for each of eight
+  stage settings in both query languages, 32 cases. Basic recall at 3 stays 0.50
+  in each language. Document coverage raises English recall at 3 to 0.75. Hindi
+  reranking raises recall at 5 from 0.75 to 1.00; English reranking recall at 3 is
+  0.75. Multi-query alone leaves recall at 3 unchanged and lowers English recall
+  at 5 to 0.75. Warm reranking is about 300 ms versus about 8–11 ms for Basic.
+  Basic remains the default; reranking/consensus/compression are opt-in. Detailed
+  ranks, misses, timings, text sizes, model versions and process memory are saved
+  in `evals/reports/phase05-2026-10-03.json`. These measures do not prove semantic
+  support on arbitrary client documents.
+- Four live `gpt-oss-120b` cases, two English and two Hindi, completed with real
+  dependent hops, reranking, compression, summaries and saved original citations.
+  All answered pension included and housing aid excluded. They used 3–6 tools,
+  4–7 model calls and 16,108–34,343 total tokens. A fifth live follow-up inspected
+  a retained phase 01 `proof.csv` after its original guest expired, returned count
+  2 and total 25,000, and cited the durable artifact without creating a sandbox.
+  That English-requested follow-up answered in Hindi; this is a recorded language
+  adherence miss for phase 07, not a passed language gate. No additional microVM
+  executions were necessary; earlier execution/staging evidence remains valid.
+- Final validation: deterministic pytest 179 passed; PostgreSQL/RustFS integration
+  34 passed, 11 skipped. Ten unchanged seeded connector tests lacked explicit
+  source URLs; the old embedding fixture was skipped because the real E5 model
+  ran in the local stage comparisons. Black/mypy, frontend typecheck/build/format,
+  and `alembic check` pass. New integration checks cover independent/dependent
+  hops, cross-document parent rejection, saved citations, historical artifacts,
+  section ordinals, and summary content/chunk/prompt/model/extractor invalidation.
+  Full browser QA remains deferred. Preflight API startup and test-fixture errors
+  were corrected; all live model trials are retained, with no timed-out trials.
+- Configuration and commands are in `docs/retrieval.md`, `.env.example`,
+  `make reranker-model`, and `make live-retrieval`. Local-only retrieval measurements
+  can refresh with `python -m app.advanced_probes --retrieval-only` while preserving
+  prior live results. The authorized scope ends at phase 05. Phase 06 awaits the
+  user's next request.

@@ -38,19 +38,19 @@ Outcome: the requested advanced RAG capabilities work behind the existing tools.
 
 ## Acceptance and validation
 
-- [ ] Multi-query, reranking, context expansion, summaries, and independent/
+- [x] Multi-query, reranking, context expansion, summaries, and independent/
   dependent-hop cases execute and report which stages actually ran.
-- [ ] A dependent-hop case uses first-hop evidence to locate the next passage.
-- [ ] Original citations remain valid after fusion, compression, and synthesis.
-- [ ] Follow-up conversation preserves definitions and uses earlier artifacts
+- [x] A dependent-hop case uses first-hop evidence to locate the next passage.
+- [x] Original citations remain valid after fusion, compression, and synthesis.
+- [x] Follow-up conversation preserves definitions and uses earlier artifacts
   without requiring a live sandbox session.
-- [ ] Summary caching invalidates correctly and no unreferenced summary is treated
+- [x] Summary caching invalidates correctly and no unreferenced summary is treated
   as primary evidence for a factual or numerical claim.
-- [ ] Compare each optional stage separately against phase 03 retrieval metrics,
+- [x] Compare each optional stage separately against phase 03 retrieval metrics,
   answer quality, model calls, tokens, latency, and resource use.
-- [ ] Choose defaults from measured benefit; capabilities remain available even
+- [x] Choose defaults from measured benefit; capabilities remain available even
   when an expensive stage is off in the baseline profile.
-- [ ] Failure/budget exhaustion yields explicit partial results and recoverable
+- [x] Failure/budget exhaustion yields explicit partial results and recoverable
   evidence rather than fabricated completion.
 
 Run deterministic pipeline tests and repeated live cases. Record all failed and
@@ -60,3 +60,8 @@ timed-out trials. Phase 09 formalizes the broader benchmark and release gates.
 
 Record stage interfaces, available profiles, measured default choices, prompt/
 model versions, summary costs, compaction behavior, and multi-hop limitations.
+
+Verification and measured limitations: see the 3 October 2026 phase 05 entry in
+[status.md](status.md), [retrieval operations](../docs/retrieval.md), and the saved
+`evals/reports/phase05-2026-10-03.json` report. Optional thematic summaries use
+structural headings; neural clustering and generative map-reduce are not enabled.

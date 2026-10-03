@@ -1,0 +1,5130 @@
+{
+  "phase": "05",
+  "timestamp": "2026-10-03T03:47:16.569578+00:00",
+  "model": "gpt-oss-120b",
+  "prompt_version": "analyst-v3",
+  "pipeline": "advanced-retrieval-v1",
+  "embedding_model": "intfloat/multilingual-e5-small",
+  "embedding_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+  "reranker_model": "jinaai/jina-reranker-v2-base-multilingual",
+  "reranker_revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+  "retrieval_ablation": {
+    "workspace_id": "5bd0be0a-c3aa-4d3a-a1ed-849d0e8f34a6",
+    "cases": [
+      {
+        "language": "en",
+        "stage": "basic",
+        "trial": 1,
+        "latency_ms": 423.69,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 2
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "lexical",
+            "status": "ready",
+            "candidate_count": 0
+          },
+          {
+            "stage": "dense",
+            "status": "ready",
+            "model_id": "intfloat/multilingual-e5-small",
+            "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+            "dimensions": 384,
+            "candidate_count": 8,
+            "selected_document_count": 4,
+            "matching_generation_count": 4
+          },
+          {
+            "stage": "fusion",
+            "status": "ready",
+            "rrf_k": 60
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "basic",
+        "trial": 2,
+        "latency_ms": 10.97,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 2
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "lexical",
+            "status": "ready",
+            "candidate_count": 0
+          },
+          {
+            "stage": "dense",
+            "status": "ready",
+            "model_id": "intfloat/multilingual-e5-small",
+            "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+            "dimensions": 384,
+            "candidate_count": 8,
+            "selected_document_count": 4,
+            "matching_generation_count": 4
+          },
+          {
+            "stage": "fusion",
+            "status": "ready",
+            "rrf_k": 60
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "multi_query",
+        "trial": 1,
+        "latency_ms": 31.75,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 6,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 3
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "scheme S1 active income eligibility threshold",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 annual maximum inclusive",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 38,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 31.63,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "multi_query",
+        "trial": 2,
+        "latency_ms": 28.73,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 6,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 3
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "scheme S1 active income eligibility threshold",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 annual maximum inclusive",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 38,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 28.69,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "rerank",
+        "trial": 1,
+        "latency_ms": 810.72,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 3
+        },
+        "recall_at": {
+          "3": 0.75,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "ready",
+            "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+            "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+            "candidate_count": 8,
+            "ranks": [
+              {
+                "chunk_id": "e4c32426-3965-4c44-a816-a30bec350f38",
+                "before": 1,
+                "after": 1,
+                "score": 1.3862756490707397
+              },
+              {
+                "chunk_id": "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44",
+                "before": 4,
+                "after": 2,
+                "score": 1.0820239782333374
+              },
+              {
+                "chunk_id": "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080",
+                "before": 2,
+                "after": 3,
+                "score": 0.7925100326538086
+              },
+              {
+                "chunk_id": "a951a00a-6469-4ead-8d05-f7097ce8b7ea",
+                "before": 5,
+                "after": 4,
+                "score": 0.7898641228675842
+              },
+              {
+                "chunk_id": "29b07551-0871-4730-b8b5-13109c8d8d47",
+                "before": 3,
+                "after": 5,
+                "score": 0.5823855400085449
+              },
+              {
+                "chunk_id": "615df14e-a046-4a85-94ba-a616bedb3cb7",
+                "before": 7,
+                "after": 6,
+                "score": 0.5521862506866455
+              },
+              {
+                "chunk_id": "8c7419b4-874f-4eab-bf3e-7f085b4da7c0",
+                "before": 8,
+                "after": 7,
+                "score": -1.7677507400512695
+              },
+              {
+                "chunk_id": "442411e8-2628-4fe0-bf5f-12f4b938f8fa",
+                "before": 6,
+                "after": 8,
+                "score": -1.8407635688781738
+              }
+            ],
+            "latency_ms": 800.41
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 810.65,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "rerank",
+        "trial": 2,
+        "latency_ms": 339.8,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 3
+        },
+        "recall_at": {
+          "3": 0.75,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "ready",
+            "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+            "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+            "candidate_count": 8,
+            "ranks": [
+              {
+                "chunk_id": "e4c32426-3965-4c44-a816-a30bec350f38",
+                "before": 1,
+                "after": 1,
+                "score": 1.3862756490707397
+              },
+              {
+                "chunk_id": "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44",
+                "before": 4,
+                "after": 2,
+                "score": 1.0820239782333374
+              },
+              {
+                "chunk_id": "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080",
+                "before": 2,
+                "after": 3,
+                "score": 0.7925100326538086
+              },
+              {
+                "chunk_id": "a951a00a-6469-4ead-8d05-f7097ce8b7ea",
+                "before": 5,
+                "after": 4,
+                "score": 0.7898641228675842
+              },
+              {
+                "chunk_id": "29b07551-0871-4730-b8b5-13109c8d8d47",
+                "before": 3,
+                "after": 5,
+                "score": 0.5823855400085449
+              },
+              {
+                "chunk_id": "615df14e-a046-4a85-94ba-a616bedb3cb7",
+                "before": 7,
+                "after": 6,
+                "score": 0.5521862506866455
+              },
+              {
+                "chunk_id": "8c7419b4-874f-4eab-bf3e-7f085b4da7c0",
+                "before": 8,
+                "after": 7,
+                "score": -1.7677507400512695
+              },
+              {
+                "chunk_id": "442411e8-2628-4fe0-bf5f-12f4b938f8fa",
+                "before": 6,
+                "after": 8,
+                "score": -1.8407635688781738
+              }
+            ],
+            "latency_ms": 320.58
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 339.73,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "expansion",
+        "trial": 1,
+        "latency_ms": 30.55,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 2
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": true,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 30.51,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "expansion",
+        "trial": 2,
+        "latency_ms": 18.33,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 2
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": true,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 18.29,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "compression",
+        "trial": 1,
+        "latency_ms": 9.36,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 2
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3294,
+        "degraded": true,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "partial",
+            "expanded": false,
+            "compression": "extractive-v1",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 5805,
+            "token_upper_bound": 7819,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 9.32,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "compression",
+        "trial": 2,
+        "latency_ms": 8.03,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 2
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3294,
+        "degraded": true,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "partial",
+            "expanded": false,
+            "compression": "extractive-v1",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 5805,
+            "token_upper_bound": 7819,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 7.99,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "consensus",
+        "trial": 1,
+        "latency_ms": 25.62,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 6,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 3
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "scheme S1 active income eligibility threshold",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 annual maximum inclusive",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 38,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": true,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 25.58,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "consensus",
+        "trial": 2,
+        "latency_ms": 25.39,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 6,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 3
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "scheme S1 active income eligibility threshold",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 annual maximum inclusive",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 38,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": true,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 25.34,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "coverage",
+        "trial": 1,
+        "latency_ms": 7.86,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 2
+        },
+        "recall_at": {
+          "3": 0.75,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 7.82,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "coverage",
+        "trial": 2,
+        "latency_ms": 7.18,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 2
+        },
+        "recall_at": {
+          "3": 0.75,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 7.14,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "combined",
+        "trial": 1,
+        "latency_ms": 333.36,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 3
+        },
+        "recall_at": {
+          "3": 0.75,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3294,
+        "degraded": true,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "scheme S1 active income eligibility threshold",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 annual maximum inclusive",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 38,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "ready",
+            "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+            "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+            "candidate_count": 8,
+            "ranks": [
+              {
+                "chunk_id": "e4c32426-3965-4c44-a816-a30bec350f38",
+                "before": 1,
+                "after": 1,
+                "score": 1.3862756490707397
+              },
+              {
+                "chunk_id": "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44",
+                "before": 4,
+                "after": 2,
+                "score": 1.0820239782333374
+              },
+              {
+                "chunk_id": "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080",
+                "before": 3,
+                "after": 3,
+                "score": 0.7925100326538086
+              },
+              {
+                "chunk_id": "a951a00a-6469-4ead-8d05-f7097ce8b7ea",
+                "before": 6,
+                "after": 4,
+                "score": 0.7898641228675842
+              },
+              {
+                "chunk_id": "29b07551-0871-4730-b8b5-13109c8d8d47",
+                "before": 2,
+                "after": 5,
+                "score": 0.5823855400085449
+              },
+              {
+                "chunk_id": "615df14e-a046-4a85-94ba-a616bedb3cb7",
+                "before": 5,
+                "after": 6,
+                "score": 0.5521862506866455
+              },
+              {
+                "chunk_id": "8c7419b4-874f-4eab-bf3e-7f085b4da7c0",
+                "before": 8,
+                "after": 7,
+                "score": -1.7677507400512695
+              },
+              {
+                "chunk_id": "442411e8-2628-4fe0-bf5f-12f4b938f8fa",
+                "before": 7,
+                "after": 8,
+                "score": -1.8407635688781738
+              }
+            ],
+            "latency_ms": 293.67
+          },
+          {
+            "stage": "context",
+            "status": "partial",
+            "expanded": true,
+            "compression": "extractive-v1",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 5805,
+            "token_upper_bound": 7819,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 333.31,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "stage": "combined",
+        "trial": 2,
+        "latency_ms": 344.71,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 3
+        },
+        "recall_at": {
+          "3": 0.75,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3294,
+        "degraded": true,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "scheme S1 active annual income maximum eligibility inclusive threshold",
+              "scheme S1 active income eligibility threshold",
+              "S1 annual maximum inclusive"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "scheme S1 active income eligibility threshold",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 annual maximum inclusive",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 38,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "ready",
+            "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+            "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+            "candidate_count": 8,
+            "ranks": [
+              {
+                "chunk_id": "e4c32426-3965-4c44-a816-a30bec350f38",
+                "before": 1,
+                "after": 1,
+                "score": 1.3862756490707397
+              },
+              {
+                "chunk_id": "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44",
+                "before": 4,
+                "after": 2,
+                "score": 1.0820239782333374
+              },
+              {
+                "chunk_id": "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080",
+                "before": 3,
+                "after": 3,
+                "score": 0.7925100326538086
+              },
+              {
+                "chunk_id": "a951a00a-6469-4ead-8d05-f7097ce8b7ea",
+                "before": 6,
+                "after": 4,
+                "score": 0.7898641228675842
+              },
+              {
+                "chunk_id": "29b07551-0871-4730-b8b5-13109c8d8d47",
+                "before": 2,
+                "after": 5,
+                "score": 0.5823855400085449
+              },
+              {
+                "chunk_id": "615df14e-a046-4a85-94ba-a616bedb3cb7",
+                "before": 5,
+                "after": 6,
+                "score": 0.5521862506866455
+              },
+              {
+                "chunk_id": "8c7419b4-874f-4eab-bf3e-7f085b4da7c0",
+                "before": 8,
+                "after": 7,
+                "score": -1.7677507400512695
+              },
+              {
+                "chunk_id": "442411e8-2628-4fe0-bf5f-12f4b938f8fa",
+                "before": 7,
+                "after": 8,
+                "score": -1.8407635688781738
+              }
+            ],
+            "latency_ms": 305.36
+          },
+          {
+            "stage": "context",
+            "status": "partial",
+            "expanded": true,
+            "compression": "extractive-v1",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 5805,
+            "token_upper_bound": 7819,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 344.66,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "basic",
+        "trial": 1,
+        "latency_ms": 11.03,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 4,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "lexical",
+            "status": "ready",
+            "candidate_count": 0
+          },
+          {
+            "stage": "dense",
+            "status": "ready",
+            "model_id": "intfloat/multilingual-e5-small",
+            "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+            "dimensions": 384,
+            "candidate_count": 8,
+            "selected_document_count": 4,
+            "matching_generation_count": 4
+          },
+          {
+            "stage": "fusion",
+            "status": "ready",
+            "rrf_k": 60
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "basic",
+        "trial": 2,
+        "latency_ms": 9.86,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 4,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "lexical",
+            "status": "ready",
+            "candidate_count": 0
+          },
+          {
+            "stage": "dense",
+            "status": "ready",
+            "model_id": "intfloat/multilingual-e5-small",
+            "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+            "dimensions": 384,
+            "candidate_count": 8,
+            "selected_document_count": 4,
+            "matching_generation_count": 4
+          },
+          {
+            "stage": "fusion",
+            "status": "ready",
+            "rrf_k": 60
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "multi_query",
+        "trial": 1,
+        "latency_ms": 24.19,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 3,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "योजना S1 सक्रिय आय पात्रता सीमा",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 वार्षिक अधिकतम समावेशी",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 6
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 37,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 24.15,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "multi_query",
+        "trial": 2,
+        "latency_ms": 22.88,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 3,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "योजना S1 सक्रिय आय पात्रता सीमा",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 वार्षिक अधिकतम समावेशी",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 6
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 37,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 22.84,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "rerank",
+        "trial": 1,
+        "latency_ms": 301.69,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 4
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "ready",
+            "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+            "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+            "candidate_count": 8,
+            "ranks": [
+              {
+                "chunk_id": "e4c32426-3965-4c44-a816-a30bec350f38",
+                "before": 4,
+                "after": 1,
+                "score": 1.3054277896881104
+              },
+              {
+                "chunk_id": "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44",
+                "before": 3,
+                "after": 2,
+                "score": 1.1699656248092651
+              },
+              {
+                "chunk_id": "29b07551-0871-4730-b8b5-13109c8d8d47",
+                "before": 5,
+                "after": 3,
+                "score": 0.8725987672805786
+              },
+              {
+                "chunk_id": "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080",
+                "before": 6,
+                "after": 4,
+                "score": 0.869583010673523
+              },
+              {
+                "chunk_id": "a951a00a-6469-4ead-8d05-f7097ce8b7ea",
+                "before": 2,
+                "after": 5,
+                "score": 0.7243476510047913
+              },
+              {
+                "chunk_id": "615df14e-a046-4a85-94ba-a616bedb3cb7",
+                "before": 1,
+                "after": 6,
+                "score": 0.551514208316803
+              },
+              {
+                "chunk_id": "8c7419b4-874f-4eab-bf3e-7f085b4da7c0",
+                "before": 7,
+                "after": 7,
+                "score": -1.7825487852096558
+              },
+              {
+                "chunk_id": "442411e8-2628-4fe0-bf5f-12f4b938f8fa",
+                "before": 8,
+                "after": 8,
+                "score": -1.8000574111938477
+              }
+            ],
+            "latency_ms": 293.94
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 301.65,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "rerank",
+        "trial": 2,
+        "latency_ms": 316.1,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 4
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "ready",
+            "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+            "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+            "candidate_count": 8,
+            "ranks": [
+              {
+                "chunk_id": "e4c32426-3965-4c44-a816-a30bec350f38",
+                "before": 4,
+                "after": 1,
+                "score": 1.3054277896881104
+              },
+              {
+                "chunk_id": "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44",
+                "before": 3,
+                "after": 2,
+                "score": 1.1699656248092651
+              },
+              {
+                "chunk_id": "29b07551-0871-4730-b8b5-13109c8d8d47",
+                "before": 5,
+                "after": 3,
+                "score": 0.8725987672805786
+              },
+              {
+                "chunk_id": "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080",
+                "before": 6,
+                "after": 4,
+                "score": 0.869583010673523
+              },
+              {
+                "chunk_id": "a951a00a-6469-4ead-8d05-f7097ce8b7ea",
+                "before": 2,
+                "after": 5,
+                "score": 0.7243476510047913
+              },
+              {
+                "chunk_id": "615df14e-a046-4a85-94ba-a616bedb3cb7",
+                "before": 1,
+                "after": 6,
+                "score": 0.551514208316803
+              },
+              {
+                "chunk_id": "8c7419b4-874f-4eab-bf3e-7f085b4da7c0",
+                "before": 7,
+                "after": 7,
+                "score": -1.7825487852096558
+              },
+              {
+                "chunk_id": "442411e8-2628-4fe0-bf5f-12f4b938f8fa",
+                "before": 8,
+                "after": 8,
+                "score": -1.8000574111938477
+              }
+            ],
+            "latency_ms": 305.58
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 316.05,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "expansion",
+        "trial": 1,
+        "latency_ms": 24.29,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 4,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": true,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 24.24,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "expansion",
+        "trial": 2,
+        "latency_ms": 16.53,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 4,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": true,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 16.48,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "compression",
+        "trial": 1,
+        "latency_ms": 7.02,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 4,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3294,
+        "degraded": true,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "partial",
+            "expanded": false,
+            "compression": "extractive-v1",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 5638,
+            "token_upper_bound": 7880,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 6.98,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "compression",
+        "trial": 2,
+        "latency_ms": 8.33,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 4,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3294,
+        "degraded": true,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "partial",
+            "expanded": false,
+            "compression": "extractive-v1",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 5638,
+            "token_upper_bound": 7880,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 8.3,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "consensus",
+        "trial": 1,
+        "latency_ms": 21.97,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 3,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "योजना S1 सक्रिय आय पात्रता सीमा",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 वार्षिक अधिकतम समावेशी",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 6
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 37,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": true,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 21.93,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "consensus",
+        "trial": 2,
+        "latency_ms": 21.53,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 3,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "योजना S1 सक्रिय आय पात्रता सीमा",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 वार्षिक अधिकतम समावेशी",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 6
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 37,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": true,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 21.48,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "coverage",
+        "trial": 1,
+        "latency_ms": 6.46,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 3,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 6.43,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "coverage",
+        "trial": 2,
+        "latency_ms": 6.5,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 5,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 3,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 0.75,
+          "10": 1.0
+        },
+        "excerpt_characters": 3810,
+        "degraded": false,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "expansion_override",
+            "status": "skipped"
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "skipped",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 8,
+            "returned_passages": 8,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "skipped"
+          },
+          {
+            "stage": "context",
+            "status": "ready",
+            "expanded": false,
+            "compression": "off",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 3810,
+            "token_upper_bound": 5308,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 6.47,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "combined",
+        "trial": 1,
+        "latency_ms": 314.18,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 5
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3294,
+        "degraded": true,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "योजना S1 सक्रिय आय पात्रता सीमा",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 वार्षिक अधिकतम समावेशी",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 6
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 37,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "ready",
+            "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+            "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+            "candidate_count": 8,
+            "ranks": [
+              {
+                "chunk_id": "e4c32426-3965-4c44-a816-a30bec350f38",
+                "before": 3,
+                "after": 1,
+                "score": 1.3054277896881104
+              },
+              {
+                "chunk_id": "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44",
+                "before": 4,
+                "after": 2,
+                "score": 1.1699656248092651
+              },
+              {
+                "chunk_id": "29b07551-0871-4730-b8b5-13109c8d8d47",
+                "before": 5,
+                "after": 3,
+                "score": 0.8725987672805786
+              },
+              {
+                "chunk_id": "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080",
+                "before": 6,
+                "after": 4,
+                "score": 0.869583010673523
+              },
+              {
+                "chunk_id": "a951a00a-6469-4ead-8d05-f7097ce8b7ea",
+                "before": 2,
+                "after": 5,
+                "score": 0.7243476510047913
+              },
+              {
+                "chunk_id": "615df14e-a046-4a85-94ba-a616bedb3cb7",
+                "before": 1,
+                "after": 6,
+                "score": 0.551514208316803
+              },
+              {
+                "chunk_id": "8c7419b4-874f-4eab-bf3e-7f085b4da7c0",
+                "before": 7,
+                "after": 7,
+                "score": -1.7825487852096558
+              },
+              {
+                "chunk_id": "442411e8-2628-4fe0-bf5f-12f4b938f8fa",
+                "before": 8,
+                "after": 8,
+                "score": -1.8000574111938477
+              }
+            ],
+            "latency_ms": 279.08
+          },
+          {
+            "stage": "context",
+            "status": "partial",
+            "expanded": true,
+            "compression": "extractive-v1",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 5638,
+            "token_upper_bound": 7880,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 314.13,
+            "model_calls": 0
+          }
+        ]
+      },
+      {
+        "language": "hi",
+        "stage": "combined",
+        "trial": 2,
+        "latency_ms": 320.87,
+        "ranks": {
+          "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+          "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+          "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+          "95db3000-6990-4fc4-b81b-1678d60b8b94": 5
+        },
+        "recall_at": {
+          "3": 0.5,
+          "5": 1.0,
+          "10": 1.0
+        },
+        "excerpt_characters": 3294,
+        "degraded": true,
+        "model_calls": 0,
+        "trace": [
+          {
+            "stage": "rewrite",
+            "status": "skipped",
+            "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+          },
+          {
+            "stage": "expansion",
+            "status": "ready",
+            "rejected_variants": 0,
+            "queries": [
+              "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+              "योजना S1 सक्रिय आय पात्रता सीमा",
+              "S1 वार्षिक अधिकतम समावेशी"
+            ],
+            "method": "keyword-alias-v1",
+            "model_calls": 0
+          },
+          {
+            "stage": "retrieval",
+            "variant": 0,
+            "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "lexical_any": false,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 0
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 1,
+            "query": "योजना S1 सक्रिय आय पात्रता सीमा",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 7
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "retrieval",
+            "variant": 2,
+            "query": "S1 वार्षिक अधिकतम समावेशी",
+            "lexical_any": true,
+            "stages": [
+              {
+                "stage": "lexical",
+                "status": "ready",
+                "candidate_count": 6
+              },
+              {
+                "stage": "dense",
+                "status": "ready",
+                "model_id": "intfloat/multilingual-e5-small",
+                "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                "dimensions": 384,
+                "candidate_count": 8,
+                "selected_document_count": 4,
+                "matching_generation_count": 4
+              },
+              {
+                "stage": "fusion",
+                "status": "ready",
+                "rrf_k": 60
+              }
+            ],
+            "candidates": 8
+          },
+          {
+            "stage": "multi_query",
+            "status": "ready",
+            "failures": [],
+            "candidate_budget": 60,
+            "candidate_count": 37,
+            "returned_passages": 24,
+            "unique_count": 8,
+            "consensus": false,
+            "model_calls": 0
+          },
+          {
+            "stage": "rerank",
+            "status": "ready",
+            "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+            "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+            "candidate_count": 8,
+            "ranks": [
+              {
+                "chunk_id": "e4c32426-3965-4c44-a816-a30bec350f38",
+                "before": 3,
+                "after": 1,
+                "score": 1.3054277896881104
+              },
+              {
+                "chunk_id": "f3c2c33d-31f0-4105-b9ce-c6c6c7db1d44",
+                "before": 4,
+                "after": 2,
+                "score": 1.1699656248092651
+              },
+              {
+                "chunk_id": "29b07551-0871-4730-b8b5-13109c8d8d47",
+                "before": 5,
+                "after": 3,
+                "score": 0.8725987672805786
+              },
+              {
+                "chunk_id": "ee2a21ce-cbd6-41f0-a9c2-1b9834eca080",
+                "before": 6,
+                "after": 4,
+                "score": 0.869583010673523
+              },
+              {
+                "chunk_id": "a951a00a-6469-4ead-8d05-f7097ce8b7ea",
+                "before": 2,
+                "after": 5,
+                "score": 0.7243476510047913
+              },
+              {
+                "chunk_id": "615df14e-a046-4a85-94ba-a616bedb3cb7",
+                "before": 1,
+                "after": 6,
+                "score": 0.551514208316803
+              },
+              {
+                "chunk_id": "8c7419b4-874f-4eab-bf3e-7f085b4da7c0",
+                "before": 7,
+                "after": 7,
+                "score": -1.7825487852096558
+              },
+              {
+                "chunk_id": "442411e8-2628-4fe0-bf5f-12f4b938f8fa",
+                "before": 8,
+                "after": 8,
+                "score": -1.8000574111938477
+              }
+            ],
+            "latency_ms": 285.43
+          },
+          {
+            "stage": "context",
+            "status": "partial",
+            "expanded": true,
+            "compression": "extractive-v1",
+            "documents": 4,
+            "passages": 8,
+            "character_count": 5638,
+            "token_upper_bound": 7880,
+            "token_budget": 24000
+          },
+          {
+            "stage": "pipeline",
+            "version": "advanced-retrieval-v1",
+            "latency_ms": 320.82,
+            "model_calls": 0
+          }
+        ]
+      }
+    ],
+    "summary": {
+      "cache_hit": true,
+      "fingerprint": "f9de2747854b687c653f57e16cf7a9715908b775c39fb9971f348f45d9762b96",
+      "latency_ms": 25.1,
+      "method": {
+        "algorithm": "extractive-summary-v3",
+        "model": "none",
+        "prompt_version": "none",
+        "model_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "estimated_cost": 0,
+        "cost_currency": "USD"
+      },
+      "support_count": 6
+    },
+    "peak_process_memory_bytes": 1608712192
+  },
+  "live_trials": [
+    {
+      "language": "en-IN",
+      "trial": 1,
+      "run_id": "4cdbf028-7e7a-48a2-8dbc-dc2d24f3dcb6",
+      "thread_id": "51572903-ac68-436d-ba52-0a2b6f9e60e0",
+      "state": "completed",
+      "latency_ms": 13132.89,
+      "dependent_hop": true,
+      "summary_ran": true,
+      "outcome": {
+        "text": "Scheme S7 determines net household income using the NIRVAAN definition. That definition explicitly states that pension is **included** and housing aid is **excluded**. Therefore, under Scheme S7 pension counts toward income while housing aid does not.\n\n**Evidence**:\n- The Scheme S7 eligibility passage shows it relies on the NIRVAAN definition for net household income【evidence_ids:9bcd83d9-7fa1-4f33-a7a6-e4bd9f01bdd0】.\n- The NIRVAAN definition in the handbook states: “Pension is included. Housing aid is excluded.”【evidence_ids:3ba7791a-c86a-48a8-81af-db302f6cb870】.",
+        "usage": {
+          "total_tokens": 16108,
+          "prompt_tokens": 14996,
+          "completion_tokens": 1112
+        },
+        "cleanup": "complete",
+        "tool_calls": 3,
+        "model_calls": 4,
+        "artifact_ids": [],
+        "evidence_ids": [
+          "9bcd83d9-7fa1-4f33-a7a6-e4bd9f01bdd0",
+          "3ba7791a-c86a-48a8-81af-db302f6cb870"
+        ],
+        "clarification": false,
+        "prompt_version": "analyst-v3"
+      },
+      "tools": [
+        {
+          "name": "search_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": [
+            {
+              "stage": "rewrite",
+              "status": "skipped",
+              "original": "Scheme S7 eligibility"
+            },
+            {
+              "stage": "expansion",
+              "method": "keyword-alias-v1",
+              "status": "ready",
+              "queries": [
+                "Scheme S7 eligibility"
+              ],
+              "model_calls": 0,
+              "rejected_variants": 0
+            },
+            {
+              "query": "Scheme S7 eligibility",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 1
+                }
+              ],
+              "variant": 0,
+              "candidates": 1,
+              "lexical_any": false
+            },
+            {
+              "stage": "multi_query",
+              "status": "skipped",
+              "failures": [],
+              "consensus": false,
+              "model_calls": 0,
+              "unique_count": 1,
+              "candidate_count": 1,
+              "candidate_budget": 60
+            },
+            {
+              "stage": "rerank",
+              "status": "skipped"
+            },
+            {
+              "stage": "context",
+              "status": "ready",
+              "expanded": false,
+              "passages": 1,
+              "documents": 1,
+              "compression": "off",
+              "token_budget": 12000,
+              "character_count": 159,
+              "token_upper_bound": 159
+            },
+            {
+              "stage": "pipeline",
+              "version": "advanced-retrieval-v1",
+              "latency_ms": 11.66,
+              "model_calls": 0
+            }
+          ]
+        },
+        {
+          "name": "search_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": [
+            {
+              "query": "NIRVAAN definition NIRVAAN definition",
+              "stage": "dependent_hop",
+              "status": "ready",
+              "original_query": "NIRVAAN definition",
+              "discovered_terms": [
+                "NIRVAAN definition"
+              ],
+              "supporting_evidence_ids": [
+                "9bcd83d9-7fa1-4f33-a7a6-e4bd9f01bdd0"
+              ]
+            },
+            {
+              "stage": "rewrite",
+              "status": "skipped",
+              "original": "NIRVAAN definition NIRVAAN definition"
+            },
+            {
+              "stage": "expansion",
+              "method": "keyword-alias-v1",
+              "status": "ready",
+              "queries": [
+                "NIRVAAN definition NIRVAAN definition"
+              ],
+              "model_calls": 0,
+              "rejected_variants": 0
+            },
+            {
+              "query": "NIRVAAN definition NIRVAAN definition",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 2
+                }
+              ],
+              "variant": 0,
+              "candidates": 2,
+              "lexical_any": false
+            },
+            {
+              "stage": "multi_query",
+              "status": "skipped",
+              "failures": [],
+              "consensus": false,
+              "model_calls": 0,
+              "unique_count": 2,
+              "candidate_count": 2,
+              "candidate_budget": 60
+            },
+            {
+              "ranks": [
+                {
+                  "after": 1,
+                  "score": 1.1052783727645874,
+                  "before": 1,
+                  "chunk_id": "c8b4e500-47c3-4820-8efc-75742bd3d806"
+                },
+                {
+                  "after": 2,
+                  "score": 0.21957927942276,
+                  "before": 2,
+                  "chunk_id": "17176229-a7da-4f8e-85cb-04aea0570b90"
+                }
+              ],
+              "stage": "rerank",
+              "status": "ready",
+              "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+              "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+              "latency_ms": 506.57,
+              "candidate_count": 2
+            },
+            {
+              "stage": "context",
+              "status": "ready",
+              "expanded": true,
+              "passages": 2,
+              "documents": 2,
+              "compression": "extractive-v1",
+              "token_budget": 12000,
+              "character_count": 282,
+              "token_upper_bound": 282
+            },
+            {
+              "stage": "pipeline",
+              "version": "advanced-retrieval-v1",
+              "latency_ms": 524.21,
+              "model_calls": 0
+            }
+          ]
+        },
+        {
+          "name": "summarize_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": []
+        }
+      ]
+    },
+    {
+      "language": "en-IN",
+      "trial": 2,
+      "run_id": "9ac81c04-6655-4936-adb4-37018b7b0885",
+      "thread_id": "2093fff8-f62c-437e-83ed-26031b75c0ea",
+      "state": "completed",
+      "latency_ms": 11113.08,
+      "dependent_hop": true,
+      "summary_ran": true,
+      "outcome": {
+        "text": "Scheme S7 applies the NIRVAAN definition of net household income. The definition states that pension is included and housing aid is excluded. Therefore, under Scheme S7 pension counts toward eligibility while housing aid does not.",
+        "usage": {
+          "total_tokens": 24798,
+          "prompt_tokens": 23603,
+          "completion_tokens": 1195
+        },
+        "cleanup": "complete",
+        "tool_calls": 3,
+        "model_calls": 5,
+        "artifact_ids": [],
+        "evidence_ids": [
+          "ccd7416a-5b35-48c6-b9ca-b2ee99f725df",
+          "d9bb1b0c-1475-4f01-9439-05c0541276b9",
+          "a4b364a5-76a5-4952-b1cc-03b811cc0ea7"
+        ],
+        "clarification": false,
+        "prompt_version": "analyst-v3"
+      },
+      "tools": [
+        {
+          "name": "search_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": [
+            {
+              "stage": "rewrite",
+              "status": "skipped",
+              "original": "Scheme S7 eligibility"
+            },
+            {
+              "stage": "expansion",
+              "method": "keyword-alias-v1",
+              "status": "ready",
+              "queries": [
+                "Scheme S7 eligibility"
+              ],
+              "model_calls": 0,
+              "rejected_variants": 0
+            },
+            {
+              "query": "Scheme S7 eligibility",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 1
+                }
+              ],
+              "variant": 0,
+              "candidates": 1,
+              "lexical_any": false
+            },
+            {
+              "stage": "multi_query",
+              "status": "skipped",
+              "failures": [],
+              "consensus": false,
+              "model_calls": 0,
+              "unique_count": 1,
+              "candidate_count": 1,
+              "candidate_budget": 60
+            },
+            {
+              "stage": "rerank",
+              "status": "skipped"
+            },
+            {
+              "stage": "context",
+              "status": "ready",
+              "expanded": false,
+              "passages": 1,
+              "documents": 1,
+              "compression": "off",
+              "token_budget": 12000,
+              "character_count": 159,
+              "token_upper_bound": 159
+            },
+            {
+              "stage": "pipeline",
+              "version": "advanced-retrieval-v1",
+              "latency_ms": 3.3,
+              "model_calls": 0
+            }
+          ]
+        },
+        {
+          "name": "search_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": [
+            {
+              "query": "NIRVAAN definition NIRVAAN definition",
+              "stage": "dependent_hop",
+              "status": "ready",
+              "original_query": "NIRVAAN definition",
+              "discovered_terms": [
+                "NIRVAAN definition"
+              ],
+              "supporting_evidence_ids": [
+                "ccd7416a-5b35-48c6-b9ca-b2ee99f725df"
+              ]
+            },
+            {
+              "stage": "rewrite",
+              "status": "skipped",
+              "original": "NIRVAAN definition NIRVAAN definition"
+            },
+            {
+              "stage": "expansion",
+              "method": "keyword-alias-v1",
+              "status": "ready",
+              "queries": [
+                "NIRVAAN definition NIRVAAN definition"
+              ],
+              "model_calls": 0,
+              "rejected_variants": 0
+            },
+            {
+              "query": "NIRVAAN definition NIRVAAN definition",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 2
+                },
+                {
+                  "stage": "dense",
+                  "status": "ready",
+                  "model_id": "intfloat/multilingual-e5-small",
+                  "dimensions": 384,
+                  "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+                  "candidate_count": 3,
+                  "selected_document_count": 3,
+                  "matching_generation_count": 3
+                },
+                {
+                  "rrf_k": 60,
+                  "stage": "fusion",
+                  "status": "ready"
+                }
+              ],
+              "variant": 0,
+              "candidates": 3,
+              "lexical_any": false
+            },
+            {
+              "stage": "multi_query",
+              "status": "skipped",
+              "failures": [],
+              "consensus": false,
+              "model_calls": 0,
+              "unique_count": 3,
+              "candidate_count": 3,
+              "candidate_budget": 60
+            },
+            {
+              "ranks": [
+                {
+                  "after": 1,
+                  "score": 1.1052783727645874,
+                  "before": 1,
+                  "chunk_id": "c8b4e500-47c3-4820-8efc-75742bd3d806"
+                },
+                {
+                  "after": 2,
+                  "score": 0.9176703691482544,
+                  "before": 3,
+                  "chunk_id": "15d3a693-d740-447f-b0de-95e00bd0e6b2"
+                },
+                {
+                  "after": 3,
+                  "score": 0.21957927942276,
+                  "before": 2,
+                  "chunk_id": "17176229-a7da-4f8e-85cb-04aea0570b90"
+                }
+              ],
+              "stage": "rerank",
+              "status": "ready",
+              "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+              "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+              "latency_ms": 31.61,
+              "candidate_count": 3
+            },
+            {
+              "stage": "context",
+              "status": "ready",
+              "expanded": true,
+              "passages": 3,
+              "documents": 3,
+              "compression": "extractive-v1",
+              "token_budget": 12000,
+              "character_count": 387,
+              "token_upper_bound": 537
+            },
+            {
+              "stage": "pipeline",
+              "version": "advanced-retrieval-v1",
+              "latency_ms": 55.48,
+              "model_calls": 0
+            }
+          ]
+        },
+        {
+          "name": "summarize_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": []
+        }
+      ]
+    },
+    {
+      "language": "hi-IN",
+      "trial": 1,
+      "run_id": "48ab302c-1908-4cad-8bc8-9a0705a11f99",
+      "thread_id": "b4fd30c6-dfa1-4ad9-acc8-b0703c29d0a0",
+      "state": "completed",
+      "latency_ms": 16182.41,
+      "dependent_hop": true,
+      "summary_ran": true,
+      "outcome": {
+        "text": "Scheme S7 के लिए NIRVAAN परिभाषा में पेंशन शामिल है और आवास सहायता बाहर रखी गई है।",
+        "usage": {
+          "total_tokens": 26495,
+          "prompt_tokens": 24874,
+          "completion_tokens": 1621
+        },
+        "cleanup": "complete",
+        "tool_calls": 5,
+        "model_calls": 6,
+        "artifact_ids": [],
+        "evidence_ids": [
+          "615d496b-ff09-4ebd-a3e5-2d06ac6473af",
+          "14d542f3-e9e0-44ac-ab62-ea10bfa66dd1"
+        ],
+        "clarification": false,
+        "prompt_version": "analyst-v3"
+      },
+      "tools": [
+        {
+          "name": "search_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": [
+            {
+              "stage": "rewrite",
+              "status": "skipped",
+              "original": "Scheme S7 eligibility"
+            },
+            {
+              "stage": "expansion",
+              "method": "keyword-alias-v1",
+              "status": "ready",
+              "queries": [
+                "Scheme S7 eligibility"
+              ],
+              "model_calls": 0,
+              "rejected_variants": 0
+            },
+            {
+              "query": "Scheme S7 eligibility",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 1
+                }
+              ],
+              "variant": 0,
+              "candidates": 1,
+              "lexical_any": false
+            },
+            {
+              "stage": "multi_query",
+              "status": "skipped",
+              "failures": [],
+              "consensus": false,
+              "model_calls": 0,
+              "unique_count": 1,
+              "candidate_count": 1,
+              "candidate_budget": 60
+            },
+            {
+              "stage": "rerank",
+              "status": "skipped"
+            },
+            {
+              "stage": "context",
+              "status": "ready",
+              "expanded": false,
+              "passages": 1,
+              "documents": 1,
+              "compression": "off",
+              "token_budget": 12000,
+              "character_count": 159,
+              "token_upper_bound": 159
+            },
+            {
+              "stage": "pipeline",
+              "version": "advanced-retrieval-v1",
+              "latency_ms": 9.2,
+              "model_calls": 0
+            }
+          ]
+        },
+        {
+          "name": "search_documents",
+          "status": "rejected",
+          "result_status": null,
+          "trace": []
+        },
+        {
+          "name": "search_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": [
+            {
+              "query": "NIRVAAN definition NIRVAAN definition",
+              "stage": "dependent_hop",
+              "status": "ready",
+              "original_query": "NIRVAAN definition",
+              "discovered_terms": [
+                "NIRVAAN definition"
+              ],
+              "supporting_evidence_ids": [
+                "14d542f3-e9e0-44ac-ab62-ea10bfa66dd1"
+              ]
+            },
+            {
+              "stage": "rewrite",
+              "status": "skipped",
+              "original": "NIRVAAN definition NIRVAAN definition"
+            },
+            {
+              "stage": "expansion",
+              "method": "keyword-alias-v1",
+              "status": "ready",
+              "queries": [
+                "NIRVAAN definition NIRVAAN definition"
+              ],
+              "model_calls": 0,
+              "rejected_variants": 0
+            },
+            {
+              "query": "NIRVAAN definition NIRVAAN definition",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 2
+                }
+              ],
+              "variant": 0,
+              "candidates": 2,
+              "lexical_any": false
+            },
+            {
+              "stage": "multi_query",
+              "status": "skipped",
+              "failures": [],
+              "consensus": false,
+              "model_calls": 0,
+              "unique_count": 2,
+              "candidate_count": 2,
+              "candidate_budget": 60
+            },
+            {
+              "ranks": [
+                {
+                  "after": 1,
+                  "score": 1.1052783727645874,
+                  "before": 1,
+                  "chunk_id": "c8b4e500-47c3-4820-8efc-75742bd3d806"
+                },
+                {
+                  "after": 2,
+                  "score": 0.21957927942276,
+                  "before": 2,
+                  "chunk_id": "17176229-a7da-4f8e-85cb-04aea0570b90"
+                }
+              ],
+              "stage": "rerank",
+              "status": "ready",
+              "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+              "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+              "latency_ms": 38.68,
+              "candidate_count": 2
+            },
+            {
+              "stage": "context",
+              "status": "ready",
+              "expanded": true,
+              "passages": 2,
+              "documents": 2,
+              "compression": "extractive-v1",
+              "token_budget": 12000,
+              "character_count": 282,
+              "token_upper_bound": 282
+            },
+            {
+              "stage": "pipeline",
+              "version": "advanced-retrieval-v1",
+              "latency_ms": 58.55,
+              "model_calls": 0
+            }
+          ]
+        },
+        {
+          "name": "summarize_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": []
+        }
+      ]
+    },
+    {
+      "language": "hi-IN",
+      "trial": 2,
+      "run_id": "948b26fe-2af4-4fe9-8cde-741396e6e276",
+      "thread_id": "ae064848-cb6e-4a15-9d95-ae447fd7da6b",
+      "state": "completed",
+      "latency_ms": 19237.11,
+      "dependent_hop": true,
+      "summary_ran": true,
+      "outcome": {
+        "text": "Scheme S7 के तहत NIRVAAN परिभाषा के अनुसार, पेंशन शामिल है और आवास सहायता बाहर रखी गई है।",
+        "usage": {
+          "total_tokens": 34343,
+          "prompt_tokens": 32291,
+          "completion_tokens": 2052
+        },
+        "cleanup": "complete",
+        "tool_calls": 6,
+        "model_calls": 7,
+        "artifact_ids": [],
+        "evidence_ids": [
+          "7757061d-3c00-4f6d-be30-bab67ea9164b",
+          "af59f148-82d5-407a-a3bf-90f51fa6d57d"
+        ],
+        "clarification": false,
+        "prompt_version": "analyst-v3"
+      },
+      "tools": [
+        {
+          "name": "search_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": [
+            {
+              "stage": "rewrite",
+              "status": "skipped",
+              "original": "Scheme S7 eligibility"
+            },
+            {
+              "stage": "expansion",
+              "method": "keyword-alias-v1",
+              "status": "ready",
+              "queries": [
+                "Scheme S7 eligibility"
+              ],
+              "model_calls": 0,
+              "rejected_variants": 0
+            },
+            {
+              "query": "Scheme S7 eligibility",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 1
+                }
+              ],
+              "variant": 0,
+              "candidates": 1,
+              "lexical_any": false
+            },
+            {
+              "stage": "multi_query",
+              "status": "skipped",
+              "failures": [],
+              "consensus": false,
+              "model_calls": 0,
+              "unique_count": 1,
+              "candidate_count": 1,
+              "candidate_budget": 60
+            },
+            {
+              "stage": "rerank",
+              "status": "skipped"
+            },
+            {
+              "stage": "context",
+              "status": "ready",
+              "expanded": false,
+              "passages": 1,
+              "documents": 1,
+              "compression": "off",
+              "token_budget": 12000,
+              "character_count": 159,
+              "token_upper_bound": 159
+            },
+            {
+              "stage": "pipeline",
+              "version": "advanced-retrieval-v1",
+              "latency_ms": 10.16,
+              "model_calls": 0
+            }
+          ]
+        },
+        {
+          "name": "source_passage",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": {
+            "stage": "selected_passage",
+            "neighbors": 2
+          }
+        },
+        {
+          "name": "search_documents",
+          "status": "rejected",
+          "result_status": null,
+          "trace": []
+        },
+        {
+          "name": "search_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": [
+            {
+              "query": "definition NIRVAAN definition for net household income",
+              "stage": "dependent_hop",
+              "status": "ready",
+              "original_query": "definition",
+              "discovered_terms": [
+                "NIRVAAN definition for net household income"
+              ],
+              "supporting_evidence_ids": [
+                "088a3bd4-3365-456e-8735-01d3bc35b25f"
+              ]
+            },
+            {
+              "stage": "rewrite",
+              "status": "skipped",
+              "original": "definition NIRVAAN definition for net household income"
+            },
+            {
+              "stage": "expansion",
+              "method": "keyword-alias-v1",
+              "status": "ready",
+              "queries": [
+                "definition NIRVAAN definition for net household income",
+                "definition NIRVAAN definition net household income"
+              ],
+              "model_calls": 0,
+              "rejected_variants": 0
+            },
+            {
+              "query": "definition NIRVAAN definition for net household income",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 2
+                }
+              ],
+              "variant": 0,
+              "candidates": 2,
+              "lexical_any": false
+            },
+            {
+              "query": "definition NIRVAAN definition net household income",
+              "stage": "retrieval",
+              "stages": [
+                {
+                  "stage": "lexical",
+                  "status": "ready",
+                  "candidate_count": 3
+                }
+              ],
+              "variant": 1,
+              "candidates": 3,
+              "lexical_any": true
+            },
+            {
+              "stage": "multi_query",
+              "status": "ready",
+              "failures": [],
+              "consensus": false,
+              "model_calls": 0,
+              "unique_count": 3,
+              "candidate_count": 5,
+              "candidate_budget": 60
+            },
+            {
+              "ranks": [
+                {
+                  "after": 1,
+                  "score": 1.368044376373291,
+                  "before": 2,
+                  "chunk_id": "c8b4e500-47c3-4820-8efc-75742bd3d806"
+                },
+                {
+                  "after": 2,
+                  "score": 1.0073829889297485,
+                  "before": 3,
+                  "chunk_id": "15d3a693-d740-447f-b0de-95e00bd0e6b2"
+                },
+                {
+                  "after": 3,
+                  "score": 0.45858561992645264,
+                  "before": 1,
+                  "chunk_id": "17176229-a7da-4f8e-85cb-04aea0570b90"
+                }
+              ],
+              "stage": "rerank",
+              "status": "ready",
+              "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+              "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+              "latency_ms": 43.46,
+              "candidate_count": 3
+            },
+            {
+              "stage": "context",
+              "status": "ready",
+              "expanded": true,
+              "passages": 3,
+              "documents": 3,
+              "compression": "extractive-v1",
+              "token_budget": 12000,
+              "character_count": 387,
+              "token_upper_bound": 537
+            },
+            {
+              "stage": "pipeline",
+              "version": "advanced-retrieval-v1",
+              "latency_ms": 73.85,
+              "model_calls": 0
+            }
+          ]
+        },
+        {
+          "name": "summarize_documents",
+          "status": "completed",
+          "result_status": "ok",
+          "trace": []
+        }
+      ]
+    }
+  ],
+  "source_integrity": true,
+  "historical_artifact_followup": {
+    "run_id": "be15edaf-c3bc-407c-a3fb-2577587f3b92",
+    "artifact_id": "13ceb5f2-914c-54a3-b3a2-3264387cd70d",
+    "state": "completed",
+    "latency_ms": 6096.9,
+    "sandbox_created": false,
+    "outcome": {
+      "text": "proof.csv के अनुसार, count कॉलम का मान 2 है और total_inr कॉलम का मान 25000 है।",
+      "usage": {
+        "total_tokens": 5828,
+        "prompt_tokens": 5410,
+        "completion_tokens": 418
+      },
+      "cleanup": "complete",
+      "tool_calls": 1,
+      "model_calls": 3,
+      "artifact_ids": [
+        "13ceb5f2-914c-54a3-b3a2-3264387cd70d"
+      ],
+      "evidence_ids": [],
+      "clarification": false,
+      "prompt_version": "analyst-v3"
+    },
+    "tools": [
+      "inspect_artifact"
+    ],
+    "answer_language_requested": "en-IN",
+    "answer_language_observed": "hi-IN",
+    "language_adherence_passed": false
+  },
+  "validation": {
+    "deterministic_tests_passed": 179,
+    "infrastructure_tests_passed": 34,
+    "infrastructure_tests_skipped": 11,
+    "frontend_typecheck_build_format": "passed",
+    "black_mypy": "passed",
+    "alembic_check": "no pending changes",
+    "full_browser_qa": "deferred by user",
+    "preflight_failures": [
+      "Initial host API unavailable; started foreground host services before live trials",
+      "One newly added trace API fixture omitted a required decision field; fixed before final checks"
+    ],
+    "live_timeouts": 0
+  },
+  "reranker_assets": {
+    "model_id": "jinaai/jina-reranker-v2-base-multilingual",
+    "repo_id": "jinaai/jina-reranker-v2-base-multilingual",
+    "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+    "model_file": "onnx/model.onnx",
+    "upstream_model_file": "onnx/model_quantized.onnx",
+    "license": "CC-BY-NC-4.0",
+    "quantization": "int8",
+    "sha256": {
+      "config.json": "af16fe07e9b623d5a47b42bde0daba1b6510344212c03363145c51a81e9e4572",
+      "tokenizer.json": "3a56def25aa40facc030ea8b0b87f3688e4b3c39eb8b45d5702b3a1300fe2a20",
+      "tokenizer_config.json": "4bf8eb7ce5367af6f7bcef4bef6fa5945c345ee5a7ecbe6464712a7d96f98015",
+      "special_tokens_map.json": "8c785abebea9ae3257b61681b4e6fd8365ceafde980c21970d001e834cf10835",
+      "onnx/model.onnx": "c5220cf8fe023f8aa0ed2a3eb787d4451a7f17cf53f6b787e35718dd4b8815c3"
+    }
+  },
+  "runtime_versions": {
+    "fastembed": "0.7.4",
+    "onnxruntime": "1.30.0",
+    "sqlalchemy": "2.0.54"
+  },
+  "default_decision": {
+    "profile": "basic",
+    "rerank": false,
+    "reason": "Multi-query alone did not improve recall at 3 and reduced English recall at 5 on the synthetic corpus. Reranking improves Hindi recall at 5 at additional local inference cost."
+  }
+}

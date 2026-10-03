@@ -129,6 +129,17 @@ def rescore(report: dict[str, Any], cases: list[EvaluationCase]) -> dict[str, An
     current = {case.id: case for case in cases}
     original = {case["id"]: case for case in report["identity"]["cases"]}
     revised = deepcopy(report)
+    revised["cases"] = [
+        {
+            "case_id": case.id,
+            "question": case.question,
+            "language": case.language,
+            "tags": case.tags,
+            "review": case.review.model_dump(),
+            "rubric": case.expectations.rubric,
+        }
+        for case in cases
+    ]
     for trial in revised["trials"]:
         case = current[trial["case_id"]]
         old_case = original[case.id]

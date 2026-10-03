@@ -67,6 +67,7 @@ class Checkpoint:
                 "cases": [
                     {
                         "case_id": c.id,
+                        "question": c.question,
                         "language": c.language,
                         "tags": c.tags,
                         "review": c.review.model_dump(),

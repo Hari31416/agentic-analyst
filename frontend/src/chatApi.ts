@@ -1,4 +1,4 @@
-export type AnswerLanguage = 'en-IN' | 'hi-IN'
+export type AnswerLanguage = string
 
 export type ChatMessage = {
   id: string

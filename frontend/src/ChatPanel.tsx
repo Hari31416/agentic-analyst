@@ -1,4 +1,5 @@
 import {
+  ChangeEvent,
   FormEvent,
   KeyboardEvent,
   ReactNode,
@@ -20,6 +21,8 @@ import {
   FileText,
   Globe2,
   LoaderCircle,
+  Mic,
+  Square,
   RotateCcw,
   ShieldCheck,
   Sparkles,
@@ -36,6 +39,8 @@ import {
 } from './chatApi'
 import { DatasetSummary, sourceKindLabel } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
+import { LanguageCapabilities, languageApi } from './languageApi'
+import { UiLanguage, UiTextKey, uiText } from './uiText'
 import './chat.css'
 
 export type ChatSource = {
@@ -65,6 +70,8 @@ type RetryInput = {
 type ProgressItem = { id: string; text: string; kind: string }
 
 const liveStates = new Set(['queued', 'running'])
+const MAX_AUDIO_BYTES = 10 * 1024 * 1024
+const MAX_RECORDING_MS = 120_000
 
 function isLive(run: AnalysisRun): boolean {
   return liveStates.has(run.state) || run.outcome?.cleanup === 'pending'
@@ -215,6 +222,14 @@ function ChatPanel({
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([])
   const [selectedDatasetIds, setSelectedDatasetIds] = useState<string[]>([])
   const [language, setLanguage] = useState<AnswerLanguage>('en-IN')
+  const [uiLanguage, setUiLanguage] = useState<UiLanguage>(() => {
+    return localStorage.getItem('fieldnote:ui-language') === 'hi' ? 'hi' : 'en'
+  })
+  const [languageCapabilities, setLanguageCapabilities] =
+    useState<LanguageCapabilities | null>(null)
+  const [voiceBusy, setVoiceBusy] = useState(false)
+  const [recording, setRecording] = useState(false)
+  const [voiceMessage, setVoiceMessage] = useState('')
   const [draft, setDraft] = useState('')
   const [activeRun, setActiveRun] = useState<AnalysisRun | null>(null)
   const [progress, setProgress] = useState<ProgressItem[]>([])
@@ -238,7 +253,98 @@ function ChatPanel({
   const activeRunIdRef = useRef('')
   const retryInputsRef = useRef(new Map<string, RetryInput>())
   const selectedSourceIdsRef = useRef(selectedSourceIds)
+  const draftsRef = useRef(new Map<string, string>())
+  const threadIdRef = useRef(threadId)
+  const mountedRef = useRef(true)
+  const recorderRef = useRef<MediaRecorder | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const audioTimeoutRef = useRef<number | null>(null)
+  const transcriptionAbortRef = useRef<AbortController | null>(null)
+  const voiceSequenceRef = useRef(0)
+  const durationLimitHitRef = useRef(false)
   selectedSourceIdsRef.current = selectedSourceIds
+  threadIdRef.current = threadId
+
+  const copy = (key: UiTextKey) => uiText(uiLanguage, key)
+
+  function updateDraft(next: string | ((current: string) => string)) {
+    setDraft((current) => {
+      const value = typeof next === 'function' ? next(current) : next
+      draftsRef.current.set(threadIdRef.current, value)
+      return value
+    })
+  }
+
+  function releaseMicrophone() {
+    if (audioTimeoutRef.current !== null) {
+      window.clearTimeout(audioTimeoutRef.current)
+      audioTimeoutRef.current = null
+    }
+    streamRef.current?.getTracks().forEach((track) => track.stop())
+    streamRef.current = null
+    recorderRef.current = null
+    if (mountedRef.current) setRecording(false)
+  }
+
+  useEffect(() => {
+    mountedRef.current = true
+    const controller = new AbortController()
+    languageApi
+      .capabilities(controller.signal)
+      .then((capabilities) => {
+        if (!mountedRef.current) return
+        setLanguageCapabilities(capabilities)
+        if (!capabilities.languages.some((item) => item.tag === language)) {
+          setLanguage(
+            capabilities.languages.find((item) => item.tag === 'en-IN')?.tag ??
+              capabilities.languages[0]?.tag ??
+              'en-IN',
+          )
+        }
+      })
+      .catch(() => {
+        // The chat remains usable when the optional language API is offline.
+      })
+    return () => {
+      controller.abort()
+      mountedRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const thisThread = threadId
+    setDraft(draftsRef.current.get(thisThread) ?? '')
+    voiceSequenceRef.current += 1
+    transcriptionAbortRef.current?.abort()
+    transcriptionAbortRef.current = null
+    if (recorderRef.current?.state === 'recording') {
+      try {
+        recorderRef.current.stop()
+      } catch {
+        // The thread change still releases every microphone track below.
+      }
+    }
+    releaseMicrophone()
+    audioChunksRef.current = []
+    setVoiceBusy(false)
+    setVoiceMessage('')
+    return () => {
+      if (threadIdRef.current === thisThread) {
+        voiceSequenceRef.current += 1
+        transcriptionAbortRef.current?.abort()
+        transcriptionAbortRef.current = null
+        if (recorderRef.current?.state === 'recording') {
+          try {
+            recorderRef.current.stop()
+          } catch {
+            // Cleanup must continue even if MediaRecorder already stopped.
+          }
+        }
+        releaseMicrophone()
+      }
+    }
+  }, [threadId])
 
   async function openEvidence(id: string) {
     setEvidenceId(id)
@@ -570,7 +676,7 @@ function ChatPanel({
         references: { evidence_ids: [], artifact_ids: [] },
       }
       setOptimisticMessage(userMessage)
-      setDraft('')
+      updateDraft('')
       setRuns((current) => [
         run,
         ...current.filter((item) => item.id !== run.id),
@@ -644,7 +750,7 @@ function ChatPanel({
       }
     }
     setRetryingRunId(run.id)
-    setDraft(input.text)
+    updateDraft(input.text)
     setLanguage(input.language)
     setSelectedSourceIds(input.selectedSourceIds)
     setSelectedDatasetIds(input.selectedDatasetIds)
@@ -664,6 +770,141 @@ function ChatPanel({
     }
   }
 
+  async function transcribeAudio(blob: Blob, filename: string) {
+    const originThread = threadIdRef.current
+    if (blob.size > MAX_AUDIO_BYTES) {
+      setVoiceMessage(copy('audioTooLarge'))
+      return
+    }
+    const sequence = ++voiceSequenceRef.current
+    const controller = new AbortController()
+    transcriptionAbortRef.current?.abort()
+    transcriptionAbortRef.current = controller
+    setVoiceBusy(true)
+    setVoiceMessage(copy('transcribing'))
+    try {
+      const result = await languageApi.transcribe(
+        blob,
+        filename,
+        language,
+        controller.signal,
+      )
+      if (
+        !mountedRef.current ||
+        threadIdRef.current !== originThread ||
+        voiceSequenceRef.current !== sequence
+      )
+        return
+      if (!result.text.trim()) {
+        setVoiceMessage(copy('emptyTranscript'))
+        return
+      }
+      updateDraft((current) =>
+        current.trim()
+          ? `${current.replace(/\s+$/, '')}\n\n${result.text.trim()}`
+          : result.text.trim(),
+      )
+      setVoiceMessage(
+        durationLimitHitRef.current
+          ? `${copy('audioTooLong')} ${copy('transcriptionReady')}`
+          : copy('transcriptionReady'),
+      )
+    } catch (reason) {
+      if (
+        controller.signal.aborted ||
+        !mountedRef.current ||
+        threadIdRef.current !== originThread ||
+        voiceSequenceRef.current !== sequence
+      )
+        return
+      setVoiceMessage(
+        reason instanceof Error ? reason.message : copy('audioFailed'),
+      )
+    } finally {
+      if (voiceSequenceRef.current === sequence && mountedRef.current) {
+        setVoiceBusy(false)
+        transcriptionAbortRef.current = null
+      }
+    }
+  }
+
+  async function startRecording() {
+    if (voiceBusy || recording || !languageCapabilities?.stt.available) return
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      setVoiceMessage(copy('unsupportedBrowser'))
+      return
+    }
+    const originThread = threadIdRef.current
+    const sequence = ++voiceSequenceRef.current
+    setVoiceMessage('')
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      if (
+        !mountedRef.current ||
+        originThread !== threadIdRef.current ||
+        sequence !== voiceSequenceRef.current
+      ) {
+        stream.getTracks().forEach((track) => track.stop())
+        return
+      }
+      streamRef.current = stream
+      audioChunksRef.current = []
+      durationLimitHitRef.current = false
+      const recorder = new MediaRecorder(stream)
+      recorderRef.current = recorder
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) audioChunksRef.current.push(event.data)
+      }
+      recorder.onstop = () => {
+        const mimeType = recorder.mimeType || 'audio/webm'
+        const blob = new Blob(audioChunksRef.current, { type: mimeType })
+        audioChunksRef.current = []
+        releaseMicrophone()
+        if (
+          blob.size &&
+          originThread === threadIdRef.current &&
+          sequence === voiceSequenceRef.current &&
+          mountedRef.current
+        ) {
+          const extension = mimeType.includes('ogg') ? 'ogg' : 'webm'
+          void transcribeAudio(blob, `recording.${extension}`)
+        }
+      }
+      recorder.start()
+      setRecording(true)
+      audioTimeoutRef.current = window.setTimeout(() => {
+        durationLimitHitRef.current = true
+        if (recorder.state === 'recording') recorder.stop()
+      }, MAX_RECORDING_MS)
+    } catch (reason) {
+      if (!mountedRef.current || originThread !== threadIdRef.current) return
+      setVoiceMessage(
+        reason instanceof DOMException && reason.name === 'NotAllowedError'
+          ? copy('microphoneDenied')
+          : reason instanceof Error
+            ? reason.message
+            : copy('audioFailed'),
+      )
+      releaseMicrophone()
+    }
+  }
+
+  function stopRecording() {
+    if (recorderRef.current?.state === 'recording') recorderRef.current.stop()
+  }
+
+  function chooseAudio(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    if (!file) return
+    if (file.size > MAX_AUDIO_BYTES) {
+      setVoiceMessage(copy('audioTooLarge'))
+      return
+    }
+    durationLimitHitRef.current = false
+    void transcribeAudio(file, file.name || 'audio-upload')
+  }
+
   const messageByRun = new Map<string, ChatMessage[]>()
   for (const message of sortedMessages) {
     if (!message.run_id) continue
@@ -675,17 +916,32 @@ function ChatPanel({
   const latestFailedRun = runs.find((run) => run.state === 'failed')
 
   return (
-    <section className="chat-panel" aria-label="Research conversation">
+    <section className="chat-panel" aria-label={copy('conversation')}>
       <header className="chat-header">
         <div>
           <div className="chat-eyebrow">
-            <span className="chat-eyebrow-rule" /> THREAD TRANSCRIPT
+            <span className="chat-eyebrow-rule" /> {copy('threadTranscript')}
           </div>
-          <h2>Research conversation</h2>
+          <h2>{copy('conversation')}</h2>
         </div>
         <div className="chat-header-status">
           <span className={activeRun ? 'chat-live-pulse' : 'chat-ready-dot'} />
-          {activeRun ? labelForState(activeRun) : 'Saved to this thread'}
+          {activeRun ? labelForState(activeRun) : copy('savedThread')}
+          <label className="ui-language-choice">
+            <span className="sr-only">{copy('uiLanguage')}</span>
+            <select
+              value={uiLanguage}
+              aria-label={copy('uiLanguage')}
+              onChange={(event) => {
+                const next = event.target.value as UiLanguage
+                setUiLanguage(next)
+                localStorage.setItem('fieldnote:ui-language', next)
+              }}
+            >
+              <option value="en">EN</option>
+              <option value="hi">हिन्दी</option>
+            </select>
+          </label>
         </div>
       </header>
 
@@ -695,7 +951,7 @@ function ChatPanel({
             <Sparkles size={16} />
           </span>
           <div>
-            <strong>Chat is unavailable</strong>
+            <strong>{copy('unavailable')}</strong>
             <p>
               {modelMessage ||
                 'Configure a model endpoint and credentials to start a run.'}
@@ -948,14 +1204,12 @@ function ChatPanel({
           onSubmit={submit}
         >
           <textarea
-            aria-label="Ask a question about your sources"
+            aria-label={copy('askSources')}
             placeholder={
-              modelAvailable
-                ? 'Ask a question about your sources…'
-                : 'Configure a model to start a conversation'
+              modelAvailable ? copy('askPlaceholder') : copy('configureModel')
             }
             value={draft}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={(event) => updateDraft(event.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
             maxLength={12000}
@@ -965,23 +1219,33 @@ function ChatPanel({
             <div className="composer-tools">
               <label className="language-choice">
                 <Globe2 size={13} />
-                <span className="sr-only">Answer language</span>
+                <span className="sr-only">{copy('answerLanguage')}</span>
                 <select
                   value={language}
                   onChange={(event) =>
                     setLanguage(event.target.value as AnswerLanguage)
                   }
-                  disabled={!modelAvailable}
+                  disabled={
+                    !modelAvailable || !languageCapabilities?.languages.length
+                  }
                 >
-                  <option value="en-IN">English</option>
-                  <option value="hi-IN">हिन्दी</option>
+                  {(
+                    languageCapabilities?.languages ?? [
+                      { tag: 'en-IN', name: 'English' },
+                      { tag: 'hi-IN', name: 'हिन्दी' },
+                    ]
+                  ).map((item) => (
+                    <option value={item.tag} key={item.tag}>
+                      {item.name}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label
                 className="language-choice"
                 title="Advanced searches keyword variants and expands surrounding passages"
               >
-                <span className="sr-only">Retrieval profile</span>
+                <span className="sr-only">{copy('retrievalProfile')}</span>
                 <select
                   value={retrievalProfile}
                   onChange={(event) =>
@@ -991,14 +1255,12 @@ function ChatPanel({
                   }
                   disabled={!!activeRun}
                 >
-                  <option value="basic">Basic retrieval</option>
-                  <option value="advanced">Advanced retrieval</option>
+                  <option value="basic">{copy('basicRetrieval')}</option>
+                  <option value="advanced">{copy('advancedRetrieval')}</option>
                 </select>
               </label>
               <span className="composer-hint">
-                {activeRun
-                  ? 'A run is active'
-                  : 'Enter to send · Shift + Enter for a new line'}
+                {activeRun ? copy('activeRun') : copy('enterToSend')}
               </span>
             </div>
             <button
@@ -1011,7 +1273,7 @@ function ChatPanel({
                 !!activeRun ||
                 loading
               }
-              aria-label="Send message"
+              aria-label={copy('sendMessage')}
             >
               {sending ? (
                 <LoaderCircle size={15} className="spin" />
@@ -1020,12 +1282,77 @@ function ChatPanel({
               )}
             </button>
           </div>
+          <div className="voice-controls" aria-label={copy('voice')}>
+            {languageCapabilities?.stt.available ? (
+              <>
+                <button
+                  className={`voice-button ${recording ? 'recording' : ''}`}
+                  type="button"
+                  disabled={
+                    voiceBusy || !modelAvailable || !!activeRun || loading
+                  }
+                  onClick={
+                    recording ? stopRecording : () => void startRecording()
+                  }
+                  aria-label={
+                    recording ? copy('stopRecording') : copy('startRecording')
+                  }
+                >
+                  {recording ? <Square size={13} /> : <Mic size={14} />}
+                  {recording ? copy('stopRecording') : copy('startRecording')}
+                </button>
+                <label className="voice-button">
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={chooseAudio}
+                    disabled={
+                      voiceBusy || !modelAvailable || !!activeRun || loading
+                    }
+                  />
+                  {voiceBusy ? (
+                    <LoaderCircle size={14} className="spin" />
+                  ) : (
+                    <FileText size={14} />
+                  )}
+                  {voiceBusy ? copy('transcribing') : copy('chooseAudio')}
+                </label>
+              </>
+            ) : (
+              <span
+                className="voice-capability-unavailable"
+                title={languageCapabilities?.stt.reason ?? ''}
+              >
+                <Mic size={13} /> {copy('sttUnavailable')}
+              </span>
+            )}
+            {recording && (
+              <span className="voice-live-status">{copy('recording')}</span>
+            )}
+            {voiceMessage && (
+              <span className="voice-message" role="status">
+                {voiceMessage}
+              </span>
+            )}
+          </div>
+          {languageCapabilities &&
+            (!languageCapabilities.translation.available ||
+              !languageCapabilities.tts.available) && (
+              <div className="voice-optional-status">
+                {!languageCapabilities.translation.available &&
+                  copy('translationUnavailable')}
+                {!languageCapabilities.translation.available &&
+                  !languageCapabilities.tts.available &&
+                  ' · '}
+                {!languageCapabilities.tts.available && copy('ttsUnavailable')}
+              </div>
+            )}
         </form>
         <div className="chat-footer-note">
           <span>
-            <ShieldCheck size={12} /> Sources remain unchanged
+            <ShieldCheck size={12} /> {copy('sourcesUnchanged')}
           </span>
-          <span>ANSWERS KEEP THEIR REFERENCES</span>
+          <span>{copy('referencesKept')}</span>
         </div>
       </div>
       {evidenceId && (

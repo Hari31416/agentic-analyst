@@ -53,6 +53,16 @@
   font-size: 11px;
 }
 
+.ui-language-choice select {
+  padding: 3px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 10px;
+  cursor: pointer;
+}
+
 .chat-ready-dot,
 .chat-live-pulse {
   width: 6px;
@@ -986,6 +996,72 @@
   font: 11px var(--font-mono);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.voice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 9px;
+}
+.voice-button {
+  position: relative;
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 11px;
+  cursor: pointer;
+}
+.voice-button:hover:not(:has(:disabled)) {
+  border-color: var(--primary);
+}
+.voice-button:disabled,
+.voice-button:has(:disabled) {
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+}
+.voice-button.recording {
+  border-color: var(--status-danger);
+  color: var(--status-danger);
+}
+.voice-button input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+.voice-button:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.voice-live-status,
+.voice-message,
+.voice-capability-unavailable,
+.voice-optional-status {
+  color: var(--muted-foreground);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.voice-message {
+  flex-basis: 100%;
+  color: var(--foreground);
+}
+.voice-capability-unavailable {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.voice-optional-status {
+  padding-top: 4px;
 }
 .send-button {
   display: grid;

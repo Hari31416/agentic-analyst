@@ -1,11 +1,13 @@
 import asyncio
 import logging
+import re
 import signal
 import socket
 from contextlib import suppress
 from uuid import uuid4
 
 from app.audit.redaction import configure_logging
+from app.db.repository import audit
 from app.config import get_settings
 from app.db.models import Artifact
 from app.db.session import factory
@@ -14,6 +16,89 @@ from app.workers.queue import Claim, LeaseLost, claim, fail, finish, heartbeat, 
 from app.agent.runtime import RunRuntime, RunCancelled
 
 logger = logging.getLogger(__name__)
+STABLE_ERROR_CODE = re.compile(r"^[a-z][a-z0-9_.]{0,79}$")
+
+
+def _record_source_audit(
+    task: Claim,
+    *,
+    decision: str,
+    reason_code: str,
+    result: dict[str, object] | None = None,
+) -> None:
+    """Record a source operation outcome only while this worker owns its job."""
+    from sqlalchemy import select
+
+    from app.db.models import Document, Job, Source
+
+    payload = task.payload
+    document_ids = (
+        result.get("document_ids", [])
+        if task.kind == "crawl_documents" and result
+        else [payload.get("document_id")]
+    )
+    if not isinstance(document_ids, list):
+        document_ids = []
+    action = {
+        "ingest_document": "source.ingest",
+        "index_document": "source.index",
+        "crawl_documents": "source.crawl",
+    }.get(task.kind, "source.process")
+    with factory()() as session, session.begin():
+        if (
+            session.scalar(
+                select(Job).where(owned(task.id, task.token)).with_for_update()
+            )
+            is None
+        ):
+            raise LeaseLost("source audit rejected after worker lease loss")
+        audited = 0
+        for document_id in document_ids[:200]:
+            if not isinstance(document_id, str):
+                continue
+            document = session.get(Document, document_id)
+            if document is None:
+                continue
+            source = session.get(Source, document.source_id)
+            if source is None:
+                continue
+            details: dict[str, object] = {
+                "document_id": document.id,
+                "source_version": document.source_version,
+                "extractor_version": document.extractor_version,
+                "chunker_version": document.chunker_version,
+                "pipeline_version": {
+                    "source.ingest": "document-pipeline-v1",
+                    "source.index": "index-pipeline-v1",
+                    "source.crawl": "crawl-pipeline-v1",
+                }[action],
+                "state": document.state,
+                "stage": document.stage,
+                "index_generation_id": document.index_generation_id,
+            }
+            if reason_code not in {"completed", "cancelled", "crawl_partial"}:
+                details["error_code"] = reason_code
+            audit(
+                session,
+                source_id=source.id,
+                action=action,
+                decision=decision,
+                reason_code=reason_code,
+                details=details,
+            )
+            audited += 1
+        if task.kind == "crawl_documents" and audited == 0:
+            audit(
+                session,
+                action=action,
+                decision=decision,
+                reason_code=reason_code,
+                details={
+                    "workspace_id": payload.get("workspace_id"),
+                    "pipeline_version": "crawl-pipeline-v1",
+                    "source_count": 0,
+                },
+            )
 
 
 def maintenance(task: Claim) -> dict[str, object]:
@@ -243,7 +328,40 @@ async def execute_document(task: Claim, stop: asyncio.Event) -> dict[str, object
                 break
             with factory()() as session, session.begin():
                 heartbeat(session, task.id, task.token, settings.job_lease_seconds)
-        return await work
+        result = await work
+        state = result.get("state")
+        error_value = result.get("error")
+        if isinstance(error_value, str) and STABLE_ERROR_CODE.fullmatch(error_value):
+            decision, reason_code = "failed", error_value
+        elif state == "failed":
+            decision, reason_code = "failed", "processing_failed"
+        elif result.get("partial") or result.get("index_status") in {
+            "degraded",
+            "unavailable",
+        }:
+            decision, reason_code = "partial", (
+                "crawl_partial" if task.kind == "crawl_documents" else "index_degraded"
+            )
+        else:
+            decision, reason_code = "allowed", "completed"
+        _record_source_audit(
+            task, decision=decision, reason_code=reason_code, result=result
+        )
+        return result
+    except LeaseLost:
+        if stop.is_set():
+            with suppress(LeaseLost):
+                _record_source_audit(
+                    task, decision="cancelled", reason_code="cancelled"
+                )
+        raise
+    except Exception as error:
+        code = getattr(error, "code", None)
+        if not isinstance(code, str) or not STABLE_ERROR_CODE.fullmatch(code):
+            code = "crawl_failed" if task.kind == "crawl_documents" else "worker_failed"
+        with suppress(LeaseLost):
+            _record_source_audit(task, decision="failed", reason_code=code)
+        raise
     finally:
         if not work.done():
             work.cancel()

@@ -12,6 +12,7 @@ import { TopBar } from './components/layout/TopBar'
 import { WorkspaceDialog } from './components/WorkspaceDialog'
 import { ThreadDialog } from './components/ThreadDialog'
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog'
+import { Button } from './components/ui/button'
 import { useTheme } from './hooks/useTheme'
 import { useSystemStatus } from './hooks/useSystemStatus'
 import { DatasetSummary, structuredApi } from './structuredApi'
@@ -384,7 +385,7 @@ export function App() {
   const modelMessage = readiness?.components?.model?.message
 
   return (
-    <div className="app-shell">
+    <div className="flex w-screen h-screen overflow-hidden bg-background text-foreground">
       {/* Column 1: Collapsible Left Sidebar */}
       <LeftSidebar
         workspaces={workspaces}
@@ -439,7 +440,7 @@ export function App() {
       />
 
       {/* Column 2: Center Main Panel */}
-      <main className="main-col">
+      <main className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden relative bg-background">
         <TopBar
           isLeftSidebarCollapsed={isLeftSidebarCollapsed}
           onToggleLeftSidebar={toggleLeftSidebar}
@@ -459,24 +460,13 @@ export function App() {
         />
 
         {error && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              backgroundColor: 'var(--status-bg-danger)',
-              color: 'var(--status-danger)',
-              fontSize: '12px',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-status-danger/10 text-status-danger text-xs border-b border-border">
             <AlertCircle size={15} />
             <span>{error}</span>
           </div>
         )}
 
-        <div className="main-content">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
           {activeView === 'outputs' && workspaceId ? (
             <ArtifactBrowser
               workspaceId={workspaceId}
@@ -493,47 +483,48 @@ export function App() {
                 modelMessage={modelMessage}
               />
             ) : (
-              <div className="center-empty-wrap">
-                <div className="empty-card">
-                  <div className="empty-card-icon">
+              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+                <div className="flex max-w-md flex-col items-center rounded-2xl border border-border bg-card p-8 shadow-sm">
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-accent text-accent-foreground">
                     <Sparkles size={24} />
                   </div>
-                  <h2 className="empty-card-title">
+                  <h2 className="mb-2 text-lg font-semibold text-foreground">
                     Evidence-Backed Research Studio
                   </h2>
-                  <p className="empty-card-desc">
+                  <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
                     {workspaceId
                       ? 'Launch a new thread or select an existing conversation to analyze documents, execute Python code, and evaluate SQL data.'
                       : 'Create or choose a research workspace to begin analyzing evidence.'}
                   </p>
-                  <div className="empty-card-actions">
+                  <div className="flex items-center gap-3">
                     {workspaceId ? (
-                      <button
+                      <Button
                         type="button"
-                        className="primary-action-btn"
                         onClick={() => setCreateThreadOpen(true)}
+                        className="gap-1.5"
                       >
                         <Plus size={15} />
                         <span>Start research thread</span>
-                      </button>
+                      </Button>
                     ) : (
-                      <button
+                      <Button
                         type="button"
-                        className="primary-action-btn"
                         onClick={() => setCreateWsOpen(true)}
+                        className="gap-1.5"
                       >
                         <Plus size={15} />
                         <span>Create workspace</span>
-                      </button>
+                      </Button>
                     )}
-                    <button
+                    <Button
                       type="button"
-                      className="secondary-action-btn"
+                      variant="outline"
                       onClick={() => setActiveView('workbench')}
+                      className="gap-1.5"
                     >
                       <Layers size={15} />
                       <span>Explore sources</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -553,24 +544,26 @@ export function App() {
               }}
             />
           ) : (
-            <div className="center-empty-wrap">
-              <div className="empty-card">
-                <div className="empty-card-icon">
+            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+              <div className="flex max-w-md flex-col items-center rounded-2xl border border-border bg-card p-8 shadow-sm">
+                <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-accent text-accent-foreground">
                   <Layers size={24} />
                 </div>
-                <h2 className="empty-card-title">Source Catalog</h2>
-                <p className="empty-card-desc">
+                <h2 className="mb-2 text-lg font-semibold text-foreground">
+                  Source Catalog
+                </h2>
+                <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
                   Select a workspace to view and manage ingested files,
                   structured datasets, and database connections.
                 </p>
-                <button
+                <Button
                   type="button"
-                  className="primary-action-btn"
                   onClick={() => setCreateWsOpen(true)}
+                  className="gap-1.5"
                 >
                   <Plus size={15} />
                   <span>Create workspace</span>
-                </button>
+                </Button>
               </div>
             </div>
           )}

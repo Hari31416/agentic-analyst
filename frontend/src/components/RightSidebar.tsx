@@ -14,6 +14,8 @@ import {
   Upload,
 } from 'lucide-react'
 import { DatasetSummary, sourceKindLabel } from '../structuredApi'
+import { Button } from './ui/button'
+import { cn } from '../lib/utils'
 
 export type SourceRecord = {
   id: string
@@ -56,6 +58,52 @@ function identityLabel(identity: DatasetSummary['identity']): string {
   if (typeof identity === 'string') return identity
   const values = Object.values(identity)
   return values.length ? values.map(String).join(' · ') : 'Dataset'
+}
+
+function StateBadge({ state }: { state: string }) {
+  const lower = state.toLowerCase()
+  let colorClasses = 'bg-status-danger/10 text-status-danger'
+  if (
+    lower.includes('ready') ||
+    lower.includes('processed') ||
+    lower.includes('success')
+  ) {
+    colorClasses = 'bg-status-ready/10 text-status-ready'
+  } else if (
+    lower.includes('ingesting') ||
+    lower.includes('processing') ||
+    lower.includes('pending')
+  ) {
+    colorClasses = 'bg-status-warning/10 text-status-warning'
+  }
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider',
+        colorClasses,
+      )}
+    >
+      {state}
+    </span>
+  )
+}
+
+function StatusDot({ status }: { status: string }) {
+  const isOnline = status === 'ready' || status === 'online'
+  const isWarning =
+    status === 'configured' || status === 'degraded' || status === 'warning'
+  const isChecking = status === 'checking'
+
+  const colorClass = isOnline
+    ? 'bg-status-ready ring-2 ring-status-ready/20'
+    : isWarning
+      ? 'bg-status-warning ring-2 ring-status-warning/20'
+      : isChecking
+        ? 'bg-status-checking'
+        : 'bg-status-danger ring-2 ring-status-danger/20'
+
+  return <span className={cn('w-2 h-2 rounded-full shrink-0', colorClass)} />
 }
 
 export const RightSidebar: FC<RightSidebarProps> = ({
@@ -162,25 +210,6 @@ export const RightSidebar: FC<RightSidebarProps> = ({
     return <FileText size={16} />
   }
 
-  const getStatusBadgeClass = (state: string) => {
-    const lower = state.toLowerCase()
-    if (
-      lower.includes('ready') ||
-      lower.includes('processed') ||
-      lower.includes('success')
-    ) {
-      return 'ready'
-    }
-    if (
-      lower.includes('ingesting') ||
-      lower.includes('processing') ||
-      lower.includes('pending')
-    ) {
-      return 'processing'
-    }
-    return 'error'
-  }
-
   const systemComponents = readiness
     ? [
         {
@@ -208,19 +237,26 @@ export const RightSidebar: FC<RightSidebarProps> = ({
 
   return (
     <aside
-      className={`inspector-col ${isOpen ? 'expanded' : 'collapsed'}`}
+      className={cn(
+        'flex flex-col shrink-0 h-screen bg-sidebar border-l border-sidebar-border transition-all duration-200 relative z-20 overflow-hidden',
+        isOpen
+          ? 'w-[360px] min-w-[360px] max-w-[360px] opacity-100'
+          : 'w-0 min-w-0 max-w-0 border-l-transparent opacity-0 pointer-events-none',
+      )}
       aria-label="Workspace Inspector"
     >
-      <div className="inspector-drawer">
-        <header className="inspector-header">
-          <div className="inspector-title-row">
-            <FolderOpen size={16} />
-            <span className="inspector-title">Workspace Inspector</span>
+      <div className="flex flex-col w-[360px] h-full overflow-hidden">
+        <header className="flex items-center justify-between h-14 px-4 border-b border-sidebar-border shrink-0">
+          <div className="flex items-center gap-2">
+            <FolderOpen size={16} className="text-foreground" />
+            <span className="text-[11px] font-bold tracking-[0.6px] uppercase text-foreground">
+              Workspace Inspector
+            </span>
           </div>
-          <div className="inspector-header-actions">
+          <div className="flex items-center gap-1">
             <button
               type="button"
-              className="icon-action-btn"
+              className="flex items-center justify-center w-8 h-8 rounded-sm text-muted-foreground border border-border bg-background transition-colors hover:text-foreground hover:border-primary"
               onClick={onToggleOpen}
               title="Close inspector"
               aria-label="Close inspector"
@@ -230,10 +266,18 @@ export const RightSidebar: FC<RightSidebarProps> = ({
           </div>
         </header>
 
-        <nav className="inspector-tabs-nav" aria-label="Inspector tabs">
+        <nav
+          className="flex items-center p-2 gap-1 border-b border-sidebar-border bg-sidebar shrink-0"
+          aria-label="Inspector tabs"
+        >
           <button
             type="button"
-            className={`inspector-tab-btn ${activeTab === 'sources' ? 'active' : ''}`}
+            className={cn(
+              'flex items-center justify-center gap-1.5 flex-1 h-7.5 rounded-sm text-[11px] font-medium transition-colors',
+              activeTab === 'sources'
+                ? 'bg-card text-foreground font-semibold shadow-xs border border-border'
+                : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent',
+            )}
             onClick={() => setActiveTab('sources')}
           >
             <FileText size={13} />
@@ -241,7 +285,12 @@ export const RightSidebar: FC<RightSidebarProps> = ({
           </button>
           <button
             type="button"
-            className={`inspector-tab-btn ${activeTab === 'inspect' ? 'active' : ''}`}
+            className={cn(
+              'flex items-center justify-center gap-1.5 flex-1 h-7.5 rounded-sm text-[11px] font-medium transition-colors',
+              activeTab === 'inspect'
+                ? 'bg-card text-foreground font-semibold shadow-xs border border-border'
+                : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent',
+            )}
             onClick={() => setActiveTab('inspect')}
           >
             <Eye size={13} />
@@ -249,7 +298,12 @@ export const RightSidebar: FC<RightSidebarProps> = ({
           </button>
           <button
             type="button"
-            className={`inspector-tab-btn ${activeTab === 'health' ? 'active' : ''}`}
+            className={cn(
+              'flex items-center justify-center gap-1.5 flex-1 h-7.5 rounded-sm text-[11px] font-medium transition-colors',
+              activeTab === 'health'
+                ? 'bg-card text-foreground font-semibold shadow-xs border border-border'
+                : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent',
+            )}
             onClick={() => setActiveTab('health')}
           >
             <Activity size={13} />
@@ -257,11 +311,14 @@ export const RightSidebar: FC<RightSidebarProps> = ({
           </button>
         </nav>
 
-        <div className="inspector-body">
+        <div className="flex-1 min-h-0 flex flex-col overflow-y-auto p-3.5 gap-3">
           {activeTab === 'sources' && (
             <>
               <div
-                className={`quick-upload-box ${isDragOver ? 'drag-over' : ''}`}
+                className={cn(
+                  'border border-dashed border-border rounded-md p-3.5 bg-card text-center cursor-pointer transition-colors hover:border-primary hover:bg-accent/40',
+                  isDragOver && 'border-primary bg-accent/40',
+                )}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -281,43 +338,36 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                   id="quick-upload-input"
                   type="file"
                   accept=".csv,.xlsx,.xls,.json,.parquet,.pdf,.docx,.txt,.md,.markdown,.html,.htm,.pptx"
-                  style={{ display: 'none' }}
+                  className="hidden"
                   onChange={handleFileInput}
                   disabled={isUploading}
                 />
-                <Upload size={20} className="quick-upload-icon" />
-                <div className="quick-upload-title">
+                <Upload size={20} className="text-primary mx-auto mb-1.5" />
+                <div className="text-xs font-semibold text-foreground mb-0.5">
                   {isUploading
                     ? 'Uploading file...'
                     : 'Drop source document here'}
                 </div>
-                <div className="quick-upload-desc">
+                <div className="text-[10px] text-muted-foreground">
                   Supports PDF, CSV, Excel, JSON, Parquet, and documents
                 </div>
               </div>
 
               {uploadError && (
-                <div
-                  style={{
-                    color: 'var(--status-danger)',
-                    fontSize: '11px',
-                    padding: '6px',
-                  }}
-                >
+                <div className="text-status-danger text-[11px] p-1.5">
                   {uploadError}
                 </div>
               )}
 
               {sources.length > 2 && (
-                <div className="threads-search-wrap" style={{ padding: 0 }}>
+                <div className="relative flex items-center">
                   <Search
                     size={13}
-                    className="threads-search-icon"
-                    style={{ left: '10px' }}
+                    className="absolute left-2.5 text-muted-foreground pointer-events-none"
                   />
                   <input
                     type="text"
-                    className="threads-search-input"
+                    className="w-full h-8 pl-8 pr-3 text-xs bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                     placeholder="Search sources..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -326,14 +376,16 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                 </div>
               )}
 
-              <div className="inspector-sources-list">
+              <div className="flex flex-col gap-1.5">
                 {filteredSources.map((source) => {
                   const isSelected = source.id === selectedSourceId
-                  const badgeClass = getStatusBadgeClass(source.state)
                   return (
                     <div
                       key={source.id}
-                      className={`source-item-card ${isSelected ? 'selected' : ''}`}
+                      className={cn(
+                        'flex items-center gap-2.5 p-2.5 rounded-md bg-card border border-border cursor-pointer transition-all hover:border-primary hover:shadow-xs',
+                        isSelected && 'border-primary ring-1 ring-primary',
+                      )}
                       onClick={() => {
                         onSelectSource(source.id)
                         setActiveTab('inspect')
@@ -347,22 +399,20 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                         }
                       }}
                     >
-                      <div className="source-item-icon-wrap">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-muted text-muted-foreground shrink-0">
                         {getSourceIcon(source.kind)}
                       </div>
-                      <div className="source-item-info">
+                      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                         <span
-                          className="source-item-name"
+                          className="text-xs font-semibold text-foreground truncate"
                           title={source.display_name}
                         >
                           {source.display_name}
                         </span>
-                        <div className="source-item-meta">
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                           <span>{sourceKindLabel(source.kind)}</span>
                           <span>v{source.version}</span>
-                          <span className={`state-badge ${badgeClass}`}>
-                            {source.state}
-                          </span>
+                          <StateBadge state={source.state} />
                         </div>
                       </div>
                     </div>
@@ -370,7 +420,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                 })}
 
                 {sources.length === 0 && (
-                  <div className="threads-empty-state">
+                  <div className="flex flex-col items-center justify-center p-6 text-center text-xs text-muted-foreground leading-relaxed">
                     <p>No sources attached to this workspace.</p>
                     <p>Upload a document or dataset above to get started.</p>
                   </div>
@@ -382,60 +432,35 @@ export const RightSidebar: FC<RightSidebarProps> = ({
           {activeTab === 'inspect' && (
             <>
               {selectedSource ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '14px',
-                  }}
-                >
-                  <div className="health-card">
-                    <div className="health-card-header">
-                      <span className="health-card-title">
+                <div className="flex flex-col gap-3.5">
+                  <div className="flex flex-col gap-1.5 p-3 rounded-md bg-card border border-border">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-2 text-xs font-semibold text-foreground truncate">
                         {getSourceIcon(selectedSource.kind)}
                         {selectedSource.display_name}
                       </span>
-                      <span
-                        className={`state-badge ${getStatusBadgeClass(selectedSource.state)}`}
-                      >
-                        {selectedSource.state}
-                      </span>
+                      <StateBadge state={selectedSource.state} />
                     </div>
-                    <div
-                      className="source-item-meta"
-                      style={{ marginTop: '4px' }}
-                    >
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
                       <span>Kind: {sourceKindLabel(selectedSource.kind)}</span>
                       <span>Version: {selectedSource.version}</span>
                     </div>
                   </div>
 
                   {sourceDatasets.length > 0 && (
-                    <div className="health-card">
-                      <span
-                        className="section-caption"
-                        style={{ marginBottom: '6px' }}
-                      >
+                    <div className="flex flex-col gap-1.5 p-3 rounded-md bg-card border border-border">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
                         Structured Datasets ({sourceDatasets.length})
                       </span>
                       {sourceDatasets.map((ds) => (
                         <div
                           key={ds.id}
-                          style={{
-                            padding: '8px',
-                            background: 'var(--muted)',
-                            borderRadius: 'var(--radius-sm)',
-                            marginBottom: '6px',
-                            fontSize: '12px',
-                          }}
+                          className="p-2 bg-muted rounded-sm mb-1.5 text-xs"
                         >
-                          <strong>{identityLabel(ds.identity)}</strong>
-                          <div
-                            style={{
-                              fontSize: '11px',
-                              color: 'var(--muted-foreground)',
-                            }}
-                          >
+                          <strong className="text-foreground">
+                            {identityLabel(ds.identity)}
+                          </strong>
+                          <div className="text-[11px] text-muted-foreground">
                             {ds.designation}
                           </div>
                         </div>
@@ -443,18 +468,16 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                     </div>
                   )}
 
-                  <button
-                    type="button"
-                    className="primary-action-btn"
-                    style={{ width: '100%', justifyContent: 'center' }}
+                  <Button
+                    className="w-full justify-center gap-2"
                     onClick={() => onOpenInWorkbench(selectedSource.id)}
                   >
                     <Layers size={14} />
                     <span>Open in Source Workbench</span>
-                  </button>
+                  </Button>
                 </div>
               ) : (
-                <div className="threads-empty-state">
+                <div className="flex flex-col items-center justify-center p-6 text-center text-xs text-muted-foreground leading-relaxed">
                   <p>No source currently selected.</p>
                   <p>
                     Choose a source from the Sources tab to view its schema and
@@ -466,42 +489,38 @@ export const RightSidebar: FC<RightSidebarProps> = ({
           )}
 
           {activeTab === 'health' && (
-            <div className="health-cards-list">
+            <div className="flex flex-col gap-2">
               {systemComponents.length > 0 ? (
                 systemComponents.map((comp) => {
                   const Icon = comp.icon
-                  const status = comp.details.status
-                  const dotClass =
-                    status === 'ready' || status === 'online'
-                      ? 'ready'
-                      : status === 'configured'
-                        ? 'warning'
-                        : 'danger'
                   return (
-                    <div key={comp.name} className="health-card">
-                      <div className="health-card-header">
-                        <span className="health-card-title">
+                    <div
+                      key={comp.name}
+                      className="flex flex-col gap-1.5 p-3 rounded-md bg-card border border-border"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-2 text-xs font-semibold text-foreground">
                           <Icon size={15} />
                           {comp.name}
                         </span>
-                        <span className={`status-dot ${dotClass}`} />
+                        <StatusDot status={comp.details.status} />
                       </div>
-                      <span className="health-card-msg">
+                      <span className="text-[11px] text-muted-foreground leading-snug">
                         {comp.details.message || comp.details.status}
                       </span>
                     </div>
                   )
                 })
               ) : (
-                <div className="health-card">
-                  <div className="health-card-header">
-                    <span className="health-card-title">
+                <div className="flex flex-col gap-1.5 p-3 rounded-md bg-card border border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-xs font-semibold text-foreground">
                       <Activity size={15} />
                       API Service
                     </span>
-                    <span className={`status-dot ${health}`} />
+                    <StatusDot status={health} />
                   </div>
-                  <span className="health-card-msg">
+                  <span className="text-[11px] text-muted-foreground leading-snug">
                     {health === 'online'
                       ? 'Backend connected and responsive'
                       : 'Backend offline or unreachable'}
@@ -509,14 +528,9 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                 </div>
               )}
 
-              <button
-                type="button"
-                className="secondary-action-btn"
-                style={{
-                  width: '100%',
-                  justifyContent: 'center',
-                  marginTop: '8px',
-                }}
+              <Button
+                variant="outline"
+                className="w-full justify-center gap-2 mt-2"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
               >
@@ -525,7 +539,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                   className={isRefreshing ? 'animate-spin' : ''}
                 />
                 <span>Test connections now</span>
-              </button>
+              </Button>
             </div>
           )}
         </div>

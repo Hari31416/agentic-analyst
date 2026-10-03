@@ -14,6 +14,7 @@ import {
   Trash2,
   Pencil,
 } from 'lucide-react'
+import { cn } from '../lib/utils'
 
 export type WorkspaceItem = {
   id: string
@@ -82,22 +83,25 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
 
   if (isCollapsed) {
     return (
-      <aside className="sidebar-col collapsed" aria-label="Sidebar navigation">
-        <div className="sidebar-rail">
-          <div className="rail-top">
+      <aside
+        className="flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-200 relative z-20 overflow-hidden shrink-0 w-[54px] min-w-[54px] max-w-[54px]"
+        aria-label="Sidebar navigation"
+      >
+        <div className="flex flex-col items-center w-[54px] h-full py-2.5 overflow-hidden">
+          <div className="flex flex-col items-center gap-2 w-full">
             <button
               type="button"
-              className="rail-icon-btn"
+              className="flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
               onClick={onToggleCollapse}
               title="Expand sidebar"
               aria-label="Expand sidebar"
             >
               <PanelLeftOpen size={18} />
             </button>
-            <div className="rail-divider" />
+            <div className="w-6 h-px bg-sidebar-border my-1.5" />
             <button
               type="button"
-              className="rail-icon-btn"
+              className="flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground disabled:opacity-50"
               onClick={onCreateThreadClick}
               disabled={!activeWorkspaceId}
               title="New research thread"
@@ -107,10 +111,15 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </button>
           </div>
 
-          <div className="rail-middle">
+          <div className="flex flex-col items-center gap-1.5 flex-1 w-full overflow-y-auto py-1">
             <button
               type="button"
-              className={`rail-icon-btn ${activeView === 'chat' ? 'active' : ''}`}
+              className={cn(
+                'flex items-center justify-center w-9 h-9 rounded-md transition-colors',
+                activeView === 'chat'
+                  ? 'bg-card text-primary border border-border shadow-xs'
+                  : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground',
+              )}
               onClick={() => onSelectView('chat')}
               title="Active conversation"
               aria-label="Active conversation"
@@ -119,7 +128,12 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </button>
             <button
               type="button"
-              className={`rail-icon-btn ${activeView === 'workbench' ? 'active' : ''}`}
+              className={cn(
+                'flex items-center justify-center w-9 h-9 rounded-md transition-colors',
+                activeView === 'workbench'
+                  ? 'bg-card text-primary border border-border shadow-xs'
+                  : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground',
+              )}
               onClick={() => onSelectView('workbench')}
               title={`Source workbench (${sourcesCount})`}
               aria-label="Source workbench"
@@ -128,7 +142,12 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </button>
             <button
               type="button"
-              className={`rail-icon-btn ${activeView === 'outputs' ? 'active' : ''}`}
+              className={cn(
+                'flex items-center justify-center w-9 h-9 rounded-md transition-colors',
+                activeView === 'outputs'
+                  ? 'bg-card text-primary border border-border shadow-xs'
+                  : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground',
+              )}
               onClick={() => onSelectView('outputs')}
               title="Workspace outputs"
               aria-label="Workspace outputs"
@@ -137,10 +156,10 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </button>
           </div>
 
-          <div className="rail-bottom">
+          <div className="flex flex-col items-center gap-2 w-full">
             <button
               type="button"
-              className="rail-icon-btn"
+              className="flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
               onClick={onToggleTheme}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               aria-label="Toggle theme"
@@ -154,21 +173,31 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   }
 
   return (
-    <aside className="sidebar-col expanded" aria-label="Sidebar navigation">
-      <div className="sidebar-drawer">
-        <header className="sidebar-header">
-          <div className="brand-section">
-            <div className="brand-badge" aria-hidden="true">
+    <aside
+      className="flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-200 relative z-20 overflow-hidden shrink-0 w-[280px] min-w-[280px] max-w-[280px]"
+      aria-label="Sidebar navigation"
+    >
+      <div className="flex flex-col w-[280px] h-full overflow-hidden">
+        <header className="flex items-center justify-between h-14 px-3.5 border-b border-sidebar-border shrink-0">
+          <div className="flex items-center gap-2.5 text-foreground">
+            <div
+              className="flex items-center justify-center w-8 h-8 rounded-md bg-gradient-to-br from-primary to-indigo-700 text-white font-bold text-[15px] tracking-tight shadow-md shadow-primary/30"
+              aria-hidden="true"
+            >
               A
             </div>
-            <div className="brand-text">
-              <span className="brand-title">Agentic Analyst</span>
-              <span className="brand-subtitle">Research Studio</span>
+            <div className="flex flex-col">
+              <span className="text-[13px] font-semibold tracking-tight text-foreground">
+                Agentic Analyst
+              </span>
+              <span className="text-[10px] font-medium text-muted-foreground tracking-wider uppercase">
+                Research Studio
+              </span>
             </div>
           </div>
           <button
             type="button"
-            className="collapse-btn"
+            className="flex items-center justify-center w-7.5 h-7.5 rounded-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
             onClick={onToggleCollapse}
             title="Collapse sidebar"
             aria-label="Collapse sidebar"
@@ -177,12 +206,14 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           </button>
         </header>
 
-        <div className="workspace-selector-box">
-          <div className="workspace-label-row">
-            <span className="section-caption">Workspace</span>
+        <div className="p-3 px-3.5 border-b border-sidebar-border shrink-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.6px]">
+              Workspace
+            </span>
             <button
               type="button"
-              className="create-ws-inline-btn"
+              className="flex items-center gap-1 text-[11px] font-medium text-primary rounded-sm px-1.5 py-0.5 transition-colors hover:bg-accent"
               onClick={onCreateWorkspaceClick}
               title="Create new workspace"
             >
@@ -190,9 +221,9 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
               <span>New</span>
             </button>
           </div>
-          <div className="workspace-dropdown-wrap">
+          <div className="relative flex items-center">
             <select
-              className="workspace-select"
+              className="w-full h-9.5 pl-3 pr-8 bg-card border border-border rounded-md text-foreground text-xs font-medium appearance-none cursor-pointer transition-colors hover:border-muted-foreground focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
               value={activeWorkspaceId}
               onChange={(e) => onSelectWorkspace(e.target.value)}
               aria-label="Select workspace"
@@ -206,12 +237,16 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                 </option>
               ))}
             </select>
-            <ChevronDown size={14} className="select-chevron" />
+            <ChevronDown
+              size={14}
+              className="absolute right-3 pointer-events-none text-muted-foreground"
+            />
           </div>
           {activeWorkspaceId && (
-            <div className="workspace-item-actions">
+            <div className="flex items-center justify-end gap-1.5 mt-2">
               <button
                 type="button"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-sm border border-border bg-card text-muted-foreground text-[11px] font-medium transition-colors hover:bg-sidebar-accent hover:text-foreground"
                 onClick={onRenameWorkspace}
                 aria-label="Rename workspace"
                 title="Rename workspace"
@@ -220,7 +255,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
               </button>
               <button
                 type="button"
-                className="danger"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-sm border border-border bg-card text-muted-foreground text-[11px] font-medium transition-colors hover:bg-status-danger/10 hover:text-status-danger hover:border-status-danger/40"
                 onClick={onDeleteWorkspace}
                 aria-label="Delete workspace"
                 title="Delete workspace"
@@ -231,10 +266,10 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           )}
         </div>
 
-        <div className="new-thread-box">
+        <div className="px-3.5 pt-2.5 pb-1.5 shrink-0">
           <button
             type="button"
-            className="new-thread-button"
+            className="flex items-center justify-center gap-2 w-full h-9 bg-card border border-border rounded-md text-foreground text-xs font-medium transition-colors shadow-xs hover:bg-sidebar-accent hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onCreateThreadClick}
             disabled={!activeWorkspaceId}
             title="Start a new research thread"
@@ -244,18 +279,28 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           </button>
         </div>
 
-        <section className="threads-section" aria-label="Research threads">
-          <div className="threads-header">
-            <span className="section-caption">Threads</span>
-            <span className="threads-count-badge">{threads.length}</span>
+        <section
+          className="flex flex-col flex-1 min-h-0 overflow-hidden"
+          aria-label="Research threads"
+        >
+          <div className="flex items-center justify-between px-3.5 pt-2.5 pb-1.5 shrink-0">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.6px]">
+              Threads
+            </span>
+            <span className="text-[10px] font-semibold px-1.5 py-px rounded-full bg-card border border-border text-muted-foreground">
+              {threads.length}
+            </span>
           </div>
 
           {threads.length > 2 && (
-            <div className="threads-search-wrap">
-              <Search size={13} className="threads-search-icon" />
+            <div className="px-3.5 pb-2 shrink-0 relative flex items-center">
+              <Search
+                size={13}
+                className="absolute left-5.5 text-muted-foreground pointer-events-none"
+              />
               <input
                 type="text"
-                className="threads-search-input"
+                className="w-full h-7 pl-7 pr-2.5 bg-card border border-border rounded-sm text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                 placeholder="Filter threads..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -264,14 +309,19 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </div>
           )}
 
-          <div className="threads-list">
+          <div className="flex flex-col gap-0.5 px-2.5 pb-2.5 overflow-y-auto flex-1">
             {filteredThreads.map((thread) => {
               const isActive =
                 thread.id === activeThreadId && activeView === 'chat'
               return (
                 <div
                   key={thread.id}
-                  className={`thread-item-row ${isActive ? 'active' : ''}`}
+                  className={cn(
+                    'group flex items-center justify-between h-8.5 pl-2.5 pr-2 rounded-md text-xs font-medium transition-colors cursor-pointer relative',
+                    isActive
+                      ? 'bg-card text-foreground font-semibold shadow-xs border border-border'
+                      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground',
+                  )}
                   onClick={() => {
                     onSelectThread(thread.id)
                     onSelectView('chat')
@@ -285,15 +335,21 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                     }
                   }}
                 >
-                  <div className="thread-item-title-group">
-                    <MessageSquare size={14} className="thread-item-icon" />
-                    <span className="thread-item-title" title={thread.label}>
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <MessageSquare
+                      size={14}
+                      className={cn(
+                        'shrink-0',
+                        isActive ? 'text-primary' : 'text-muted-foreground',
+                      )}
+                    />
+                    <span className="truncate" title={thread.label}>
                       {thread.label}
                     </span>
                   </div>
                   <button
                     type="button"
-                    className="thread-action-btn"
+                    className="hidden group-hover:flex items-center justify-center w-5.5 h-5.5 rounded-sm text-muted-foreground shrink-0 transition-colors hover:bg-sidebar-accent hover:text-foreground"
                     onClick={(e) => {
                       e.stopPropagation()
                       onRenameThread(thread)
@@ -305,7 +361,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                   </button>
                   <button
                     type="button"
-                    className="thread-action-btn danger"
+                    className="hidden group-hover:flex items-center justify-center w-5.5 h-5.5 rounded-sm text-muted-foreground shrink-0 transition-colors hover:bg-status-danger/10 hover:text-status-danger"
                     onClick={(e) => {
                       e.stopPropagation()
                       onDeleteThread(thread)
@@ -320,7 +376,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             })}
 
             {threads.length === 0 && (
-              <div className="threads-empty-state">
+              <div className="flex flex-col items-center justify-center py-6 px-4 text-center text-muted-foreground text-[11px] leading-relaxed">
                 <p>No research threads yet.</p>
                 <p>Create a thread to begin an evidence-backed inquiry.</p>
               </div>
@@ -328,31 +384,37 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           </div>
         </section>
 
-        <div
-          className="sidebar-nav-group"
-          style={{
-            borderTop: '1px solid var(--sidebar-border)',
-            borderBottom: 'none',
-          }}
-        >
-          <div className="section-caption" style={{ padding: '4px 6px 6px' }}>
+        <div className="p-2 px-2.5 flex flex-col gap-0.5 border-t border-sidebar-border shrink-0">
+          <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.6px] px-1.5 py-1">
             Library
           </div>
           <button
             type="button"
-            className={`sidebar-nav-btn ${activeView === 'workbench' ? 'active' : ''}`}
+            className={cn(
+              'flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md text-xs font-medium transition-colors',
+              activeView === 'workbench'
+                ? 'bg-card text-primary font-semibold shadow-xs border border-border'
+                : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground',
+            )}
             onClick={() => onSelectView('workbench')}
             title="Open Source Workbench"
           >
             <Layers size={15} />
             <span>Source Workbench</span>
             {sourcesCount > 0 && (
-              <span className="sidebar-nav-badge">{sourcesCount}</span>
+              <span className="ml-auto text-[10px] font-semibold px-1.5 py-px rounded-full bg-muted text-muted-foreground">
+                {sourcesCount}
+              </span>
             )}
           </button>
           <button
             type="button"
-            className={`sidebar-nav-btn ${activeView === 'outputs' ? 'active' : ''}`}
+            className={cn(
+              'flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md text-xs font-medium transition-colors',
+              activeView === 'outputs'
+                ? 'bg-card text-primary font-semibold shadow-xs border border-border'
+                : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground',
+            )}
             onClick={() => onSelectView('outputs')}
             title="Open workspace outputs"
           >
@@ -361,10 +423,10 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           </button>
         </div>
 
-        <footer className="sidebar-footer">
+        <footer className="flex items-center justify-between h-12 px-3.5 border-t border-sidebar-border shrink-0 bg-sidebar">
           <button
             type="button"
-            className="theme-toggle-btn"
+            className="flex items-center justify-center w-7 h-7 rounded-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
             onClick={onToggleTheme}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             aria-label="Toggle theme"

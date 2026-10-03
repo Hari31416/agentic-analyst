@@ -22,14 +22,7 @@
 
 /* Theme variables integration for dark and light modes */
 .connection-form,
-.crawl-form,
-.source-dataset-card,
-.dataset-summary-card,
-.document-inspector-card,
-.schema-summary-card,
-.dataset-detail,
-.sql-console,
-.block-card {
+.crawl-form {
   background: var(--card) !important;
   border-color: var(--border) !important;
   color: var(--foreground) !important;
@@ -39,42 +32,12 @@
 .connection-grid select,
 .crawl-url-field input,
 .crawl-limits input,
-.sql-editor textarea,
-.query-runner textarea,
 .chunk-strategy-select select {
   background: var(--background) !important;
   border-color: var(--border) !important;
   color: var(--foreground) !important;
 }
 
-.dataset-table,
-.dataset-rows-table,
-.query-results-table {
-  background: var(--card) !important;
-  color: var(--foreground) !important;
-  border-color: var(--border) !important;
-}
-
-.dataset-table th,
-.dataset-rows-table th,
-.query-results-table th {
-  background: var(--muted) !important;
-  color: var(--muted-foreground) !important;
-  border-color: var(--border) !important;
-}
-
-.dataset-table td,
-.dataset-rows-table td,
-.query-results-table td {
-  border-color: var(--border) !important;
-  color: var(--foreground) !important;
-}
-
-.dataset-table tr:hover,
-.dataset-rows-table tr:hover,
-.query-results-table tr:hover {
-  background: var(--accent) !important;
-}
 
 .file-upload-form {
   display: flex;

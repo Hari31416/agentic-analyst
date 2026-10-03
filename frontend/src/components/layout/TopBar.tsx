@@ -1,37 +1,44 @@
 import { FC } from 'react'
-import { ArrowLeft, ChevronRight } from 'lucide-react'
+import {
+  ArrowLeft,
+  ChevronRight,
+  PanelRightClose,
+  PanelRightOpen,
+} from 'lucide-react'
 import { SystemReadiness } from '../RightSidebar'
+import { cn } from '../../lib/utils'
 
 type TopBarProps = {
   isLeftSidebarCollapsed?: boolean
   onToggleLeftSidebar?: () => void
-  isRightSidebarOpen: boolean
-  onToggleRightSidebar: () => void
+  isRightSidebarOpen?: boolean
+  onToggleRightSidebar?: () => void
   activeWorkspaceLabel: string
   activeThreadLabel?: string
   activeView: 'chat' | 'workbench' | 'outputs'
   onSelectView: (view: 'chat' | 'workbench' | 'outputs') => void
-  readiness: SystemReadiness | null
-  health: 'checking' | 'online' | 'offline'
-  onRefresh: () => void
-  sourcesCount: number
+  readiness?: SystemReadiness | null
+  health?: 'checking' | 'online' | 'offline'
+  onRefresh?: () => void
+  sourcesCount?: number
 }
 
 export const TopBar: FC<TopBarProps> = ({
-  isLeftSidebarCollapsed: _isLeftSidebarCollapsed,
-  onToggleLeftSidebar: _onToggleLeftSidebar,
+  isRightSidebarOpen = false,
+  onToggleRightSidebar,
   activeWorkspaceLabel,
   activeThreadLabel,
   activeView,
   onSelectView,
+  sourcesCount = 0,
 }) => {
   return (
-    <header className="main-topbar">
-      <div className="topbar-left">
+    <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-card px-4 z-10">
+      <div className="flex items-center gap-3 min-w-0">
         {activeView !== 'chat' && (
           <button
             type="button"
-            className="topbar-toggle-btn"
+            className="flex items-center justify-center size-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted border border-border transition-colors"
             onClick={() => onSelectView('chat')}
             title="Return to chat"
             aria-label="Return to chat"
@@ -40,10 +47,10 @@ export const TopBar: FC<TopBarProps> = ({
           </button>
         )}
 
-        <div className="breadcrumbs">
-          <span className="breadcrumb-root">{activeWorkspaceLabel}</span>
-          <ChevronRight size={13} className="breadcrumb-separator" />
-          <strong className="breadcrumb-current">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap overflow-hidden">
+          <span>{activeWorkspaceLabel}</span>
+          <ChevronRight size={13} className="text-muted-foreground/40" />
+          <strong className="text-foreground font-semibold truncate max-w-[280px]">
             {activeView === 'chat'
               ? (activeThreadLabel ?? 'Research Conversation')
               : activeView === 'workbench'
@@ -51,6 +58,31 @@ export const TopBar: FC<TopBarProps> = ({
                 : 'Workspace Outputs'}
           </strong>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className={cn(
+            'relative flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted hover:text-foreground',
+            isRightSidebarOpen &&
+              'bg-accent text-accent-foreground border-primary/30',
+          )}
+          onClick={onToggleRightSidebar}
+          title={isRightSidebarOpen ? 'Hide inspector' : 'Open inspector'}
+          aria-label={isRightSidebarOpen ? 'Hide inspector' : 'Open inspector'}
+        >
+          {isRightSidebarOpen ? (
+            <PanelRightClose size={15} />
+          ) : (
+            <PanelRightOpen size={15} />
+          )}
+          {sourcesCount > 0 && !isRightSidebarOpen && (
+            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shadow-sm">
+              {sourcesCount}
+            </span>
+          )}
+        </button>
       </div>
     </header>
   )

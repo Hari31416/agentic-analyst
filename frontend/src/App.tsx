@@ -348,6 +348,7 @@ export function App() {
             <ArtifactBrowser
               workspaceId={workspaceId}
               onWorkspaceImported={handleWorkspaceImported}
+              onSourcesChanged={refreshSources}
             />
           ) : activeView === 'chat' ? (
             threadId ? (

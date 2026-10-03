@@ -23,6 +23,7 @@ import './artifact-browser.css'
 type ArtifactBrowserProps = {
   workspaceId: string
   onWorkspaceImported: (result: WorkspaceImportResult) => void
+  onSourcesChanged: () => Promise<void>
 }
 
 function readable(value: unknown): string {
@@ -255,7 +256,13 @@ function ChartPreview({ spec }: { spec: PlotlySpec }) {
   )
 }
 
-function ArtifactDetail({ artifact }: { artifact: ArtifactManifest }) {
+function ArtifactDetail({
+  artifact,
+  onSourcesChanged,
+}: {
+  artifact: ArtifactManifest
+  onSourcesChanged: () => Promise<void>
+}) {
   const [preview, setPreview] = useState<{
     text: string | null
     truncated: boolean
@@ -264,6 +271,8 @@ function ArtifactDetail({ artifact }: { artifact: ArtifactManifest }) {
   const [chart, setChart] = useState<PlotlySpec | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [reuseMessage, setReuseMessage] = useState('')
+  const [registering, setRegistering] = useState(false)
   const [offset, setOffset] = useState(0)
   const mediaType = artifact.media_type.toLowerCase().split(';')[0].trim()
   const isPdf = mediaType === 'application/pdf'
@@ -277,6 +286,8 @@ function ArtifactDetail({ artifact }: { artifact: ArtifactManifest }) {
     /json|markdown|notebook|report/i.test(
       `${artifact.artifact_type} ${mediaType}`,
     )
+  const isReusableCsv =
+    mediaType === 'text/csv' && artifact.artifact_type === 'table'
 
   useEffect(() => {
     let active = true
@@ -337,6 +348,29 @@ function ArtifactDetail({ artifact }: { artifact: ArtifactManifest }) {
     }
   }
 
+  async function registerDataset() {
+    setRegistering(true)
+    setError('')
+    setReuseMessage('')
+    try {
+      const result = await phase06Api.registerDataset(artifact.id)
+      await onSourcesChanged()
+      setReuseMessage(
+        result.reused
+          ? `Already available as ${result.display_name}.`
+          : `Added ${result.display_name} as a dataset for later runs.`,
+      )
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : 'Could not register this output as a dataset.',
+      )
+    } finally {
+      setRegistering(false)
+    }
+  }
+
   return (
     <article className="artifact-detail">
       <header className="artifact-detail-header">
@@ -346,13 +380,31 @@ function ArtifactDetail({ artifact }: { artifact: ArtifactManifest }) {
           </div>
           <h2>{artifact.display_name}</h2>
         </div>
-        <a
-          className="outputs-download"
-          href={phase06Api.downloadUrl(artifact.id)}
-        >
-          <Download size={14} /> Download
-        </a>
+        <div className="artifact-header-actions">
+          {isReusableCsv && (
+            <button
+              className="outputs-download"
+              type="button"
+              onClick={() => void registerDataset()}
+              disabled={registering}
+            >
+              {registering ? (
+                <LoaderCircle size={14} className="spin" />
+              ) : (
+                <FileText size={14} />
+              )}
+              {registering ? 'Adding dataset' : 'Use as dataset'}
+            </button>
+          )}
+          <a
+            className="outputs-download"
+            href={phase06Api.downloadUrl(artifact.id)}
+          >
+            <Download size={14} /> Download
+          </a>
+        </div>
       </header>
+      {reuseMessage && <div className="artifact-success">{reuseMessage}</div>}
       <dl className="artifact-metadata">
         <div>
           <dt>Format</dt>
@@ -495,6 +547,7 @@ function ArtifactDetail({ artifact }: { artifact: ArtifactManifest }) {
 export default function ArtifactBrowser({
   workspaceId,
   onWorkspaceImported,
+  onSourcesChanged,
 }: ArtifactBrowserProps) {
   const [artifacts, setArtifacts] = useState<ArtifactManifest[]>([])
   const [selectedId, setSelectedId] = useState('')
@@ -640,7 +693,11 @@ export default function ArtifactBrowser({
         </aside>
         <div className="outputs-detail-pane">
           {selected ? (
-            <ArtifactDetail key={selected.id} artifact={selected} />
+            <ArtifactDetail
+              key={selected.id}
+              artifact={selected}
+              onSourcesChanged={onSourcesChanged}
+            />
           ) : (
             <div className="artifact-empty outputs-select-empty">
               Select an artifact to inspect its preview, data, and lineage.

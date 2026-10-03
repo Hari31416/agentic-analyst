@@ -192,6 +192,18 @@
   margin-bottom: 16px;
 }
 
+.artifact-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.artifact-success {
+  margin: -5px 0 14px;
+  color: var(--status-success, var(--foreground));
+  font-size: 11px;
+}
+
 .artifact-kind {
   margin-bottom: 4px;
   color: var(--muted-foreground);

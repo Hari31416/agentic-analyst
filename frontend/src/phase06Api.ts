@@ -42,6 +42,13 @@ export type WorkspaceImportResult = {
   reindex_required: string[]
 }
 
+export type RegisteredArtifactDataset = {
+  source_id: string
+  dataset_ids: string[]
+  display_name: string
+  reused: boolean
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init)
   if (!response.ok) {
@@ -76,6 +83,11 @@ export const phase06Api = {
   chart: (artifactId: string) =>
     request<PlotlySpec>(
       `/api/artifacts/${encodeURIComponent(artifactId)}/chart`,
+    ),
+  registerDataset: (artifactId: string) =>
+    request<RegisteredArtifactDataset>(
+      `/api/artifacts/${encodeURIComponent(artifactId)}/dataset`,
+      { method: 'POST' },
     ),
   previewUrl: (artifactId: string) =>
     `/api/artifacts/${encodeURIComponent(artifactId)}/content`,

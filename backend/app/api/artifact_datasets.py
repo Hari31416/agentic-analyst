@@ -72,12 +72,14 @@ def _validate_lineage(
             source_id, separator, raw_version = reference.rpartition("@")
             expected = versions.get(source_id)
             if separator:
-                try:
-                    lineage_version = int(raw_version)
-                except ValueError as error:
-                    raise HTTPException(
-                        409, "Artifact source lineage is stale"
-                    ) from error
+                version_digits = raw_version.removeprefix("v")
+                if not version_digits or any(
+                    character not in "0123456789" for character in version_digits
+                ):
+                    raise HTTPException(409, "Artifact source lineage is stale")
+                lineage_version = int(version_digits)
+                if lineage_version < 1:
+                    raise HTTPException(409, "Artifact source lineage is stale")
                 if expected != lineage_version:
                     raise HTTPException(409, "Artifact source lineage is stale")
             _validate_source(

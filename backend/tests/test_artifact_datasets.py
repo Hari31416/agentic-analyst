@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+import pytest
 
 from app.api.artifact_datasets import router
 from app.config import Settings
@@ -118,6 +119,39 @@ def test_register_csv_artifact_is_idempotent_and_retains_lineage(tmp_path, monke
                 )
                 == 1
             )
+    finally:
+        client.close()
+        engine.dispose()
+
+
+def test_register_accepts_canonical_v_prefixed_source_lineage(tmp_path, monkeypatch):
+    client, sessions, ids, engine = _fixture(tmp_path, monkeypatch)
+    try:
+        with sessions.begin() as session:
+            source = session.get(Source, ids["source"])
+            artifact = session.get(Artifact, ids["artifact"])
+            assert source is not None and artifact is not None
+            artifact.lineage = [source.id, f"source:{source.id}@v{source.version}"]
+        response = client.post(f"/api/artifacts/{ids['artifact']}/dataset")
+        assert response.status_code == 201, response.text
+        assert response.json()["reused"] is False
+    finally:
+        client.close()
+        engine.dispose()
+
+
+@pytest.mark.parametrize("version_suffix", ["v0", "+1", "vv1", "١"])
+def test_register_rejects_non_positive_or_non_decimal_lineage_version(
+    tmp_path, monkeypatch, version_suffix
+):
+    client, sessions, ids, engine = _fixture(tmp_path, monkeypatch)
+    try:
+        with sessions.begin() as session:
+            artifact = session.get(Artifact, ids["artifact"])
+            assert artifact is not None
+            artifact.lineage = [f"source:{ids['source']}@{version_suffix}"]
+        response = client.post(f"/api/artifacts/{ids['artifact']}/dataset")
+        assert response.status_code == 409
     finally:
         client.close()
         engine.dispose()

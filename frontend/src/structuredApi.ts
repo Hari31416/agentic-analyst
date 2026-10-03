@@ -56,6 +56,19 @@ export type SourceView = {
   datasets?: DatasetSummary[]
 }
 
+export function sourceKindLabel(kind: string): string {
+  const labels: Record<string, string> = {
+    csv: 'CSV dataset',
+    json: 'JSON records',
+    parquet: 'Parquet records',
+    xls: 'Excel workbook',
+    xlsx: 'Excel workbook',
+    mysql: 'MySQL database',
+    postgresql: 'PostgreSQL database',
+  }
+  return labels[kind.toLowerCase()] ?? kind
+}
+
 export type ConnectionDraft = {
   dialect: 'mysql' | 'postgresql'
   host: string

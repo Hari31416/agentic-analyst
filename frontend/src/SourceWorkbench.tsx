@@ -30,6 +30,7 @@ import {
   DatasetSummary,
   SourceSchema,
   SourceView,
+  sourceKindLabel,
   structuredApi,
 } from './structuredApi'
 import {
@@ -737,7 +738,7 @@ function SourceWorkbench({
             <span>{selectedFile?.name ?? 'Choose a data file'}</span>
             <input
               type="file"
-              accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+              accept=".csv,.xlsx,.xls,.json,.parquet,text/csv,application/json,application/vnd.apache.parquet,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
               onChange={chooseFile}
             />
           </label>
@@ -753,7 +754,9 @@ function SourceWorkbench({
             )}
             {uploading ? 'Uploading' : 'Add file'}
           </button>
-          <span className="supported-formats">CSV · XLSX · XLS</span>
+          <span className="supported-formats">
+            CSV · XLSX · XLS · JSON · Parquet
+          </span>
         </form>
         <form className="document-upload-form" onSubmit={uploadDocuments}>
           <label className="upload-pick document-upload-pick">
@@ -1243,7 +1246,7 @@ function SourceWorkbench({
                 <span className="catalog-source-copy">
                   <strong>{source.display_name}</strong>
                   <small>
-                    {source.kind} · v{source.version}
+                    {sourceKindLabel(source.kind)} · v{source.version}
                   </small>
                 </span>
                 <span
@@ -1259,7 +1262,8 @@ function SourceWorkbench({
                 <header className="catalog-detail-head">
                   <div>
                     <span className="mini-label">
-                      {selectedSource.kind} / SOURCE {selectedSource.version}
+                      {sourceKindLabel(selectedSource.kind)} / SOURCE{' '}
+                      {selectedSource.version}
                     </span>
                     <h3>{selectedSource.display_name}</h3>
                   </div>
@@ -1446,7 +1450,7 @@ function SourceWorkbench({
                     )}
                     {schema && <SchemaSummary schema={schema} />}
                     <div className="dataset-strip-head">
-                      <span className="mini-label">Datasets / sheets</span>
+                      <span className="mini-label">Datasets</span>
                       <span>
                         {String(sourceDatasets.length).padStart(2, '0')}
                       </span>
@@ -1480,7 +1484,7 @@ function SourceWorkbench({
                           ? `This source is ${selectedSource.state.toLowerCase()}. Datasets are unavailable until it is ready.`
                           : isDatabase(selectedSource)
                             ? 'Inspect or refresh the schema to discover tables.'
-                            : 'No sheets were found in this source.'}
+                            : 'No datasets were found in this source.'}
                       </p>
                     )}
 

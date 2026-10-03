@@ -13,7 +13,7 @@ import {
   Server,
   Upload,
 } from 'lucide-react'
-import { DatasetSummary } from '../structuredApi'
+import { DatasetSummary, sourceKindLabel } from '../structuredApi'
 
 export type SourceRecord = {
   id: string
@@ -146,7 +146,9 @@ export const RightSidebar: FC<RightSidebarProps> = ({
     if (
       lower.includes('csv') ||
       lower.includes('sheet') ||
-      lower.includes('table')
+      lower.includes('table') ||
+      lower.includes('json') ||
+      lower.includes('parquet')
     ) {
       return <FileSpreadsheet size={16} />
     }
@@ -290,6 +292,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                 <input
                   id="quick-upload-input"
                   type="file"
+                  accept=".csv,.xlsx,.xls,.json,.parquet,.pdf,.docx,.txt,.md,.markdown,.html,.htm,.pptx"
                   style={{ display: 'none' }}
                   onChange={handleFileInput}
                   disabled={isUploading}
@@ -301,7 +304,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                     : 'Drop source document here'}
                 </div>
                 <div className="quick-upload-desc">
-                  Supports PDF, CSV, Excel, TXT, SQLite, JSON
+                  Supports PDF, CSV, Excel, JSON, Parquet, and documents
                 </div>
               </div>
 
@@ -367,7 +370,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                           {source.display_name}
                         </span>
                         <div className="source-item-meta">
-                          <span>{source.kind}</span>
+                          <span>{sourceKindLabel(source.kind)}</span>
                           <span>v{source.version}</span>
                           <span className={`state-badge ${badgeClass}`}>
                             {source.state}
@@ -414,7 +417,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                       className="source-item-meta"
                       style={{ marginTop: '4px' }}
                     >
-                      <span>Kind: {selectedSource.kind}</span>
+                      <span>Kind: {sourceKindLabel(selectedSource.kind)}</span>
                       <span>Version: {selectedSource.version}</span>
                     </div>
                   </div>

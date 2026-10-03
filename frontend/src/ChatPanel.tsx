@@ -34,7 +34,7 @@ import {
   RunEvent,
   chatApi,
 } from './chatApi'
-import { DatasetSummary } from './structuredApi'
+import { DatasetSummary, sourceKindLabel } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
 import './chat.css'
 
@@ -167,7 +167,9 @@ function formatSize(bytes: number): string {
 }
 
 function SourceGlyph({ kind }: { kind: string }) {
-  const structured = /csv|sheet|spreadsheet|table|database/i.test(kind)
+  const structured = /csv|sheet|spreadsheet|table|database|json|parquet/i.test(
+    kind,
+  )
   return structured ? <FileSpreadsheet size={15} /> : <FileText size={15} />
 }
 
@@ -901,7 +903,7 @@ function ChatPanel({
                       <span className="source-check-copy">
                         <strong>{source.display_name}</strong>
                         <small>
-                          {source.kind} · v{source.version}
+                          {sourceKindLabel(source.kind)} · v{source.version}
                         </small>
                       </span>
                       <span

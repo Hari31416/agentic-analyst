@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     reranker_model_path: Path | None = None
     reranker_revision: str | None = None
     supported_languages: list[str] = ["en-IN", "hi-IN"]
+    speech_model_path: Path | None = None
+    speech_max_upload_bytes: int = 10 * 1024 * 1024
+    speech_max_duration_seconds: int = 60
+    speech_timeout_seconds: int = 90
+    speech_cpu_threads: int = 2
     max_tool_calls: int = 20
     max_model_calls: int = 20
     max_context_characters: int = 60000
@@ -144,11 +149,21 @@ class Settings(BaseSettings):
             "embedding_dimension",
             "embedding_batch_size",
             "embedding_threads",
+            "speech_max_upload_bytes",
+            "speech_max_duration_seconds",
+            "speech_timeout_seconds",
+            "speech_cpu_threads",
         ):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} must be positive")
         if self.ocr_timeout_seconds > 60:
             raise ValueError("OCR timeout cannot exceed 60 seconds per page")
+        if self.speech_max_upload_bytes > 25 * 1024 * 1024:
+            raise ValueError("Speech upload limit cannot exceed 25 MiB")
+        if self.speech_max_duration_seconds > 120:
+            raise ValueError("Speech duration limit cannot exceed 120 seconds")
+        if self.speech_timeout_seconds > 180 or self.speech_cpu_threads > 8:
+            raise ValueError("Speech resource settings exceed safe bounds")
         if self.job_lease_seconds < 6:
             raise ValueError("job lease must allow at least six seconds")
         return self

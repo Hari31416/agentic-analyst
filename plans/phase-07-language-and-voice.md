@@ -40,18 +40,18 @@ Outcome: extensible language handling and usable voice where providers are avail
 
 ## Acceptance and validation
 
-- [ ] Hindi/English document, SQL, and Python questions preserve numbers, names,
+- [x] Hindi/English document, SQL, and Python questions preserve numbers, names,
   identifiers, citations, and requested answer language.
-- [ ] Romanized-Hindi and cross-language retrieval improvements are measured
+- [x] Romanized-Hindi and cross-language retrieval improvements are measured
   against the earlier baseline, including false matches and unresolved ambiguity.
-- [ ] Actual STT audio reaches an editable transcript and executes only after send.
-- [ ] Available TTS produces playable audio and stop/cleanup works; unavailable
+- [x] Actual STT audio reaches an editable transcript and executes only after send.
+- [x] Available TTS produces playable audio and stop/cleanup works; unavailable
   capabilities are clearly represented and cannot be advertised as working.
-- [ ] A new language can be registered without changing the main loop.
-- [ ] Invalid/oversized audio, provider failure, denied fallback, and mixed-language
+- [x] A new language can be registered without changing the main loop.
+- [x] Invalid/oversized audio, provider failure, denied fallback, and mixed-language
   uncertainty have useful errors and do not lose the user's original text.
-- [ ] External-provider policy and temporary-audio cleanup are tested.
-- [ ] Critical Hindi UI text and audio numerals/names have a recorded review status.
+- [x] External-provider policy and temporary-audio cleanup are tested.
+- [x] Critical Hindi UI text and audio numerals/names have a recorded review status.
 
 The feature gate is explicit per capability: core Hindi/English text and local
 STT must be exercised; translation/TTS may remain unavailable if no viable
@@ -62,3 +62,22 @@ Do not mark unavailable optional providers as implemented inference.
 
 Record the capability matrix, actual tested providers/models/assets, resource use,
 language coverage, review status, privacy settings, and unsupported speech cases.
+
+
+## 3 October 2026 baseline verification
+
+The user requested a simple working first pass and explicitly deferred perfect
+language quality. Registry tags and library-backed local STT are exercised.
+Three configured-model runs complete English file SQL, Hindi Python and Hindi
+document questions with expected numbers and requested answer languages.
+The audio HTTP contract returns drafts without creating any analytical work.
+Transcripts remain editable and require the explicit Send action.
+
+Local tiny-model Hindi output is Romanized and contains numeral/name mistakes;
+English has a scheme-word miss. No quality tuning or inference retry follows
+these observations. Glossary variants did not improve this small corpus and
+remain optional in Advanced retrieval; Basic stays unchanged. Translation and
+TTS have no configured viable provider and remain unavailable. Core Hindi UI
+strings have coding-agent review; native-speaker and full browser review remain
+deferred. Detailed limits, provider/assets, measurements and provenance are in
+`docs/language-and-voice.md` and the retained `evals/reports/phase07-*.json` files.

@@ -1,0 +1,799 @@
+{
+  "phase": "07",
+  "model": "gemma-4-26B-A4B-it",
+  "cases": [
+    {
+      "label": "english_file_sql",
+      "run_id": "6b443e3f-ebce-4f96-aa27-1d91aab70636",
+      "requested_answer_language": "en-IN",
+      "state": "completed",
+      "outcome": {
+        "text": "Based on the calculation performed on the regional grants CSV (table alias: `data_0e4001e100564b67b7d15a6979c0ba2e`), the results are as follows:\n\n- **Total eligible_count**: 2\n- **Total total_inr**: 25000.00\n\nCalculation Evidence ID: 3a49f2a3-e829-41ec-aa86-3f89b16cee7d",
+        "usage": {
+          "total_tokens": 19758,
+          "prompt_tokens": 19062,
+          "completion_tokens": 696
+        },
+        "cleanup": "complete",
+        "tool_calls": 4,
+        "model_calls": 5,
+        "artifact_ids": [
+          "bdd929e6-921c-5edd-b35c-bff99f45e5cf"
+        ],
+        "evidence_ids": [
+          "3a49f2a3-e829-41ec-aa86-3f89b16cee7d"
+        ],
+        "clarification": false,
+        "prompt_version": "analyst-v5"
+      },
+      "language_metadata": {
+        "tags": [
+          "en-IN"
+        ],
+        "script": "Latn",
+        "provider": "script-heuristic",
+        "segments": [
+          {
+            "end": 294,
+            "text": "Use run_sql on the selected retained regional grants CSV to calculate SUM of eligible_count and SUM of total_inr. Discover its actual table alias and columns first. Report the exact count and INR amount with the calculation evidence ID. Answer in English; retain identifiers and numeric values.",
+            "start": 0,
+            "script": "Latn",
+            "language": "en-IN"
+          }
+        ],
+        "confidence": "uncertain",
+        "capabilities": {
+          "translation": false,
+          "text_metadata": true
+        },
+        "confidence_score": null,
+        "requested_answer_language": "en-IN"
+      },
+      "tools": [
+        {
+          "name": "list_sources",
+          "status": "ok"
+        },
+        {
+          "name": "inspect_schema",
+          "status": "ok"
+        },
+        {
+          "name": "run_sql",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "label": "hindi_python",
+      "run_id": "7ecd79ac-7dff-4065-bb7a-4afd90a4862c",
+      "requested_answer_language": "hi-IN",
+      "state": "completed",
+      "outcome": {
+        "text": "चयनित क्षेत्रीय अनुदान (dataset_id: 0e4001e1-0056-4b67-b7d1-5a6979c0ba2e) के लिए गणना इस प्रकार है:\n\n- **eligible_count** का योग: 2\n- **total_inr** का योग: 25000.0 (INR में)\n\nइन परिणामों को `result.csv` में सुरक्षित कर दिया गया है।",
+        "usage": {
+          "total_tokens": 14482,
+          "prompt_tokens": 13805,
+          "completion_tokens": 677
+        },
+        "cleanup": "complete",
+        "tool_calls": 3,
+        "model_calls": 4,
+        "artifact_ids": [
+          "cadc09a3-468b-5dc2-b4ba-899cc28a5025"
+        ],
+        "evidence_ids": [],
+        "clarification": false,
+        "prompt_version": "analyst-v5"
+      },
+      "language_metadata": {
+        "tags": [
+          "hi-IN",
+          "en-IN"
+        ],
+        "script": "Deva",
+        "provider": "script-heuristic",
+        "segments": [
+          {
+            "end": 5,
+            "text": "चयनित",
+            "start": 0,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 15,
+            "text": "क्षेत्रीय",
+            "start": 6,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 22,
+            "text": "अनुदान",
+            "start": 16,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 29,
+            "text": "के",
+            "start": 27,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 47,
+            "text": "और",
+            "start": 45,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 60,
+            "text": "का",
+            "start": 58,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 70,
+            "text": "से",
+            "start": 68,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 74,
+            "text": "योग",
+            "start": 71,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 83,
+            "text": "निकालें।",
+            "start": 75,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 99,
+            "text": "से",
+            "start": 97,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 103,
+            "text": "सही",
+            "start": 100,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 120,
+            "text": "चुनें",
+            "start": 115,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 125,
+            "text": "उसे",
+            "start": 122,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 146,
+            "text": "से",
+            "start": 144,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 152,
+            "text": "मंचित",
+            "start": 147,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 157,
+            "text": "करें",
+            "start": 153,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 161,
+            "text": "और",
+            "start": 159,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 166,
+            "text": "उसका",
+            "start": 162,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 170,
+            "text": "दिए",
+            "start": 167,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 173,
+            "text": "गए",
+            "start": 171,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 211,
+            "text": "पथ",
+            "start": 209,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 218,
+            "text": "पढ़ें।",
+            "start": 212,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 223,
+            "text": "राशि",
+            "start": 219,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 231,
+            "text": "में",
+            "start": 228,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 235,
+            "text": "है।",
+            "start": 232,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 241,
+            "text": "उत्तर",
+            "start": 236,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 247,
+            "text": "हिंदी",
+            "start": 242,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 251,
+            "text": "में",
+            "start": 248,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 255,
+            "text": "दें",
+            "start": 252,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 260,
+            "text": "मूल",
+            "start": 257,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 282,
+            "text": "और",
+            "start": 280,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 286,
+            "text": "सही",
+            "start": 283,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 295,
+            "text": "संख्याएँ",
+            "start": 287,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 301,
+            "text": "रखें।",
+            "start": 296,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 306,
+            "text": "गणना",
+            "start": 302,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 309,
+            "text": "को",
+            "start": 307,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 314,
+            "text": "छोटे",
+            "start": 310,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 329,
+            "text": "में",
+            "start": 326,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 338,
+            "text": "सुरक्षित",
+            "start": 330,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 344,
+            "text": "करें।",
+            "start": 339,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 344,
+            "text": "चयनित क्षेत्रीय अनुदान CSV के eligible_count और total_inr का Python से योग निकालें। list_sources से सही dataset_id चुनें, उसे input_dataset_ids से मंचित करें, और उसका दिए गए /workspace/inputs/<dataset_id>.csv पथ पढ़ें। राशि INR में है। उत्तर हिंदी में दें, मूल column identifiers और सही संख्याएँ रखें। गणना को छोटे result.csv में सुरक्षित करें।",
+            "start": 0,
+            "script": "Latn",
+            "language": "en-IN"
+          }
+        ],
+        "confidence": "uncertain",
+        "capabilities": {
+          "translation": false,
+          "text_metadata": true
+        },
+        "confidence_score": null,
+        "requested_answer_language": "hi-IN"
+      },
+      "tools": [
+        {
+          "name": "list_sources",
+          "status": "ok"
+        },
+        {
+          "name": "run_python",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "label": "hindi_document",
+      "run_id": "18f96527-b62b-4b30-a8e2-3a0e02de58a6",
+      "requested_answer_language": "hi-IN",
+      "state": "completed",
+      "outcome": {
+        "text": "योजना S1 के लिए वार्षिक आय की अधिकतम सीमा INR 200,000.00 है। दस्तावेज़ के अनुसार, यदि वार्षिक आय इस सीमा के बराबर या उससे कम है (inclusive), तो आवेदक पात्र है। उदाहरण के लिए, APP-002 जो कि ठीक सीमा पर है, वह पात्र है।\n\n**मूल साक्ष्य (Original Evidence):**\n\"Qualifies when scheme S1 is active and annual income is at most INR 200,000.00 (inclusive).\" (Evidence ID: 7538f331-cea7-4d87-b107-17dfdd5e7601)",
+        "usage": {
+          "total_tokens": 9983,
+          "prompt_tokens": 9455,
+          "completion_tokens": 528
+        },
+        "cleanup": "complete",
+        "tool_calls": 2,
+        "model_calls": 3,
+        "artifact_ids": [],
+        "evidence_ids": [
+          "7538f331-cea7-4d87-b107-17dfdd5e7601"
+        ],
+        "clarification": false,
+        "prompt_version": "analyst-v5"
+      },
+      "language_metadata": {
+        "tags": [
+          "hi-IN",
+          "en-IN"
+        ],
+        "script": "Deva",
+        "provider": "script-heuristic",
+        "segments": [
+          {
+            "end": 5,
+            "text": "चयनित",
+            "start": 0,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 15,
+            "text": "दस्तावेज़",
+            "start": 6,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 18,
+            "text": "से",
+            "start": 16,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 24,
+            "text": "योजना",
+            "start": 19,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 30,
+            "text": "के",
+            "start": 28,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 34,
+            "text": "लिए",
+            "start": 31,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 42,
+            "text": "वार्षिक",
+            "start": 35,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 45,
+            "text": "आय",
+            "start": 43,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 48,
+            "text": "की",
+            "start": 46,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 55,
+            "text": "अधिकतम",
+            "start": 49,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 60,
+            "text": "सीमा",
+            "start": 56,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 63,
+            "text": "और",
+            "start": 61,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 68,
+            "text": "सीमा",
+            "start": 64,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 71,
+            "text": "के",
+            "start": 69,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 77,
+            "text": "बराबर",
+            "start": 72,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 80,
+            "text": "आय",
+            "start": 78,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 85,
+            "text": "वाले",
+            "start": 81,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 91,
+            "text": "आवेदन",
+            "start": 86,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 94,
+            "text": "की",
+            "start": 92,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 102,
+            "text": "पात्रता",
+            "start": 95,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 109,
+            "text": "बताएं।",
+            "start": 103,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 114,
+            "text": "पहले",
+            "start": 110,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 136,
+            "text": "करें",
+            "start": 132,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 139,
+            "text": "और",
+            "start": 137,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 143,
+            "text": "मूल",
+            "start": 140,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 155,
+            "text": "को",
+            "start": 153,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 166,
+            "text": "करें।",
+            "start": 161,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 172,
+            "text": "उत्तर",
+            "start": 167,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 178,
+            "text": "हिंदी",
+            "start": 173,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 182,
+            "text": "में",
+            "start": 179,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 186,
+            "text": "दें",
+            "start": 183,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 193,
+            "text": "और",
+            "start": 191,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 202,
+            "text": "संख्याएँ",
+            "start": 194,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 208,
+            "text": "यथावत",
+            "start": 203,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 214,
+            "text": "रखें।",
+            "start": 209,
+            "script": "Deva",
+            "language": "hi-IN"
+          },
+          {
+            "end": 214,
+            "text": "चयनित दस्तावेज़ से योजना S1 के लिए वार्षिक आय की अधिकतम सीमा और सीमा के बराबर आय वाले आवेदन की पात्रता बताएं। पहले search_documents करें और मूल evidence को cite करें। उत्तर हिंदी में दें; S1 और संख्याएँ यथावत रखें।",
+            "start": 0,
+            "script": "Latn",
+            "language": "en-IN"
+          }
+        ],
+        "confidence": "uncertain",
+        "capabilities": {
+          "translation": false,
+          "text_metadata": true
+        },
+        "confidence_score": null,
+        "requested_answer_language": "hi-IN"
+      },
+      "tools": [
+        {
+          "name": "search_documents",
+          "status": "ok"
+        }
+      ]
+    }
+  ],
+  "speech_http": [
+    {
+      "language": "en",
+      "result": {
+        "text": "4-Skiem S1, the total grant is 25,000 rupees, application 001 qualifies.",
+        "language": "en-IN",
+        "segments": [
+          {
+            "text": "4-Skiem S1, the total grant is 25,000 rupees, application 001 qualifies.",
+            "start": 0.0,
+            "end": 7.76
+          }
+        ],
+        "provider": "faster_whisper",
+        "model": "faster-whisper-../data/models/faster-whisper-tiny",
+        "duration_seconds": 8.00475,
+        "uncertainty": "Draft transcript; verify names, numbers, and dates before sending."
+      },
+      "audio_sha256": "4a884168e4fff9c11fadbf6fc10e7012b9450b35314e9bfbf5f79e04bce94871"
+    },
+    {
+      "language": "hi",
+      "result": {
+        "text": "Yujna S1,5K Anudan Pachis Hazar Rupé hai, Avidan Shunya Shunya 1-5K",
+        "language": "hi-IN",
+        "segments": [
+          {
+            "text": "Yujna S1,5K Anudan Pachis Hazar Rupé hai,",
+            "start": 0.0,
+            "end": 3.7
+          },
+          {
+            "text": "Avidan Shunya Shunya 1-5K",
+            "start": 3.7,
+            "end": 6.1000000000000005
+          }
+        ],
+        "provider": "faster_whisper",
+        "model": "faster-whisper-../data/models/faster-whisper-tiny",
+        "duration_seconds": 6.3085625,
+        "uncertainty": "Draft transcript; verify names, numbers, and dates before sending."
+      },
+      "audio_sha256": "8585f718b15a5cc6d38c693011909ec73d9f0e746838025d42ca59104eb106ee"
+    }
+  ],
+  "capabilities": {
+    "languages": [
+      {
+        "tag": "en-IN",
+        "name": "English"
+      },
+      {
+        "tag": "hi-IN",
+        "name": "Hindi"
+      }
+    ],
+    "audio_limits": {
+      "max_upload_bytes": 10485760,
+      "max_duration_seconds": 60
+    },
+    "stt": {
+      "available": true,
+      "provider": "faster_whisper",
+      "languages": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "model": "../data/models/faster-whisper-tiny",
+      "reason": null
+    },
+    "translation": {
+      "available": false,
+      "provider": null,
+      "model": null,
+      "reason": "No translation provider configured"
+    },
+    "tts": {
+      "available": false,
+      "provider": null,
+      "model": null,
+      "reason": "No TTS provider configured"
+    }
+  },
+  "transcription_creates_no_runs_jobs_messages_artifacts": true,
+  "invalid_audio_status": 422,
+  "quality_review": "First-pass language behavior only. No retry of failed reasoning or answer-language misses; recorded separately from deterministic safety/contract checks.",
+  "review": {
+    "english_file_sql": "Correct count 2, exact 25000.00 INR, original alias and resolvable structured evidence, English answer.",
+    "hindi_python": "Correct count 2 and numeric INR25000; Hindi answer preserves column names and dataset ID. Python emitted 25000.0 rather than fixed two-place formatting.",
+    "hindi_document": "Hindi answer preserves S1, APP-002 and INR200000 boundary; cites original evidence. Prose omits active-status qualifier but includes it in original quotation.",
+    "speech_en": "Amount25000 and identifier001 retained; scheme pronunciation mistranscribed. Editable draft required.",
+    "speech_hi": "Romanized Hindi output with spurious 5K and corrupted identifiers/words. Editable draft required; no quality tuning.",
+    "ui_catalog": "English/Hindi strings reviewed by coding agents; native-speaker review and complete browser QA deferred.",
+    "optional_providers": "Translation and TTS unavailable. macOS fixture generation is not app TTS inference."
+  },
+  "status": "verified_first_pass_with_recorded_quality_limits"
+}

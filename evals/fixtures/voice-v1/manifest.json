@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "human_review": "Expected transcripts reviewed in repository; recognizer output needs user correction, no native-speaker audio-quality certification.",
+  "fixtures": [
+    {
+      "language": "en-IN",
+      "file": "en.wav",
+      "voice": "Rishi",
+      "rate_words_per_minute": 145,
+      "expected_text": "For scheme S one, the total grant is twenty five thousand rupees. Application zero zero one qualifies.",
+      "sha256": "4a884168e4fff9c11fadbf6fc10e7012b9450b35314e9bfbf5f79e04bce94871",
+      "duration_seconds": 8.00475,
+      "provenance": "Synthetic speech generated 3 October 2026 using installed macOS say, mono signed16 PCM at16kHz. No client recording; local evaluation fixture, not a product TTS provider."
+    },
+    {
+      "language": "hi-IN",
+      "file": "hi.wav",
+      "voice": "Lekha",
+      "rate_words_per_minute": 145,
+      "expected_text": "योजना एस एक में कुल अनुदान पच्चीस हजार रुपये है। आवेदन शून्य शून्य एक पात्र है।",
+      "sha256": "8585f718b15a5cc6d38c693011909ec73d9f0e746838025d42ca59104eb106ee",
+      "duration_seconds": 6.3085625,
+      "provenance": "Synthetic speech generated 3 October 2026 using installed macOS say, mono signed16 PCM at16kHz. No client recording; local evaluation fixture, not a product TTS provider."
+    }
+  ]
+}

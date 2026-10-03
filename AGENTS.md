@@ -44,7 +44,8 @@ Optional issue references or breaking-change notes.
 Types: `chore`, `docs`, `feat`, `fix`, `refactor`, `style`, `test`.
 Scopes: `backend`, `frontend`, `infra`, `general`. Keep subjects at most 50 characters.
 
-The user has authorized phase 06 after the completed phase 05 commits.
-Implement and commit phase 06, then stop. Phase 07 requires a later request.
+The user has authorized phase 07 after the completed phase 06 commits.
+Implement and commit phase 07, then stop. Phase 08 requires a later request.
+Language quality is a first-pass baseline: record misses without repeated tuning.
 OCR quality measurements are descriptive; prioritize code logic, routing,
 bounds, provenance, and failure handling over model-dependent accuracy tuning.

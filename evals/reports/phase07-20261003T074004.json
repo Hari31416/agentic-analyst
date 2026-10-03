@@ -1,0 +1,895 @@
+{
+  "phase": "07",
+  "timestamp": "2026-10-03T07:40:02.974075+00:00",
+  "capabilities": {
+    "languages": [
+      {
+        "tag": "en-IN",
+        "name": "English"
+      },
+      {
+        "tag": "hi-IN",
+        "name": "Hindi"
+      }
+    ],
+    "audio_limits": {
+      "max_upload_bytes": 10485760,
+      "max_duration_seconds": 60
+    },
+    "stt": {
+      "available": true,
+      "provider": "faster_whisper",
+      "model": "../data/models/faster-whisper-tiny",
+      "reason": null
+    },
+    "translation": {
+      "available": false,
+      "reason": "No translation provider configured"
+    },
+    "tts": {
+      "available": false,
+      "reason": "No TTS provider configured"
+    }
+  },
+  "retrieval": [
+    {
+      "language": "en",
+      "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+      "profile": "basic",
+      "latency_ms": 566.99,
+      "criterion_document_ranks": {
+        "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+        "95db3000-6990-4fc4-b81b-1678d60b8b94": 2,
+        "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+        "f821da57-3c13-4733-8536-b0d142b921ca": 5
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "non_supporting_passages_at_3": 1,
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 0
+        },
+        {
+          "stage": "dense",
+          "status": "ready",
+          "model_id": "intfloat/multilingual-e5-small",
+          "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimensions": 384,
+          "candidate_count": 8,
+          "selected_document_count": 4,
+          "matching_generation_count": 4
+        },
+        {
+          "stage": "fusion",
+          "status": "ready",
+          "rrf_k": 60
+        }
+      ],
+      "unresolved_ambiguity": false,
+      "measurement_note": "Advanced includes bounded keyword/fusion stages as well as glossary variants; this is not a glossary-only ablation. Ambiguous case has no asserted eligibility intent."
+    },
+    {
+      "language": "en",
+      "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+      "profile": "advanced",
+      "latency_ms": 38.94,
+      "criterion_document_ranks": {
+        "1c3523c3-f173-4036-a968-280ff7c61f4c": 1,
+        "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+        "95db3000-6990-4fc4-b81b-1678d60b8b94": 4,
+        "f821da57-3c13-4733-8536-b0d142b921ca": 6
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 0.75,
+        "10": 1.0
+      },
+      "non_supporting_passages_at_3": 1,
+      "trace": [
+        {
+          "stage": "rewrite",
+          "status": "skipped",
+          "original": "scheme S1 active annual income maximum eligibility inclusive threshold"
+        },
+        {
+          "stage": "language_variants",
+          "status": "ready",
+          "method": "reviewed-glossary-v1",
+          "matched_terms": [
+            "scheme"
+          ],
+          "original_preserved": true,
+          "model_calls": 0,
+          "limitations": [
+            "Glossary variants are search hints, not translations or resolved entity mappings.",
+            "Unlisted Romanized Hindi and ambiguous words such as kal remain unresolved."
+          ]
+        },
+        {
+          "stage": "expansion",
+          "status": "ready",
+          "rejected_variants": 0,
+          "queries": [
+            "scheme S1 active annual income maximum eligibility inclusive threshold",
+            "scheme S1 active annual income maximum eligibility inclusive threshold योजना",
+            "scheme S1 active income eligibility threshold"
+          ],
+          "method": "keyword-alias-v1",
+          "model_calls": 0
+        },
+        {
+          "stage": "retrieval",
+          "variant": 0,
+          "query": "scheme S1 active annual income maximum eligibility inclusive threshold",
+          "lexical_any": false,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 0
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "retrieval",
+          "variant": 1,
+          "query": "scheme S1 active annual income maximum eligibility inclusive threshold योजना",
+          "lexical_any": true,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 7
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "retrieval",
+          "variant": 2,
+          "query": "scheme S1 active income eligibility threshold",
+          "lexical_any": true,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 7
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "multi_query",
+          "status": "ready",
+          "failures": [],
+          "candidate_budget": 60,
+          "candidate_count": 38,
+          "returned_passages": 24,
+          "unique_count": 8,
+          "consensus": false,
+          "model_calls": 0
+        },
+        {
+          "stage": "rerank",
+          "status": "skipped"
+        },
+        {
+          "stage": "context",
+          "status": "ready",
+          "expanded": false,
+          "compression": "off",
+          "documents": 4,
+          "passages": 8,
+          "character_count": 3810,
+          "token_upper_bound": 5308,
+          "token_budget": 60000
+        },
+        {
+          "stage": "pipeline",
+          "version": "advanced-retrieval-v1",
+          "latency_ms": 37.69,
+          "model_calls": 0
+        }
+      ],
+      "unresolved_ambiguity": false,
+      "measurement_note": "Advanced includes bounded keyword/fusion stages as well as glossary variants; this is not a glossary-only ablation. Ambiguous case has no asserted eligibility intent."
+    },
+    {
+      "language": "hi",
+      "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+      "profile": "basic",
+      "latency_ms": 11.7,
+      "criterion_document_ranks": {
+        "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+        "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+        "1c3523c3-f173-4036-a968-280ff7c61f4c": 4,
+        "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 0.75,
+        "10": 1.0
+      },
+      "non_supporting_passages_at_3": 1,
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 0
+        },
+        {
+          "stage": "dense",
+          "status": "ready",
+          "model_id": "intfloat/multilingual-e5-small",
+          "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimensions": 384,
+          "candidate_count": 8,
+          "selected_document_count": 4,
+          "matching_generation_count": 4
+        },
+        {
+          "stage": "fusion",
+          "status": "ready",
+          "rrf_k": 60
+        }
+      ],
+      "unresolved_ambiguity": false,
+      "measurement_note": "Advanced includes bounded keyword/fusion stages as well as glossary variants; this is not a glossary-only ablation. Ambiguous case has no asserted eligibility intent."
+    },
+    {
+      "language": "hi",
+      "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+      "profile": "advanced",
+      "latency_ms": 31.92,
+      "criterion_document_ranks": {
+        "29414200-17ea-432e-a0e1-a9a952762dfe": 2,
+        "f821da57-3c13-4733-8536-b0d142b921ca": 3,
+        "1c3523c3-f173-4036-a968-280ff7c61f4c": 4,
+        "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 0.75,
+        "10": 1.0
+      },
+      "non_supporting_passages_at_3": 1,
+      "trace": [
+        {
+          "stage": "rewrite",
+          "status": "skipped",
+          "original": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा"
+        },
+        {
+          "stage": "language_variants",
+          "status": "ready",
+          "method": "reviewed-glossary-v1",
+          "matched_terms": [
+            "योजना",
+            "सक्रिय",
+            "वार्षिक",
+            "आय",
+            "पात्रता",
+            "सीमा",
+            "समावेशी",
+            "अधिकतम"
+          ],
+          "original_preserved": true,
+          "model_calls": 0,
+          "limitations": [
+            "Glossary variants are search hints, not translations or resolved entity mappings.",
+            "Unlisted Romanized Hindi and ambiguous words such as kal remain unresolved."
+          ]
+        },
+        {
+          "stage": "expansion",
+          "status": "ready",
+          "rejected_variants": 0,
+          "queries": [
+            "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+            "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा scheme active annual income eligibility threshold inclusive maximum",
+            "योजना S1 सक्रिय आय पात्रता सीमा"
+          ],
+          "method": "keyword-alias-v1",
+          "model_calls": 0
+        },
+        {
+          "stage": "retrieval",
+          "variant": 0,
+          "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा",
+          "lexical_any": false,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 0
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "retrieval",
+          "variant": 1,
+          "query": "योजना S1 सक्रिय वार्षिक आय अधिकतम पात्रता समावेशी सीमा scheme active annual income eligibility threshold inclusive maximum",
+          "lexical_any": true,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 8
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "retrieval",
+          "variant": 2,
+          "query": "योजना S1 सक्रिय आय पात्रता सीमा",
+          "lexical_any": true,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 7
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "multi_query",
+          "status": "ready",
+          "failures": [],
+          "candidate_budget": 60,
+          "candidate_count": 39,
+          "returned_passages": 24,
+          "unique_count": 8,
+          "consensus": false,
+          "model_calls": 0
+        },
+        {
+          "stage": "rerank",
+          "status": "skipped"
+        },
+        {
+          "stage": "context",
+          "status": "ready",
+          "expanded": false,
+          "compression": "off",
+          "documents": 4,
+          "passages": 8,
+          "character_count": 3810,
+          "token_upper_bound": 5308,
+          "token_budget": 60000
+        },
+        {
+          "stage": "pipeline",
+          "version": "advanced-retrieval-v1",
+          "latency_ms": 31.81,
+          "model_calls": 0
+        }
+      ],
+      "unresolved_ambiguity": false,
+      "measurement_note": "Advanced includes bounded keyword/fusion stages as well as glossary variants; this is not a glossary-only ablation. Ambiguous case has no asserted eligibility intent."
+    },
+    {
+      "language": "hi-Latn",
+      "query": "yojana S1 sakriya varshik aay adhiktam patrata samaveshi seema",
+      "profile": "basic",
+      "latency_ms": 9.39,
+      "criterion_document_ranks": {
+        "f821da57-3c13-4733-8536-b0d142b921ca": 1,
+        "95db3000-6990-4fc4-b81b-1678d60b8b94": 3,
+        "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+        "1c3523c3-f173-4036-a968-280ff7c61f4c": 5
+      },
+      "recall_at": {
+        "3": 0.5,
+        "5": 1.0,
+        "10": 1.0
+      },
+      "non_supporting_passages_at_3": 1,
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 0
+        },
+        {
+          "stage": "dense",
+          "status": "ready",
+          "model_id": "intfloat/multilingual-e5-small",
+          "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimensions": 384,
+          "candidate_count": 8,
+          "selected_document_count": 4,
+          "matching_generation_count": 4
+        },
+        {
+          "stage": "fusion",
+          "status": "ready",
+          "rrf_k": 60
+        }
+      ],
+      "unresolved_ambiguity": false,
+      "measurement_note": "Advanced includes bounded keyword/fusion stages as well as glossary variants; this is not a glossary-only ablation. Ambiguous case has no asserted eligibility intent."
+    },
+    {
+      "language": "hi-Latn",
+      "query": "yojana S1 sakriya varshik aay adhiktam patrata samaveshi seema",
+      "profile": "advanced",
+      "latency_ms": 32.74,
+      "criterion_document_ranks": {
+        "f821da57-3c13-4733-8536-b0d142b921ca": 2,
+        "29414200-17ea-432e-a0e1-a9a952762dfe": 4,
+        "1c3523c3-f173-4036-a968-280ff7c61f4c": 5,
+        "95db3000-6990-4fc4-b81b-1678d60b8b94": 6
+      },
+      "recall_at": {
+        "3": 0.25,
+        "5": 0.75,
+        "10": 1.0
+      },
+      "non_supporting_passages_at_3": 2,
+      "trace": [
+        {
+          "stage": "rewrite",
+          "status": "skipped",
+          "original": "yojana S1 sakriya varshik aay adhiktam patrata samaveshi seema"
+        },
+        {
+          "stage": "language_variants",
+          "status": "ready",
+          "method": "reviewed-glossary-v1",
+          "matched_terms": [
+            "yojana",
+            "sakriya",
+            "varshik",
+            "aay",
+            "patrata",
+            "seema",
+            "samaveshi",
+            "adhiktam"
+          ],
+          "original_preserved": true,
+          "model_calls": 0,
+          "limitations": [
+            "Glossary variants are search hints, not translations or resolved entity mappings.",
+            "Unlisted Romanized Hindi and ambiguous words such as kal remain unresolved."
+          ]
+        },
+        {
+          "stage": "expansion",
+          "status": "ready",
+          "rejected_variants": 0,
+          "queries": [
+            "yojana S1 sakriya varshik aay adhiktam patrata samaveshi seema",
+            "yojana S1 sakriya varshik aay adhiktam patrata samaveshi seema योजना scheme सक्रिय active वार्षिक annual आय income पात्रता eligibility सीमा threshold समावेशी inclusive अधिकतम maximum",
+            "yojana S1 sakriya aay patrata seema"
+          ],
+          "method": "keyword-alias-v1",
+          "model_calls": 0
+        },
+        {
+          "stage": "retrieval",
+          "variant": 0,
+          "query": "yojana S1 sakriya varshik aay adhiktam patrata samaveshi seema",
+          "lexical_any": false,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 0
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "retrieval",
+          "variant": 1,
+          "query": "yojana S1 sakriya varshik aay adhiktam patrata samaveshi seema योजना scheme सक्रिय active वार्षिक annual आय income पात्रता eligibility सीमा threshold समावेशी inclusive अधिकतम maximum",
+          "lexical_any": true,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 8
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "retrieval",
+          "variant": 2,
+          "query": "yojana S1 sakriya aay patrata seema",
+          "lexical_any": true,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 6
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "multi_query",
+          "status": "ready",
+          "failures": [],
+          "candidate_budget": 60,
+          "candidate_count": 38,
+          "returned_passages": 24,
+          "unique_count": 8,
+          "consensus": false,
+          "model_calls": 0
+        },
+        {
+          "stage": "rerank",
+          "status": "skipped"
+        },
+        {
+          "stage": "context",
+          "status": "ready",
+          "expanded": false,
+          "compression": "off",
+          "documents": 4,
+          "passages": 8,
+          "character_count": 3810,
+          "token_upper_bound": 5308,
+          "token_budget": 60000
+        },
+        {
+          "stage": "pipeline",
+          "version": "advanced-retrieval-v1",
+          "latency_ms": 32.66,
+          "model_calls": 0
+        }
+      ],
+      "unresolved_ambiguity": false,
+      "measurement_note": "Advanced includes bounded keyword/fusion stages as well as glossary variants; this is not a glossary-only ablation. Ambiguous case has no asserted eligibility intent."
+    },
+    {
+      "language": "ambiguous",
+      "query": "kal Ram APP-001",
+      "profile": "basic",
+      "latency_ms": 7.21,
+      "criterion_document_ranks": {
+        "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+        "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+        "1c3523c3-f173-4036-a968-280ff7c61f4c": 5,
+        "95db3000-6990-4fc4-b81b-1678d60b8b94": 8
+      },
+      "recall_at": {
+        "3": 0.25,
+        "5": 0.75,
+        "10": 1.0
+      },
+      "non_supporting_passages_at_3": 2,
+      "trace": [
+        {
+          "stage": "lexical",
+          "status": "ready",
+          "candidate_count": 0
+        },
+        {
+          "stage": "dense",
+          "status": "ready",
+          "model_id": "intfloat/multilingual-e5-small",
+          "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimensions": 384,
+          "candidate_count": 8,
+          "selected_document_count": 4,
+          "matching_generation_count": 4
+        },
+        {
+          "stage": "fusion",
+          "status": "ready",
+          "rrf_k": 60
+        }
+      ],
+      "unresolved_ambiguity": true,
+      "measurement_note": "Advanced includes bounded keyword/fusion stages as well as glossary variants; this is not a glossary-only ablation. Ambiguous case has no asserted eligibility intent."
+    },
+    {
+      "language": "ambiguous",
+      "query": "kal Ram APP-001",
+      "profile": "advanced",
+      "latency_ms": 6.84,
+      "criterion_document_ranks": {
+        "29414200-17ea-432e-a0e1-a9a952762dfe": 3,
+        "f821da57-3c13-4733-8536-b0d142b921ca": 4,
+        "1c3523c3-f173-4036-a968-280ff7c61f4c": 5,
+        "95db3000-6990-4fc4-b81b-1678d60b8b94": 8
+      },
+      "recall_at": {
+        "3": 0.25,
+        "5": 0.75,
+        "10": 1.0
+      },
+      "non_supporting_passages_at_3": 2,
+      "trace": [
+        {
+          "stage": "rewrite",
+          "status": "skipped",
+          "original": "kal Ram APP-001"
+        },
+        {
+          "stage": "language_variants",
+          "status": "skipped",
+          "method": "reviewed-glossary-v1",
+          "matched_terms": [],
+          "original_preserved": true,
+          "model_calls": 0,
+          "limitations": [
+            "Glossary variants are search hints, not translations or resolved entity mappings.",
+            "Unlisted Romanized Hindi and ambiguous words such as kal remain unresolved."
+          ]
+        },
+        {
+          "stage": "expansion",
+          "status": "ready",
+          "rejected_variants": 0,
+          "queries": [
+            "kal Ram APP-001"
+          ],
+          "method": "keyword-alias-v1",
+          "model_calls": 0
+        },
+        {
+          "stage": "retrieval",
+          "variant": 0,
+          "query": "kal Ram APP-001",
+          "lexical_any": false,
+          "stages": [
+            {
+              "stage": "lexical",
+              "status": "ready",
+              "candidate_count": 0
+            },
+            {
+              "stage": "dense",
+              "status": "ready",
+              "model_id": "intfloat/multilingual-e5-small",
+              "model_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+              "dimensions": 384,
+              "candidate_count": 8,
+              "selected_document_count": 4,
+              "matching_generation_count": 4
+            },
+            {
+              "stage": "fusion",
+              "status": "ready",
+              "rrf_k": 60
+            }
+          ],
+          "candidates": 8
+        },
+        {
+          "stage": "multi_query",
+          "status": "skipped",
+          "failures": [],
+          "candidate_budget": 60,
+          "candidate_count": 8,
+          "returned_passages": 8,
+          "unique_count": 8,
+          "consensus": false,
+          "model_calls": 0
+        },
+        {
+          "stage": "rerank",
+          "status": "skipped"
+        },
+        {
+          "stage": "context",
+          "status": "ready",
+          "expanded": false,
+          "compression": "off",
+          "documents": 4,
+          "passages": 8,
+          "character_count": 3810,
+          "token_upper_bound": 5308,
+          "token_budget": 60000
+        },
+        {
+          "stage": "pipeline",
+          "version": "advanced-retrieval-v1",
+          "latency_ms": 6.78,
+          "model_calls": 0
+        }
+      ],
+      "unresolved_ambiguity": true,
+      "measurement_note": "Advanced includes bounded keyword/fusion stages as well as glossary variants; this is not a glossary-only ablation. Ambiguous case has no asserted eligibility intent."
+    }
+  ],
+  "speech": [
+    {
+      "language": "en",
+      "audio_sha256": "4a884168e4fff9c11fadbf6fc10e7012b9450b35314e9bfbf5f79e04bce94871",
+      "result": {
+        "text": "4-Skiem S1, the total grant is 25,000 rupees, application 001 qualifies.",
+        "language": "en-IN",
+        "segments": [
+          {
+            "text": "4-Skiem S1, the total grant is 25,000 rupees, application 001 qualifies.",
+            "start": 0.0,
+            "end": 7.76
+          }
+        ],
+        "provider": "faster_whisper",
+        "model": "faster-whisper-../data/models/faster-whisper-tiny",
+        "duration_seconds": 8.00475,
+        "uncertainty": null
+      },
+      "status": "transcribed",
+      "latency_seconds": 0.369
+    },
+    {
+      "language": "hi",
+      "audio_sha256": "8585f718b15a5cc6d38c693011909ec73d9f0e746838025d42ca59104eb106ee",
+      "result": {
+        "text": "Yujna S1,5K Anudan Pachis Hazar Rupé hai, Avidan Shunya Shunya 1-5K",
+        "language": "hi-IN",
+        "segments": [
+          {
+            "text": "Yujna S1,5K Anudan Pachis Hazar Rupé hai,",
+            "start": 0.0,
+            "end": 3.7
+          },
+          {
+            "text": "Avidan Shunya Shunya 1-5K",
+            "start": 3.7,
+            "end": 6.1000000000000005
+          }
+        ],
+        "provider": "faster_whisper",
+        "model": "faster-whisper-../data/models/faster-whisper-tiny",
+        "duration_seconds": 6.3085625,
+        "uncertainty": null
+      },
+      "status": "transcribed",
+      "latency_seconds": 0.249
+    }
+  ],
+  "peak_rss_bytes": 990101504,
+  "limits": "Language/ASR quality is descriptive. Original text/audio fixtures are unchanged; no retries, translation provider or TTS inference."
+}

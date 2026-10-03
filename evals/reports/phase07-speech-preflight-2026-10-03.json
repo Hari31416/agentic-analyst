@@ -1,0 +1,43 @@
+{
+  "phase": "07",
+  "fixture_provenance": "Synthetic macOS say Rishi/Lekha, 145 words/min, PCM mono 16kHz; no client audio",
+  "cases": [
+    {
+      "language": "en",
+      "error": "TransientProviderError",
+      "message": "Faster-Whisper STT failed: open() got an unexpected keyword argument 'metadata_errors' (code=transient_provider, provider=faster_whisper, capability=speech_to_text, request_id=30a27b0c-10e8-4cde-9c65-"
+    },
+    {
+      "language": "hi",
+      "error": "TransientProviderError",
+      "message": "Faster-Whisper STT failed: open() got an unexpected keyword argument 'metadata_errors' (code=transient_provider, provider=faster_whisper, capability=speech_to_text, request_id=b4fb682f-ea33-4979-aa53-"
+    }
+  ],
+  "capabilities": {
+    "languages": [
+      {
+        "tag": "en-IN",
+        "name": "English"
+      },
+      {
+        "tag": "hi-IN",
+        "name": "Hindi"
+      }
+    ],
+    "stt": {
+      "available": true,
+      "provider": "faster_whisper",
+      "model": "../data/models/faster-whisper-tiny",
+      "reason": null
+    },
+    "translation": {
+      "available": false,
+      "reason": "No translation provider configured"
+    },
+    "tts": {
+      "available": false,
+      "reason": "No TTS provider configured"
+    }
+  },
+  "peak_rss_bytes": 289177600
+}

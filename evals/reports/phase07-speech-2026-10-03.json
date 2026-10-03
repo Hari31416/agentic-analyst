@@ -1,0 +1,45 @@
+[
+  {
+    "language": "en",
+    "result": {
+      "text": "4-Skiem S1, the total grant is 25,000 rupees, application 001 qualifies.",
+      "language": "en-IN",
+      "segments": [
+        {
+          "text": "4-Skiem S1, the total grant is 25,000 rupees, application 001 qualifies.",
+          "start": 0.0,
+          "end": 7.76
+        }
+      ],
+      "provider": "faster_whisper",
+      "model": "faster-whisper-../data/models/faster-whisper-tiny",
+      "duration_seconds": 8.00475,
+      "uncertainty": null
+    },
+    "latency_seconds": 0.455
+  },
+  {
+    "language": "hi",
+    "result": {
+      "text": "Yujna S1,5K Anudan Pachis Hazar Rupé hai, Avidan Shunya Shunya 1-5K",
+      "language": "hi-IN",
+      "segments": [
+        {
+          "text": "Yujna S1,5K Anudan Pachis Hazar Rupé hai,",
+          "start": 0.0,
+          "end": 3.7
+        },
+        {
+          "text": "Avidan Shunya Shunya 1-5K",
+          "start": 3.7,
+          "end": 6.1000000000000005
+        }
+      ],
+      "provider": "faster_whisper",
+      "model": "faster-whisper-../data/models/faster-whisper-tiny",
+      "duration_seconds": 6.3085625,
+      "uncertainty": null
+    },
+    "latency_seconds": 0.235
+  }
+]

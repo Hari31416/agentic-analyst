@@ -17,7 +17,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | 04    | Verified | Local Hindi/English scanned/mixed/rotated extraction; accepted PDF table calculated in real microVM; lifecycle/crawler/API tests, PostgreSQL/RustFS and frontend checks | OCR accuracy descriptive; full UI QA deferred; explicit format limitations recorded |
 | 05    | Verified | 179 deterministic tests; 34 PostgreSQL/RustFS integration tests; 32 local stage trials; four bilingual live dependent-hop/summary cases; historical artifact follow-up; frontend and schema checks | Full UI QA deferred; one follow-up language miss recorded |
 | 06    | Verified | 218 deterministic tests; 42 PostgreSQL/RustFS tests; two real microVM analysis checks; guided mixed-source report, downloads, derived reuse and archive roundtrip; PDF visual and frontend/schema checks | Broad LLM reasoning misses recorded; autonomous task success in phase 09; full UI QA deferred |
-| 07    | Not started | Not run                     | All phase checks |
+| 07    | Verified | 240 deterministic tests; 42 PostgreSQL/RustFS checks; eight local retrieval comparisons; real Hindi/English STT and no-execution HTTP checks; three bilingual document/SQL/Python runs; frontend/schema checks | First-pass Hindi STT and glossary quality limits recorded; translation/TTS unavailable; native-speaker/full UI QA deferred |
 | 08    | Not started | Not run                     | All phase checks |
 | 09    | Not started | Not run                     | All phase checks |
 | 10    | Not started | Not run                     | All phase checks |
@@ -437,3 +437,69 @@ Keep secrets and raw client data out of this file.
   that writes a timestamped report without overwriting retained results. Full
   browser QA remains deferred. Phase 06 is complete; stop before phase 07 until
   the user requests it.
+
+
+## 3 October 2026: phase 07 first-pass language and voice
+
+- Uses the pinned `indic-language-utils` registry and its actual local
+  `FasterWhisperSTTProvider`/configuration, including capability declarations.
+  Canonical language tags, script/mixed segments, uncertainty, original text
+  and requested answer language accompany messages/runs. Script and Romanized
+  detection are small app-owned heuristics, without calibrated confidence claims.
+  A configured Bengali contract test adds a language without main-loop branches.
+- Prompt `analyst-v5` asks for direct answers in the explicit preference, preserving
+  numbers, identifiers, names and citations. Advanced retrieval adds a bounded
+  deployment-owned Hindi/English/Romanized glossary and Devanagari numeral search
+  forms. Quoted text, code, URLs and identifiers are excluded from glossary matching;
+  original queries and source text remain unchanged. Ambiguous `kal` is unresolved.
+- Added capability and transient multipart transcription APIs. The local model is
+  Systran multilingual Whisper tiny, revision
+  `d90ca5fe260221311c53c58e660288d3deb8d356`, with verified local file hashes.
+  `make speech-model` provisions assets and selects the ignored local path;
+  inference does not download or route to remote speech providers. CPU int8 uses
+  two threads, one worker and beam1. Translation/TTS are explicitly unavailable;
+  preparatory translation-literal protection is not implemented translation inference.
+- Audio defaults: 10 MiB, 60 seconds, mono/stereo 8–96 kHz decoded to mono 16 kHz;
+  one active and one waiting request, then 429. Empty/invalid/unsupported inputs,
+  duration/size limits, provider/dependency failures, timeout, cancellation and
+  decoder cleanup have tests. Native-worker timeout/cancellation closes admission
+  until API restart, preventing orphaned work from accumulating. Audio is not
+  persisted or content-cached; uploaded spools and decoder containers are closed.
+- UI adds recording/upload, editable transcripts, explicit Send, microphone and
+  abort cleanup, thread-safe drafts and advertised limits. EN/HI UI preference is
+  independent of answer language and applies to core chat, voice, upload and
+  connection labels. Technical names/code stay unchanged. Bundled OFL Noto Sans
+  Devanagari makes the selected font available offline. Coding-agent catalog review
+  is recorded; native-speaker review and full browser QA remain deferred.
+- A live preflight exposed Faster-Whisper 1.2.1 / PyAV 19 incompatibility; pinned
+  PyAV 16.1.0 corrected `metadata_errors` decoding. Both synthetic audio fixtures
+  then transcribed through the library and HTTP API. English preserves 25000/001
+  but mistranscribes the scheme; Hindi produces Romanized text, false 5K and garbled
+  identifiers. These are editable draft limitations, not passed accuracy gates.
+  Fixture provenance, expected transcripts, voices, durations and hashes are in
+  `evals/fixtures/voice-v1/manifest.json`. macOS say generation is not product TTS.
+- Eight retained retrieval comparisons reuse the four-document bilingual corpus.
+  Recall@3 stays 0.50 for English/Hindi; Romanized Hindi falls from 0.50 Basic to 0.25
+  Advanced, with non-supporting top-three passages rising from 1 to 2. All reach
+  recall@10=1.00. Advanced also includes keyword/fusion stages, not a glossary-only
+  ablation. No improvement is claimed; Basic remains default and variants optional.
+  Peak process RSS and local STT timing are recorded in
+  `evals/reports/phase07-20261003T074004.json`. Quality was not tuned after misses.
+- Three configured `gemma-4-26B-A4B-it` runs complete: English file SQL returns
+  count 2 / INR 25000.00 with evidence; Hindi Python returns count 2 / INR 25000.0 and retains
+  column/dataset IDs; Hindi document retrieval returns S1's inclusive INR200000
+  boundary and APP-002 with original evidence. The Python amount has a formatting
+  difference; document prose omits the active-status qualifier while its quoted
+  source includes it. These small baseline limits remain recorded. No reasoning
+  retry was made. Actual microVM execution remains the pinned phase 06 image.
+- HTTP transcription leaves run/job/message/artifact counts unchanged, and invalid
+  audio returns 422. Results are in `phase07-agent-and-http-2026-10-03.json`; initial
+  dependency failure and separate local speech measurements are retained. Final
+  validation: 240 deterministic tests pass; integration 42 pass/11 skipped with
+  unchanged old connector/embedding fixture skips. Black/mypy, frontend typecheck,
+  build/format and `alembic check` pass. No migration is needed.
+- User explicitly requested a simple working language baseline, so language/ASR
+  misses remain descriptive. Provider and privacy contracts are verified. Read
+  `docs/language-and-voice.md` for setup, availability and recovery; `make live-language`
+  writes fresh local diagnostic measurements without overwriting retained evidence.
+  Phase 07 is complete. Stop before phase 08 until the user requests it.

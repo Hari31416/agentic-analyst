@@ -57,6 +57,7 @@ def test_deliberately_wrong_calculation_citation_artifact_and_action_fail():
         _case(),
         {
             "run_state": "completed",
+            "answer_text": "कुल राशि INR 125.50 है",
             "answer_text": "125.50 INR",
             "calculations": {
                 "total": {"value": "120", "unit": "INR", "column": "amount"}
@@ -87,6 +88,7 @@ def test_matching_structured_results_and_original_hindi_pass():
         _case(),
         {
             "run_state": "completed",
+            "answer_text": "कुल राशि INR 125.50 है",
             "calculations": {
                 "total": {"value": "125.505", "unit": "inr", "column": "AMOUNT"}
             },
@@ -115,7 +117,7 @@ def test_model_failure_is_review_pending_not_a_pass():
 
 
 def test_audit_tool_rows_and_evidence_source_versions_are_scored():
-    case_data = _case().model_dump()
+    case_data = _case().model_dump(by_alias=True)
     case_data["sources"].append(
         {"alias": "policy", "name": "policy.pdf", "kind": "pdf", "version": "3"}
     )
@@ -128,11 +130,13 @@ def test_audit_tool_rows_and_evidence_source_versions_are_scored():
             "tool_calls": [
                 {
                     "name": "run_sql",
+                    "status": "completed",
                     "result": {
+                        "status": "ok",
                         "data": {
                             "rows": [{"amount": "125.50"}],
                             "units": {"amount": "INR"},
-                        }
+                        },
                     },
                 }
             ],
@@ -158,11 +162,13 @@ def test_audit_tool_rows_and_evidence_source_versions_are_scored():
             "tool_calls": [
                 {
                     "name": "run_sql",
+                    "status": "completed",
                     "result": {
+                        "status": "ok",
                         "data": {
                             "rows": [{"amount": "125.50"}],
                             "units": {"amount": "INR"},
-                        }
+                        },
                     },
                 }
             ],
@@ -178,6 +184,68 @@ def test_audit_tool_rows_and_evidence_source_versions_are_scored():
         },
     )
     assert {item.name: item.status for item in wrong}["passage:1"] == "fail"
+
+
+def test_preview_numeric_uses_selected_source_unit_and_empty_declarations_fail():
+    case_data = _case().model_dump(by_alias=True)
+    case_data["expectations"]["calculations"][0]["unit"] = None
+    case = EvaluationCase.model_validate(case_data)
+    results = score_case(
+        case,
+        {
+            "run_state": "completed",
+            "source_aliases": {"ledger": "src-ledger", "policy": "src-policy"},
+            "tool_calls": [
+                {
+                    "name": "run_sql",
+                    "status": "completed",
+                    "result": {
+                        "status": "ok",
+                        "data": {
+                            "preview": [{"amount": "125.50"}],
+                        },
+                    },
+                }
+            ],
+            "evidence": [
+                {
+                    "id": "ev1",
+                    "source_ids": ["src-ledger"],
+                    "details": {
+                        "units": {"amount": "INR"},
+                    },
+                },
+                {
+                    "id": "ev2",
+                    "source_ids": ["src-policy"],
+                    "details": {
+                        "text": "देय राशि INR 125.50",
+                    },
+                },
+            ],
+            "declared_evidence_ids": ["ev2"],
+            "artifacts": [
+                {
+                    "id": "artifact1",
+                    "media_type": "application/vnd.test+json",
+                    "schema": {"rows": 1},
+                    "exists": True,
+                }
+            ],
+            "declared_artifact_ids": [],
+        },
+    )
+    statuses = {item.name: item.status for item in results}
+    assert statuses["calculation:total"] == "pass"
+    assert statuses["passage:1"] == "pass"
+    assert statuses["artifact:1"] == "fail"
+
+
+def test_evaluation_metrics_bound_edit_distance_work():
+    import pytest
+
+    with pytest.raises(ValueError, match="bounds"):
+        character_error_rate("a" * 3000, "b" * 3000)
 
 
 def test_unicode_character_error_and_retrieval_metrics():

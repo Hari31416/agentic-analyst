@@ -22,7 +22,7 @@ class ExpectedCalculation(BaseModel):
 
     key: str = Field(min_length=1, max_length=120)
     value: Decimal
-    unit: str = Field(min_length=1, max_length=80)
+    unit: str | None = Field(default=None, min_length=1, max_length=80)
     tolerance: Decimal = Field(default=Decimal("0"), ge=0)
     column: str | None = None
 
@@ -38,7 +38,7 @@ class ExpectedArtifact(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     media_type: str = Field(min_length=1, max_length=120)
-    schema: dict[str, Any] = Field(default_factory=dict)
+    schema_: dict[str, Any] = Field(default_factory=dict, alias="schema")
 
 
 class EvaluationExpectations(BaseModel):
@@ -79,7 +79,7 @@ class EvaluationArtifact(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     media_type: str
-    schema: dict[str, Any] = Field(default_factory=dict)
+    schema_: dict[str, Any] = Field(default_factory=dict, alias="schema")
     exists: bool = True
 
 

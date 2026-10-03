@@ -52,47 +52,45 @@ def _schema_matches(actual: Any, expected: Any) -> bool:
 def _observation_rows(
     outcome: dict[str, Any],
 ) -> list[tuple[dict[str, Any], dict[str, Any]]]:
-    """Extract bounded structured rows and their provenance metadata from audit records."""
-    rows: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    """Return rows from the latest successful structured query/analysis call."""
+    eligible: list[dict[str, Any]] = []
     for call in outcome.get("tool_calls", []) or []:
         if not isinstance(call, dict):
+            continue
+        if call.get("name", call.get("action")) not in {"run_sql", "analyze_data"}:
             continue
         result = call.get("result")
         if not isinstance(result, dict):
             continue
-        for container in (result, result.get("data"), result.get("result")):
-            if not isinstance(container, dict):
-                continue
-            possible = container.get("rows")
-            if isinstance(possible, list):
-                rows.extend(
-                    (row, container) for row in possible if isinstance(row, dict)
-                )
-            analysis = container.get("analysis")
-            if isinstance(analysis, dict) and isinstance(analysis.get("rows"), list):
-                rows.extend(
-                    (row, analysis) for row in analysis["rows"] if isinstance(row, dict)
-                )
-    for evidence in outcome.get("evidence", []) or []:
-        if not isinstance(evidence, dict):
+        state = str(call.get("status", result.get("status", ""))).casefold()
+        if state not in {"ok", "success", "succeeded", "completed"}:
             continue
-        details = evidence.get("details")
-        if isinstance(details, dict):
-            for container in (details, details.get("analysis")):
-                if isinstance(container, dict) and isinstance(
-                    container.get("rows"), list
-                ):
-                    rows.extend(
-                        (row, container)
-                        for row in container["rows"]
-                        if isinstance(row, dict)
-                    )
+        eligible.append(result)
+    if not eligible:
+        return []
+    # Audit exports preserve call order. Reading one latest result avoids mistaking an
+    # earlier source sample for the aggregate produced by the final SQL/analysis step.
+    result = eligible[-1]
+    rows: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for container in (result, result.get("data"), result.get("result")):
+        if not isinstance(container, dict):
+            continue
+        possible = container.get("rows", container.get("preview"))
+        if isinstance(possible, list):
+            rows.extend((row, container) for row in possible if isinstance(row, dict))
+        analysis = container.get("analysis")
+        if isinstance(analysis, dict):
+            analysis_rows = analysis.get("rows", analysis.get("preview"))
+            if isinstance(analysis_rows, list):
+                rows.extend(
+                    (row, analysis) for row in analysis_rows if isinstance(row, dict)
+                )
     return rows
 
 
 def _observed_calculation(
     case: EvaluationCase, outcome: dict[str, Any], key: str, column: str | None
-):
+) -> dict[str, Any] | None:
     """Find an explicitly returned aggregate; never infer a value from prose or SQL."""
     calculations = (
         outcome.get("calculations", {}) or outcome.get("structured_results", {}) or {}
@@ -102,9 +100,7 @@ def _observed_calculation(
         return explicit
     aliases = outcome.get("source_aliases", {}) or {}
     source_ids = {
-        identity
-        for alias, identity in aliases.items()
-        if any(source.alias == alias for source in case.sources)
+        aliases[source.alias] for source in case.sources if source.alias in aliases
     }
     for evidence in outcome.get("evidence", []) or []:
         if not isinstance(evidence, dict):
@@ -114,11 +110,14 @@ def _observed_calculation(
         details = evidence.get("details")
         if isinstance(details, dict):
             candidate = details.get(key)
+            units = details.get("units") or {}
+            if candidate is None and column and column in units:
+                candidate = details.get("value")
             if candidate is not None:
                 return {
                     "value": candidate,
-                    "unit": (details.get("units") or {}).get(column or key, ""),
-                    "column": column,
+                    "unit": units.get(column or key, ""),
+                    "column": column or key,
                 }
     for row, metadata in _observation_rows(outcome):
         # A label/key can identify a scalar in the result; the optional column narrows row selection.
@@ -130,8 +129,31 @@ def _observed_calculation(
                     if isinstance(metadata, dict)
                     else ""
                 )
+                if not unit and column:
+                    unit = _source_column_unit(case, outcome, column)
                 return {"value": row[candidate], "unit": unit, "column": candidate}
     return None
+
+
+def _source_column_unit(
+    case: EvaluationCase, outcome: dict[str, Any], column: str
+) -> str:
+    """Use only explicit unit hints on evidence for the selected source."""
+    aliases = outcome.get("source_aliases", {}) or {}
+    selected_ids = {
+        aliases[source.alias] for source in case.sources if source.alias in aliases
+    }
+    for evidence in outcome.get("evidence", []) or []:
+        if not isinstance(evidence, dict) or not selected_ids.intersection(
+            evidence.get("source_ids", [])
+        ):
+            continue
+        details = evidence.get("details")
+        if isinstance(details, dict):
+            units = details.get("units")
+            if isinstance(units, dict) and isinstance(units.get(column), str):
+                return units[column]
+    return ""
 
 
 def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResult]:
@@ -139,7 +161,6 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
     run_state = str(
         outcome.get("run_state", outcome.get("status", "unknown"))
     ).casefold()
-    answer = str(outcome.get("answer_text", outcome.get("answer", "")) or "")
     if run_state in {
         "failed",
         "timeout",
@@ -157,6 +178,23 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
         ]
 
     metrics: list[MetricResult] = []
+    clarification = bool(outcome.get("clarification"))
+    completed = run_state in {"completed", "complete", "succeeded"}
+    awaiting_expected_clarification = (
+        run_state in {"awaiting_clarification", "needs_clarification"}
+        and clarification
+        and case.answerability in {"ambiguous", "unsupported"}
+    )
+    if completed or awaiting_expected_clarification:
+        metrics.append(_result("run_completion", True, run_state=run_state))
+    else:
+        metrics.append(
+            MetricResult(
+                name="run_completion",
+                status="needs_review",
+                details={"run_state": run_state, "clarification": clarification},
+            )
+        )
     if case.answerability == "unsupported":
         clarified = bool(outcome.get("clarification"))
         metrics.append(
@@ -168,8 +206,10 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             _result("ambiguous_handling", clarified, clarification_provided=clarified)
         )
 
-    for expected in case.expectations.calculations:
-        actual = _observed_calculation(case, outcome, expected.key, expected.column)
+    for calculation in case.expectations.calculations:
+        actual = _observed_calculation(
+            case, outcome, calculation.key, calculation.column
+        )
         try:
             actual_value = (
                 Decimal(str(actual.get("value"))) if isinstance(actual, dict) else None
@@ -179,30 +219,67 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             )
             matches_value = (
                 actual_value is not None
-                and abs(actual_value - expected.value) <= expected.tolerance
+                and abs(actual_value - calculation.value) <= calculation.tolerance
             )
         except (InvalidOperation, TypeError, ValueError):
             actual_value, matches_value, actual_unit = None, False, ""
-        matches = matches_value and actual_unit.casefold() == expected.unit.casefold()
-        if expected.column:
-            matches = (
-                matches
-                and str(actual.get("column", "")).casefold()
-                == expected.column.casefold()
+        numeric_matches = matches_value
+        matches = numeric_matches
+        if calculation.unit is not None:
+            matches = matches and actual_unit.casefold() == calculation.unit.casefold()
+        column_matches = True
+        if calculation.column:
+            column_matches = (
+                str(
+                    actual.get("column", "") if isinstance(actual, dict) else ""
+                ).casefold()
+                == calculation.column.casefold()
             )
+            matches = matches and column_matches
         metrics.append(
             _result(
-                "calculation:" + expected.key,
-                matches,
-                expected_value=str(expected.value),
+                "calculation:" + calculation.key,
+                numeric_matches and column_matches,
+                expected_value=str(calculation.value),
                 actual_value=str(actual_value) if actual_value is not None else None,
-                expected_unit=expected.unit,
+                expected_unit=calculation.unit,
                 actual_unit=actual_unit,
             )
         )
+        if calculation.unit is not None:
+            if not actual_unit:
+                metrics.append(
+                    MetricResult(
+                        name=f"calculation_unit:{calculation.key}",
+                        status="needs_review",
+                        details={
+                            "expected_unit": calculation.unit,
+                            "reason": "structured result and selected-source evidence contain no unit hint",
+                        },
+                    )
+                )
+            else:
+                metrics.append(
+                    _result(
+                        f"calculation_unit:{calculation.key}",
+                        actual_unit.casefold() == calculation.unit.casefold(),
+                        expected_unit=calculation.unit,
+                        actual_unit=actual_unit,
+                    )
+                )
+            answer = str(
+                outcome.get("answer_text", outcome.get("answer", ""))
+            ).casefold()
+            metrics.append(
+                _result(
+                    f"answer_unit:{calculation.key}",
+                    calculation.unit.casefold() in answer,
+                    expected_unit=calculation.unit,
+                )
+            )
 
     evidence = outcome.get("evidence", outcome.get("passages", [])) or []
-    for index, expected in enumerate(case.expectations.passages):
+    for index, passage in enumerate(case.expectations.passages):
         found = False
         for item in evidence:
             if isinstance(item, dict):
@@ -210,10 +287,9 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                 text = (
                     item.get("text") or item.get("content") or item.get("passage") or ""
                 )
-                details = (
-                    item.get("details")
-                    if isinstance(item.get("details"), dict)
-                    else item
+                details_raw = item.get("details")
+                details: dict[str, Any] = (
+                    details_raw if isinstance(details_raw, dict) else item
                 )
                 # Audit evidence commonly uses source_id; resolve it through runner's alias map.
                 source_ids = item.get("source_ids", []) or [details.get("source_id")]
@@ -232,15 +308,21 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                     text = details.get(
                         "text", details.get("content", details.get("passage", ""))
                     )
+                if "declared_evidence_ids" in outcome:
+                    declared_evidence_ids = set(
+                        outcome.get("declared_evidence_ids") or []
+                    )
+                    if item.get("id") not in declared_evidence_ids:
+                        continue
                 expected_source = next(
-                    (s for s in case.sources if s.alias == expected.source_alias), None
+                    (s for s in case.sources if s.alias == passage.source_alias), None
                 )
                 mapped_source_ids = [
                     sid
                     for source_alias, sid in (
                         outcome.get("source_aliases", {}) or {}
                     ).items()
-                    if source_alias == expected.source_alias
+                    if source_alias == passage.source_alias
                 ]
                 if mapped_source_ids and not set(mapped_source_ids).intersection(
                     source_ids
@@ -258,8 +340,8 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                 alias, text = getattr(item, "source_alias", None), getattr(
                     item, "text", ""
                 )
-            if alias == expected.source_alias and _normalise_text(
-                expected.contains
+            if alias == passage.source_alias and _normalise_text(
+                passage.contains
             ) in _normalise_text(str(text)):
                 found = True
                 break
@@ -267,13 +349,13 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             _result(
                 f"passage:{index + 1}",
                 found,
-                source_alias=expected.source_alias,
-                expected_phrase=expected.contains,
+                source_alias=passage.source_alias,
+                expected_phrase=passage.contains,
             )
         )
 
     artifacts = outcome.get("artifacts", []) or []
-    for index, expected in enumerate(case.expectations.artifacts):
+    for index, expected_artifact in enumerate(case.expectations.artifacts):
         found = False
         for artifact in artifacts:
             if not isinstance(artifact, dict):
@@ -282,12 +364,16 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             schema = artifact.get("schema") or artifact.get("metadata", {})
             exists = artifact.get("exists", artifact.get("downloadable", True))
             declared_ids = set(outcome.get("declared_artifact_ids", []) or [])
-            declared = not declared_ids or artifact.get("id") in declared_ids
+            declared = (
+                artifact.get("id") in declared_ids
+                if "declared_artifact_ids" in outcome
+                else True
+            )
             if (
                 exists
                 and declared
-                and media_type == expected.media_type
-                and _schema_matches(schema, expected.schema)
+                and media_type == expected_artifact.media_type
+                and _schema_matches(schema, expected_artifact.schema_)
             ):
                 found = True
                 break
@@ -295,8 +381,8 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             _result(
                 f"artifact:{index + 1}",
                 found,
-                media_type=expected.media_type,
-                schema=expected.schema,
+                media_type=expected_artifact.media_type,
+                schema=expected_artifact.schema_,
             )
         )
 
@@ -356,7 +442,14 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                 )
             )
 
-    if not metrics:
+    has_deterministic_expectations = bool(
+        case.expectations.calculations
+        or case.expectations.passages
+        or case.expectations.artifacts
+        or case.expectations.allowed_actions
+        or case.answerability != "answerable"
+    )
+    if not has_deterministic_expectations:
         metrics.append(
             MetricResult(
                 name="known_answer",
@@ -376,6 +469,8 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
 
 
 def _edit_distance(left: list[str], right: list[str]) -> int:
+    if len(left) > 20_000 or len(right) > 20_000 or len(left) * len(right) > 4_000_000:
+        raise ValueError("edit-distance input exceeds evaluation bounds")
     previous = list(range(len(right) + 1))
     for i, a in enumerate(left, 1):
         current = [i]
@@ -389,6 +484,12 @@ def _edit_distance(left: list[str], right: list[str]) -> int:
 
 def character_error_rate(reference: str, hypothesis: str) -> float:
     """Unicode code-point CER; empty reference is 0 only for empty hypothesis."""
+    if (
+        len(reference) > 20_000
+        or len(hypothesis) > 20_000
+        or len(reference) * len(hypothesis) > 4_000_000
+    ):
+        raise ValueError("CER input exceeds evaluation bounds")
     ref = list(reference)
     return (
         _edit_distance(ref, list(hypothesis)) / len(ref)
@@ -400,10 +501,11 @@ def character_error_rate(reference: str, hypothesis: str) -> float:
 def word_error_rate(reference: str, hypothesis: str) -> float:
     """Whitespace-token WER, retaining native-script tokens without transliteration."""
     ref = reference.split()
+    hyp = hypothesis.split()
+    if len(ref) > 20_000 or len(hyp) > 20_000 or len(ref) * len(hyp) > 4_000_000:
+        raise ValueError("WER input exceeds evaluation bounds")
     return (
-        _edit_distance(ref, hypothesis.split()) / len(ref)
-        if ref
-        else (0.0 if not hypothesis else 1.0)
+        _edit_distance(ref, hyp) / len(ref) if ref else (0.0 if not hypothesis else 1.0)
     )
 
 

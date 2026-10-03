@@ -351,9 +351,8 @@
 .message-content {
   color: var(--foreground);
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.6;
   overflow-wrap: anywhere;
-  white-space: pre-wrap;
   font-family: var(--font-sans);
 }
 .message-row.user .message-content {

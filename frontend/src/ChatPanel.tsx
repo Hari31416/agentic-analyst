@@ -2,7 +2,6 @@ import {
   ChangeEvent,
   FormEvent,
   KeyboardEvent,
-  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -43,6 +42,7 @@ import { EvidenceView, documentApi } from './documentApi'
 import { LanguageCapabilities, languageApi } from './languageApi'
 import { UiLanguage, UiTextKey, uiText } from './uiText'
 import { useUiLanguage } from './hooks/useUiLanguage'
+import { MarkdownRenderer } from './components/MarkdownRenderer'
 import { AuditEntry, AuditPage, auditApi } from './auditApi'
 import './chat.css'
 
@@ -1085,10 +1085,10 @@ function ChatPanel({
                       )}
                     </div>
                     <div className="message-content">
-                      <CitationText
+                      <MarkdownRenderer
                         content={message.content}
                         evidenceIds={message.references?.evidence_ids ?? []}
-                        onOpen={openEvidence}
+                        onOpenEvidence={openEvidence}
                       />
                     </div>
                     {!!message.references?.evidence_ids?.length &&
@@ -1544,50 +1544,6 @@ function hasInlineEvidence(content: string): boolean {
   return /\[evidence:[0-9a-f-]{36}\]/i.test(content)
 }
 
-function CitationText({
-  content,
-  evidenceIds,
-  onOpen,
-}: {
-  content: string
-  evidenceIds: string[]
-  onOpen: (id: string) => void
-}) {
-  const allowed = new Set(evidenceIds.map((id) => id.toLowerCase()))
-  const pattern = /\[evidence:([0-9a-f-]{36})\]/gi
-  const nodes: ReactNode[] = []
-  let cursor = 0
-  let index = 0
-  for (const match of content.matchAll(pattern)) {
-    const start = match.index ?? 0
-    const id = match[1]
-    if (start > cursor) nodes.push(content.slice(cursor, start))
-    if (allowed.has(id.toLowerCase())) {
-      const label = evidenceIds.findIndex(
-        (evidenceId) => evidenceId.toLowerCase() === id.toLowerCase(),
-      )
-      nodes.push(
-        <button
-          className="inline-citation"
-          key={`${id}-${index}`}
-          type="button"
-          title="Open cited evidence"
-          onClick={() => onOpen(id)}
-        >
-          [{label + 1}]
-        </button>,
-      )
-    } else {
-      nodes.push(match[0])
-    }
-    cursor = start + match[0].length
-    index += 1
-  }
-  if (!nodes.length) return <>{content}</>
-  if (cursor < content.length) nodes.push(content.slice(cursor))
-  return <>{nodes}</>
-}
-
 function locationText(
   location: Record<string, unknown> | null | undefined,
 ): string {
@@ -1759,10 +1715,10 @@ function MessageBubble({
           <span className="message-run-state running">Answer</span>
         </div>
         <div className="message-content">
-          <CitationText
+          <MarkdownRenderer
             content={message.content}
             evidenceIds={message.references?.evidence_ids ?? []}
-            onOpen={onOpenEvidence}
+            onOpenEvidence={onOpenEvidence}
           />
         </div>
         {!!message.references?.evidence_ids?.length &&

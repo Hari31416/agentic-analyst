@@ -67,7 +67,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   onSelectView,
   isCollapsed,
   onToggleCollapse,
-  health,
+  health: _health,
   theme,
   onToggleTheme,
   sourcesCount,
@@ -138,10 +138,6 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           </div>
 
           <div className="rail-bottom">
-            <div
-              className={`status-dot ${health}`}
-              title={`API status: ${health}`}
-            />
             <button
               type="button"
               className="rail-icon-btn"
@@ -366,10 +362,6 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
         </div>
 
         <footer className="sidebar-footer">
-          <div className="sidebar-status-pill">
-            <span className={`status-dot ${health}`} />
-            <span>{health === 'online' ? 'Connected' : 'Offline'}</span>
-          </div>
           <button
             type="button"
             className="theme-toggle-btn"

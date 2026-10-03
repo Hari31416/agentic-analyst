@@ -503,32 +503,46 @@
 .evidence-context,
 .evidence-trace {
   margin-top: 10px;
-  border: 1px solid #e4e5dc;
-  border-radius: 3px;
-  background: #fcfbf7;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+.evidence-context:hover,
+.evidence-trace:hover {
+  border-color: var(--primary);
 }
 .evidence-context summary,
 .evidence-trace summary {
-  padding: 8px 10px;
-  color: #7f8773;
-  font: 8px var(--mono);
+  padding: 8px 12px;
+  color: var(--muted-foreground);
+  font: 500 11px/1.4 var(--font-sans);
   cursor: pointer;
+  user-select: none;
+  background: var(--card-muted);
+  border-bottom: 1px solid transparent;
+}
+.evidence-context[open] summary,
+.evidence-trace[open] summary {
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
 }
 .evidence-context p {
   margin: 0;
-  padding: 0 10px 10px;
-  color: #62675e;
-  font: 10px/1.6 var(--serif);
+  padding: 10px 12px;
+  color: var(--foreground);
+  font: 12px/1.6 var(--font-sans);
   white-space: pre-wrap;
 }
 .evidence-trace pre {
-  max-height: 250px;
+  max-height: 280px;
   overflow: auto;
   margin: 0;
-  padding: 9px 10px;
-  border-top: 1px solid #e9e9e1;
-  color: #6e7663;
-  font: 8px/1.55 var(--mono);
+  padding: 12px 14px;
+  background: var(--card);
+  color: var(--foreground);
+  font: 11px/1.6 var(--font-mono);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -1048,21 +1062,33 @@
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .language-choice {
   display: flex;
   align-items: center;
   gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  border: 1px solid var(--border);
   color: var(--muted-foreground);
+  font-size: 11px;
+  transition: border-color 0.15s ease;
+}
+.language-choice:hover {
+  border-color: var(--primary);
+  color: var(--foreground);
 }
 .language-choice select {
-  max-width: 110px;
+  max-width: 130px;
   border: 0;
   outline: 0;
   background: transparent;
   color: var(--foreground);
   font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
 }
 .language-choice select:disabled {
@@ -1075,13 +1101,14 @@
   font: 11px var(--font-mono);
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-left: 4px;
 }
 .voice-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  padding-top: 9px;
+  padding-top: 8px;
 }
 .voice-button {
   position: relative;
@@ -1089,25 +1116,31 @@
   min-height: 28px;
   align-items: center;
   gap: 6px;
-  padding: 4px 9px;
+  padding: 3px 9px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--card);
-  color: var(--foreground);
+  color: var(--muted-foreground);
   font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 .voice-button:hover:not(:has(:disabled)) {
   border-color: var(--primary);
+  color: var(--foreground);
+  background: var(--muted);
 }
 .voice-button:disabled,
 .voice-button:has(:disabled) {
   color: var(--muted-foreground);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 .voice-button.recording {
   border-color: var(--status-danger);
   color: var(--status-danger);
+  background: var(--status-bg-danger);
 }
 .voice-button input[type='file'] {
   position: absolute;
@@ -1127,8 +1160,8 @@
 .voice-capability-unavailable,
 .voice-optional-status {
   color: var(--muted-foreground);
-  font-size: 10px;
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.4;
 }
 .voice-message {
   flex-basis: 100%;
@@ -1141,12 +1174,13 @@
 }
 .voice-optional-status {
   padding-top: 4px;
+  font-size: 10px;
 }
 .send-button {
   display: grid;
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
   place-items: center;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
@@ -1154,9 +1188,11 @@
   color: var(--primary-foreground);
   cursor: pointer;
   transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 .send-button:hover:not(:disabled) {
-  opacity: 0.9;
+  background: var(--primary-hover);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
 }
 .send-button:disabled {
   background: var(--muted);

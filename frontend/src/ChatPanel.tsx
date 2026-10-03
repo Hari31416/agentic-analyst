@@ -992,7 +992,6 @@ function ChatPanel({
           <h2>{copy('conversation')}</h2>
         </div>
         <div className="chat-header-status">
-          <span className={activeRun ? 'chat-live-pulse' : 'chat-ready-dot'} />
           {activeRun ? labelForState(activeRun) : copy('savedThread')}
           <label className="ui-language-choice">
             <span className="sr-only">{copy('uiLanguage')}</span>
@@ -1076,7 +1075,7 @@ function ChatPanel({
                         {message.role === 'user'
                           ? 'YOU'
                           : message.role === 'assistant'
-                            ? 'FIELDNOTE'
+                            ? 'ASSISTANT'
                             : 'SYSTEM'}
                       </span>
                       {run && (
@@ -1126,7 +1125,6 @@ function ChatPanel({
                             {warning.message}
                           </p>
                         ))}
-                        <RetrievalDetails runId={run.id} />
                       </>
                     )}
                     {run && message.role === 'user' && (
@@ -1758,7 +1756,6 @@ function MessageBubble({
       </span>
       <article className="message-card assistant">
         <div className="message-topline">
-          <span>FIELDNOTE</span>
           <span className="message-run-state running">Answer</span>
         </div>
         <div className="message-content">
@@ -1963,33 +1960,3 @@ function RunFailure({
 }
 
 export default ChatPanel
-
-function RetrievalDetails({ runId }: { runId: string }) {
-  const [view, setView] = useState<Record<string, unknown> | null>(null)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  return (
-    <details
-      className="evidence-trace"
-      onToggle={(event) => {
-        if (!event.currentTarget.open || view || loading) return
-        setLoading(true)
-        setError('')
-        chatApi
-          .retrieval(runId)
-          .then(setView)
-          .catch(() =>
-            setError(
-              'Retrieval details are unavailable. Close and reopen to retry.',
-            ),
-          )
-          .finally(() => setLoading(false))
-      }}
-    >
-      <summary>Retrieval details</summary>
-      {loading && <p>Loading retrieval stages…</p>}
-      {error && <p role="status">{error}</p>}
-      {view && <pre>{JSON.stringify(view, null, 2)}</pre>}
-    </details>
-  )
-}

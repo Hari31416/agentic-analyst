@@ -221,18 +221,6 @@ export const RightSidebar: FC<RightSidebarProps> = ({
             <button
               type="button"
               className="icon-action-btn"
-              onClick={handleRefresh}
-              title="Refresh inspector"
-              aria-label="Refresh inspector"
-            >
-              <RefreshCw
-                size={14}
-                className={isRefreshing ? 'animate-spin' : ''}
-              />
-            </button>
-            <button
-              type="button"
-              className="icon-action-btn"
               onClick={onToggleOpen}
               title="Close inspector"
               aria-label="Close inspector"

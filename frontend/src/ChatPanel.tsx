@@ -1528,12 +1528,6 @@ function ChatPanel({
               </div>
             )}
         </form>
-        <div className="chat-footer-note">
-          <span>
-            <ShieldCheck size={12} /> {copy('sourcesUnchanged')}
-          </span>
-          <span>{copy('referencesKept')}</span>
-        </div>
       </div>
       {evidenceId && (
         <EvidenceViewer

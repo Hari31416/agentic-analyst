@@ -143,6 +143,20 @@ def test_download_preview_and_reference_scope(client_db):
         session.add(artifact)
         session.flush()
         artifact_id = artifact.id
+        hostile_file = FileStorage(root).put(
+            f"derived/{run.id}/hostile.csv", b"label\n=1+1\n-12.5\n"
+        )
+        hostile_artifact = Artifact(
+            run_id=run.id,
+            storage_key=hostile_file.key,
+            display_name="hostile.csv",
+            media_type="text/csv",
+            byte_size=hostile_file.byte_size,
+            sha256=hostile_file.sha256,
+        )
+        session.add(hostile_artifact)
+        session.flush()
+        hostile_id = hostile_artifact.id
         validate_answer(
             session, run, FinalAnswer(text="total", artifact_ids=[artifact_id])
         )
@@ -164,9 +178,19 @@ def test_download_preview_and_reference_scope(client_db):
                 session, other_run, FinalAnswer(text="bad", artifact_ids=[artifact_id])
             )
     response = client.get(f"/api/artifacts/{artifact_id}/content")
-    assert response.content == b"total\n25000.00\n"
+    assert response.content == b"total\r\n25000.00\r\n"
     assert "result.csv" in response.headers["content-disposition"]
     assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-export-sanitized"] == "spreadsheet-formulas"
+    assert response.headers["x-artifact-sha256"] == artifact.sha256
+    import hashlib
+
+    assert (
+        response.headers["x-export-sha256"]
+        == hashlib.sha256(response.content).hexdigest()
+    )
+    hostile_response = client.get(f"/api/artifacts/{hostile_id}/content")
+    assert hostile_response.content == b"label\r\n'=1+1\r\n-12.5\r\n"
     preview = client.get(
         f"/api/artifacts/{artifact_id}/preview?max_characters=5"
     ).json()

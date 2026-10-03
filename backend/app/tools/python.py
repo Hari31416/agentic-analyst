@@ -80,6 +80,30 @@ def _media_type(filename: str, content: bytes) -> str:
         "application/javascript",
     }:
         return "application/octet-stream"
+    lower_name = filename.lower()
+    if lower_name.endswith((".xlsx", ".xlsm")) and content.startswith(b"PK\x03\x04"):
+        from app.sources.files import FileIngestionError, _check_xlsx_archive
+
+        try:
+            _check_xlsx_archive(content)
+        except FileIngestionError:
+            return "application/octet-stream"
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    if (
+        lower_name.endswith(".parquet")
+        and content.startswith(b"PAR1")
+        and content.endswith(b"PAR1")
+    ):
+        return "application/vnd.apache.parquet"
+    if lower_name.endswith("chart.json") and content.lstrip().startswith(b"{"):
+        try:
+            from app.artifacts.chart import ChartSpec
+
+            ChartSpec.from_json_bytes(content)
+        except (ValueError, UnicodeError):
+            pass
+        else:
+            return "application/vnd.plotly.v1+json"
     signatures = (
         (b"%PDF-", "application/pdf"),
         (b"\x89PNG\r\n\x1a\n", "image/png"),

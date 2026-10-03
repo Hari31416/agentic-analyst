@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 from collections.abc import AsyncIterator
 from datetime import datetime
 from typing import Annotated, Any, Literal
@@ -206,7 +207,7 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             },
             "selected_dataset_ids": selected_datasets,
             "model": settings.openai_model,
-            "prompt_version": "analyst-v3",
+            "prompt_version": "analyst-v4",
             "source_versions": {source.id: source.version for source in source_rows},
             "max_tool_calls": settings.max_tool_calls,
             "max_model_calls": settings.max_model_calls,
@@ -404,6 +405,7 @@ def artifacts(run_id: str, session: Db) -> list[dict[str, Any]]:
 @router.get("/artifacts/{artifact_id}/content")
 def artifact_content(artifact_id: str, session: Db) -> Response:
     from urllib.parse import quote
+    from app.artifacts.tabular import decode_table, safe_csv, safe_xlsx
 
     artifact = session.get(Artifact, artifact_id)
     if artifact is None or not artifact.durable:
@@ -417,14 +419,57 @@ def artifact_content(artifact_id: str, session: Db) -> Response:
         content = storage.read(artifact.storage_key, get_settings().max_upload_bytes)
     except (OSError, ValueError, StorageUnavailable) as exc:
         raise HTTPException(503, "Artifact bytes are unavailable") from exc
+    disposition = "attachment"
+    headers = {
+        "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": "sandbox",
+        "X-Artifact-SHA256": artifact.sha256,
+    }
+    media_type = artifact.media_type
+    if artifact.media_type == "application/pdf":
+        disposition = "inline"
+    elif artifact.media_type == "text/csv" or artifact.display_name.lower().endswith(
+        ".csv"
+    ):
+        try:
+            columns, rows = decode_table(
+                content, artifact.display_name, max_rows=250_001
+            )
+            if len(rows) > 250_000:
+                raise HTTPException(
+                    413, "Sanitized whole-file export exceeds 250,000 rows"
+                )
+            content = safe_csv(columns, rows)
+        except (ValueError, UnicodeError) as exc:
+            raise HTTPException(
+                422, "CSV artifact could not be safely exported"
+            ) from exc
+        media_type = "text/csv; charset=utf-8"
+        headers["X-Export-Sanitized"] = "spreadsheet-formulas"
+    elif artifact.display_name.lower().endswith((".xlsx", ".xlsm")):
+        try:
+            columns, rows = decode_table(
+                content, artifact.display_name, max_rows=250_001
+            )
+            if len(rows) > 250_000:
+                raise HTTPException(
+                    413, "Sanitized whole-file export exceeds 250,000 rows"
+                )
+            content = safe_xlsx(columns, rows)
+        except (ValueError, UnicodeError) as exc:
+            raise HTTPException(
+                422, "Spreadsheet artifact could not be safely exported"
+            ) from exc
+        media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        headers["X-Export-Sanitized"] = "spreadsheet-formulas"
+    headers["Content-Disposition"] = (
+        f"{disposition}; filename*=UTF-8''{quote(artifact.display_name, safe='')}"
+    )
+    headers["X-Export-SHA256"] = hashlib.sha256(content).hexdigest()
     return Response(
         content,
-        media_type=artifact.media_type,
-        headers={
-            "Content-Disposition": f"attachment; filename*=UTF-8''{quote(artifact.display_name, safe='')}",
-            "X-Content-Type-Options": "nosniff",
-            "Content-Security-Policy": "sandbox",
-        },
+        media_type=media_type,
+        headers=headers,
     )
 
 

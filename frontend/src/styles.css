@@ -1,5 +1,39 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-muted: var(--card-muted);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--card-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--primary);
+  --color-destructive: var(--status-danger);
+  --color-destructive-foreground: #ffffff;
+  --color-status-ready: var(--status-ready);
+  --color-status-warning: var(--status-warning);
+  --color-status-danger: var(--status-danger);
+  --color-status-checking: var(--status-checking);
+}
+
 @font-face {
   font-family: 'Noto Sans Devanagari';
   src: url('/fonts/NotoSansDevanagari-Regular.ttf') format('truetype');
@@ -113,51 +147,60 @@
   --shadow-lg:
     0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
 }
-/* Reset & Universal Rules */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-html,
-body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: var(--font-sans);
-  background-color: var(--background);
-  color: var(--foreground);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 
-#root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-  color: inherit;
-}
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 1px;
+  #root {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: none;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
 }
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
@@ -325,48 +368,61 @@ textarea:focus-visible {
 }
 .workspace-select {
   width: 100%;
-  height: 34px;
-  padding: 0 32px 0 10px;
+  height: 38px;
+  padding: 0 32px 0 12px;
   background-color: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--foreground);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   appearance: none;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: all 0.15s ease;
 }
 .workspace-select:hover {
   border-color: var(--muted-foreground);
 }
+.workspace-select:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--ring);
+}
 .select-chevron {
   position: absolute;
-  right: 10px;
+  right: 12px;
   pointer-events: none;
   color: var(--muted-foreground);
 }
 .workspace-item-actions {
   display: flex;
-  gap: 4px;
-  margin-top: 5px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
 }
 .workspace-item-actions button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 6px;
+  padding: 4px 8px;
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card);
   color: var(--muted-foreground);
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.15s ease;
 }
 .workspace-item-actions button:hover {
   background: var(--sidebar-accent);
   color: var(--foreground);
+  border-color: var(--muted-foreground);
 }
 .workspace-item-actions button.danger:hover {
   background: var(--status-bg-danger);
   color: var(--status-danger);
+  border-color: var(--status-danger);
 }
 /* Action: New Thread */
 .new-thread-box {
@@ -1216,97 +1272,4 @@ textarea:focus-visible {
   font-size: 11px;
   color: var(--muted-foreground);
   line-height: 1.4;
-}
-
-/* Modal Dialogs */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 16px;
-}
-.modal-dialog {
-  width: 100%;
-  max-width: 440px;
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-  animation: modalPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes modalPop {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.modal-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-.modal-close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  color: var(--muted-foreground);
-}
-.modal-close-btn:hover {
-  background-color: var(--muted);
-  color: var(--foreground);
-}
-.modal-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.modal-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.modal-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--foreground);
-}
-.modal-input {
-  width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background-color: var(--background);
-  color: var(--foreground);
-  font-size: 13px;
-}
-.modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 14px 20px;
-  border-top: 1px solid var(--border);
-  background-color: var(--card-muted);
 }

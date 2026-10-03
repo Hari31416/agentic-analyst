@@ -36,21 +36,20 @@ export const DeleteConfirmDialog: FC<DeleteConfirmDialogProps> = ({
         if (!open && !confirming) onClose()
       }}
     >
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <div className="flex items-center gap-2">
-            <AlertCircle className="size-5 text-destructive" />
-            <DialogTitle>{title}</DialogTitle>
-          </div>
-          <DialogDescription className="pt-2">{message}</DialogDescription>
-          {error && (
-            <p role="alert" className="pt-2 text-xs text-destructive">
-              {error}
-            </p>
-          )}
+          <DialogTitle className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="size-4" />
+            {title}
+          </DialogTitle>
+          <DialogDescription className="leading-relaxed">
+            {message}
+          </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="pt-4">
+        {error && <p className="text-xs text-destructive">{error}</p>}
+
+        <DialogFooter>
           <Button
             type="button"
             variant="outline"

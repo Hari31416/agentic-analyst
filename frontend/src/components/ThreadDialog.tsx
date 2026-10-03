@@ -3,12 +3,14 @@ import { MessageSquarePlus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from './ui/dialog'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import { Label } from './ui/label'
 
 type ThreadDialogProps = {
   isOpen: boolean
@@ -55,29 +57,22 @@ export const ThreadDialog: FC<ThreadDialogProps> = ({
     }
   }
 
-  const handleOpenChange = (open: boolean) => {
-    if (open) setName(initialName)
-    else onClose()
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[440px]">
-        <DialogHeader>
-          <div className="flex items-center gap-2">
-            <MessageSquarePlus className="size-5 text-primary" />
-            <DialogTitle>{title}</DialogTitle>
-          </div>
-        </DialogHeader>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquarePlus className="size-4" />
+              {title}
+            </DialogTitle>
+            <DialogDescription>
+              Start a focused research and reasoning thread
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <label
-              htmlFor="thread-name-input"
-              className="text-xs font-medium text-foreground"
-            >
-              Thread Objective / Topic
-            </label>
+            <Label htmlFor="thread-name-input">Thread Objective / Topic</Label>
             <Input
               id="thread-name-input"
               type="text"
@@ -90,9 +85,9 @@ export const ThreadDialog: FC<ThreadDialogProps> = ({
             />
           </div>
 
-          {error && <div className="text-xs text-destructive">{error}</div>}
+          {error && <p className="text-xs text-destructive">{error}</p>}
 
-          <DialogFooter className="pt-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"

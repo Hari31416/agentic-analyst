@@ -3,12 +3,14 @@ import { FolderPlus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from './ui/dialog'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import { Label } from './ui/label'
 
 type WorkspaceDialogProps = {
   isOpen: boolean
@@ -57,29 +59,22 @@ export const WorkspaceDialog: FC<WorkspaceDialogProps> = ({
     }
   }
 
-  const handleOpenChange = (open: boolean) => {
-    if (open) setName(initialName)
-    else onClose()
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[420px]">
-        <DialogHeader>
-          <div className="flex items-center gap-2">
-            <FolderPlus className="size-5 text-primary" />
-            <DialogTitle>{title}</DialogTitle>
-          </div>
-        </DialogHeader>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderPlus className="size-4" />
+              {title}
+            </DialogTitle>
+            <DialogDescription>
+              Group sources, extractions, and research threads
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <label
-              htmlFor="ws-name-input"
-              className="text-xs font-medium text-foreground"
-            >
-              Workspace Name
-            </label>
+            <Label htmlFor="ws-name-input">Workspace Name</Label>
             <Input
               id="ws-name-input"
               type="text"
@@ -92,9 +87,9 @@ export const WorkspaceDialog: FC<WorkspaceDialogProps> = ({
             />
           </div>
 
-          {error && <div className="text-xs text-destructive">{error}</div>}
+          {error && <p className="text-xs text-destructive">{error}</p>}
 
-          <DialogFooter className="pt-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"

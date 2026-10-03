@@ -1,0 +1,24 @@
+{
+  "phase": "06",
+  "timestamp": "2026-10-03T04:39:58.150373+00:00",
+  "model": "gemma-4-26B-A4B-it",
+  "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609",
+  "cases": [
+    {
+      "run_id": "22db5208-afca-4bc5-bb9c-422fb5671ec3",
+      "thread_id": "f83d0e73-08d0-4389-98ff-9453864fe1cd",
+      "status": "running",
+      "state": "budget_exhausted",
+      "outcome": {
+        "error": {
+          "code": "budget_exhausted",
+          "message": "Model call limit reached"
+        },
+        "cleanup": "complete",
+        "partial": true
+      }
+    }
+  ],
+  "workspace_id": "9b90b0a6-2079-41eb-b735-d5ac08d59e57",
+  "status": "budget_exhausted"
+}

@@ -16,7 +16,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | 03    | Verified | PDF/DOCX ingestion, measured bilingual retrieval, two live mixed-source cases, citation history, CSV/PNG and source integrity checks | Full UI QA deferred by user; ranking improvements in phase 05 |
 | 04    | Verified | Local Hindi/English scanned/mixed/rotated extraction; accepted PDF table calculated in real microVM; lifecycle/crawler/API tests, PostgreSQL/RustFS and frontend checks | OCR accuracy descriptive; full UI QA deferred; explicit format limitations recorded |
 | 05    | Verified | 179 deterministic tests; 34 PostgreSQL/RustFS integration tests; 32 local stage trials; four bilingual live dependent-hop/summary cases; historical artifact follow-up; frontend and schema checks | Full UI QA deferred; one follow-up language miss recorded |
-| 06    | Not started | Not run                     | All phase checks |
+| 06    | Verified | 218 deterministic tests; 42 PostgreSQL/RustFS tests; two real microVM analysis checks; guided mixed-source report, downloads, derived reuse and archive roundtrip; PDF visual and frontend/schema checks | Broad LLM reasoning misses recorded; autonomous task success in phase 09; full UI QA deferred |
 | 07    | Not started | Not run                     | All phase checks |
 | 08    | Not started | Not run                     | All phase checks |
 | 09    | Not started | Not run                     | All phase checks |
@@ -373,3 +373,67 @@ Keep secrets and raw client data out of this file.
   can refresh with `python -m app.advanced_probes --retrieval-only` while preserving
   prior live results. The authorized scope ends at phase 05. Phase 06 awaits the
   user's next request.
+
+
+## 3 October 2026: phase 06 analysis and portable outputs
+
+- Added typed `analyze_data`: cleaning, filtering, joins with key/grain/multiplicity
+  checks, aggregation, reshaping, exact decimal arithmetic, dates/fiscal periods,
+  descriptive statistics, correlation, OLS and outliers. Units, assumptions,
+  missing policies, sampling and limitations accompany structured evidence.
+  Calculations execute only in the networkless microVM. Intermediate expansion,
+  empty schemas, decimal precision, null keys and nonfinite values have guards.
+  Flat JSON/Parquet use immutable originals and canonical working CSVs. Filter
+  comparisons must be explicit; validation feedback exposes field diagnostics
+  without submitted values or secrets.
+- Added paginated table previews, strict typed chart specs and PNGs, a workspace
+  Outputs view, formula-safe CSV/XLSX/Parquet downloads, and idempotent CSV dataset
+  registration. Original artifact bytes remain canonical and export hashes identify
+  transformed bytes. Both historical `@v1` and current `@1` source lineage markers
+  are accepted with strict version checks. Later runs preserve dataset ancestry.
+- Reports export Markdown, PDF and notebooks using retained calculations and
+  original document evidence. Notebooks retain exact code, snapshots, guest paths,
+  hashes and versions, with no automatic execution. PDF exports use shaping-capable
+  fonts for Indic text; missing fonts fail explicitly. Validated charts render as
+  React SVG; PDF previews use a sandboxed iframe, Markdown is plain text, and HTML
+  is download-only. A bilingual sample and the final one-page live report were
+  visually inspected with no clipping, overlap or missing glyphs.
+- Portable schema-1 ZIP archives retain originals, extracted blocks, versioned
+  chunks, supported summary caches, datasets, artifacts, conversation and evidence.
+  Bounds, traversal/symlink/encryption/schema/hash and ownership checks reject
+  invalid input. Imports remap IDs, including UUID-keyed version dictionaries,
+  preserve historical code/notebook bytes, report unavailable objects explicitly,
+  and require database reconnection and document reindexing. Credentials, connection
+  secrets, embeddings and running jobs are excluded.
+- Final validation: deterministic pytest 218 passed (213 before the five new
+  version-parser cases); PostgreSQL/RustFS suite 42 passed, 11 skipped. Ten old
+  seeded connector checks lack explicit fixture URLs; one old embedding check is
+  skipped, with earlier live evidence retained. Black/mypy, frontend typecheck,
+  build/format and `alembic check` pass. The two new real microVM checks passed,
+  including read-only PostgreSQL/file joins, exact totals, chart artifacts and
+  derived reuse in a later run. No schema migration was required.
+- The existing guest remains pinned to
+  `sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609`.
+  Observed Python 3.12.13, pandas 2.3.0, NumPy 2.4.4, SciPy 1.17.1,
+  Matplotlib 3.10.8, DuckDB 1.4.4 and PyArrow 23.0.1. API, worker, frontend and
+  sandbox run on the host; PostgreSQL/RustFS infrastructure runs in Docker.
+- Configured `gemma-4-26B-A4B-it` failed three broad agent trials on malformed tool
+  arguments, source routing or context limits. A fourth guided run omitted `le`
+  and returned count 1 / INR 15,000 rather than count 2 / INR 25,000; the weak
+  comparator default was removed. The corrected guided run completed with count
+  2 / INR 25,000.00 and retained reports/charts. Final prose reversed the policy
+  and calculation labels of two evidence IDs; the report citations themselves
+  resolve correctly. This is guided workflow evidence, not a claim of reliable
+  autonomous reasoning. Per user instruction, no more model calls were made to
+  tune these misses. Autonomous task-success evaluation remains phase 09.
+- Saved-run HTTP checks verified original/CSV/XLSX/Parquet download hashes, paged
+  rows, chart spec, citations, dataset registration, archive export/import and
+  remapped evidence/version references. Source hashes and synthetic database rows
+  remain unchanged. Evidence is retained in `evals/results/phase06-analysis-live.json`,
+  `phase06-mixed-live.json`, `evals/reports/phase06-2026-10-03.json`, four trial
+  reports and the Markdown/PDF/notebook samples in `evals/results/`.
+- Operations and limits are documented in `docs/analysis-and-exports.md` and
+  `docs/reports-and-artifacts.md`. `make live-analysis` is an optional diagnostic
+  that writes a timestamped report without overwriting retained results. Full
+  browser QA remains deferred. Phase 06 is complete; stop before phase 07 until
+  the user requests it.

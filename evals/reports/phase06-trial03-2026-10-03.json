@@ -1,0 +1,24 @@
+{
+  "phase": "06",
+  "timestamp": "2026-10-03T04:46:12.270989+00:00",
+  "model": "gemma-4-26B-A4B-it",
+  "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609",
+  "cases": [
+    {
+      "run_id": "1ace91f3-e845-47e8-88b1-1a083c64ebca",
+      "thread_id": "83086eed-12aa-4021-bd9e-4785ec365dc5",
+      "status": "failed",
+      "state": "failed",
+      "outcome": {
+        "error": {
+          "code": "model_context_too_large",
+          "message": "The model request exceeds the configured context limit."
+        },
+        "cleanup": "complete",
+        "partial": true
+      }
+    }
+  ],
+  "workspace_id": "9b90b0a6-2079-41eb-b735-d5ac08d59e57",
+  "status": "failed"
+}

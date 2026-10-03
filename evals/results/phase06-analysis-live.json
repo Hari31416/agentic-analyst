@@ -1,0 +1,120 @@
+{
+  "status": "passed",
+  "analysis": {
+    "schema_version": 1,
+    "status": "ok",
+    "assumptions": [
+      "Amounts are INR; identifiers are source-provided strings."
+    ],
+    "limitations": [
+      "Statistics describe retained observations, not causal effects.",
+      "Chart coordinates use float approximations; CSV retains exact decimal strings."
+    ],
+    "operations": [
+      {
+        "operation": "convert",
+        "frame": "sales",
+        "input_rows": 3,
+        "output_rows": 3,
+        "rows_removed": 0
+      },
+      {
+        "operation": "join",
+        "frame": "sales",
+        "input_rows": 3,
+        "right_frame": "lookup",
+        "relationship": "one_to_one",
+        "unmatched_left": 0,
+        "unmatched_right": 0,
+        "left_unique_keys": 3,
+        "right_unique_keys": 3,
+        "right_rows": 3,
+        "output_rows": 3,
+        "rows_removed": 0
+      },
+      {
+        "operation": "statistics",
+        "frame": "sales",
+        "input_rows": 3,
+        "sample_size": 3,
+        "approximation": "IEEE-754 floating point for statistical estimates",
+        "causal_claim": false,
+        "statistics": {
+          "quantity": {
+            "count": 3,
+            "mean": 2.0,
+            "min": 1.0,
+            "max": 3.0,
+            "std_sample": 1.0,
+            "quartiles": [
+              1.5,
+              2.0,
+              2.5
+            ]
+          }
+        },
+        "output_rows": 3,
+        "rows_removed": 0
+      },
+      {
+        "operation": "aggregate",
+        "frame": "sales",
+        "input_rows": 3,
+        "output_rows": 2,
+        "rows_removed": 1
+      }
+    ],
+    "python_version": "3.12.13",
+    "sampling": "none within staged inputs; DB snapshots can be bounded",
+    "inputs": [
+      {
+        "alias": "sales",
+        "rows": 3,
+        "reference": "sales.csv"
+      },
+      {
+        "alias": "lookup",
+        "rows": 3,
+        "reference": "lookup.csv"
+      }
+    ],
+    "units": {
+      "total": "INR"
+    },
+    "row_count": 2,
+    "retained_rows": 2,
+    "truncated": false,
+    "columns": [
+      "region",
+      "total"
+    ],
+    "rows": [
+      {
+        "region": "North",
+        "total": "9007199254740993.03"
+      },
+      {
+        "region": "South",
+        "total": "1.03"
+      }
+    ],
+    "chart_points": 2,
+    "chart_truncated": false
+  },
+  "libraries": {
+    "pandas": "2.3.0",
+    "numpy": "2.4.4",
+    "scipy": "1.17.1",
+    "matplotlib": "3.10.8",
+    "duckdb": "1.4.4",
+    "pyarrow": "23.0.1"
+  },
+  "artifact_hashes": {
+    "analysis.json": "d293fd594edd6b993a31f0684572fe980f3b5c152aa9b6837cf53fe4d6d0835a",
+    "chart.json": "1f11dd185ee4a61591d7379e3e33105a45f57dab6aa4f987a4670ffd3fa2203a",
+    "chart.png": "b23ac8cd00f3ced32c70d2ee9f252cc504be7054971028c1ad480f63046c6970",
+    "libraries.json": "768594cb12aa830f511ea1260de82772bbb1c9209c4926571ecc8fe4a8f17a38",
+    "result.csv": "45c9f919a766e1fcce27d2f8e865fcbc56ff104424b1fb2e8e3b91cb7f35a044"
+  },
+  "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609"
+}

@@ -1,0 +1,44 @@
+{
+  "phase": "06",
+  "timestamp": "2026-10-03T04:46:12.270989+00:00",
+  "model": "gemma-4-26B-A4B-it",
+  "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609",
+  "cases": [
+    {
+      "run_id": "085c765d-e667-45e6-b0ef-8ac6c9fb162e",
+      "thread_id": "83086eed-12aa-4021-bd9e-4785ec365dc5",
+      "previous_failed_run_id": "1ace91f3-e845-47e8-88b1-1a083c64ebca",
+      "mode": "guided retained input workflow",
+      "status": "completed",
+      "outcome": {
+        "text": "The analysis of eligible regional grants based on the S1 active policy and the inclusive income threshold of INR 200,000 identifies the following results:\n\n- **Eligible Count**: 1\n- **Total Grant Amount**: 15,000.00 INR\n\n**Supporting Artifacts:**\n- **Report (Markdown)**: 0ee0fbaa-bb1e-4a16-9f82-14c91ee8c603\n- **Report (PDF)**: 34dfee96-beca-436b-ad0f-b3e9df1e374f\n- **Replay Notebook**: 52e9366a-efdb-4049-bf90-95aed312fb19\n- **Result Table (CSV)**: fbf119ef-3fe6-51f7-87a4-78c9cbba624e\n- **Bar Chart (PNG)**: 47d1d044-d173-5d30-87d9-4b81d17b8071\n- **Bar Chart (JSON)**: cf5b73dc-fd89-5df4-a930-07ec4b6ccbb6\n\n**Evidence Citations:**\n- **Policy Evidence**: d1747511-6da8-403c-af88-4083831b4d09\n- **Calculation Evidence**: a2b4db23-1bab-430d-81cc-6ec2238e0730\n\n**Limitations:**\n- The analysis is based on a read-only snapshot of the database.\n- Results represent associations found in the data, not causal relationships.",
+        "usage": {
+          "total_tokens": 48409,
+          "prompt_tokens": 45248,
+          "completion_tokens": 3161
+        },
+        "cleanup": "complete",
+        "tool_calls": 3,
+        "model_calls": 4,
+        "artifact_ids": [
+          "0ee0fbaa-bb1e-4a16-9f82-14c91ee8c603",
+          "34dfee96-beca-436b-ad0f-b3e9df1e374f",
+          "52e9366a-efdb-4049-bf90-95aed312fb19",
+          "47d1d044-d173-5d30-87d9-4b81d17b8071",
+          "cf5b73dc-fd89-5df4-a930-07ec4b6ccbb6",
+          "fbf119ef-3fe6-51f7-87a4-78c9cbba624e"
+        ],
+        "evidence_ids": [
+          "d1747511-6da8-403c-af88-4083831b4d09",
+          "a2b4db23-1bab-430d-81cc-6ec2238e0730"
+        ],
+        "clarification": false,
+        "prompt_version": "analyst-v4"
+      },
+      "numeric_validation": "failed: model omitted comparison le, defaulted to eq, returned count 1/INR 15000 instead of count 2/INR 25000"
+    }
+  ],
+  "workspace_id": "9b90b0a6-2079-41eb-b735-d5ac08d59e57",
+  "status": "failed_numeric_validation",
+  "prompt_version": "analyst-v4"
+}

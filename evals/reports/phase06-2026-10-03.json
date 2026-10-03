@@ -1,0 +1,307 @@
+{
+  "phase": "06",
+  "timestamp": "2026-10-03T04:46:12.270989+00:00",
+  "model": "gemma-4-26B-A4B-it",
+  "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609",
+  "cases": [
+    {
+      "run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "thread_id": "83086eed-12aa-4021-bd9e-4785ec365dc5",
+      "previous_failed_run_id": "1ace91f3-e845-47e8-88b1-1a083c64ebca",
+      "mode": "guided retained input workflow",
+      "status": "completed",
+      "outcome": {
+        "text": "The corrected analysis of eligible regional grants (using the inclusive income boundary $\\le$ 200,000 INR) yields the following results:\n\n- **Eligible Count**: 2\n- **Total Grant Amount**: 25,000.00 INR\n\n**Supporting Artifacts:**\n- **Report (Markdown)**: ea75e50b-f611-447c-a2f3-cdcc654320f5\n- **Report (PDF)**: ce4ec0ea-6d1f-4e20-85f0-3f146af86364\n- **Replay Notebook**: 88c0a069-a3d3-4ae9-8821-de87ea641c22\n- **Result Table (CSV)**: aff877d1-18f1-5a90-8e53-82b56b93c400\n- **Bar Chart (PNG)**: 155f72df-8396-53bd-9af9-8175fcc573f5\n- **Bar Chart (JSON)**: e0a6eb0c-f974-5dbc-8984-2535e54e2407\n\n**Evidence Citations:**\n- **Policy Evidence**: d1747511-6da8-403c-af88-4083831b4d09\n- **Calculation Evidence**: 7b9d07c8-a078-4dc8-9f08-7d0ca46dab75\n\n**Limitations:**\n- The analysis is based on a read-only snapshot of the database.\n- Results represent associations found in the data, not causal relationships.",
+        "usage": {
+          "total_tokens": 51416,
+          "prompt_tokens": 48693,
+          "completion_tokens": 2723
+        },
+        "cleanup": "complete",
+        "tool_calls": 3,
+        "model_calls": 4,
+        "artifact_ids": [
+          "ea75e50b-f611-447c-a2f3-cdcc654320f5",
+          "ce4ec0ea-6d1f-4e20-85f0-3f146af86364",
+          "88c0a069-a3d3-4ae9-8821-de87ea641c22",
+          "aff877d1-18f1-5a90-8e53-82b56b93c400",
+          "155f72df-8396-53bd-9af9-8175fcc573f5",
+          "e0a6eb0c-f974-5dbc-8984-2535e54e2407"
+        ],
+        "evidence_ids": [
+          "d1747511-6da8-403c-af88-4083831b4d09",
+          "7b9d07c8-a078-4dc8-9f08-7d0ca46dab75"
+        ],
+        "clarification": false,
+        "prompt_version": "analyst-v4"
+      },
+      "analysis": {
+        "rows": [
+          {
+            "region": "North",
+            "total_inr": "25000.00",
+            "eligible_count": 2
+          }
+        ],
+        "units": {
+          "total_inr": "INR"
+        },
+        "inputs": [
+          {
+            "rows": 5,
+            "alias": "grants",
+            "reference": "02a98b35-3d0b-4080-85b9-7e8b7f9a267e"
+          },
+          {
+            "rows": 5,
+            "alias": "regions",
+            "reference": "f0546752-99a5-4518-b833-c21991488a2e.csv"
+          }
+        ],
+        "status": "ok",
+        "columns": [
+          "region",
+          "eligible_count",
+          "total_inr"
+        ],
+        "sampling": "none within staged inputs; DB snapshots can be bounded",
+        "row_count": 1,
+        "truncated": false,
+        "operations": [
+          {
+            "frame": "grants",
+            "policy": "reject",
+            "operation": "missing",
+            "input_rows": 5,
+            "output_rows": 5,
+            "rows_removed": 0,
+            "missing_counts": {
+              "scheme_code": 0,
+              "scheme_status": 0,
+              "application_id": 0,
+              "grant_amount_inr": 0,
+              "annual_income_inr": 0
+            }
+          },
+          {
+            "frame": "regions",
+            "policy": "reject",
+            "operation": "missing",
+            "input_rows": 5,
+            "output_rows": 5,
+            "rows_removed": 0,
+            "missing_counts": {
+              "region": 0,
+              "application_id": 0
+            }
+          },
+          {
+            "frame": "grants",
+            "operation": "duplicates",
+            "input_rows": 5,
+            "output_rows": 5,
+            "rows_removed": 0,
+            "duplicate_rows": 0
+          },
+          {
+            "frame": "regions",
+            "operation": "duplicates",
+            "input_rows": 5,
+            "output_rows": 5,
+            "rows_removed": 0,
+            "duplicate_rows": 0
+          },
+          {
+            "frame": "grants",
+            "operation": "convert",
+            "input_rows": 5,
+            "output_rows": 5,
+            "rows_removed": 0
+          },
+          {
+            "frame": "grants",
+            "operation": "join",
+            "input_rows": 5,
+            "right_rows": 5,
+            "output_rows": 5,
+            "right_frame": "regions",
+            "relationship": "one_to_one",
+            "rows_removed": 0,
+            "unmatched_left": 0,
+            "unmatched_right": 0,
+            "left_unique_keys": 5,
+            "right_unique_keys": 5
+          },
+          {
+            "frame": "grants",
+            "operation": "filter",
+            "input_rows": 5,
+            "output_rows": 4,
+            "rows_removed": 1
+          },
+          {
+            "frame": "grants",
+            "operation": "filter",
+            "input_rows": 4,
+            "output_rows": 3,
+            "rows_removed": 1
+          },
+          {
+            "frame": "grants",
+            "operation": "filter",
+            "input_rows": 3,
+            "output_rows": 2,
+            "rows_removed": 1
+          },
+          {
+            "frame": "grants",
+            "operation": "statistics",
+            "input_rows": 2,
+            "statistics": {
+              "grant_amount_inr": {
+                "max": 15000.0,
+                "min": 10000.0,
+                "mean": 12500.0,
+                "count": 2,
+                "quartiles": [
+                  11250.0,
+                  12500.0,
+                  13750.0
+                ],
+                "std_sample": 3535.5339059327375
+              }
+            },
+            "output_rows": 2,
+            "sample_size": 2,
+            "causal_claim": false,
+            "rows_removed": 0,
+            "approximation": "IEEE-754 floating point for statistical estimates"
+          },
+          {
+            "frame": "grants",
+            "operation": "aggregate",
+            "input_rows": 2,
+            "output_rows": 1,
+            "rows_removed": 1
+          }
+        ],
+        "assumptions": [
+          "Amounts are INR. Application identifiers are unique and the regions file supplies the entity mapping.",
+          "Policy S1/active/inclusive INR 200000 boundary is supported by retained document evidence."
+        ],
+        "limitations": [
+          "Statistics describe retained observations, not causal effects.",
+          "Chart coordinates use float approximations; CSV retains exact decimal strings."
+        ],
+        "chart_points": 1,
+        "retained_rows": 1,
+        "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609",
+        "python_version": "3.12.13",
+        "schema_version": 1,
+        "chart_truncated": false,
+        "analysis_version": "analysis-engine-v1"
+      },
+      "tools": [
+        "analyze_data",
+        "generate_report"
+      ],
+      "reports": {
+        "Phase-06-eligible-regional-grants.md": {
+          "id": "ea75e50b-f611-447c-a2f3-cdcc654320f5",
+          "sha256": "64eb308a7ecf44eb07db14281df6cec6d0b6730d1e6564c0bc9686ea0f7d1656",
+          "path": "evals/results/Phase-06-eligible-regional-grants.md"
+        },
+        "Phase-06-eligible-regional-grants.pdf": {
+          "id": "ce4ec0ea-6d1f-4e20-85f0-3f146af86364",
+          "sha256": "6eacfb9eb5ac954d7e118a03b674bbf9ce71128274e00a5db2b8b2022e9b01a0",
+          "path": "evals/results/Phase-06-eligible-regional-grants.pdf"
+        },
+        "Phase-06-eligible-regional-grants.ipynb": {
+          "id": "88c0a069-a3d3-4ae9-8821-de87ea641c22",
+          "sha256": "d080765ff02e2bd0486fb900b060b340c0bfcbd0376f02746071891b99506cd6",
+          "path": "evals/results/Phase-06-eligible-regional-grants.ipynb"
+        }
+      },
+      "derived_dataset": {
+        "source_id": "4575bef0-4572-4fde-97d7-68aa4d638bd7",
+        "dataset_ids": [
+          "0e4001e1-0056-4b67-b7d1-5a6979c0ba2e"
+        ],
+        "display_name": "Eligible regional grants.csv",
+        "reused": false
+      },
+      "roundtrip": {
+        "workspace": {
+          "id": "9973b1a0-2af5-4a06-9dc8-1f6ab6d1e4b9",
+          "label": "Phase 06 mixed analysis and portable report"
+        },
+        "reconnection_required": [
+          {
+            "source_id": "c30c63a0-1854-434c-a85d-27e6018c4ace",
+            "display_name": "analyst_eval",
+            "dialect": "postgresql",
+            "host": "localhost",
+            "database_name": "analyst_eval",
+            "username": "analyst",
+            "port": 55432,
+            "options": {
+              "ssl_mode": "disable",
+              "connect_timeout_seconds": 5
+            }
+          },
+          {
+            "source_id": "2c12fcee-a066-43f1-bfae-733f1544bc9b",
+            "display_name": "analyst_eval",
+            "dialect": "postgresql",
+            "host": "localhost",
+            "database_name": "analyst_eval",
+            "username": "analyst",
+            "port": 55432,
+            "options": {
+              "ssl_mode": "disable",
+              "connect_timeout_seconds": 5
+            }
+          },
+          {
+            "source_id": "b4941e64-34bd-4547-ba6f-ecdc6aa3fbe0",
+            "display_name": "analyst_eval",
+            "dialect": "postgresql",
+            "host": "localhost",
+            "database_name": "analyst_eval",
+            "username": "analyst",
+            "port": 55432,
+            "options": {
+              "ssl_mode": "disable",
+              "connect_timeout_seconds": 5
+            }
+          }
+        ],
+        "reindex_required": [
+          "4e8942fd-e450-4a9d-aeeb-9a73630b9c92"
+        ],
+        "mapped_evidence_ids": {
+          "d1747511-6da8-403c-af88-4083831b4d09": "7a2ba167-97c4-47c2-a18d-644974f5116b",
+          "7b9d07c8-a078-4dc8-9f08-7d0ca46dab75": "d784f11d-fb07-4f37-b3fd-fc434c3d1dd7"
+        }
+      },
+      "contract_checks": "passed",
+      "pdf_visual_check": "passed: one page, legible table and original evidence locations",
+      "guidance": "Exact typed inputs plus an explicit correction to the inclusive comparison; not autonomous task-success evidence",
+      "reasoning_limitations": [
+        "Final prose reverses the policy/calculation labels of the two evidence IDs; saved evidence and report citations remain correct."
+      ]
+    }
+  ],
+  "workspace_id": "9b90b0a6-2079-41eb-b735-d5ac08d59e57",
+  "status": "passed_guided_with_recorded_reasoning_misses",
+  "prompt_version": "analyst-v4",
+  "original_hashes_unchanged": true,
+  "database_rows_unchanged": true,
+  "broad_trial_failures": [
+    "phase06-trial01-2026-10-03.json",
+    "phase06-trial02-2026-10-03.json",
+    "phase06-trial03-2026-10-03.json",
+    "phase06-trial04-2026-10-03.json"
+  ],
+  "postprocessing_fix": "Registration now accepts existing source lineage @v1 as well as @1, retaining version and hash checks."
+}

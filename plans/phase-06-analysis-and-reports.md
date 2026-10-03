@@ -40,20 +40,20 @@ Outcome: flexible data analysis produces useful, inspectable, reproducible outpu
 
 ## Acceptance and validation
 
-- [ ] The agent completes representative cleaning, joins, statistics, and chart
+- [x] The agent completes representative cleaning, joins, statistics, and chart
   requests with correct results and recorded assumptions.
-- [ ] Many-to-many joins, missing values, unit mismatch, and duplicate identifiers
+- [x] Many-to-many joins, missing values, unit mismatch, and duplicate identifiers
   have tests with expected behavior and visible warnings/clarification where needed.
-- [ ] Derived datasets can be selected in a later run with complete lineage.
-- [ ] Uploaded files and original DB rows remain unchanged throughout analysis.
-- [ ] A mixed-source report preserves accurate numeric results and resolvable citations.
-- [ ] Markdown, notebook, PDF, data downloads, and chart previews work end to end.
-- [ ] Representative PDF pages are visually checked; notebook inputs/replay
+- [x] Derived datasets can be selected in a later run with complete lineage.
+- [x] Uploaded files and original DB rows remain unchanged throughout analysis.
+- [x] A mixed-source report preserves accurate numeric results and resolvable citations.
+- [x] Markdown, notebook, PDF, data downloads, and chart previews work end to end.
+- [x] Representative PDF pages are visually checked; notebook inputs/replay
   limitations are explicit for live sources without retained snapshots.
-- [ ] Malicious HTML/formula cells and archive paths do not execute in the host app.
-- [ ] Export/import round-trip retains supported content and evidence IDs or an
+- [x] Malicious HTML/formula cells and archive paths do not execute in the host app.
+- [x] Export/import round-trip retains supported content and evidence IDs or an
   explicit remapping; unsupported version fields do not silently corrupt data.
-- [ ] Source deletion/expiry leaves an explicit unavailable reference, not a
+- [x] Source deletion/expiry leaves an explicit unavailable reference, not a
   citation pointing at unrelated replacement content.
 
 Use deterministic numerical cases, artifact contract checks, browser checks,
@@ -63,3 +63,23 @@ and real sandbox analysis. Live task success is evaluated again in phase 09.
 
 Document analyst operations, guest image libraries, output schemas, export formats,
 import compatibility, chart preview controls, and report/replay limitations.
+
+## 3 October 2026 verification notes
+
+- Deterministic operations and real mixed PostgreSQL/file microVM execution pass.
+  A later run selects only the registered derived dataset and retains its ancestry.
+- The configured Gemma model failed three broad trials on tool arguments, routing,
+  or context limits. A guided follow-up returned an incorrect boundary count when
+  it omitted a comparator. Filter comparisons now require an explicit value.
+  The corrected guided run completed cleaning, joins, statistics and chart/report
+  generation with count 2 and INR 25,000.00. Its final prose reversed the labels
+  of two evidence IDs; the retained report and evidence references remain correct.
+  This verifies a representative guided workflow, not reliable autonomous success.
+- Per user instruction, recorded reasoning misses do not trigger further tuning.
+  Phase 09 evaluates autonomous task success. Full browser QA remains deferred;
+  frontend build/type checks and backend artifact contracts passed.
+- The live one-page report and a bilingual sample were visually inspected. Saved
+  downloads, exact input/code snapshots, original hashes and DB rows, derived
+  reuse, archive import and explicit evidence-ID remapping were checked.
+- Details and retained trials are in `plans/status.md`, `docs/analysis-and-exports.md`,
+  `docs/reports-and-artifacts.md`, `evals/reports/phase06-*.json` and `evals/results/`.

@@ -1,0 +1,100 @@
+{
+  "status": "passed",
+  "database_rows_unchanged": true,
+  "original_hash_unchanged": true,
+  "original_sha256": "dc0d7b8c6dcd0a621d0c1b700f3e4e9d293b7f447356b1fbac71be3533a16212",
+  "query_snapshot_sha256": "237fa642a9a753af730fe655612d683f6a38761d289e0ac58216be94ef4eaf1d",
+  "result_sha256": "5e2bdd8b29572dfa17724968bee449785c865bbff507dfe7b6c0b8a905dff0d5",
+  "analysis": {
+    "schema_version": 1,
+    "status": "ok",
+    "assumptions": [
+      "One application per identifier; grants measured in INR."
+    ],
+    "limitations": [
+      "Statistics describe retained observations, not causal effects."
+    ],
+    "operations": [
+      {
+        "operation": "join",
+        "frame": "grants",
+        "input_rows": 5,
+        "right_frame": "regions",
+        "relationship": "one_to_one",
+        "unmatched_left": 0,
+        "unmatched_right": 0,
+        "left_unique_keys": 5,
+        "right_unique_keys": 5,
+        "right_rows": 5,
+        "output_rows": 5,
+        "rows_removed": 0
+      },
+      {
+        "operation": "convert",
+        "frame": "grants",
+        "input_rows": 5,
+        "output_rows": 5,
+        "rows_removed": 0
+      },
+      {
+        "operation": "aggregate",
+        "frame": "grants",
+        "input_rows": 5,
+        "output_rows": 3,
+        "rows_removed": 2
+      }
+    ],
+    "python_version": "3.12.13",
+    "sampling": "none within staged inputs; DB snapshots can be bounded",
+    "inputs": [
+      {
+        "alias": "grants",
+        "rows": 5,
+        "reference": "d3208837-3df3-42ff-b1db-275da25d1b71"
+      },
+      {
+        "alias": "regions",
+        "rows": 5,
+        "reference": "d385abb6-f92d-425a-b54d-5f710d1e8bac.csv"
+      }
+    ],
+    "units": {
+      "total_inr": "INR"
+    },
+    "row_count": 3,
+    "retained_rows": 3,
+    "truncated": false,
+    "columns": [
+      "region",
+      "total_inr"
+    ],
+    "rows": [
+      {
+        "region": "North",
+        "total_inr": "25000.00"
+      },
+      {
+        "region": "South",
+        "total_inr": "17000.01"
+      },
+      {
+        "region": "West",
+        "total_inr": "5000.50"
+      }
+    ],
+    "analysis_version": "analysis-engine-v1",
+    "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609"
+  },
+  "staged_input_artifacts": [
+    {
+      "id": "9fd44100-f86c-47af-877b-f868621353bf",
+      "dataset_id": "d385abb6-f92d-425a-b54d-5f710d1e8bac",
+      "guest_path": "/workspace/inputs/d385abb6-f92d-425a-b54d-5f710d1e8bac.csv",
+      "sha256": "dc0d7b8c6dcd0a621d0c1b700f3e4e9d293b7f447356b1fbac71be3533a16212"
+    }
+  ],
+  "derived_dataset_ids": [
+    "f2af619c-624d-4da3-b048-4828cae0880b"
+  ],
+  "later_run_reuse": true
+}

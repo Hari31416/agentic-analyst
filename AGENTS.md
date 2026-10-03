@@ -22,6 +22,8 @@ implementing a phase. Follow the existing architecture and patterns.
 - Reuse saved live results. Run model/microVM live tests at phase milestones or
   when a material change or unresolved failure needs them; avoid repeating them
   after every edit.
+- Record LLM reasoning failures without repeated tuning for a perfect live run.
+  Keep deterministic logic, bounds, provenance, and failure handling as gates.
 - Retrieval accuracy may be imperfect in the current baseline. Record recall and
   misses honestly; defer further ranking improvements to the relevant phase.
 - Full UI verification is deferred by the user. Run frontend type/build checks
@@ -42,7 +44,7 @@ Optional issue references or breaking-change notes.
 Types: `chore`, `docs`, `feat`, `fix`, `refactor`, `style`, `test`.
 Scopes: `backend`, `frontend`, `infra`, `general`. Keep subjects at most 50 characters.
 
-The user has authorized phase 05 after the completed phase 04 commits.
-Implement and commit phase 05, then stop. Phase 06 requires a later request.
+The user has authorized phase 06 after the completed phase 05 commits.
+Implement and commit phase 06, then stop. Phase 07 requires a later request.
 OCR quality measurements are descriptive; prioritize code logic, routing,
 bounds, provenance, and failure handling over model-dependent accuracy tuning.

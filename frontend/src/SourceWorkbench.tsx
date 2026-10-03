@@ -42,6 +42,8 @@ import {
   documentApi,
 } from './documentApi'
 import './structured.css'
+import { uiText } from './uiText'
+import { useUiLanguage } from './hooks/useUiLanguage'
 
 type SourceWorkbenchProps = {
   workspaceId: string
@@ -98,6 +100,8 @@ function SourceWorkbench({
   datasetErrors,
   onSourcesChanged,
 }: SourceWorkbenchProps) {
+  const [uiLanguage] = useUiLanguage()
+  const copy = (key: Parameters<typeof uiText>[1]) => uiText(uiLanguage, key)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -411,9 +415,7 @@ function SourceWorkbench({
       setSelectedDatasetId('')
     } catch (reason) {
       setUploadError(
-        reason instanceof Error
-          ? reason.message
-          : 'Could not upload this file.',
+        reason instanceof Error ? reason.message : copy('uploadFallbackError'),
       )
     } finally {
       setUploading(false)
@@ -468,7 +470,7 @@ function SourceWorkbench({
                   error:
                     reason instanceof Error
                       ? reason.message
-                      : 'Could not upload this document.',
+                      : copy('uploadDocumentFallbackError'),
                 }
               : item,
           ),
@@ -594,7 +596,9 @@ function SourceWorkbench({
       setTestResult(await structuredApi.testConnection(workspaceId, connection))
     } catch (reason) {
       setConnectionError(
-        reason instanceof Error ? reason.message : 'Connection test failed.',
+        reason instanceof Error
+          ? reason.message
+          : copy('connectionTestFallbackError'),
       )
     } finally {
       setTestingConnection(false)
@@ -626,7 +630,7 @@ function SourceWorkbench({
       setConnectionError(
         reason instanceof Error
           ? reason.message
-          : 'Could not save this connection.',
+          : copy('connectionSaveFallbackError'),
       )
     } finally {
       setSavingConnection(false)
@@ -735,7 +739,7 @@ function SourceWorkbench({
         <form className="file-upload-form" onSubmit={uploadFile}>
           <label className="upload-pick">
             <Upload size={15} />
-            <span>{selectedFile?.name ?? 'Choose a data file'}</span>
+            <span>{selectedFile?.name ?? copy('chooseDataFile')}</span>
             <input
               type="file"
               accept=".csv,.xlsx,.xls,.json,.parquet,text/csv,application/json,application/vnd.apache.parquet,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -752,7 +756,7 @@ function SourceWorkbench({
             ) : (
               <Plus size={14} />
             )}
-            {uploading ? 'Uploading' : 'Add file'}
+            {uploading ? copy('uploading') : copy('addFile')}
           </button>
           <span className="supported-formats">
             CSV · XLSX · XLS · JSON · Parquet
@@ -764,7 +768,7 @@ function SourceWorkbench({
             <span>
               {selectedDocumentFiles.length
                 ? `${selectedDocumentFiles.length} document${selectedDocumentFiles.length === 1 ? '' : 's'} selected`
-                : 'Choose research documents'}
+                : copy('chooseResearchDocuments')}
             </span>
             <input
               type="file"
@@ -812,7 +816,7 @@ function SourceWorkbench({
             ) : (
               <Plus size={14} />
             )}
-            {uploadingDocuments ? 'Uploading' : 'Add documents'}
+            {uploadingDocuments ? copy('uploading') : copy('addDocuments')}
           </button>
           <span className="supported-formats">
             PDF · DOCX · TXT · MD · HTML · PPTX
@@ -835,9 +839,9 @@ function SourceWorkbench({
                 <span>
                   {item.error ??
                     (item.state === 'uploaded'
-                      ? 'Added'
+                      ? copy('uploadStateUploaded')
                       : item.state === 'failed'
-                        ? 'Failed'
+                        ? copy('uploadStateFailed')
                         : `${item.progress}%`)}
                 </span>
                 {item.state !== 'failed' && (
@@ -1010,17 +1014,17 @@ function SourceWorkbench({
         <details className="connection-details">
           <summary>
             <Database size={15} />
-            <span>Connect a database</span>
+            <span>{copy('connectDatabase')}</span>
             <ChevronDown size={14} className="connection-chevron" />
           </summary>
           <form className="connection-form" onSubmit={saveConnection}>
             <div className="connection-form-heading">
-              <strong>Read-only source connection</strong>
-              <span>Credentials stay on the server.</span>
+              <strong>{copy('readOnlyConnection')}</strong>
+              <span>{copy('credentialsServer')}</span>
             </div>
             <div className="connection-grid">
               <label>
-                <span>Database</span>
+                <span>{copy('database')}</span>
                 <select
                   value={connection.dialect}
                   onChange={(event) =>
@@ -1035,7 +1039,7 @@ function SourceWorkbench({
               </label>
               <label>
                 <span>
-                  Display name <i>optional</i>
+                  {copy('displayName')} <i>{copy('optional')}</i>
                 </span>
                 <input
                   value={connectionName}
@@ -1045,7 +1049,7 @@ function SourceWorkbench({
                 />
               </label>
               <label>
-                <span>Host</span>
+                <span>{copy('host')}</span>
                 <input
                   required
                   value={connection.host}
@@ -1057,7 +1061,7 @@ function SourceWorkbench({
                 />
               </label>
               <label>
-                <span>Port</span>
+                <span>{copy('port')}</span>
                 <input
                   required
                   type="number"
@@ -1073,7 +1077,7 @@ function SourceWorkbench({
                 />
               </label>
               <label>
-                <span>Database name</span>
+                <span>{copy('databaseName')}</span>
                 <input
                   required
                   value={connection.database_name}
@@ -1087,7 +1091,7 @@ function SourceWorkbench({
                 />
               </label>
               <label>
-                <span>Username</span>
+                <span>{copy('username')}</span>
                 <input
                   required
                   value={connection.username}
@@ -1101,7 +1105,7 @@ function SourceWorkbench({
                 />
               </label>
               <label className="connection-password">
-                <span>Password</span>
+                <span>{copy('password')}</span>
                 <input
                   required
                   type="password"
@@ -1117,7 +1121,7 @@ function SourceWorkbench({
               </label>
             </div>
             <label className="tls-option">
-              <span>TLS mode</span>
+              <span>{copy('tlsMode')}</span>
               <select
                 value={connection.options.ssl_mode}
                 onChange={(event) =>
@@ -1179,7 +1183,7 @@ function SourceWorkbench({
                 ) : (
                   <Server size={13} />
                 )}
-                {testingConnection ? 'Testing' : 'Test connection'}
+                {testingConnection ? copy('testing') : copy('testConnection')}
               </button>
               <button
                 className="source-primary-button"
@@ -1198,7 +1202,7 @@ function SourceWorkbench({
                 ) : (
                   <Plus size={13} />
                 )}
-                {savingConnection ? 'Saving' : 'Save connection'}
+                {savingConnection ? copy('saving') : copy('saveConnection')}
               </button>
             </div>
           </form>

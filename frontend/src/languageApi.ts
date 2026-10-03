@@ -9,7 +9,14 @@ export type ProviderCapability = {
 
 export type LanguageCapabilities = {
   languages: LanguageCapability[]
-  stt: ProviderCapability
+  stt: ProviderCapability & {
+    max_upload_bytes?: number
+    max_duration_seconds?: number
+  }
+  audio_limits?: {
+    max_upload_bytes?: number
+    max_duration_seconds?: number
+  }
   tts: ProviderCapability
   translation: ProviderCapability
 }

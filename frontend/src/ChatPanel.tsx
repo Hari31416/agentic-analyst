@@ -41,6 +41,7 @@ import { DatasetSummary, sourceKindLabel } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
 import { LanguageCapabilities, languageApi } from './languageApi'
 import { UiLanguage, UiTextKey, uiText } from './uiText'
+import { useUiLanguage } from './hooks/useUiLanguage'
 import './chat.css'
 
 export type ChatSource = {
@@ -70,8 +71,8 @@ type RetryInput = {
 type ProgressItem = { id: string; text: string; kind: string }
 
 const liveStates = new Set(['queued', 'running'])
-const MAX_AUDIO_BYTES = 10 * 1024 * 1024
-const MAX_RECORDING_MS = 120_000
+const DEFAULT_MAX_AUDIO_BYTES = 10 * 1024 * 1024
+const DEFAULT_MAX_RECORDING_SECONDS = 60
 
 function isLive(run: AnalysisRun): boolean {
   return liveStates.has(run.state) || run.outcome?.cleanup === 'pending'
@@ -222,9 +223,7 @@ function ChatPanel({
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([])
   const [selectedDatasetIds, setSelectedDatasetIds] = useState<string[]>([])
   const [language, setLanguage] = useState<AnswerLanguage>('en-IN')
-  const [uiLanguage, setUiLanguage] = useState<UiLanguage>(() => {
-    return localStorage.getItem('fieldnote:ui-language') === 'hi' ? 'hi' : 'en'
-  })
+  const [uiLanguage, setUiLanguage] = useUiLanguage()
   const [languageCapabilities, setLanguageCapabilities] =
     useState<LanguageCapabilities | null>(null)
   const [voiceBusy, setVoiceBusy] = useState(false)
@@ -267,12 +266,26 @@ function ChatPanel({
   threadIdRef.current = threadId
 
   const copy = (key: UiTextKey) => uiText(uiLanguage, key)
+  const maxAudioBytes =
+    languageCapabilities?.audio_limits?.max_upload_bytes ??
+    languageCapabilities?.stt.max_upload_bytes ??
+    DEFAULT_MAX_AUDIO_BYTES
+  const maxRecordingSeconds =
+    languageCapabilities?.audio_limits?.max_duration_seconds ??
+    languageCapabilities?.stt.max_duration_seconds ??
+    DEFAULT_MAX_RECORDING_SECONDS
 
-  function updateDraft(next: string | ((current: string) => string)) {
+  function updateDraft(
+    next: string | ((current: string) => string),
+    ownerThread = threadIdRef.current,
+  ) {
     setDraft((current) => {
-      const value = typeof next === 'function' ? next(current) : next
-      draftsRef.current.set(threadIdRef.current, value)
-      return value
+      const currentForOwner =
+        draftsRef.current.get(ownerThread) ??
+        (threadIdRef.current === ownerThread ? current : '')
+      const value = typeof next === 'function' ? next(currentForOwner) : next
+      draftsRef.current.set(ownerThread, value)
+      return threadIdRef.current === ownerThread ? value : current
     })
   }
 
@@ -630,6 +643,7 @@ function ChatPanel({
     retryFor?: string,
     explicitInput?: RetryInput,
   ) {
+    const sendThreadId = threadIdRef.current
     const cleanText = text.trim()
     if (!cleanText || !modelAvailable || activeRun || sending) return
     setSending(true)
@@ -676,7 +690,7 @@ function ChatPanel({
         references: { evidence_ids: [], artifact_ids: [] },
       }
       setOptimisticMessage(userMessage)
-      updateDraft('')
+      updateDraft('', sendThreadId)
       setRuns((current) => [
         run,
         ...current.filter((item) => item.id !== run.id),
@@ -772,7 +786,7 @@ function ChatPanel({
 
   async function transcribeAudio(blob: Blob, filename: string) {
     const originThread = threadIdRef.current
-    if (blob.size > MAX_AUDIO_BYTES) {
+    if (blob.size > maxAudioBytes) {
       setVoiceMessage(copy('audioTooLarge'))
       return
     }
@@ -806,7 +820,7 @@ function ChatPanel({
       )
       setVoiceMessage(
         durationLimitHitRef.current
-          ? `${copy('audioTooLong')} ${copy('transcriptionReady')}`
+          ? `${copy('audioTooLong').replace('{seconds}', String(maxRecordingSeconds))} ${copy('transcriptionReady')}`
           : copy('transcriptionReady'),
       )
     } catch (reason) {
@@ -875,7 +889,7 @@ function ChatPanel({
       audioTimeoutRef.current = window.setTimeout(() => {
         durationLimitHitRef.current = true
         if (recorder.state === 'recording') recorder.stop()
-      }, MAX_RECORDING_MS)
+      }, maxRecordingSeconds * 1000)
     } catch (reason) {
       if (!mountedRef.current || originThread !== threadIdRef.current) return
       setVoiceMessage(
@@ -897,7 +911,7 @@ function ChatPanel({
     const file = event.currentTarget.files?.[0]
     event.currentTarget.value = ''
     if (!file) return
-    if (file.size > MAX_AUDIO_BYTES) {
+    if (file.size > maxAudioBytes) {
       setVoiceMessage(copy('audioTooLarge'))
       return
     }
@@ -935,7 +949,6 @@ function ChatPanel({
               onChange={(event) => {
                 const next = event.target.value as UiLanguage
                 setUiLanguage(next)
-                localStorage.setItem('fieldnote:ui-language', next)
               }}
             >
               <option value="en">EN</option>
@@ -1327,7 +1340,12 @@ function ChatPanel({
               </span>
             )}
             {recording && (
-              <span className="voice-live-status">{copy('recording')}</span>
+              <span className="voice-live-status">
+                {copy('recording').replace(
+                  '{seconds}',
+                  String(maxRecordingSeconds),
+                )}
+              </span>
             )}
             {voiceMessage && (
               <span className="voice-message" role="status">

@@ -3,6 +3,7 @@ import {
   ChevronDown,
   FolderPlus,
   Layers,
+  PackageOpen,
   MessageSquare,
   Moon,
   PanelLeftClose,
@@ -35,8 +36,8 @@ type LeftSidebarProps = {
   onSelectThread: (id: string) => void
   onCreateThreadClick: () => void
   onDeleteThread: (id: string) => void
-  activeView: 'chat' | 'workbench'
-  onSelectView: (view: 'chat' | 'workbench') => void
+  activeView: 'chat' | 'workbench' | 'outputs'
+  onSelectView: (view: 'chat' | 'workbench' | 'outputs') => void
   isCollapsed: boolean
   onToggleCollapse: () => void
   health: 'checking' | 'online' | 'offline'
@@ -117,6 +118,15 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
               aria-label="Source workbench"
             >
               <Layers size={18} />
+            </button>
+            <button
+              type="button"
+              className={`rail-icon-btn ${activeView === 'outputs' ? 'active' : ''}`}
+              onClick={() => onSelectView('outputs')}
+              title="Workspace outputs"
+              aria-label="Workspace outputs"
+            >
+              <PackageOpen size={18} />
             </button>
           </div>
 
@@ -303,6 +313,15 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             {sourcesCount > 0 && (
               <span className="sidebar-nav-badge">{sourcesCount}</span>
             )}
+          </button>
+          <button
+            type="button"
+            className={`sidebar-nav-btn ${activeView === 'outputs' ? 'active' : ''}`}
+            onClick={() => onSelectView('outputs')}
+            title="Open workspace outputs"
+          >
+            <PackageOpen size={15} />
+            <span>Outputs</span>
           </button>
         </div>
 

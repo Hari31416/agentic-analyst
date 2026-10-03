@@ -14,6 +14,8 @@ import { ThreadDialog } from './components/ThreadDialog'
 import { useTheme } from './hooks/useTheme'
 import { useSystemStatus } from './hooks/useSystemStatus'
 import { DatasetSummary, structuredApi } from './structuredApi'
+import ArtifactBrowser from './ArtifactBrowser'
+import { WorkspaceImportResult } from './phase06Api'
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -47,7 +49,9 @@ export function App() {
     return localStorage.getItem('analyst_right_sidebar') !== 'false'
   })
 
-  const [activeView, setActiveView] = useState<'chat' | 'workbench'>('chat')
+  const [activeView, setActiveView] = useState<
+    'chat' | 'workbench' | 'outputs'
+  >('chat')
   const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([])
   const [workspaceId, setWorkspaceId] = useState<string>('')
   const [threads, setThreads] = useState<ThreadItem[]>([])
@@ -258,6 +262,21 @@ export function App() {
     setActiveView('workbench')
   }
 
+  const handleWorkspaceImported = (result: WorkspaceImportResult) => {
+    const imported: WorkspaceItem = {
+      id: result.workspace.id,
+      label: result.workspace.label,
+      created_at: new Date().toISOString(),
+    }
+    setWorkspaces((current) => [
+      imported,
+      ...current.filter((workspace) => workspace.id !== imported.id),
+    ])
+    setWorkspaceId(imported.id)
+    setActiveView('workbench')
+    setError('')
+  }
+
   const modelAvailable =
     readiness?.components?.model?.status === 'ready' ||
     readiness?.components?.model?.status === 'configured'
@@ -325,7 +344,12 @@ export function App() {
         )}
 
         <div className="main-content">
-          {activeView === 'chat' ? (
+          {activeView === 'outputs' && workspaceId ? (
+            <ArtifactBrowser
+              workspaceId={workspaceId}
+              onWorkspaceImported={handleWorkspaceImported}
+            />
+          ) : activeView === 'chat' ? (
             threadId ? (
               <ChatPanel
                 threadId={threadId}

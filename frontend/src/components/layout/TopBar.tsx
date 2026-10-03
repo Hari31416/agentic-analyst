@@ -16,8 +16,8 @@ type TopBarProps = {
   onToggleRightSidebar: () => void
   activeWorkspaceLabel: string
   activeThreadLabel?: string
-  activeView: 'chat' | 'workbench'
-  onSelectView: (view: 'chat' | 'workbench') => void
+  activeView: 'chat' | 'workbench' | 'outputs'
+  onSelectView: (view: 'chat' | 'workbench' | 'outputs') => void
   readiness: SystemReadiness | null
   health: 'checking' | 'online' | 'offline'
   onRefresh: () => void
@@ -53,7 +53,7 @@ export const TopBar: FC<TopBarProps> = ({
           </button>
         )}
 
-        {activeView === 'workbench' && (
+        {activeView !== 'chat' && (
           <button
             type="button"
             className="topbar-toggle-btn"
@@ -71,7 +71,9 @@ export const TopBar: FC<TopBarProps> = ({
           <strong className="breadcrumb-current">
             {activeView === 'chat'
               ? (activeThreadLabel ?? 'Research Conversation')
-              : 'Source Workbench'}
+              : activeView === 'workbench'
+                ? 'Source Workbench'
+                : 'Workspace Outputs'}
           </strong>
         </div>
       </div>

@@ -12,6 +12,8 @@ def test_context_keeps_user_corrections_sources_and_all_durable_references():
             "role": "user",
             "content": "Correction: use INR, not USD. Assume the reporting month is April.",
             "selected_source_ids": ["source-1"],
+            "selected_dataset_ids": ["dataset-1"],
+            "source_versions": {"source-1": 4},
         },
         {
             "role": "assistant",
@@ -27,14 +29,18 @@ def test_context_keeps_user_corrections_sources_and_all_durable_references():
 
     context = select_thread_context(history, max_characters=400)
 
-    assert "Correction: use INR, not USD." in context[0]["content"]
-    assert "Assume the reporting month is April." in context[0]["content"]
-    assert '"selected_source_ids":["source-1"]' in context[0]["content"]
-    assert "eligible means a record" in context[1]["content"]
-    assert '"evidence_ids":["evidence-1"]' in context[1]["content"]
-    assert '"artifact_ids":["artifact-expired-session"]' in context[1]["content"]
-    assert context[-1]["content"] == "Now calculate the April total."
-    assert sum(len(message["content"]) for message in context) <= 400
+    assert "Correction: use INR, not USD." in context.messages[0]["content"]
+    assert "Assume the reporting month is April." in context.messages[0]["content"]
+    assert '"selected_source_ids":["source-1"]' in context.messages[0]["content"]
+    assert '"selected_dataset_ids":["dataset-1"]' in context.messages[0]["content"]
+    assert '"source_versions":{"source-1":4}' in context.messages[0]["content"]
+    assert "eligible means a record" in context.messages[1]["content"]
+    assert '"evidence_ids":["evidence-1"]' in context.messages[1]["content"]
+    assert (
+        '"artifact_ids":["artifact-expired-session"]' in context.messages[1]["content"]
+    )
+    assert context.messages[-1]["content"] == "Now calculate the April total."
+    assert sum(len(message["content"]) for message in context.messages) <= 400
 
 
 def test_context_fails_explicitly_when_verbatim_user_content_cannot_fit():
@@ -49,9 +55,39 @@ def test_context_ignores_non_conversation_rows():
     assert (
         select_thread_context(
             [{"role": "tool", "content": "internal result"}], max_characters=100
-        )
+        ).messages
         == []
     )
+
+
+def test_older_definition_survives_newest_long_unrelated_answer():
+    history = [
+        {"role": "assistant", "content": "Eligible means status is active."},
+        {
+            "role": "assistant",
+            "content": ("The latest result contains 42 rows and lengthy details " * 30)
+            + ".",
+        },
+        {"role": "user", "content": "What counted as eligible?"},
+    ]
+
+    view = select_thread_context(history, max_characters=100)
+
+    assert "Eligible means status is active." in view.messages[0]["content"]
+    assert view.compacted
+    assert view.dropped_assistant_characters > 0
+    assert view.omitted_assistant_messages == 1
+
+
+def test_context_fails_if_protected_definition_does_not_fit():
+    with pytest.raises(ContextLimitExceeded, match="definitions"):
+        select_thread_context(
+            [
+                {"role": "assistant", "content": "Eligible means status active."},
+                {"role": "user", "content": "Follow up"},
+            ],
+            max_characters=20,
+        )
 
 
 async def test_agent_loop_sends_compacted_history_to_model():
@@ -65,6 +101,11 @@ async def test_agent_loop_sends_compacted_history_to_model():
                 finish_reason="stop",
             )
 
+    events = []
+
+    async def emit(name, payload):
+        events.append((name, payload))
+
     async def noop(*_args):
         return None
 
@@ -73,7 +114,8 @@ async def test_agent_loop_sends_compacted_history_to_model():
     history = [
         {
             "role": "assistant",
-            "content": "The definition means preserve this fact. " * 400,
+            "content": "The definition means preserve this fact. "
+            + ("This is unrelated recent prose. " * 400),
         },
         {
             "role": "user",
@@ -82,8 +124,12 @@ async def test_agent_loop_sends_compacted_history_to_model():
         },
     ]
 
-    await AgentLoop(model, settings, [], noop, noop).run(history, "en-IN")
+    await AgentLoop(model, settings, [], emit, noop).run(history, "en-IN")
 
     assert "The definition means preserve this fact." in model.messages[1]["content"]
     assert '"selected_source_ids":["source-1"]' in model.messages[2]["content"]
     assert "Correction: count in INR." in model.messages[2]["content"]
+    trace = next(payload for name, payload in events if name == "context_selected")
+    assert trace["compacted"] is True
+    assert trace["dropped_assistant_characters"] > 0
+    assert trace["protected_fact_sentences"] == 1

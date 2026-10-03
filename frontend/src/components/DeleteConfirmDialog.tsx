@@ -17,6 +17,7 @@ type DeleteConfirmDialogProps = {
   onClose: () => void
   onConfirm: () => Promise<void>
   confirming?: boolean
+  error?: string
 }
 
 export const DeleteConfirmDialog: FC<DeleteConfirmDialogProps> = ({
@@ -26,9 +27,15 @@ export const DeleteConfirmDialog: FC<DeleteConfirmDialogProps> = ({
   onClose,
   onConfirm,
   confirming = false,
+  error,
 }) => {
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !confirming) onClose()
+      }}
+    >
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
@@ -36,6 +43,11 @@ export const DeleteConfirmDialog: FC<DeleteConfirmDialogProps> = ({
             <DialogTitle>{title}</DialogTitle>
           </div>
           <DialogDescription className="pt-2">{message}</DialogDescription>
+          {error && (
+            <p role="alert" className="pt-2 text-xs text-destructive">
+              {error}
+            </p>
+          )}
         </DialogHeader>
 
         <DialogFooter className="pt-4">

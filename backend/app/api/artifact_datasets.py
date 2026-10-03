@@ -148,6 +148,17 @@ def register_artifact_dataset(
     session: Db,
     body: RegisterDatasetRequest | None = None,
 ) -> dict[str, Any]:
+    from app.api.resource_lifecycle import lock_workspace
+
+    workspace_id = session.scalar(
+        select(Thread.workspace_id)
+        .join(Run, Run.thread_id == Thread.id)
+        .join(Artifact, Artifact.run_id == Run.id)
+        .where(Artifact.id == str(artifact_id))
+    )
+    if workspace_id is None:
+        raise HTTPException(404, "Artifact not found")
+    lock_workspace(session, workspace_id)
     artifact = session.scalar(
         select(Artifact)
         .where(Artifact.id == str(artifact_id), Artifact.durable.is_(True))

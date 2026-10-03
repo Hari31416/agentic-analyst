@@ -184,7 +184,9 @@ def create_connection(
     session: Db,
     settings: AppSettings,
 ) -> dict[str, Any]:
-    _workspace_or_404(session, workspace_id)
+    from app.api.resource_lifecycle import lock_workspace
+
+    lock_workspace(session, workspace_id)
     values = _connection_values(body)
     probe = test_connection(**values)
     if not probe["ok"]:
@@ -271,7 +273,12 @@ def get_source_schema(source_id: str, session: Db) -> dict[str, Any]:
 def refresh_source_schema(
     source_id: str, session: Db, settings: AppSettings
 ) -> dict[str, Any]:
-    source = _source_or_404(session, source_id)
+    from app.api.resource_lifecycle import lock_source_workspace
+
+    source = lock_source_workspace(session, source_id)
+    if source.state == "deleted":
+        raise HTTPException(410, "Source has been removed")
+    _source_or_404(session, source_id)
     connection = session.scalar(
         select(Connection).where(Connection.source_id == source.id)
     )

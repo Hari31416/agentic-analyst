@@ -939,7 +939,9 @@ def ingest_file(
         )
     extension = _extension(filename)
     safe_filename = PurePosixPath(filename.replace("\\", "/")).name
-    workspace = session.get(Workspace, workspace_id)
+    workspace = session.scalar(
+        select(Workspace).where(Workspace.id == workspace_id).with_for_update()
+    )
     if workspace is None:
         raise FileIngestionError("workspace_not_found", "Workspace not found.")
     source_id = str(uuid4())

@@ -346,6 +346,28 @@ textarea:focus-visible {
   pointer-events: none;
   color: var(--muted-foreground);
 }
+.workspace-item-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 5px;
+}
+.workspace-item-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.workspace-item-actions button:hover {
+  background: var(--sidebar-accent);
+  color: var(--foreground);
+}
+.workspace-item-actions button.danger:hover {
+  background: var(--status-bg-danger);
+  color: var(--status-danger);
+}
 /* Action: New Thread */
 .new-thread-box {
   padding: 10px 14px 6px;
@@ -522,7 +544,7 @@ textarea:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.thread-delete-btn {
+.thread-action-btn {
   display: none;
   align-items: center;
   justify-content: center;
@@ -533,10 +555,15 @@ textarea:focus-visible {
   flex-shrink: 0;
   transition: all 0.15s ease;
 }
-.thread-item-row:hover .thread-delete-btn {
+.thread-item-row:hover .thread-action-btn,
+.thread-item-row:focus-within .thread-action-btn {
   display: flex;
 }
-.thread-delete-btn:hover {
+.thread-action-btn:hover {
+  background-color: var(--sidebar-accent);
+  color: var(--foreground);
+}
+.thread-action-btn.danger:hover {
   background-color: var(--status-bg-danger);
   color: var(--status-danger);
 }

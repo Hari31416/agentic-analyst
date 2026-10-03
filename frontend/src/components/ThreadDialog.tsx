@@ -1,4 +1,4 @@
-import { FC, FormEvent, useState } from 'react'
+import { FC, FormEvent, useEffect, useState } from 'react'
 import { MessageSquarePlus } from 'lucide-react'
 import {
   Dialog,
@@ -14,16 +14,29 @@ type ThreadDialogProps = {
   isOpen: boolean
   onClose: () => void
   onCreate: (name: string) => Promise<void>
+  initialName?: string
+  title?: string
+  submitLabel?: string
 }
 
 export const ThreadDialog: FC<ThreadDialogProps> = ({
   isOpen,
   onClose,
   onCreate,
+  initialName = '',
+  title = 'New Research Thread',
+  submitLabel = 'Start research thread',
 }) => {
-  const [name, setName] = useState('')
+  const [name, setName] = useState(initialName)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (isOpen) {
+      setName(initialName)
+      setError('')
+    }
+  }, [isOpen, initialName])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -42,13 +55,18 @@ export const ThreadDialog: FC<ThreadDialogProps> = ({
     }
   }
 
+  const handleOpenChange = (open: boolean) => {
+    if (open) setName(initialName)
+    else onClose()
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <MessageSquarePlus className="size-5 text-primary" />
-            <DialogTitle>New Research Thread</DialogTitle>
+            <DialogTitle>{title}</DialogTitle>
           </div>
         </DialogHeader>
 
@@ -84,7 +102,7 @@ export const ThreadDialog: FC<ThreadDialogProps> = ({
               Cancel
             </Button>
             <Button type="submit" disabled={!name.trim() || submitting}>
-              {submitting ? 'Starting...' : 'Start research thread'}
+              {submitting ? 'Saving...' : submitLabel}
             </Button>
           </DialogFooter>
         </form>

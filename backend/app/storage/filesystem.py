@@ -18,6 +18,7 @@ class StoredFile:
 class Storage(Protocol):
     def put(self, key: str, content: bytes) -> StoredFile: ...
     def read(self, key: str, max_bytes: int | None = None) -> bytes: ...
+    def delete(self, key: str) -> None: ...
 
 
 class FileStorage:
@@ -81,6 +82,10 @@ class FileStorage:
                     raise ValueError("stored object exceeds read limit")
                 return content
             return stream.read()
+
+    def delete(self, key: str) -> None:
+        """Idempotent removal reserved for explicit lifecycle cleanup."""
+        self.path(key).unlink(missing_ok=True)
 
     def verify(self, key: str, sha256: str, byte_size: int) -> bool:
         content = self.read(key, byte_size)

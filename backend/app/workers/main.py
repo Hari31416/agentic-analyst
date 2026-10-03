@@ -102,6 +102,33 @@ def _record_source_audit(
 
 
 def maintenance(task: Claim) -> dict[str, object]:
+    if task.kind == "delete_storage":
+        from sqlalchemy import select
+        from app.db.models import Dataset, Job, Source
+        from app.storage.keys import validate_key
+
+        key = task.payload.get("storage_key")
+        if not isinstance(key, str):
+            raise ValueError("cleanup requires a storage key")
+        validate_key(key)
+        with factory()() as session, session.begin():
+            if (
+                session.scalar(
+                    select(Job.id).where(owned(task.id, task.token)).with_for_update()
+                )
+                is None
+            ):
+                raise LeaseLost("cleanup job ownership lost")
+            referenced = any(
+                session.scalar(
+                    select(model.id).where(model.storage_key == key).limit(1)
+                )
+                for model in (Source, Dataset, Artifact)
+            )
+            if referenced:
+                return {"deleted": False, "retained_shared_object": True}
+            get_storage(get_settings()).delete(key)
+        return {"deleted": True}
     if task.kind != "verify_storage":
         raise ValueError("unknown maintenance task")
     storage = get_storage(get_settings())
@@ -229,7 +256,7 @@ async def run_worker() -> None:
                             task.id,
                             task.token,
                             "maintenance_failed",
-                            retryable=False,
+                            retryable=task.kind == "delete_storage",
                         )
                 except LeaseLost:
                     pass

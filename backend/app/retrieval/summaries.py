@@ -267,7 +267,12 @@ def summarize(
     }
     if thematic and scope == "overview":
         result["thematic"] = _thematic_summaries(all_chunks)
-    cache = SummaryCache(fingerprint=fingerprint, scope=scope, payload=result)
+    cache = SummaryCache(
+        workspace_id=documents[0][1].workspace_id,
+        fingerprint=fingerprint,
+        scope=scope,
+        payload=result,
+    )
     try:
         with session.begin_nested():
             session.add(cache)

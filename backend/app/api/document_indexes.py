@@ -18,7 +18,15 @@ Db = Annotated[Session, Depends(get_session)]
 
 @router.post("/api/documents/{document_id}/reindex", status_code=202)
 def queue_reindex(document_id: str, session: Db) -> dict[str, Any]:
-    document = session.get(Document, document_id)
+    from app.api.resource_lifecycle import lock_source_workspace
+
+    source_id = session.scalar(
+        select(Document.source_id).where(Document.id == document_id)
+    )
+    if source_id is None:
+        raise HTTPException(404, "Document not found")
+    source = lock_source_workspace(session, source_id)
+    document = session.get(Document, document_id, populate_existing=True)
     if document is None:
         raise HTTPException(404, "Document not found")
     if document.state != "ready":
@@ -40,7 +48,11 @@ def queue_reindex(document_id: str, session: Db) -> dict[str, Any]:
     job = session.scalar(select(Job).where(Job.dedupe_key == key))
     if job is None:
         job = Job(
-            kind="index_document", payload={"document_id": document_id}, dedupe_key=key
+            kind="index_document",
+            workspace_id=source.workspace_id,
+            document_id=document_id,
+            payload={"document_id": document_id},
+            dedupe_key=key,
         )
         session.add(job)
         session.commit()

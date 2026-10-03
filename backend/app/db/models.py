@@ -43,13 +43,17 @@ class Workspace(Identity, Base):
 
 class Thread(Identity, Base):
     __tablename__ = "threads"
-    workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id"), index=True)
+    workspace_id: Mapped[str] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
     label: Mapped[str] = mapped_column(String(120))
 
 
 class Source(Identity, Base):
     __tablename__ = "sources"
-    workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id"), index=True)
+    workspace_id: Mapped[str] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
     kind: Mapped[str] = mapped_column(String(30))
     version: Mapped[int] = mapped_column(Integer, default=1)
     display_name: Mapped[str] = mapped_column(String(255))
@@ -76,7 +80,9 @@ class Source(Identity, Base):
 
 class Connection(Identity, Base):
     __tablename__ = "connections"
-    source_id: Mapped[str] = mapped_column(ForeignKey("sources.id"), unique=True)
+    source_id: Mapped[str] = mapped_column(
+        ForeignKey("sources.id", ondelete="CASCADE"), unique=True
+    )
     dialect: Mapped[str] = mapped_column(String(20))
     host: Mapped[str] = mapped_column(String(255))
     port: Mapped[int] = mapped_column(Integer)
@@ -89,7 +95,9 @@ class Connection(Identity, Base):
 class Dataset(Identity, Base):
     __tablename__ = "datasets"
     __table_args__ = (UniqueConstraint("source_id", "source_version", "identity"),)
-    source_id: Mapped[str] = mapped_column(ForeignKey("sources.id"), index=True)
+    source_id: Mapped[str] = mapped_column(
+        ForeignKey("sources.id", ondelete="CASCADE"), index=True
+    )
     source_version: Mapped[int] = mapped_column(Integer)
     identity: Mapped[str] = mapped_column(String(512))
     schema_version: Mapped[str] = mapped_column(String(64))
@@ -101,7 +109,9 @@ class Dataset(Identity, Base):
 
 class Run(Identity, Base):
     __tablename__ = "runs"
-    thread_id: Mapped[str] = mapped_column(ForeignKey("threads.id"), index=True)
+    thread_id: Mapped[str] = mapped_column(
+        ForeignKey("threads.id", ondelete="CASCADE"), index=True
+    )
     state: Mapped[str] = mapped_column(String(30), default="queued")
     selected_source_ids: Mapped[list[str]] = mapped_column(Json, default=list)
     config: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
@@ -113,8 +123,12 @@ class Run(Identity, Base):
 
 class Message(Identity, Base):
     __tablename__ = "messages"
-    thread_id: Mapped[str] = mapped_column(ForeignKey("threads.id"), index=True)
-    run_id: Mapped[str | None] = mapped_column(ForeignKey("runs.id"), index=True)
+    thread_id: Mapped[str] = mapped_column(
+        ForeignKey("threads.id", ondelete="CASCADE"), index=True
+    )
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("runs.id", ondelete="CASCADE"), index=True
+    )
     role: Mapped[str] = mapped_column(String(20))
     content: Mapped[str] = mapped_column(Text)
     selected_source_ids: Mapped[list[str]] = mapped_column(Json, default=list)
@@ -124,8 +138,16 @@ class Message(Identity, Base):
 class Job(Identity, Base):
     __tablename__ = "jobs"
     __table_args__ = (Index("ix_jobs_dispatch", "state", "available_at"),)
+    workspace_id: Mapped[str | None] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    document_id: Mapped[str | None] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
     kind: Mapped[str] = mapped_column(String(40))
-    run_id: Mapped[str | None] = mapped_column(ForeignKey("runs.id"), index=True)
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("runs.id", ondelete="CASCADE"), index=True
+    )
     dedupe_key: Mapped[str] = mapped_column(String(120), unique=True)
     payload: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
     state: Mapped[str] = mapped_column(String(30), default="queued")
@@ -141,7 +163,9 @@ class Job(Identity, Base):
 class Event(Identity, Base):
     __tablename__ = "events"
     __table_args__ = (UniqueConstraint("run_id", "sequence"),)
-    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), index=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("runs.id", ondelete="CASCADE"), index=True
+    )
     sequence: Mapped[int] = mapped_column(Integer)
     schema_version: Mapped[int] = mapped_column(Integer, default=1)
     type: Mapped[str] = mapped_column(String(50))
@@ -151,7 +175,9 @@ class Event(Identity, Base):
 class ToolCall(Identity, Base):
     __tablename__ = "tool_calls"
     __table_args__ = (UniqueConstraint("run_id", "provider_call_id"),)
-    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), index=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("runs.id", ondelete="CASCADE"), index=True
+    )
     provider_call_id: Mapped[str] = mapped_column(String(120))
     name: Mapped[str] = mapped_column(String(80))
     input_reference: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
@@ -164,8 +190,12 @@ class ToolCall(Identity, Base):
 
 class Artifact(Identity, Base):
     __tablename__ = "artifacts"
-    run_id: Mapped[str | None] = mapped_column(ForeignKey("runs.id"), index=True)
-    tool_call_id: Mapped[str | None] = mapped_column(ForeignKey("tool_calls.id"))
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("runs.id", ondelete="CASCADE"), index=True
+    )
+    tool_call_id: Mapped[str | None] = mapped_column(
+        ForeignKey("tool_calls.id", ondelete="CASCADE")
+    )
     storage_key: Mapped[str] = mapped_column(String(512), unique=True)
     display_name: Mapped[str] = mapped_column(String(255))
     media_type: Mapped[str] = mapped_column(String(120))
@@ -177,7 +207,9 @@ class Artifact(Identity, Base):
 
 class Evidence(Identity, Base):
     __tablename__ = "evidence"
-    run_id: Mapped[str] = mapped_column(ForeignKey("runs.id"), index=True)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("runs.id", ondelete="CASCADE"), index=True
+    )
     kind: Mapped[str] = mapped_column(String(30))
     source_ids: Mapped[list[str]] = mapped_column(Json)
     details: Mapped[dict[str, Any]] = mapped_column(Json)
@@ -185,9 +217,15 @@ class Evidence(Identity, Base):
 
 class AuditEvent(Identity, Base):
     __tablename__ = "audit_events"
-    run_id: Mapped[str | None] = mapped_column(ForeignKey("runs.id"), index=True)
-    tool_call_id: Mapped[str | None] = mapped_column(ForeignKey("tool_calls.id"))
-    source_id: Mapped[str | None] = mapped_column(ForeignKey("sources.id"))
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("runs.id", ondelete="CASCADE"), index=True
+    )
+    tool_call_id: Mapped[str | None] = mapped_column(
+        ForeignKey("tool_calls.id", ondelete="CASCADE")
+    )
+    source_id: Mapped[str | None] = mapped_column(
+        ForeignKey("sources.id", ondelete="CASCADE")
+    )
     action: Mapped[str] = mapped_column(String(80))
     decision: Mapped[str] = mapped_column(String(30))
     reason_code: Mapped[str] = mapped_column(String(80))
@@ -197,7 +235,9 @@ class AuditEvent(Identity, Base):
 class Document(Identity, Base):
     __tablename__ = "documents"
     __table_args__ = (UniqueConstraint("source_id", "source_version"),)
-    source_id: Mapped[str] = mapped_column(ForeignKey("sources.id"), index=True)
+    source_id: Mapped[str] = mapped_column(
+        ForeignKey("sources.id", ondelete="CASCADE"), index=True
+    )
     source_version: Mapped[int] = mapped_column(Integer)
     extractor_version: Mapped[str] = mapped_column(String(120))
     chunker_version: Mapped[str] = mapped_column(String(120))
@@ -211,7 +251,9 @@ class Document(Identity, Base):
 class DocumentBlock(Identity, Base):
     __tablename__ = "document_blocks"
     __table_args__ = (UniqueConstraint("document_id", "ordinal"),)
-    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
     ordinal: Mapped[int] = mapped_column(Integer)
     kind: Mapped[str] = mapped_column(String(30))
     text: Mapped[str] = mapped_column(Text)
@@ -242,7 +284,9 @@ class DocumentChunk(Identity, Base):
             postgresql_where=sql_text("language NOT ILIKE 'en%'"),
         ).ddl_if(dialect="postgresql"),
     )
-    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
     ordinal: Mapped[int] = mapped_column(Integer)
     chunker_version: Mapped[str] = mapped_column(String(120))
     text: Mapped[str] = mapped_column(Text)
@@ -261,6 +305,9 @@ class SummaryCache(Identity, Base):
     """Versioned deterministic summaries with their chunk-level provenance."""
 
     __tablename__ = "summary_cache"
+    workspace_id: Mapped[str] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
     fingerprint: Mapped[str] = mapped_column(String(64), unique=True)
     scope: Mapped[str] = mapped_column(String(20), index=True)
     payload: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
@@ -268,7 +315,9 @@ class SummaryCache(Identity, Base):
 
 class IndexGeneration(Identity, Base):
     __tablename__ = "index_generations"
-    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
     source_version: Mapped[int] = mapped_column(Integer)
     content_sha256: Mapped[str] = mapped_column(String(64))
     extractor_version: Mapped[str] = mapped_column(String(120))
@@ -286,7 +335,9 @@ class ChunkEmbedding(Identity, Base):
     __tablename__ = "chunk_embeddings"
     __table_args__ = (UniqueConstraint("generation_id", "chunk_id"),)
     generation_id: Mapped[str] = mapped_column(
-        ForeignKey("index_generations.id"), index=True
+        ForeignKey("index_generations.id", ondelete="CASCADE"), index=True
     )
-    chunk_id: Mapped[str] = mapped_column(ForeignKey("document_chunks.id"), index=True)
+    chunk_id: Mapped[str] = mapped_column(
+        ForeignKey("document_chunks.id", ondelete="CASCADE"), index=True
+    )
     embedding: Mapped[Any] = mapped_column(Vector())

@@ -113,7 +113,7 @@ def test_format_upload_strategy_retry_and_removal(
     resumed = process_document(doc_id, settings, sessions)
     assert resumed["extraction_reused"]
     assert client.delete(f"/api/documents/{doc_id}").status_code == 200
-    assert client.post(f"/api/documents/{doc_id}/retry").status_code == 410
+    assert client.post(f"/api/documents/{doc_id}/retry").status_code == 404
     assert doc_id not in {document["id"] for document in client.get(path).json()}
     new = client.post(
         path, files={"file": (name, content)}, data={"chunk_strategy": "parent_child"}

@@ -127,11 +127,9 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
         )
     if body.answer_language not in settings.supported_languages:
         raise HTTPException(422, "Requested answer language is unavailable")
-    thread = session.scalar(
-        select(Thread).where(Thread.id == thread_id).with_for_update()
-    )
-    if thread is None:
-        raise HTTPException(404, "Thread not found")
+    from app.api.resource_lifecycle import lock_thread
+
+    thread = lock_thread(session, thread_id)
     selected = list(dict.fromkeys(str(i) for i in body.selected_source_ids))
     selected_datasets = list(dict.fromkeys(str(i) for i in body.selected_dataset_ids))
     language_metadata = analyze_text(

@@ -212,6 +212,8 @@ async def upload_document(
         session.add(
             Job(
                 kind="ingest_document",
+                workspace_id=str(workspace_id),
+                document_id=document.id,
                 run_id=None,
                 dedupe_key=dedupe_key,
                 payload={"document_id": document.id},

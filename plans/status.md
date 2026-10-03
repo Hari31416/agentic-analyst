@@ -651,3 +651,42 @@ Keep secrets and raw client data out of this file.
   dependency is needed. Numeric operational token counters are preserved by
   redaction while credentials remain masked. Read `docs/evaluation.md` for usage,
   resume/rescore semantics, review workflow and remaining work.
+
+## 3 October 2026: resource lifecycle correction
+
+- User explicitly requested workspace/thread PATCH and DELETE plus database
+  cascade policies, with soft deletion only where retained provenance needs it.
+  This is a bounded lifecycle correction after phase 09, not completion of the
+  remaining phase 10 operations work.
+- Added validated label PATCH and permanent DELETE for workspaces/threads,
+  source DELETE aliases and conditional document/source deletion. Owned rows
+  use database `ON DELETE CASCADE`; unreferenced sources are purged, while saved
+  runs, evidence and derived lineage retain archived source data. Connection
+  credentials are removed even when source data is archived. Thread deletion
+  refuses to break a reusable dataset's producer lineage.
+- Added parent locks for source uploads/connections, run creation, retries,
+  reindexing, accepted tables and artifact dataset registration. Active runs,
+  related jobs and unconfirmed guest cleanup return 409. Queued document jobs
+  can be cancelled by source deletion. Unrelated sources/workspaces remain.
+- Migration `c2d14e6a901f` adds cascade constraints and job/cache ownership,
+  backfills existing ingestion/crawl/run job owners and attributable caches,
+  and drops only unattributable disposable summary caches. Applied locally;
+  `uv run alembic check` reports no pending schema changes. An isolated old-data
+  upgrade/downgrade/reapply test checks backfills and database cascades.
+- Physical blob cleanup uses independent durable `delete_storage` jobs in the
+  metadata deletion transaction, idempotent filesystem/S3 deletion, reference
+  checks for shared keys, lease checks and bounded retries. Tests exercise real
+  PostgreSQL leased cleanup and RustFS object deletion. DELETE success means
+  metadata removal and queued cleanup, not immediate removal of stored bytes.
+- Sidebar rename/delete actions and workbench source deletion call the real
+  endpoints, show conflicts, preserve current selection after delayed requests,
+  and explain source archival versus queued purge. Usage, retention policies,
+  cleanup recovery and direct-SQL limitations are in `docs/resource-lifecycle.md`.
+- Validation: 301 deterministic tests pass; 29 focused integration tests pass
+  across resource deletion/migrations, queue, runtime, portability, ingestion,
+  connections and RustFS. Final lifecycle/ingestion retest: 18 pass. Black and
+  strict mypy pass; frontend typecheck/build/format pass. Full browser QA remains
+  deferred. No model or microVM live call was necessary for these changes.
+- General orphan discovery, scheduled retention/quota enforcement and automated
+  recovery of previously failed sandbox cleanup remain operations work. No phase
+  10 completion or broad deletion stress-testing claim is made.

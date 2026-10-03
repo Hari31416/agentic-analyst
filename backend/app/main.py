@@ -129,7 +129,9 @@ def threads(workspace_id: str, session: Db) -> Any:
     "/api/workspaces/{workspace_id}/threads", response_model=ThreadView, status_code=201
 )
 def create_thread(workspace_id: str, body: CreateLabel, session: Db) -> Any:
-    workspace_or_404(session, workspace_id)
+    from app.api.resource_lifecycle import lock_workspace
+
+    lock_workspace(session, workspace_id)
     thread = Thread(workspace_id=workspace_id, label=body.label)
     session.add(thread)
     session.commit()
@@ -195,3 +197,7 @@ app.include_router(artifact_datasets_router)
 from app.api.audit import router as audit_router
 
 app.include_router(audit_router)
+
+from app.api.resource_lifecycle import router as resource_lifecycle_router
+
+app.include_router(resource_lifecycle_router)

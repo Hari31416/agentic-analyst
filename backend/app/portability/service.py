@@ -561,6 +561,7 @@ def import_workspace(
         ).hexdigest()
         session.add(
             SummaryCache(
+                workspace_id=new_workspace.id,
                 id=id_map[row["id"]],
                 fingerprint=fingerprint,
                 scope=_required_string(row.get("scope"), "summary.scope", 20),

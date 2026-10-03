@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from app.config import Settings
-from app.storage.s3 import S3Storage
+from app.storage.s3 import S3Storage, StorageUnavailable
 
 pytestmark = pytest.mark.integration
 
@@ -37,6 +37,11 @@ def test_rustfs_immutable_bytes_and_hash_survive_new_client():
         assert storage.ready()
         with pytest.raises(ValueError):
             storage.put("originals/../escape", b"bad")
+        for key in keys:
+            storage.delete(key)
+            storage.delete(key)
+            with pytest.raises(StorageUnavailable):
+                storage.read(key)
     finally:
         for key in keys:
             storage.client.delete_object(Bucket=settings.s3_bucket, Key=key)

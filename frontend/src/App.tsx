@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, Layers, Plus, Sparkles } from 'lucide-react'
 import ChatPanel from './ChatPanel'
 import SourceWorkbench from './SourceWorkbench'
@@ -11,6 +11,7 @@ import { RightSidebar, SourceRecord } from './components/RightSidebar'
 import { TopBar } from './components/layout/TopBar'
 import { WorkspaceDialog } from './components/WorkspaceDialog'
 import { ThreadDialog } from './components/ThreadDialog'
+import { DeleteConfirmDialog } from './components/DeleteConfirmDialog'
 import { useTheme } from './hooks/useTheme'
 import { useSystemStatus } from './hooks/useSystemStatus'
 import { DatasetSummary, structuredApi } from './structuredApi'
@@ -32,6 +33,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new Error(message)
   }
+  if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
 
@@ -53,9 +55,17 @@ export function App() {
     'chat' | 'workbench' | 'outputs'
   >('chat')
   const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([])
+  const workspacesRef = useRef(workspaces)
+  workspacesRef.current = workspaces
   const [workspaceId, setWorkspaceId] = useState<string>('')
+  const workspaceIdRef = useRef(workspaceId)
+  workspaceIdRef.current = workspaceId
   const [threads, setThreads] = useState<ThreadItem[]>([])
+  const threadsRef = useRef(threads)
+  threadsRef.current = threads
   const [threadId, setThreadId] = useState<string>('')
+  const threadIdRef = useRef(threadId)
+  threadIdRef.current = threadId
   const [sources, setSources] = useState<SourceRecord[]>([])
   const [datasets, setDatasets] = useState<DatasetSummary[]>([])
   const [datasetErrors, setDatasetErrors] = useState<Record<string, string>>({})
@@ -64,6 +74,19 @@ export function App() {
 
   const [createWsOpen, setCreateWsOpen] = useState<boolean>(false)
   const [createThreadOpen, setCreateThreadOpen] = useState<boolean>(false)
+  const [renameTarget, setRenameTarget] = useState<{
+    kind: 'workspace' | 'thread'
+    id: string
+    label: string
+  } | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    kind: 'workspace' | 'thread'
+    id: string
+    label: string
+    workspaceId?: string
+  } | null>(null)
+  const [deleteError, setDeleteError] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const toggleLeftSidebar = useCallback(() => {
     setIsLeftSidebarCollapsed((prev) => {
@@ -112,9 +135,9 @@ export function App() {
     if (!workspaceId) return
     try {
       const nextSources = await api<SourceRecord[]>(
-        `/api/workspaces/${workspaceId}/sources`,
+        `/api/workspaces/${encodeURIComponent(workspaceId)}/sources`,
       )
-      setSources(nextSources)
+      if (workspaceIdRef.current === workspaceId) setSources(nextSources)
     } catch {
       // Ignored if network glitch
     }
@@ -242,11 +265,89 @@ export function App() {
     setError('')
   }
 
-  const handleDeleteThread = (id: string) => {
-    setThreads((prev) => prev.filter((t) => t.id !== id))
-    if (threadId === id) {
-      const remaining = threads.filter((t) => t.id !== id)
-      setThreadId(remaining[0]?.id ?? '')
+  const handleRename = async (label: string) => {
+    if (!renameTarget) return
+    const path =
+      renameTarget.kind === 'workspace'
+        ? `/api/workspaces/${encodeURIComponent(renameTarget.id)}`
+        : `/api/threads/${encodeURIComponent(renameTarget.id)}`
+    const updated = await api<WorkspaceItem | ThreadItem | void>(path, {
+      method: 'PATCH',
+      body: JSON.stringify({ label }),
+    })
+    const normalizedLabel =
+      updated &&
+      typeof updated === 'object' &&
+      'label' in updated &&
+      typeof updated.label === 'string'
+        ? updated.label
+        : label
+    if (renameTarget.kind === 'workspace') {
+      setWorkspaces((items) =>
+        items.map((item) =>
+          item.id === renameTarget.id
+            ? { ...item, label: normalizedLabel }
+            : item,
+        ),
+      )
+    } else {
+      setThreads((items) =>
+        items.map((item) =>
+          item.id === renameTarget.id
+            ? { ...item, label: normalizedLabel }
+            : item,
+        ),
+      )
+    }
+    setRenameTarget(null)
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    const target = deleteTarget
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      const path =
+        target.kind === 'workspace'
+          ? `/api/workspaces/${encodeURIComponent(target.id)}`
+          : `/api/threads/${encodeURIComponent(target.id)}`
+      await api<void>(path, { method: 'DELETE' })
+      if (target.kind === 'workspace') {
+        const remaining = workspacesRef.current.filter(
+          (item) => item.id !== target.id,
+        )
+        workspacesRef.current = remaining
+        setWorkspaces(remaining)
+        if (workspaceIdRef.current === target.id) {
+          const nextWorkspaceId = remaining[0]?.id ?? ''
+          setWorkspaceId(nextWorkspaceId)
+          workspaceIdRef.current = nextWorkspaceId
+          setSelectedSourceId(null)
+        }
+      } else {
+        if (workspaceIdRef.current === target.workspaceId) {
+          const remaining = threadsRef.current.filter(
+            (item) => item.id !== target.id,
+          )
+          threadsRef.current = remaining
+          setThreads(remaining)
+          if (threadIdRef.current === target.id) {
+            const nextThreadId = remaining[0]?.id ?? ''
+            setThreadId(nextThreadId)
+            threadIdRef.current = nextThreadId
+          }
+        }
+      }
+      setDeleteTarget(null)
+    } catch (reason) {
+      setDeleteError(
+        reason instanceof Error
+          ? reason.message
+          : 'Could not delete this item.',
+      )
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -290,11 +391,43 @@ export function App() {
         activeWorkspaceId={workspaceId}
         onSelectWorkspace={setWorkspaceId}
         onCreateWorkspaceClick={() => setCreateWsOpen(true)}
+        onRenameWorkspace={() =>
+          activeWorkspace &&
+          setRenameTarget({
+            kind: 'workspace',
+            id: activeWorkspace.id,
+            label: activeWorkspace.label,
+          })
+        }
+        onDeleteWorkspace={() =>
+          activeWorkspace &&
+          (setDeleteError(''),
+          setDeleteTarget({
+            kind: 'workspace',
+            id: activeWorkspace.id,
+            label: activeWorkspace.label,
+          }))
+        }
         threads={threads}
         activeThreadId={threadId}
         onSelectThread={setThreadId}
         onCreateThreadClick={() => setCreateThreadOpen(true)}
-        onDeleteThread={handleDeleteThread}
+        onRenameThread={(thread) =>
+          setRenameTarget({
+            kind: 'thread',
+            id: thread.id,
+            label: thread.label,
+          })
+        }
+        onDeleteThread={(thread) => {
+          setDeleteError('')
+          setDeleteTarget({
+            kind: 'thread',
+            id: thread.id,
+            label: thread.label,
+            workspaceId,
+          })
+        }}
         activeView={activeView}
         onSelectView={setActiveView}
         isCollapsed={isLeftSidebarCollapsed}
@@ -407,11 +540,17 @@ export function App() {
             )
           ) : workspaceId ? (
             <SourceWorkbench
+              key={workspaceId}
               workspaceId={workspaceId}
               sources={sources}
               datasets={datasets}
               datasetErrors={datasetErrors}
               onSourcesChanged={refreshSources}
+              onSourceDeleted={(sourceId) => {
+                setSelectedSourceId((current) =>
+                  current === sourceId ? null : current,
+                )
+              }}
             />
           ) : (
             <div className="center-empty-wrap">
@@ -464,6 +603,37 @@ export function App() {
         isOpen={createThreadOpen}
         onClose={() => setCreateThreadOpen(false)}
         onCreate={handleCreateThread}
+      />
+
+      <WorkspaceDialog
+        isOpen={renameTarget?.kind === 'workspace'}
+        onClose={() => setRenameTarget(null)}
+        onCreate={handleRename}
+        title="Rename Workspace"
+        submitLabel="Save name"
+        initialName={
+          renameTarget?.kind === 'workspace' ? renameTarget.label : ''
+        }
+      />
+      <ThreadDialog
+        isOpen={renameTarget?.kind === 'thread'}
+        onClose={() => setRenameTarget(null)}
+        onCreate={handleRename}
+        title="Rename Thread"
+        submitLabel="Save name"
+        initialName={renameTarget?.kind === 'thread' ? renameTarget.label : ''}
+      />
+      <DeleteConfirmDialog
+        isOpen={deleteTarget !== null}
+        title={`Delete ${deleteTarget?.kind ?? 'item'}?`}
+        message={`“${deleteTarget?.label ?? ''}” will be permanently deleted. This action cannot be undone.`}
+        onClose={() => {
+          setDeleteTarget(null)
+          setDeleteError('')
+        }}
+        onConfirm={handleDelete}
+        confirming={deleting}
+        error={deleteError}
       />
     </div>
   )

@@ -120,6 +120,13 @@ class S3Storage:
         except (ClientError, BotoCoreError) as exc:
             raise StorageUnavailable("S3 object is unavailable") from exc
 
+    def delete(self, key: str) -> None:
+        validate_key(key)
+        try:
+            self.client.delete_object(Bucket=self.bucket, Key=key)
+        except (ClientError, BotoCoreError) as exc:
+            raise StorageUnavailable("S3 deletion failed") from exc
+
     def verify(self, key: str, sha256: str, byte_size: int) -> bool:
         content = self.read(key, byte_size)
         return (

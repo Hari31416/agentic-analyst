@@ -20,6 +20,7 @@ import {
   Plus,
   RefreshCw,
   Server,
+  Trash2,
   Upload,
 } from 'lucide-react'
 import {
@@ -44,6 +45,7 @@ import {
 import './structured.css'
 import { uiText } from './uiText'
 import { useUiLanguage } from './hooks/useUiLanguage'
+import { DeleteConfirmDialog } from './components/DeleteConfirmDialog'
 
 type SourceWorkbenchProps = {
   workspaceId: string
@@ -51,6 +53,7 @@ type SourceWorkbenchProps = {
   datasets: DatasetSummary[]
   datasetErrors: Record<string, string>
   onSourcesChanged: () => Promise<void>
+  onSourceDeleted: (sourceId: string) => void
 }
 
 const emptyConnection: ConnectionDraft = {
@@ -99,6 +102,7 @@ function SourceWorkbench({
   datasets,
   datasetErrors,
   onSourcesChanged,
+  onSourceDeleted,
 }: SourceWorkbenchProps) {
   const [uiLanguage] = useUiLanguage()
   const copy = (key: Parameters<typeof uiText>[1]) => uiText(uiLanguage, key)
@@ -156,10 +160,39 @@ function SourceWorkbench({
   const [savingMetadata, setSavingMetadata] = useState(false)
   const [metadataMessage, setMetadataMessage] = useState('')
   const [metadataError, setMetadataError] = useState('')
+  const [deleteSourceTarget, setDeleteSourceTarget] =
+    useState<SourceView | null>(null)
+  const [deleteSourceError, setDeleteSourceError] = useState('')
+  const [deletingSource, setDeletingSource] = useState(false)
+  const [sourceDeleteNotice, setSourceDeleteNotice] = useState('')
 
   const selectedSource = sources.find(
     (source) => source.id === selectedSourceId,
   )
+
+  const handleDeleteSource = async () => {
+    if (!deleteSourceTarget) return
+    const target = deleteSourceTarget
+    setDeletingSource(true)
+    setDeleteSourceError('')
+    try {
+      const result = await structuredApi.deleteSource(workspaceId, target.id)
+      onSourceDeleted(target.id)
+      await onSourcesChanged()
+      setSourceDeleteNotice(
+        result.retention === 'archived_for_citations'
+          ? `${target.display_name} was removed. Its source data was retained for saved citations.`
+          : `${target.display_name} was removed. Its stored data is queued for permanent deletion.`,
+      )
+      setDeleteSourceTarget(null)
+    } catch (reason) {
+      setDeleteSourceError(
+        reason instanceof Error ? reason.message : 'Could not delete source.',
+      )
+    } finally {
+      setDeletingSource(false)
+    }
+  }
   const sourceDatasets = useMemo(
     () => datasets.filter((dataset) => dataset.source_id === selectedSourceId),
     [datasets, selectedSourceId],
@@ -735,6 +768,11 @@ function SourceWorkbench({
 
   return (
     <section className="source-workbench" aria-label="Sources and datasets">
+      {sourceDeleteNotice && (
+        <p className="source-context-saved" role="status">
+          {sourceDeleteNotice}
+        </p>
+      )}
       <div className="source-actions">
         <form className="file-upload-form" onSubmit={uploadFile}>
           <label className="upload-pick">
@@ -1297,6 +1335,17 @@ function SourceWorkbench({
                       </button>
                     </div>
                   )}
+                  <button
+                    className="icon-button"
+                    onClick={() => {
+                      setDeleteSourceError('')
+                      setDeleteSourceTarget(selectedSource)
+                    }}
+                    title="Delete source"
+                    aria-label={`Delete source ${selectedSource.display_name}`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </header>
                 {hasDocument ? (
                   <DocumentInspector
@@ -1669,6 +1718,18 @@ function SourceWorkbench({
           </div>
         </div>
       )}
+      <DeleteConfirmDialog
+        isOpen={deleteSourceTarget !== null}
+        title="Delete source?"
+        message={`“${deleteSourceTarget?.display_name ?? ''}” will be removed. Saved citations may require retaining its source data; otherwise its stored data will be permanently deleted.`}
+        onClose={() => {
+          setDeleteSourceTarget(null)
+          setDeleteSourceError('')
+        }}
+        onConfirm={handleDeleteSource}
+        confirming={deletingSource}
+        error={deleteSourceError}
+      />
     </section>
   )
 }

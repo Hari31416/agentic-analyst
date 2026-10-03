@@ -241,3 +241,4 @@ Hindi/English fixture recall and execute live mixed-source cases. The report in
 citations, retained CSV/PNG outputs, and original-file/database integrity checks.
 
 Document extraction, table review, retry/removal, and approved website imports are documented in [docs/ingestion.md](docs/ingestion.md).
+Workspace/thread rename and deletion, source retention and blob cleanup are documented in [docs/resource-lifecycle.md](docs/resource-lifecycle.md).

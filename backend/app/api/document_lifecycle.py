@@ -28,6 +28,14 @@ def locked_document(session: Session, document_id: str) -> tuple[Document, Sourc
 
 @router.post("/api/documents/{document_id}/retry", status_code=202)
 def retry_document(document_id: UUID, session: Db) -> dict[str, Any]:
+    from app.api.resource_lifecycle import lock_source_workspace
+
+    source_id = session.scalar(
+        select(Document.source_id).where(Document.id == str(document_id))
+    )
+    if source_id is None:
+        raise HTTPException(404, "Document not found")
+    lock_source_workspace(session, source_id)
     jobs = list(
         session.scalars(
             select(Job)
@@ -51,6 +59,8 @@ def retry_document(document_id: UUID, session: Db) -> dict[str, Any]:
         if jobs
         else Job(
             kind="ingest_document",
+            workspace_id=source.workspace_id,
+            document_id=document.id,
             payload={"document_id": document.id},
             dedupe_key=f"ingest_document:retry:{document.id}",
         )
@@ -74,32 +84,12 @@ def retry_document(document_id: UUID, session: Db) -> dict[str, Any]:
 
 @router.delete("/api/documents/{document_id}")
 def remove_document(document_id: UUID, session: Db) -> dict[str, Any]:
-    jobs = list(
-        session.scalars(
-            select(Job)
-            .where(
-                Job.kind.in_(["ingest_document", "index_document"]),
-                Job.payload["document_id"].as_string() == str(document_id),
-            )
-            .with_for_update()
-        )
+    from app.api.resource_lifecycle import remove_source
+
+    source_id = session.scalar(
+        select(Document.source_id).where(Document.id == str(document_id))
     )
-    document, source = locked_document(session, str(document_id))
-    for job in jobs:
-        if job.state in {"queued", "running"}:
-            job.state = "cancelled"
-            job.lease_token = job.lease_owner = None
-            job.lease_expires_at = None
-    source.state = document.state = "deleted"
-    document.stage = "removed"
-    document.details = {
-        **document.details,
-        "removed_at": now().isoformat(),
-        "retention": "archived_for_citations",
-    }
-    session.commit()
-    return {
-        "document_id": document.id,
-        "state": "deleted",
-        "retention": "archived_for_citations",
-    }
+    if source_id is None:
+        raise HTTPException(404, "Document not found")
+    result = remove_source(session, source_id)
+    return {"document_id": str(document_id), **result}

@@ -45,6 +45,16 @@ def document_tables(document_id: UUID, session: Db) -> dict[str, Any]:
 
 @router.post("/api/documents/{document_id}/tables/{table_id}/accept")
 def accept_table(document_id: UUID, table_id: str, session: Db) -> dict[str, Any]:
+    from sqlalchemy import select
+    from app.db.models import Document
+    from app.api.resource_lifecycle import lock_source_workspace
+
+    source_id = session.scalar(
+        select(Document.source_id).where(Document.id == str(document_id))
+    )
+    if source_id is None:
+        raise HTTPException(404, "Document not found")
+    lock_source_workspace(session, source_id)
     try:
         result = accept_document_table(
             session,

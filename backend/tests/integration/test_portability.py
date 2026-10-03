@@ -237,6 +237,7 @@ def test_portable_workspace_roundtrip_preserves_content_and_remaps_evidence(
             Job(kind="agent_run", run_id=run.id, dedupe_key="no-replay", payload={})
         )
         summary = SummaryCache(
+            workspace_id=workspace.id,
             fingerprint="a" * 64,
             scope="document",
             payload={

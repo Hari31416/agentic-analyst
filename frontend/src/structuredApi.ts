@@ -100,6 +100,12 @@ export type SourceRefreshResult = {
   datasets: DatasetSummary[]
 }
 
+export type SourceDeleteResult = {
+  source_id: string
+  state: string
+  retention: 'purged' | 'archived_for_citations'
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -135,6 +141,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const structuredApi = {
+  deleteSource: (workspaceId: string, sourceId: string) =>
+    request<SourceDeleteResult>(
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/sources/${encodeURIComponent(sourceId)}`,
+      { method: 'DELETE' },
+    ),
   updateSourceMetadata: (
     workspaceId: string,
     sourceId: string,

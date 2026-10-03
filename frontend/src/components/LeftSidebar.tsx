@@ -12,6 +12,7 @@ import {
   Search,
   Sun,
   Trash2,
+  Pencil,
 } from 'lucide-react'
 
 export type WorkspaceItem = {
@@ -31,11 +32,14 @@ type LeftSidebarProps = {
   activeWorkspaceId: string
   onSelectWorkspace: (id: string) => void
   onCreateWorkspaceClick: () => void
+  onRenameWorkspace: () => void
+  onDeleteWorkspace: () => void
   threads: ThreadItem[]
   activeThreadId: string
   onSelectThread: (id: string) => void
   onCreateThreadClick: () => void
-  onDeleteThread: (id: string) => void
+  onRenameThread: (thread: ThreadItem) => void
+  onDeleteThread: (thread: ThreadItem) => void
   activeView: 'chat' | 'workbench' | 'outputs'
   onSelectView: (view: 'chat' | 'workbench' | 'outputs') => void
   isCollapsed: boolean
@@ -51,10 +55,13 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   activeWorkspaceId,
   onSelectWorkspace,
   onCreateWorkspaceClick,
+  onRenameWorkspace,
+  onDeleteWorkspace,
   threads,
   activeThreadId,
   onSelectThread,
   onCreateThreadClick,
+  onRenameThread,
   onDeleteThread,
   activeView,
   onSelectView,
@@ -205,6 +212,27 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </select>
             <ChevronDown size={14} className="select-chevron" />
           </div>
+          {activeWorkspaceId && (
+            <div className="workspace-item-actions">
+              <button
+                type="button"
+                onClick={onRenameWorkspace}
+                aria-label="Rename workspace"
+                title="Rename workspace"
+              >
+                <Pencil size={13} /> Rename
+              </button>
+              <button
+                type="button"
+                className="danger"
+                onClick={onDeleteWorkspace}
+                aria-label="Delete workspace"
+                title="Delete workspace"
+              >
+                <Trash2 size={13} /> Delete
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="new-thread-box">
@@ -269,10 +297,22 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                   </div>
                   <button
                     type="button"
-                    className="thread-delete-btn"
+                    className="thread-action-btn"
                     onClick={(e) => {
                       e.stopPropagation()
-                      onDeleteThread(thread.id)
+                      onRenameThread(thread)
+                    }}
+                    title="Rename thread"
+                    aria-label={`Rename thread ${thread.label}`}
+                  >
+                    <Pencil size={13} />
+                  </button>
+                  <button
+                    type="button"
+                    className="thread-action-btn danger"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDeleteThread(thread)
                     }}
                     title="Delete thread"
                     aria-label={`Delete thread ${thread.label}`}

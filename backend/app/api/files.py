@@ -182,6 +182,11 @@ def patch_source_metadata(
     source = session.get(Source, str(source_id))
     if source is None or source.workspace_id != str(workspace_id):
         raise HTTPException(status_code=404, detail="Source not found")
+    from app.api.resource_lifecycle import lock_source_workspace
+
+    source = lock_source_workspace(session, str(source_id))
+    if source.state == "deleted":
+        raise HTTPException(410, "Source has been removed")
     details = dict(source.details or {})
     if "description" in body.model_fields_set:
         details["description"] = body.description

@@ -69,13 +69,16 @@ reuses their IDs and resumes indexing. Reindexing uses retained extraction,
 atomically switches the active generation on publication, and reports degraded
 embedding availability instead of invented vectors.
 
-Removing a document archives the source, cancels queued/running ingestion jobs
-and removes it from new selections, searches and passage expansion. Original
-bytes, blocks, generations and saved evidence remain for historical citations.
-The citation API and viewer report `archived`. Removal is archival, not a storage
-purge. Uploading the same bytes after removal creates a new source; it never
-retargets an old citation. Old ready documents retain their previous extractor
-and chunker versions until a separate new upload is processed.
+Removing a document uses the [source lifecycle policy](resource-lifecycle.md).
+Unused sources are purged and their stored bytes are queued for deletion.
+Sources referenced by saved runs or derived datasets are archived, retaining
+original bytes, blocks, generations and evidence for historical citations.
+The citation API and viewer report `archived` for those retained sources.
+Queued document jobs are cancelled; running jobs or runs using the source block
+deletion with 409. Both forms remove the source from new selections and retrieval.
+Uploading the same bytes after removal creates a new source and never retargets
+an old citation. Old ready documents retain their previous extractor and chunker
+versions until a separate new upload is processed.
 
 ## Approved website imports
 

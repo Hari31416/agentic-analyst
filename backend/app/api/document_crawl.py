@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import Settings, get_settings
-from app.db.models import Job, Source, Workspace
+from app.db.models import Job, Source
 from app.db.session import get_session
 from app.ingestion.crawl import CrawlError, CrawlRequest, crawl, normalize_url
 
@@ -23,8 +23,9 @@ def queue_crawl(workspace_id: UUID, body: CrawlRequest, session: Db) -> dict[str
     settings = get_settings()
     if not settings.crawl_enabled:
         raise HTTPException(409, "Website ingestion is disabled")
-    if session.get(Workspace, str(workspace_id)) is None:
-        raise HTTPException(404, "Workspace not found")
+    from app.api.resource_lifecycle import lock_workspace
+
+    lock_workspace(session, str(workspace_id))
     try:
         url = normalize_url(body.url)
         from urllib.parse import urlsplit
@@ -35,6 +36,7 @@ def queue_crawl(workspace_id: UUID, body: CrawlRequest, session: Db) -> dict[str
         raise HTTPException(422, str(error)) from error
     job = Job(
         kind="crawl_documents",
+        workspace_id=str(workspace_id),
         payload={
             "workspace_id": str(workspace_id),
             "request": {**body.model_dump(), "url": url},

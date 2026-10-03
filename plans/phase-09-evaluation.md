@@ -46,17 +46,17 @@ Outcome: repeatable component/workflow evaluation with an inspectable quality re
 ## Acceptance and validation
 
 - [ ] Evaluation runs are reproducible and identify every relevant version/configuration.
-- [ ] Known-answer cases fail when calculations/citations/results are deliberately wrong.
-- [ ] Runner timeout/failure/restart behavior retains failed cases and avoids silent skips.
+- [x] Known-answer cases fail when calculations/citations/results are deliberately wrong.
+- [x] Runner timeout/failure/restart behavior retains failed cases and avoids silent skips.
 - [ ] RAGAS metrics run against explicitly configured providers and disclose required inputs.
-- [ ] Hindi/English metrics are reported separately; label/judge review status is visible.
+- [x] Hindi/English metrics are reported separately; label/judge review status is visible.
 - [ ] Repeated trials and stage ablations produce comparable reports with resource use.
-- [ ] Critical regression checks are integrated into CI/test targets; expensive live
+- [x] Critical regression checks are integrated into CI/test targets; expensive live
   benchmarks have separate explicit targets and reports.
 - [ ] Model/judge unavailability yields integration-pending status, not fabricated scores.
 - [ ] Configured local-only evaluation disables telemetry/hosted reporting and
   unexpected network calls; the chosen model endpoint remains an explicit exception.
-- [ ] Failed release gates remain visible and actionable with supporting traces.
+- [x] Failed release gates remain visible and actionable with supporting traces.
 
 Human review may require user input. Complete the runner, deterministic gates,
 and available live benchmarks first; record remaining review/calibration separately.
@@ -66,3 +66,17 @@ Synthetic labels are useful but cannot be described as client-validated quality.
 
 Record benchmark case inventory, metric adapters, review provenance, live trial
 results, chosen model/retrieval defaults, and release thresholds/limitations.
+
+## First-pass scope accepted on 3 October 2026
+
+The user requested the most important components first and explicitly allowed
+remaining work to wait. The core file-backed case schema, public-API runner,
+checkpoint/resume, deterministic metrics, experiment identity, reports/viewer and
+human-review workflow are implemented. Twelve live trials are retained, with
+3 synthetic passes, 2 contract failures and 7 review items after offline scoring
+corrections. This is not verification of every acceptance item in this full plan.
+
+RAGAS/judge calibration, broad model comparisons, fine-grained stage ablations,
+conversation cases, full resource profiling and reviewed production thresholds
+remain deferred. See [status](status.md) and [evaluation guide](../docs/evaluation.md)
+for exact evidence and limits. Stop before phase 10 until requested.

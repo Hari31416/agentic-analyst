@@ -54,3 +54,11 @@ shaping support is unavailable. Keep the backend dependency lock fixed when
 comparing generated PDF hashes.
 
 Run the isolated pack checks with `cd backend && uv run pytest ../evals/tests`.
+
+## Phase 09 evaluation runner
+
+The first repeatable public-API runner uses `cases/core-v1.json`. Start with
+`make eval-list` and `make eval-check`; `make eval-live` explicitly runs the
+configured model. See [the evaluation guide](../docs/evaluation.md) for bounded
+trials, checkpoint/resume, offline rescoring, HTML/JSON/CSV reports and human
+review. Synthetic labels and missing judge calibration remain visible.

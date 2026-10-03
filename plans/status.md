@@ -19,7 +19,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | 06    | Verified | 218 deterministic tests; 42 PostgreSQL/RustFS tests; two real microVM analysis checks; guided mixed-source report, downloads, derived reuse and archive roundtrip; PDF visual and frontend/schema checks | Broad LLM reasoning misses recorded; autonomous task success in phase 09; full UI QA deferred |
 | 07    | Verified | 240 deterministic tests; 42 PostgreSQL/RustFS checks; eight local retrieval comparisons; real Hindi/English STT and no-execution HTTP checks; three bilingual document/SQL/Python runs; frontend/schema checks | First-pass Hindi STT and glossary quality limits recorded; translation/TTS unavailable; native-speaker/full UI QA deferred |
 | 08    | Verified | 268 deterministic tests; 56 PostgreSQL/MySQL/RustFS checks; real sandbox negative probes and cleanup retest; bounded injection trial; retained-run audit/HTTP export; frontend/schema checks | Effective resource stress/workspace quota enforcement unverified; full UI QA deferred |
-| 09    | Not started | Not run                     | All phase checks |
+| 09    | Implemented / integration pending | Core schema/API runner/checkpoints/metrics/reports/review; 287 deterministic and 10 focused integration checks; 12 live trials retained and rescored | Structured unit review and two clarification-contract misses; optional judges, calibration, broad ablations/model comparisons and production thresholds deferred |
 | 10    | Not started | Not run                     | All phase checks |
 
 ## Inputs for live verification
@@ -571,3 +571,83 @@ Keep secrets and raw client data out of this file.
 - Read `docs/guardrails-and-audit.md` for controls, tested bypasses, export contracts
   and phase-09 release gates. Phase 08 is complete with the recorded resource and
   UI limits. Stop before phase 09 until the user requests it.
+
+## 3 October 2026: phase 09 core evaluation baseline
+
+- User narrowed this phase to the important components first. The core scope is
+  implemented and committed; the complete phase plan remains integration/review
+  pending. Stop before phase 10. Optional judges and broad comparisons are deferred.
+- Added isolated `backend/evaluation` contracts, deterministic metrics, public-API
+  runner, checkpoint/resume, experiment identity, JSON/CSV/static HTML reports and
+  human-review export/import. Production request handling does not load the runner
+  or optional judging dependencies. `make eval-list`, `make eval-check`, and the
+  explicit expensive `make eval-live` target are available; normal chat is unchanged.
+- `evals/cases/core-v1.json`, inventory core-v1.1, contains ten synthetic cases:
+  EN/HI CSV calculations, EN/HI documents, mixed-source criteria/calculation,
+  Hindi ambiguity, an unsupported question, hostile source text, XLSX and OCR.
+  The default repeat baseline selects the two CSV cases. Fixture paths/hashes,
+  source versions, expected numbers/tolerances/passages/artifacts, allowed actions,
+  language, answerability, rubric and synthetic review provenance are explicit.
+  Conversation and wider table/OCR workflows remain future inventory work.
+- Every trial creates an `eval:` workspace/thread and uploads through the public
+  APIs; source originals are verified by recomputing bytes from the public portable
+  archive. Evaluation never reads application DB tables to perform the workflow.
+  Typed timeouts, API/model failures and interrupted runs remain in reports.
+  Atomic checkpoints and a directory lock prevent concurrent overwrite; persisted
+  run IDs are observed on resume without resubmitting execution. Ambiguous resource
+  creation fails explicitly rather than creating a duplicate. Completed failures
+  remain cached until an explicit fresh experiment.
+- Identities include cases/fixtures, configured endpoint/model, local application/
+  runner code and dependency hashes, prompt/policy, parser/chunker/retrieval,
+  embedding/reranker, OCR/profile, budgets, guest image, repeats and timeout. Actual
+  run config/index generation metadata is retained. Key deployment mismatches fail;
+  changed identities refuse resume. Hidden endpoint model-weight changes cannot be
+  inferred from a name; operator versioning/fresh experiments remain necessary.
+- Metrics compare structured executed results with Decimal tolerances, not SQL
+  strings. They inspect the latest successful calculation, excluding samples and
+  earlier queries; expected values/units in prose are checked separately. Citations
+  require the selected source/version and declared reference, and artifacts are
+  checked through download/schema contracts. Pure CER/WER, aligned-table and
+  retrieval precision/recall/MRR helpers have bounded tests. They are not a full
+  unlabeled OCR/retrieval benchmark or proof of semantic answer correctness.
+- Live `gemma-4-26B-A4B-it` baseline: three EN and three HI file-SQL trials all
+  complete and return count 2 / INR 25000.00 with evidence and intact originals.
+  Numeric and answer-unit checks pass, but all six final trial statuses are
+  `needs_review` because structured unit provenance is absent. EN latency p50/p95
+  is 8.94/10.36 seconds; HI is 9.04/9.08 seconds. Total 24 model calls and 103,963
+  reported tokens. No reasoning retry or tuning was made.
+- Six single workflow trials: EN/HI documents and hostile-text handling pass their
+  synthetic checks; mixed-source criteria/calculation returns the correct numbers
+  and citations but needs unit review. Hindi ambiguity and English unsupported
+  answers ask sensible clarification in prose but omit the required clarification
+  flag, so both fail the contract. These misses are retained without prompt tuning.
+  The hostile-text run rejects a malformed search call then uses the valid summary
+  tool; no prohibited capability or original-source mutation occurs.
+- Review found an actual scoring bug: a completion pass hid missing verification
+  metrics. The reducer now keeps non-provenance review checks pending. Another
+  false failure came from a fixture allowlist omitting `summarize_documents`; the
+  inventory was corrected. Saved observations were rescored without additional
+  model calls; execution identities and previous statuses are retained separately
+  from the new scoring identity. Initial/corrected status evidence is in
+  `phase09-scoring-preflight-2026-10-03.json`. Across the 12 final trials there are
+  3 synthetic passes, 2 contract failures and 7 review items, not a passed release gate.
+- Retained reports/viewers are in `evals/reports/phase09-baseline-2026-10-03/` and
+  `phase09-workflows-2026-10-03/`. Reports separate EN/HI status/metric counts,
+  latency, known/unknown token and model-call coverage, source/run/artifact links
+  and label provenance. Runner peak RSS excludes API/worker/guest resource use;
+  the initial ingestion timings measured readiness wait only, not complete upload
+  cost. The runner now measures upload plus readiness and records worker query
+  time when available. No additional live trial was needed for this timing fix.
+- Human-review imports bind to experiment/case/repetition/answer hashes and reject
+  foreign, duplicate, malformed or oversized labels; annotations cannot erase
+  automatic calculation failures. Labels remain synthetic and uncalibrated.
+  RAGAS/provider adapters, judge calibration, multi-model/tool-format comparisons,
+  fine-grained stage ablations, production thresholds, broad resource profiling
+  and full UI QA are deferred. No judge score or universal quality claim is made.
+- Validation: 287 deterministic tests pass via `make eval-check`; 10 focused real
+  PostgreSQL runtime/selection/lease/cancellation/credential checks pass; Black and
+  strict mypy pass for production and evaluation modules. Actual API, worker,
+  sandbox, PostgreSQL and RustFS served the 12 trials. No migration or new package
+  dependency is needed. Numeric operational token counters are preserved by
+  redaction while credentials remain masked. Read `docs/evaluation.md` for usage,
+  resume/rescore semantics, review workflow and remaining work.

@@ -1,0 +1,30 @@
+{
+  "phase": "08",
+  "run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+  "audit_status": 200,
+  "export_status": 200,
+  "filtered_total": 2,
+  "first_page_items": 1,
+  "next_cursor": 1,
+  "schema_version": 1,
+  "export_bytes": 50547,
+  "evidence_items": 2,
+  "artifact_items": 9,
+  "limits": {
+    "max_items_per_collection": 500,
+    "max_export_bytes": 2097152,
+    "truncated_counts": {},
+    "truncated_content_fields": 0,
+    "truncated_nested_items": 3,
+    "entry_byte_budget_truncations": 0,
+    "entry_nested_limit_truncations": 0,
+    "nested_limits_truncated": true,
+    "byte_budget_truncated": false,
+    "policy_unrecorded": true,
+    "unresolved_reference_counts": {
+      "evidence": 0,
+      "artifacts": 0
+    },
+    "source_versions_unrecorded": false
+  }
+}

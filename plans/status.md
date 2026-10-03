@@ -18,7 +18,7 @@ verified. A verified phase has evidence for every required acceptance gate.
 | 05    | Verified | 179 deterministic tests; 34 PostgreSQL/RustFS integration tests; 32 local stage trials; four bilingual live dependent-hop/summary cases; historical artifact follow-up; frontend and schema checks | Full UI QA deferred; one follow-up language miss recorded |
 | 06    | Verified | 218 deterministic tests; 42 PostgreSQL/RustFS tests; two real microVM analysis checks; guided mixed-source report, downloads, derived reuse and archive roundtrip; PDF visual and frontend/schema checks | Broad LLM reasoning misses recorded; autonomous task success in phase 09; full UI QA deferred |
 | 07    | Verified | 240 deterministic tests; 42 PostgreSQL/RustFS checks; eight local retrieval comparisons; real Hindi/English STT and no-execution HTTP checks; three bilingual document/SQL/Python runs; frontend/schema checks | First-pass Hindi STT and glossary quality limits recorded; translation/TTS unavailable; native-speaker/full UI QA deferred |
-| 08    | Not started | Not run                     | All phase checks |
+| 08    | Verified | 268 deterministic tests; 56 PostgreSQL/MySQL/RustFS checks; real sandbox negative probes and cleanup retest; bounded injection trial; retained-run audit/HTTP export; frontend/schema checks | Effective resource stress/workspace quota enforcement unverified; full UI QA deferred |
 | 09    | Not started | Not run                     | All phase checks |
 | 10    | Not started | Not run                     | All phase checks |
 
@@ -503,3 +503,71 @@ Keep secrets and raw client data out of this file.
   `docs/language-and-voice.md` for setup, availability and recovery; `make live-language`
   writes fresh local diagnostic measurements without overwriting retained evidence.
   Phase 07 is complete. Stop before phase 08 until the user requests it.
+
+## 3 October 2026: phase 08 guardrails and audit
+
+- Added typed `execution-policy-v1` allow/reject/clarify snapshots at dispatch,
+  ingestion and audit boundaries, independent of model text. Fixed capabilities,
+  selected inputs, tool schemas and executor/version/lineage checks remain the
+  enforcement layers. Prompt `analyst-v6` redacts configured credentials before
+  provider calls. SQL/code arguments are retained with hashes and bounded export.
+- SQL fixes reject MySQL executable comments, qualified functions and hidden
+  source references under scoped/shadowed CTEs. AST depth/nodes, joins, literals
+  and REPEAT counts are bounded. Real PostgreSQL and MySQL tests cover read-only
+  transactions even when AST validation is deliberately bypassed, deadlines,
+  cancellation, row/byte bounds, unsafe sinks and unchanged original totals.
+  All 12 connector checks pass; see `phase08-sql-live-2026-10-03.json`.
+- Real microVM checks deny public/metadata networking, expose none of the five
+  configured credential environment names, preserve the application's original
+  file after guest-copy mutation, bound console flooding, preserve a file created
+  before timeout, and serialize concurrent session work. A symlink to `/etc/passwd`
+  exports no artifact. Initial symlink cleanup lost its stop response and failed;
+  the app now reconciles DELETE plus status 404 without repeating execution.
+  The focused retest passes and catalog inspection finds no extra probe guest.
+  The initial failure remains in `phase08-sandbox-2026-10-03.json`.
+- Resource limits are explicit deployment gaps: one CPU and about 481 MiB memory
+  are visible, but requested memory enforcement has no OOM/stress verification.
+  The 2 GiB overlay disk setting does not quota `/workspace`, a separate host bind
+  volume visible as 4 GiB. Deadline/output limits pass; broad resource stress and
+  workspace quotas are not claimed as verified. Unsupported controls are identified
+  as required by this phase's acceptance contract.
+- XLSX rejects duplicate and noncanonical archive members. Existing crawler checks
+  retain exact allowlists, pinned public DNS addresses, revalidated redirects and
+  disabled environment proxies. Archive traversal/symlink/expansion tests, isolated
+  active-content rendering and safe spreadsheet export contracts pass.
+- Configured plaintext secret sentinels cover prompts, results, frontend messages
+  and artifact routes, guest console/output collection, logs, audit, report bytes,
+  and portable metadata/assets. Redaction precedes console display clipping;
+  unsafe downloads/archives are refused rather than corrupting original hashes.
+  This is not detection of unknown, encoded, compressed or short credentials.
+- Synthetic EN/HI fixtures cover document/OCR/cell/database/error/archive content.
+  A single bounded `gemma-4-26B-A4B-it` trial summarizes their hostile intent with
+  one model call, no execution capabilities, no executed action and no reasoning
+  retry. This small diagnostic is not a universal injection benchmark. Negative
+  capability/selection/credential/path/SQL/network tests enforce the boundaries;
+  see `phase08-injection-2026-10-03.json` and `test_phase08_boundaries.py`.
+- Added filtered/paged run audit inspection and schema-1 JSON export, per-entry
+  depth/content bounds, a 2 MiB cap, explicit truncation counts, producer IDs,
+  selected/current source versions, source processing outcomes and code/result
+  links. Valid declared prior-run citations/artifacts in the same thread are
+  included. The retained phase-06 mixed-source run reconstructs its question,
+  three sources/versions, aggregate count 2 / INR 25000.00, cited evidence and
+  retained outputs. Historical policy/arguments remain explicitly unrecorded.
+  Actual HTTP filters/page cursor and export return 200; export is 50,547 bytes
+  with no unresolved declared references. Reports: `phase08-audit-run-6d1d074b-2026-10-03.json`
+  and `phase08-http-2026-10-03.json`.
+- Hard answer validation rejects unknown/mismatched reference kinds, threads,
+  source selection and versions. Bounded structured-preview checks add visible
+  warnings for unmatched numbers, absent units, unqualified partial results and
+  unsupported creation claims. They are descriptive checks, not semantic proof.
+- Final checks: 268 deterministic tests pass; full integration 55 pass/2 explicit
+  skips plus the new focused dispatch-sentinel test passes (56 aggregate checks).
+  The skips reuse earlier pinned-embedding and microVM analysis evidence; this
+  phase has separate actual sandbox probes. Two initial integration failures
+  (over-redacted portable token counts and old rejection-status expectations)
+  were fixed and their focused reruns pass. PostgreSQL/MySQL/RustFS, Black/mypy,
+  frontend type/build/format and `alembic check` pass. No migration is needed.
+  Host API and worker were restarted with phase 08; full browser QA stays deferred.
+- Read `docs/guardrails-and-audit.md` for controls, tested bypasses, export contracts
+  and phase-09 release gates. Phase 08 is complete with the recorded resource and
+  UI limits. Stop before phase 09 until the user requests it.

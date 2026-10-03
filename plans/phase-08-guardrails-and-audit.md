@@ -40,18 +40,18 @@ Outcome: execution decisions and failures are inspectable and adversarially test
 
 ## Acceptance and validation
 
-- [ ] Source mutations and tested SQL/file/network sinks are rejected at execution
+- [x] Source mutations and tested SQL/file/network sinks are rejected at execution
   boundaries with recorded reason codes on real services.
-- [ ] Injection fixtures cannot expand configured capabilities or expose secrets.
-- [ ] Guest network/resource policies and original-file protection pass actual
+- [x] Injection fixtures cannot expand configured capabilities or expose secrets.
+- [x] Guest network/resource policies and original-file protection pass actual
   sandbox tests; unsupported controls are explicitly identified.
-- [ ] Cancellation, timeout, worker lease loss, and service failure cannot produce
+- [x] Cancellation, timeout, worker lease loss, and service failure cannot produce
   late successful completion or lose already-exported partial artifacts.
-- [ ] Audit reconstructs a mixed-source run from question to cited answer and outputs.
-- [ ] Secret sentinel tests cover frontend, guest, prompts, results, logs, audit,
+- [x] Audit reconstructs a mixed-source run from question to cited answer and outputs.
+- [x] Secret sentinel tests cover frontend, guest, prompts, results, logs, audit,
   report exports, and portable archives.
-- [ ] Unsafe artifact previews and imports are rejected or isolated as designed.
-- [ ] Critical negative tests are deterministic release checks; live injection
+- [x] Unsafe artifact previews and imports are rejected or isolated as designed.
+- [x] Critical negative tests are deterministic release checks; live injection
   trials report outcomes and failures without claiming universal protection.
 
 Department permissions, RBAC, SSO, compliance certification, and tamper-evident
@@ -61,3 +61,10 @@ infrastructure remain outside this phase. Do not add them as prerequisites.
 
 Record policy versions, adversarial cases, real-service results, residual limits,
 audit APIs/export schema, and which checks phase 09 must run as release gates.
+
+## Recorded validation limits
+
+See [status](status.md) and [guardrails and audit](../docs/guardrails-and-audit.md).
+The resource gate records unsupported/unverified memory stress and workspace disk
+quotas explicitly. Injection success is a single bounded diagnostic, not universal
+protection. Historical audit policy gaps and full browser QA remain documented.

@@ -1274,3 +1274,27 @@
   color: var(--muted-foreground);
   line-height: 1.4;
 }
+
+/* KaTeX Display Math & Formula Styling */
+.katex-display {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 1.25rem 0 !important;
+  padding: 0.75rem 1rem !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  max-width: 100% !important;
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--card) 60%, transparent);
+  border: 1px solid var(--border);
+}
+
+.katex-display > .katex {
+  text-align: center !important;
+  white-space: normal !important;
+}
+
+.katex {
+  text-rendering: auto;
+}

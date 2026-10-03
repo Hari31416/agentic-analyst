@@ -23,6 +23,17 @@ export function preprocessMarkdownMath(content: string): string {
   // 2. Protect inline code `...`
   text = text.replace(/`[^`\n]+`/g, (match) => createPlaceholder(match))
 
+  // 2.5 Promote standalone math lines (single or double dollars containing math notation) to display math
+  text = text.replace(
+    /(^|\n)[ \t]*(?:\$\$|\$)([^$\n]+?)(?:\$\$|\$)[ \t]*(?=\n|$)/g,
+    (match, prefix, math) => {
+      if (/[\\=+_^{}<>/–*()]/.test(math)) {
+        return `${prefix}\n\n$$\n${math.trim()}\n$$\n\n`
+      }
+      return match
+    },
+  )
+
   // 3. Protect explicit block math $$...$$
   text = text.replace(/\$\$[\s\S]*?\$\$/g, (match) => createPlaceholder(match))
 

@@ -1,0 +1,25 @@
+{
+  "phase": "08-sql-hardening",
+  "date": "2026-10-03",
+  "scope": "seeded-local-database-connectors",
+  "services": {
+    "postgresql": {"host": "127.0.0.1", "port": 55432, "database": "analyst_eval"},
+    "mysql": {"host": "127.0.0.1", "port": 33306, "database": "analyst_eval"}
+  },
+  "command": "pytest -q tests/integration/test_database_connectors.py",
+  "result": {"passed": 12, "failed": 0, "skipped": 0},
+  "coverage": [
+    "Both dialects: bounded aggregate and page results, duplicate output columns, rejected UPDATE, and unchanged source totals",
+    "Both dialects: read-only transaction enforcement against an AST-bypassed UPDATE",
+    "Both dialects: real statement deadlines and cancellation",
+    "Both dialects: CTE hidden-table and qualified-function bypasses rejected before execution",
+    "MySQL: executable versioned comment rejected before execution",
+    "Temporary application-database schema setup and cleanup"
+  ],
+  "notes": [
+    "No model calls were made.",
+    "No writes were issued to either source fixture database.",
+    "Temporary test schema was created and removed in the configured application database.",
+    "Connection strings and credentials were constructed in-process and are not recorded."
+  ]
+}

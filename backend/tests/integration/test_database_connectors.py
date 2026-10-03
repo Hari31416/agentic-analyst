@@ -190,6 +190,34 @@ def test_live_source_query_is_bounded_exact_and_database_readonly(dialect, monke
 
 
 @pytest.mark.parametrize("dialect", ["postgresql", "mysql"])
+def test_live_source_sql_bypass_attempts_fail_before_execution(dialect):
+    connection, settings, _dsn = _target(dialect)
+    allowed = {"synthetic_applications"}
+    attacks = [
+        (
+            "WITH chosen AS (SELECT * FROM synthetic_applications), "
+            "hidden AS (SELECT * FROM private_table) SELECT * FROM chosen",
+            "table_not_selected",
+        ),
+        (
+            "SELECT application_id FROM synthetic_applications "
+            "WHERE app.count(*) = 1",
+            "qualified_function_forbidden",
+        ),
+    ]
+    if dialect == "mysql":
+        attacks.append(
+            ("SELECT /*!50000 SLEEP(10) */ 1", "executable_comment_forbidden")
+        )
+    for sql, code in attacks:
+        with pytest.raises(SqlPolicyError) as error:
+            execute_query(connection, settings, sql, allowed, 10, 3)
+        assert error.value.code == code
+        assert "private_table" not in str(error.value)
+        assert "SLEEP" not in str(error.value)
+
+
+@pytest.mark.parametrize("dialect", ["postgresql", "mysql"])
 def test_live_source_duplicate_column_names_are_not_lost(dialect):
     connection, settings, _dsn = _target(dialect)
     result = execute_query(

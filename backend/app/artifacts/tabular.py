@@ -192,6 +192,24 @@ def safe_csv(columns: list[str], rows: Iterable[Iterable[Any]]) -> bytes:
     return stream.getvalue().encode("utf-8")
 
 
+def safe_csv_export(
+    original: bytes, columns: list[str], rows: Iterable[Iterable[Any]]
+) -> bytes:
+    """Keep canonical CSV bytes unless formula escaping changes a cell."""
+    materialized_rows = [list(row) for row in rows]
+    unchanged = all(
+        formula_safe_text(_string(value)) == _string(value) for value in columns
+    ) and all(
+        formula_safe_text(_string(_normal_value(value)))
+        == _string(_normal_value(value))
+        for row in materialized_rows
+        for value in row
+    )
+    if unchanged:
+        return original
+    return safe_csv(columns, materialized_rows)
+
+
 def _xlsx_value(value: Any) -> str | int | float | bool | None:
     value = _normal_value(value)
     if value is None or isinstance(value, bool):

@@ -405,7 +405,7 @@ def artifacts(run_id: str, session: Db) -> list[dict[str, Any]]:
 @router.get("/artifacts/{artifact_id}/content")
 def artifact_content(artifact_id: str, session: Db) -> Response:
     from urllib.parse import quote
-    from app.artifacts.tabular import decode_table, safe_csv, safe_xlsx
+    from app.artifacts.tabular import decode_table, safe_csv_export, safe_xlsx
 
     artifact = session.get(Artifact, artifact_id)
     if artifact is None or not artifact.durable:
@@ -439,7 +439,7 @@ def artifact_content(artifact_id: str, session: Db) -> Response:
                 raise HTTPException(
                     413, "Sanitized whole-file export exceeds 250,000 rows"
                 )
-            content = safe_csv(columns, rows)
+            content = safe_csv_export(content, columns, rows)
         except (ValueError, UnicodeError) as exc:
             raise HTTPException(
                 422, "CSV artifact could not be safely exported"

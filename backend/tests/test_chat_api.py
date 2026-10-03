@@ -178,7 +178,7 @@ def test_download_preview_and_reference_scope(client_db):
                 session, other_run, FinalAnswer(text="bad", artifact_ids=[artifact_id])
             )
     response = client.get(f"/api/artifacts/{artifact_id}/content")
-    assert response.content == b"total\r\n25000.00\r\n"
+    assert response.content == b"total\n25000.00\n"
     assert "result.csv" in response.headers["content-disposition"]
     assert response.headers["x-content-type-options"] == "nosniff"
     assert response.headers["x-export-sanitized"] == "spreadsheet-formulas"
@@ -189,8 +189,10 @@ def test_download_preview_and_reference_scope(client_db):
         response.headers["x-export-sha256"]
         == hashlib.sha256(response.content).hexdigest()
     )
+    assert response.headers["x-export-sha256"] == artifact.sha256
     hostile_response = client.get(f"/api/artifacts/{hostile_id}/content")
     assert hostile_response.content == b"label\r\n'=1+1\r\n-12.5\r\n"
+    assert hostile_response.headers["x-export-sha256"] != hostile_artifact.sha256
     preview = client.get(
         f"/api/artifacts/{artifact_id}/preview?max_characters=5"
     ).json()

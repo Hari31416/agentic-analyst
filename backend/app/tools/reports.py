@@ -90,6 +90,19 @@ def _pdf_markup(value: str, *, indic_font: bool) -> str:
     return "".join(output)
 
 
+def _contains_devanagari(value: Any) -> bool:
+    if isinstance(value, str):
+        return any(
+            0x0900 <= ord(char) <= 0x097F or 0xA8E0 <= ord(char) <= 0xA8FF
+            for char in value
+        )
+    if isinstance(value, dict):
+        return any(_contains_devanagari(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return any(_contains_devanagari(item) for item in value)
+    return False
+
+
 def _rows(
     content: bytes, name: str, cap: int = 100
 ) -> tuple[list[str], list[list[str]], int | None]:
@@ -175,6 +188,15 @@ def _pdf_bytes(
             break
         except Exception:
             continue
+    indic_values: list[Any] = [title, assumptions, limitations]
+    for _artifact, columns, rows, _total in tables:
+        indic_values.extend([columns, rows])
+    for item, display_name in evidence:
+        indic_values.extend([display_name, item.details])
+    if not indic_font and any(_contains_devanagari(value) for value in indic_values):
+        raise RuntimeError(
+            "Cannot render Devanagari PDF text: a shaping-capable Noto Sans Devanagari font is unavailable"
+        )
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
         "ReportTitle",

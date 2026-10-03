@@ -13,7 +13,13 @@ from openpyxl import load_workbook
 from pypdf import PdfReader
 
 from app.artifacts.chart import ChartSpec
-from app.artifacts.tabular import decode_table, safe_csv, safe_parquet, safe_xlsx
+from app.artifacts.tabular import (
+    decode_table,
+    safe_csv,
+    safe_csv_export,
+    safe_parquet,
+    safe_xlsx,
+)
 from app.config import Settings
 from app.db.models import (
     Artifact,
@@ -104,6 +110,22 @@ def test_spreadsheet_exports_escape_formulas_and_preserve_large_values() -> None
     assert sheet["B2"].value == "12345678901234567"
     assert sheet["C2"].data_type == "s"
     assert sheet["C2"].value == "00123"
+
+
+def test_safe_csv_export_preserves_canonical_bytes_and_hash() -> None:
+    import hashlib
+
+    original = b"\xef\xbb\xbfname,value\r\nalpha,3.00\n"
+    columns, rows = decode_table(original, "native.csv")
+    exported = safe_csv_export(original, columns, rows)
+    assert exported == original
+    assert hashlib.sha256(exported).digest() == hashlib.sha256(original).digest()
+
+    hostile = b"label\n=1+1\n"
+    columns, rows = decode_table(hostile, "hostile.csv")
+    exported = safe_csv_export(hostile, columns, rows)
+    assert exported == b"label\r\n'=1+1\r\n"
+    assert hashlib.sha256(exported).digest() != hashlib.sha256(hostile).digest()
 
 
 def test_table_pagination_keeps_cells_as_strings() -> None:
@@ -228,6 +250,19 @@ def test_bilingual_pdf_has_text_and_pages() -> None:
     text = "\n".join(page.extract_text() or "" for page in reader.pages)
     assert "Finance report" in text
     assert "125000" in text
+
+
+def test_bilingual_pdf_fails_when_devanagari_shaping_font_is_missing(
+    monkeypatch,
+) -> None:
+    import reportlab.pdfbase.pdfmetrics as pdfmetrics
+
+    def unavailable(_font) -> None:
+        raise RuntimeError("font registration unavailable")
+
+    monkeypatch.setattr(pdfmetrics, "registerFont", unavailable)
+    with pytest.raises(RuntimeError, match="Cannot render Devanagari"):
+        _pdf_bytes("हिंदी रिपोर्ट", [], [], [], [])
 
 
 def test_report_tool_replays_retained_sources_and_persists_lineage(

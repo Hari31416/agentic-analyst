@@ -18,6 +18,7 @@ from app.artifacts.tabular import (
     _string,
     decode_table,
     safe_csv,
+    safe_csv_export,
     safe_parquet,
     safe_xlsx,
 )
@@ -203,7 +204,12 @@ def artifact_download(
                     415, "Artifact cannot be exported as a table"
                 ) from error
         else:
-            if format in {"original", "csv"} and (is_csv or format == "csv"):
+            if format == "original" and is_csv:
+                content = safe_csv_export(content, columns, rows)
+                filename = artifact.display_name
+                media_type = "text/csv; charset=utf-8"
+                headers["X-Export-Sanitized"] = "spreadsheet-formulas"
+            elif format == "csv":
                 content = safe_csv(columns, rows)
                 filename = artifact.display_name.rsplit(".", 1)[0] + ".csv"
                 media_type = "text/csv; charset=utf-8"

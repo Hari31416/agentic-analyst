@@ -69,14 +69,33 @@ def test_artifact_manifest_pagination_chart_and_exports(tmp_path, monkeypatch):
             byte_size=chart_file.byte_size,
             sha256=chart_file.sha256,
         )
-        session.add_all([table, chart])
+        native_csv_bytes = b"\xef\xbb\xbfname,value\r\nalpha,3.00\n"
+        native_csv_file = storage.put(f"derived/{run.id}/native.csv", native_csv_bytes)
+        native_csv = Artifact(
+            run_id=run.id,
+            storage_key=native_csv_file.key,
+            display_name="native.csv",
+            media_type="text/csv",
+            byte_size=native_csv_file.byte_size,
+            sha256=native_csv_file.sha256,
+        )
+        session.add_all([table, chart, native_csv])
         session.flush()
-        workspace_id, table_id, chart_id = workspace.id, table.id, chart.id
+        workspace_id, table_id, chart_id, native_csv_id = (
+            workspace.id,
+            table.id,
+            chart.id,
+            native_csv.id,
+        )
     try:
         client = TestClient(app)
         listing = client.get(f"/api/workspaces/{workspace_id}/artifacts")
         assert listing.status_code == 200
-        assert {row["id"] for row in listing.json()} == {table_id, chart_id}
+        assert {row["id"] for row in listing.json()} == {
+            table_id,
+            chart_id,
+            native_csv_id,
+        }
         detail = client.get(f"/api/artifacts/{table_id}").json()
         assert detail["lineage"] == ["dataset:one"]
         page = client.get(f"/api/artifacts/{table_id}/rows?offset=1&limit=1").json()
@@ -88,6 +107,22 @@ def test_artifact_manifest_pagination_chart_and_exports(tmp_path, monkeypatch):
         csv_response = client.get(f"/api/artifacts/{table_id}/download?format=csv")
         assert b"' =1+1" not in csv_response.content
         assert b"'=1+1" in csv_response.content
+        unsafe_original = client.get(
+            f"/api/artifacts/{table_id}/download?format=original"
+        )
+        assert b"'=1+1" in unsafe_original.content
+        assert (
+            unsafe_original.headers["x-export-sha256"]
+            != unsafe_original.headers["x-artifact-sha256"]
+        )
+        native_original = client.get(
+            f"/api/artifacts/{native_csv_id}/download?format=original"
+        )
+        assert native_original.content == native_csv_bytes
+        assert (
+            native_original.headers["x-export-sha256"]
+            == native_original.headers["x-artifact-sha256"]
+        )
         xlsx_response = client.get(f"/api/artifacts/{table_id}/download?format=xlsx")
         assert xlsx_response.status_code == 200
         parquet_response = client.get(

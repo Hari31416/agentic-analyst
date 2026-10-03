@@ -257,6 +257,15 @@ class DocumentChunk(Identity, Base):
     next_id: Mapped[str | None] = mapped_column(String(36))
 
 
+class SummaryCache(Identity, Base):
+    """Versioned deterministic summaries with their chunk-level provenance."""
+
+    __tablename__ = "summary_cache"
+    fingerprint: Mapped[str] = mapped_column(String(64), unique=True)
+    scope: Mapped[str] = mapped_column(String(20), index=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+
+
 class IndexGeneration(Identity, Base):
     __tablename__ = "index_generations"
     document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)

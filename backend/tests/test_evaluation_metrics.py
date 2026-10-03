@@ -1,5 +1,5 @@
-from app.evaluation import (
-    EvaluationCase,
+from evaluation.contracts import EvaluationCase
+from evaluation.metrics import (
     character_error_rate,
     retrieval_metrics,
     score_case,
@@ -112,6 +112,72 @@ def test_model_failure_is_review_pending_not_a_pass():
     results = score_case(_case(), {"run_state": "model_error"})
     assert len(results) == 1
     assert results[0].status == "needs_review"
+
+
+def test_audit_tool_rows_and_evidence_source_versions_are_scored():
+    case_data = _case().model_dump()
+    case_data["sources"].append(
+        {"alias": "policy", "name": "policy.pdf", "kind": "pdf", "version": "3"}
+    )
+    case = EvaluationCase.model_validate(case_data)
+    results = score_case(
+        case,
+        {
+            "run_state": "completed",
+            "source_aliases": {"ledger": "src-ledger", "policy": "src-policy"},
+            "tool_calls": [
+                {
+                    "name": "run_sql",
+                    "result": {
+                        "data": {
+                            "rows": [{"amount": "125.50"}],
+                            "units": {"amount": "INR"},
+                        }
+                    },
+                }
+            ],
+            "evidence": [
+                {
+                    "source_ids": ["src-policy"],
+                    "details": {
+                        "text": "देय राशि INR 125.50",
+                        "source_versions": {"src-policy": "3"},
+                    },
+                }
+            ],
+        },
+    )
+    assert {item.name: item.status for item in results}["calculation:total"] == "pass"
+    assert {item.name: item.status for item in results}["passage:1"] == "pass"
+
+    wrong = score_case(
+        case,
+        {
+            "run_state": "completed",
+            "source_aliases": {"ledger": "src-ledger", "policy": "src-policy"},
+            "tool_calls": [
+                {
+                    "name": "run_sql",
+                    "result": {
+                        "data": {
+                            "rows": [{"amount": "125.50"}],
+                            "units": {"amount": "INR"},
+                        }
+                    },
+                }
+            ],
+            "evidence": [
+                {
+                    "source_ids": ["src-policy"],
+                    "details": {
+                        "text": "देय राशि INR 125.50",
+                        "source_versions": {"src-policy": "2"},
+                    },
+                }
+            ],
+        },
+    )
+    assert {item.name: item.status for item in wrong}["passage:1"] == "fail"
 
 
 def test_unicode_character_error_and_retrieval_metrics():

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from decimal import Decimal, InvalidOperation
 from typing import Any, Iterable
 
@@ -50,6 +49,91 @@ def _schema_matches(actual: Any, expected: Any) -> bool:
     return actual == expected
 
 
+def _observation_rows(
+    outcome: dict[str, Any],
+) -> list[tuple[dict[str, Any], dict[str, Any]]]:
+    """Extract bounded structured rows and their provenance metadata from audit records."""
+    rows: list[tuple[dict[str, Any], dict[str, Any]]] = []
+    for call in outcome.get("tool_calls", []) or []:
+        if not isinstance(call, dict):
+            continue
+        result = call.get("result")
+        if not isinstance(result, dict):
+            continue
+        for container in (result, result.get("data"), result.get("result")):
+            if not isinstance(container, dict):
+                continue
+            possible = container.get("rows")
+            if isinstance(possible, list):
+                rows.extend(
+                    (row, container) for row in possible if isinstance(row, dict)
+                )
+            analysis = container.get("analysis")
+            if isinstance(analysis, dict) and isinstance(analysis.get("rows"), list):
+                rows.extend(
+                    (row, analysis) for row in analysis["rows"] if isinstance(row, dict)
+                )
+    for evidence in outcome.get("evidence", []) or []:
+        if not isinstance(evidence, dict):
+            continue
+        details = evidence.get("details")
+        if isinstance(details, dict):
+            for container in (details, details.get("analysis")):
+                if isinstance(container, dict) and isinstance(
+                    container.get("rows"), list
+                ):
+                    rows.extend(
+                        (row, container)
+                        for row in container["rows"]
+                        if isinstance(row, dict)
+                    )
+    return rows
+
+
+def _observed_calculation(
+    case: EvaluationCase, outcome: dict[str, Any], key: str, column: str | None
+):
+    """Find an explicitly returned aggregate; never infer a value from prose or SQL."""
+    calculations = (
+        outcome.get("calculations", {}) or outcome.get("structured_results", {}) or {}
+    )
+    explicit = calculations.get(key) if isinstance(calculations, dict) else None
+    if isinstance(explicit, dict):
+        return explicit
+    aliases = outcome.get("source_aliases", {}) or {}
+    source_ids = {
+        identity
+        for alias, identity in aliases.items()
+        if any(source.alias == alias for source in case.sources)
+    }
+    for evidence in outcome.get("evidence", []) or []:
+        if not isinstance(evidence, dict):
+            continue
+        if source_ids and not source_ids.intersection(evidence.get("source_ids", [])):
+            continue
+        details = evidence.get("details")
+        if isinstance(details, dict):
+            candidate = details.get(key)
+            if candidate is not None:
+                return {
+                    "value": candidate,
+                    "unit": (details.get("units") or {}).get(column or key, ""),
+                    "column": column,
+                }
+    for row, metadata in _observation_rows(outcome):
+        # A label/key can identify a scalar in the result; the optional column narrows row selection.
+        candidates = [key, column] if column else [key]
+        for candidate in candidates:
+            if candidate and candidate in row:
+                unit = (
+                    (metadata.get("units") or {}).get(candidate, "")
+                    if isinstance(metadata, dict)
+                    else ""
+                )
+                return {"value": row[candidate], "unit": unit, "column": candidate}
+    return None
+
+
 def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResult]:
     """Score stable known-answer contracts from a public run and its audit evidence."""
     run_state = str(
@@ -84,13 +168,8 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             _result("ambiguous_handling", clarified, clarification_provided=clarified)
         )
 
-    calculations = (
-        outcome.get("calculations", {}) or outcome.get("structured_results", {}) or {}
-    )
     for expected in case.expectations.calculations:
-        actual = (
-            calculations.get(expected.key) if isinstance(calculations, dict) else None
-        )
+        actual = _observed_calculation(case, outcome, expected.key, expected.column)
         try:
             actual_value = (
                 Decimal(str(actual.get("value"))) if isinstance(actual, dict) else None
@@ -131,18 +210,50 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                 text = (
                     item.get("text") or item.get("content") or item.get("passage") or ""
                 )
+                details = (
+                    item.get("details")
+                    if isinstance(item.get("details"), dict)
+                    else item
+                )
                 # Audit evidence commonly uses source_id; resolve it through runner's alias map.
-                if not alias and item.get("source_id"):
+                source_ids = item.get("source_ids", []) or [details.get("source_id")]
+                if not alias and source_ids:
                     alias = next(
                         (
                             a
                             for a, sid in (
                                 outcome.get("source_aliases", {}) or {}
                             ).items()
-                            if sid == item["source_id"]
+                            if sid in source_ids
                         ),
                         None,
                     )
+                if not text:
+                    text = details.get(
+                        "text", details.get("content", details.get("passage", ""))
+                    )
+                expected_source = next(
+                    (s for s in case.sources if s.alias == expected.source_alias), None
+                )
+                mapped_source_ids = [
+                    sid
+                    for source_alias, sid in (
+                        outcome.get("source_aliases", {}) or {}
+                    ).items()
+                    if source_alias == expected.source_alias
+                ]
+                if mapped_source_ids and not set(mapped_source_ids).intersection(
+                    source_ids
+                ):
+                    continue
+                if expected_source and expected_source.version is not None:
+                    versions = details.get("source_versions", {})
+                    observed_version = next(
+                        (versions[sid] for sid in mapped_source_ids if sid in versions),
+                        details.get("source_version", details.get("version")),
+                    )
+                    if str(observed_version) != str(expected_source.version):
+                        continue
             else:
                 alias, text = getattr(item, "source_alias", None), getattr(
                     item, "text", ""
@@ -170,8 +281,11 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             media_type = artifact.get("media_type") or artifact.get("mime_type")
             schema = artifact.get("schema") or artifact.get("metadata", {})
             exists = artifact.get("exists", artifact.get("downloadable", True))
+            declared_ids = set(outcome.get("declared_artifact_ids", []) or [])
+            declared = not declared_ids or artifact.get("id") in declared_ids
             if (
                 exists
+                and declared
                 and media_type == expected.media_type
                 and _schema_matches(schema, expected.schema)
             ):
@@ -231,6 +345,14 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                     bool(before and after and before == after),
                     before=before,
                     after=after,
+                )
+            )
+        elif source.sha256 is not None:
+            metrics.append(
+                MetricResult(
+                    name=f"source_immutable:{source.alias}",
+                    status="needs_review",
+                    details={"reason": "source hashes were not present in run audit"},
                 )
             )
 

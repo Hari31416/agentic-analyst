@@ -105,8 +105,8 @@ format:
 	cd frontend && pnpm format
 
 check:
-	cd backend && uv run black --check app tests
-	cd backend && uv run mypy
+	cd backend && uv run black --check app evaluation tests
+	cd backend && uv run mypy app evaluation
 	cd backend && uv run pytest
 	$(MAKE) frontend-check
 
@@ -353,3 +353,19 @@ speech-model:
 
 live-language:
 	$(BACKEND) python -m app.language_probes
+
+.PHONY: eval-check eval-list eval-live
+
+# No model calls or infrastructure required for deterministic release checks.
+eval-check:
+	cd backend && uv run black --check app evaluation tests
+	cd backend && uv run mypy app evaluation
+	cd backend && uv run pytest -q -m 'not integration and not live and not live_model and not live_sandbox'
+
+eval-list:
+	cd backend && uv run python -m evaluation.cli list
+
+# Explicit expensive milestone; failed trials are retained, not retried for tuning.
+EVAL_ARGS ?= --tag repeat-baseline --repeats 3 --output ../evals/runs/baseline
+eval-live:
+	cd backend && uv run python -m evaluation.cli run --live $(EVAL_ARGS)

@@ -18,3 +18,6 @@ volumes/
 .pnpm-store/
 logs/
 *.log
+
+# Evaluation checkpoints/traces are local; retain reviewed reports explicitly.
+evals/runs/

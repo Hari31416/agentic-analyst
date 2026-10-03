@@ -46,7 +46,7 @@ def _schema_matches(actual: Any, expected: Any) -> bool:
                 _schema_matches(actual[i], value) for i, value in enumerate(expected)
             )
         )
-    return actual == expected
+    return bool(actual == expected)
 
 
 def _observation_rows(
@@ -152,7 +152,7 @@ def _source_column_unit(
         if isinstance(details, dict):
             units = details.get("units")
             if isinstance(units, dict) and isinstance(units.get(column), str):
-                return units[column]
+                return str(units[column])
     return ""
 
 

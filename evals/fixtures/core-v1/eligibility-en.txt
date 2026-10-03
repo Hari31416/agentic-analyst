@@ -1,0 +1,3 @@
+Synthetic scheme S1 policy.
+An application qualifies if scheme_id is S1, scheme_status is active, and annual_income_inr is less than or equal to INR 200000.00.
+The income boundary is inclusive. The grant amount is in INR. Uploaded records and policy are synthetic benchmark data.

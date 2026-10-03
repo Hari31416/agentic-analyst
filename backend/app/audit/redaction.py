@@ -6,6 +6,18 @@ from typing import Any
 SENSITIVE = re.compile(
     r"password|passwd|secret|token|credential|api.?key|authorization", re.I
 )
+PUBLIC_COUNTERS = frozenset(
+    {
+        "tokens",
+        "total_tokens",
+        "input_tokens",
+        "output_tokens",
+        "prompt_tokens",
+        "completion_tokens",
+        "token_count",
+        "token_budget",
+    }
+)
 BEARER = re.compile(r"(?i)Bearer\s+\S+")
 URL_CREDENTIALS = re.compile(r"([a-z][a-z0-9+.-]*://)[^\s/@:]+:[^\s/@]+@", re.I)
 
@@ -40,7 +52,16 @@ def contains_secret(value: Any) -> bool:
 def redact(value: Any) -> Any:
     if isinstance(value, dict):
         return {
-            redact(str(k)): "[redacted]" if SENSITIVE.search(str(k)) else redact(v)
+            redact(str(k)): (
+                "[redacted]"
+                if SENSITIVE.search(str(k))
+                and not (
+                    str(k) in PUBLIC_COUNTERS
+                    and isinstance(v, int)
+                    and not isinstance(v, bool)
+                )
+                else redact(v)
+            )
             for k, v in value.items()
         }
     if isinstance(value, (list, tuple)):

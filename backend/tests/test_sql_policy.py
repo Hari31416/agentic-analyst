@@ -52,6 +52,11 @@ def test_accepts_selected_read_queries(dialect, query, tables):
         ("postgres", "SELECT * FROM pg_catalog.pg_tables"),
         ("postgres", "SELECT * FROM other_schema.sales"),
         ("postgres", "SELECT * FROM sales FOR UPDATE"),
+        ("postgres", "SELECT app.count(*) FROM sales"),
+        ("postgres", "SELECT * FROM pg_catalog.pg_tables"),
+        ("mysql", "SELECT /*!50000 SLEEP(10) */ 1"),
+        ("mysql", "SELECT app.count(*) FROM sales"),
+        ("mysql", "SELECT * FROM information_schema.tables"),
     ],
 )
 def test_rejects_writes_unsafe_functions_and_unselected_tables(dialect, query):
@@ -112,3 +117,70 @@ def test_file_aggregate_with_boolean_predicates_and_decimal_casts():
 def test_custom_cast_types_are_rejected():
     with pytest.raises(SqlPolicyError):
         validate_sql("SELECT CAST(1 AS custom_type)", dialect="postgresql")
+
+
+@pytest.mark.parametrize(
+    ("dialect", "query"),
+    [
+        (
+            "postgres",
+            "WITH chosen AS (SELECT * FROM sales), hidden AS (SELECT * FROM secret) "
+            "SELECT * FROM chosen",
+        ),
+        (
+            "mysql",
+            "WITH chosen AS (SELECT * FROM sales), hidden AS (SELECT * FROM secret) "
+            "SELECT * FROM chosen",
+        ),
+    ],
+)
+def test_cte_aliases_do_not_whitelist_other_physical_tables(dialect, query):
+    with pytest.raises(SqlPolicyError) as error:
+        validate_sql(query, dialect=dialect, allowed_tables={"sales"})
+    assert error.value.code == "table_not_selected"
+    assert "secret" not in str(error.value)
+
+
+def test_nested_cte_resolution_and_shadowing_are_scope_aware():
+    accepted = "WITH chosen AS (SELECT * FROM sales) SELECT * FROM chosen"
+    validate_sql(accepted, dialect="postgres", allowed_tables={"sales"})
+    rejected = (
+        "WITH chosen AS (SELECT * FROM sales) "
+        "SELECT * FROM (WITH chosen AS (SELECT * FROM secret) SELECT * FROM chosen) nested"
+    )
+    with pytest.raises(SqlPolicyError) as error:
+        validate_sql(rejected, dialect="postgres", allowed_tables={"sales"})
+    assert error.value.code == "table_not_selected"
+
+
+def test_query_ast_resource_bounds_are_enforced():
+    with pytest.raises(SqlPolicyError) as error:
+        validate_sql("SELECT " + "(" * 110 + "1" + ")" * 110, dialect="postgres")
+    assert error.value.code in {"sql_parse_error", "query_too_complex"}
+    joins = "SELECT * FROM t0 " + " ".join(
+        f"JOIN t{i} ON t{i - 1}.id = t{i}.id" for i in range(1, 34)
+    )
+    with pytest.raises(SqlPolicyError) as error:
+        validate_sql(joins, dialect="postgres")
+    assert error.value.code == "too_many_joins"
+
+
+def test_sql_policy_errors_do_not_include_function_names_or_literals():
+    with pytest.raises(SqlPolicyError) as error:
+        validate_sql("SELECT private_secret_fn('top-secret')", dialect="postgres")
+    assert error.value.code == "function_not_allowed"
+    assert "private_secret_fn" not in str(error.value)
+    assert "top-secret" not in str(error.value)
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "SELECT REPEAT('x', 100000001)",
+        "SELECT REPEAT(value, repeat_count) FROM sales",
+    ],
+)
+def test_repeat_function_has_a_bounded_literal_count(query):
+    with pytest.raises(SqlPolicyError) as error:
+        validate_sql(query, dialect="mysql", allowed_tables={"sales"})
+    assert error.value.code == "function_argument_limit"

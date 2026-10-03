@@ -40,22 +40,49 @@
     },
     {
       "case": "output_symlink_and_teardown",
-      "status": "failed",
+      "status": "failed_on_initial_run_then_passed_after_cleanup_fix",
       "evidence": {
         "symlink_target": "/workspace/.agent/program.py",
         "tool_result": "partial with no artifacts",
         "collection_error": "output_listing_failed",
-        "stop_request": "sandbox_unavailable after the service disconnected without a response",
-        "fresh_client_session_status_after_stop": "active",
-        "cleanup_followup": "DELETE was issued"
+        "initial_stop_request": "sandbox_unavailable after the service disconnected without a response",
+        "initial_fresh_client_session_status": "active",
+        "initial_cleanup_followup": "DELETE was issued; final guest state was not independently checked",
+        "after_cleanup_fix": {
+          "focused_live_test": "passed",
+          "fresh_client_session_status_after_cleanup": "404",
+          "microvm_catalog_count": 1,
+          "catalog_running_count": 1,
+          "catalog_running_guest_matches_active_api_session": true,
+          "extra_orphan_guest_observed": false
+        }
       },
-      "limitation": "Output listing failed closed for this symlink attempt, but stop did not terminate the session. The active status was observed before DELETE; final guest termination after DELETE was not independently verified."
+      "limitation": "Output listing failed closed for this symlink attempt. The initial stop-response loss left the session active; after the app cleanup fix, DELETE plus status reconciliation confirmed the symlink test session was gone and no additional catalog guest remained."
+    },
+    {
+      "case": "resource_limit_visibility",
+      "status": "passed_noop_introspection",
+      "requested_limits": {
+        "cpu": 1,
+        "memory_mb": 1024,
+        "disk_mb": 2048
+      },
+      "observed_guest_values": {
+        "cpu_count": 1,
+        "memory_total_kib": 492380,
+        "cgroup_memory_max": null,
+        "cgroup_cpu_max": null,
+        "process_address_space_limit": [-1, -1],
+        "workspace_disk_total_bytes": 4294967296,
+        "workspace_disk_free_bytes": 4294967296
+      },
+      "interpretation": "The guest exposes one CPU, but proc/cgroup memory reporting does not reflect the requested 1024 MiB as a visible hard limit, and RLIMIT_AS is unlimited. The 4 GiB workspace mount has no cgroup/disk quota evidence and exceeds the requested 2 GiB upper-layer disk size; effective workspace disk enforcement is unsupported or unverified."
     }
   ],
   "not_verified": [
-    "Effective guest CPU, memory, and disk enforcement; configured limits are sent but this probe did not measure host enforcement.",
+    "Host enforcement beyond guest visibility measurements; no resource exhaustion probe was run.",
     "Absence of every possible secret name; only the five configured credential variable names were checked.",
-    "Final microVM teardown after the symlink case's DELETE follow-up."
+    "The exact mechanism enforcing 1024 MiB guest memory, since guest-visible MemTotal was about 481 MiB and no cgroup/RLIMIT address-space limit was visible."
   ],
   "model_calls": 0
 }

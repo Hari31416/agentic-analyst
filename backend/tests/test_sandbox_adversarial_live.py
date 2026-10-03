@@ -192,31 +192,66 @@ async def test_live_microvm_output_symlink_cannot_escape_call_directory(tmp_path
         }
         assert execution.session is not None
         session_id = execution.session.id
-        stop_error = None
-        try:
-            await client.stop(session_id)
-        except SandboxError as error:
-            stop_error = error.code
+        await execution.aclose()
 
-        # A fresh connection separates a lost stop response from the actual
-        # session state; never replay the stop POST after an ambiguous response.
+        # Verify the app's DELETE-and-reconcile fallback from a fresh connection.
         status_client = _enabled_client()
         try:
-            try:
-                session = await status_client.status(session_id)
-                observed_status = session.status
-            except SandboxError as error:
-                if error.status_code != 404:
-                    raise
-                observed_status = "missing"
-            assert observed_status in {"stopped", "expired", "missing"}, {
-                "stop_error": stop_error,
-                "observed_status": observed_status,
-            }
+            with pytest.raises(SandboxError) as missing:
+                await status_client.status(session_id)
+            assert missing.value.status_code == 404
         finally:
-            try:
-                await status_client.delete_session(session_id)
-            finally:
-                await status_client.aclose()
+            await status_client.aclose()
     finally:
+        if not execution._closed:
+            await execution.aclose()
         await client.aclose()
+
+
+@pytest.mark.live
+@pytest.mark.live_sandbox
+@pytest.mark.asyncio
+async def test_live_microvm_reports_resource_limit_visibility(tmp_path):
+    client = _enabled_client()
+    storage = FileStorage(tmp_path / "resource-storage")
+    execution = PythonExecution(client, storage, str(uuid4()), str(uuid4()))
+    code = """import json, os, resource, shutil
+from pathlib import Path
+def read(path):
+    try:
+        return Path(path).read_text().strip()
+    except OSError:
+        return None
+mem_total = None
+for line in Path('/proc/meminfo').read_text().splitlines():
+    if line.startswith('MemTotal:'):
+        mem_total = int(line.split()[1])
+        break
+stat = shutil.disk_usage('/workspace')
+print(json.dumps({
+    'cpu_count': os.cpu_count(),
+    'memory_total_kib': mem_total,
+    'cgroup_memory_max': read('/sys/fs/cgroup/memory.max'),
+    'cgroup_cpu_max': read('/sys/fs/cgroup/cpu.max'),
+    'process_address_space_limit': resource.getrlimit(resource.RLIMIT_AS),
+    'workspace_disk_total_bytes': stat.total,
+    'workspace_disk_free_bytes': stat.free,
+}, sort_keys=True))
+"""
+    try:
+        result = await execution.execute(code, str(uuid4()), timeout_seconds=15)
+        assert result.status == "ok", result.model_dump()
+        metrics = json.loads(result.data["stdout"])
+        assert isinstance(metrics["cpu_count"], int)
+        assert isinstance(metrics["workspace_disk_total_bytes"], int)
+        assert metrics["workspace_disk_total_bytes"] > 0
+        assert isinstance(metrics["memory_total_kib"], int)
+        assert metrics["memory_total_kib"] > 0
+        # These values are observational. The guest report does not prove host
+        # enforcement or that its mounted workspace has a quota.
+        print("RESOURCE_VISIBILITY=" + json.dumps(metrics, sort_keys=True))
+    finally:
+        try:
+            await execution.aclose()
+        finally:
+            await client.aclose()

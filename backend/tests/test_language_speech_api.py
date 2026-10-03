@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 import wave
+import asyncio
 
 import pytest
 from fastapi.testclient import TestClient
@@ -102,3 +103,55 @@ async def _raise_bad_audio(*args) -> dict[str, object]:
 
 async def _raise_timeout(*args) -> dict[str, object]:
     raise TimeoutError
+
+
+@pytest.mark.asyncio
+async def test_admission_allows_one_waiter_and_rejects_third(monkeypatch) -> None:
+    monkeypatch.setattr(speech, "_admitted_requests", 0)
+    monkeypatch.setattr(speech, "_worker_may_still_be_running", False)
+    monkeypatch.setattr(speech, "_speech_semaphore", asyncio.Semaphore(1))
+    entered = asyncio.Event()
+    release = asyncio.Event()
+
+    async def held(*args) -> dict[str, object]:
+        entered.set()
+        await release.wait()
+        return {"text": "ok"}
+
+    monkeypatch.setattr(speech, "_run_transcription", held)
+    first = asyncio.create_task(speech.transcribe_audio(b"audio", None))
+    await entered.wait()
+    second = asyncio.create_task(speech.transcribe_audio(b"audio", None))
+    await asyncio.sleep(0)
+    with pytest.raises(speech.QueueFullError):
+        await speech.transcribe_audio(b"audio", None)
+    release.set()
+    assert await first == {"text": "ok"}
+    assert await second == {"text": "ok"}
+    assert speech._admitted_requests == 0
+
+
+@pytest.mark.asyncio
+async def test_provider_timeout_closes_admission_until_process_restart(
+    monkeypatch,
+) -> None:
+    from indic_language_utils.errors import ProviderTimeoutError
+
+    class TimedOutProvider:
+        async def transcribe_batch(self, *args, **kwargs):
+            raise ProviderTimeoutError("timed out")
+
+    monkeypatch.setattr(speech, "_admitted_requests", 0)
+    monkeypatch.setattr(speech, "_worker_may_still_be_running", False)
+    monkeypatch.setattr(speech, "_speech_semaphore", asyncio.Semaphore(1))
+    monkeypatch.setattr(speech, "get_speech_provider", lambda *args: TimedOutProvider())
+    monkeypatch.setattr(speech, "get_settings", lambda: Settings())
+    monkeypatch.setattr(
+        speech,
+        "decode_audio",
+        lambda *args, **kwargs: speech.DecodedAudio(_wav(), 0.2),
+    )
+    with pytest.raises(TimeoutError):
+        await speech.transcribe_audio(b"audio", None)
+    with pytest.raises(speech.QueueFullError, match="recovering"):
+        await speech.transcribe_audio(b"audio", None)

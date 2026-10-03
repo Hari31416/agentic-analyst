@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import io
 import json
+import threading
 import wave
 from functools import lru_cache
 from dataclasses import dataclass
@@ -17,6 +18,11 @@ from app.config import Settings, get_settings
 
 TARGET_RATE = 16_000
 _provider: Any | None = None
+_admission_lock = threading.Lock()
+_admitted_requests = 0
+_admission_capacity = 2
+_speech_semaphore = asyncio.Semaphore(1)
+_worker_may_still_be_running = False
 _PROVIDER_MODEL = "Systran/faster-whisper-tiny"
 _PROVIDER_REVISION = "d90ca5fe260221311c53c58e660288d3deb8d356"
 _MODEL_FILES = ("model.bin", "config.json", "tokenizer.json", "vocabulary.txt")
@@ -187,6 +193,10 @@ def capabilities(settings: Settings | None = None) -> dict[str, object]:
     available = get_speech_provider(settings) is not None
     return {
         "languages": langs,
+        "audio_limits": {
+            "max_upload_bytes": settings.speech_max_upload_bytes,
+            "max_duration_seconds": settings.speech_max_duration_seconds,
+        },
         "stt": {
             "available": available,
             "provider": "faster_whisper" if available else None,
@@ -206,6 +216,29 @@ def capabilities(settings: Settings | None = None) -> dict[str, object]:
 
 
 async def transcribe_audio(data: bytes, language: str | None) -> dict[str, object]:
+    global _admitted_requests
+    with _admission_lock:
+        if _admitted_requests >= _admission_capacity:
+            raise QueueFullError("Speech service is busy; retry shortly")
+        _admitted_requests += 1
+    try:
+        async with _speech_semaphore:
+            if _worker_may_still_be_running:
+                raise QueueFullError(
+                    "Speech service is recovering from a timed out transcription"
+                )
+            return await _run_transcription(data, language)
+    finally:
+        with _admission_lock:
+            _admitted_requests -= 1
+
+
+class QueueFullError(RuntimeError):
+    """The bounded active-plus-waiting speech capacity is full."""
+
+
+async def _run_transcription(data: bytes, language: str | None) -> dict[str, object]:
+    global _worker_may_still_be_running
     from indic_language_utils.languages import DEFAULT_LANGUAGE_REGISTRY
 
     settings = get_settings()
@@ -233,6 +266,10 @@ async def transcribe_audio(data: bytes, language: str | None) -> dict[str, objec
         from indic_language_utils.errors import ProviderTimeoutError
 
         if isinstance(exc, ProviderTimeoutError):
+            # Faster-Whisper's native worker cannot be cancelled safely. Its
+            # internal provider slot remains occupied until that thread exits.
+            # Keep the endpoint closed after timeout to avoid accumulating work.
+            _worker_may_still_be_running = True
             raise TimeoutError("Speech recognition timed out") from exc
         raise
     result = results[0]

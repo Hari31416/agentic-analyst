@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.config import get_settings
-from app.language.speech import capabilities, transcribe_audio
+from app.language.speech import QueueFullError, capabilities, transcribe_audio
 
 router = APIRouter(prefix="/api/languages", tags=["languages"])
 
@@ -32,6 +32,8 @@ async def transcribe(
         return await transcribe_audio(data, language)
     except LookupError as exc:
         raise HTTPException(503, str(exc)) from exc
+    except QueueFullError as exc:
+        raise HTTPException(429, str(exc), headers={"Retry-After": "10"}) from exc
     except OverflowError as exc:
         raise HTTPException(413, str(exc)) from exc
     except ValueError as exc:

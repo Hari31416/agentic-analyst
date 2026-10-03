@@ -14,6 +14,7 @@ dependencies = [
   "httpx>=0.28,<1",
   "cryptography>=44",
   "python-multipart>=0.0.20",
+  "av>=16,<17",
   "indic-language-utils[stt-whisper]",
   "boto3>=1.36,<2",
   "openpyxl>=3.1,<4",

@@ -516,13 +516,11 @@ class RunRuntime:
                 run.started_at = now()
                 history = [
                     {
+                        "id": row.id,
                         "role": row.role,
-                        "content": row.content
-                        + (
-                            "\nRetained references: " + json.dumps(row.references)
-                            if row.references
-                            else ""
-                        ),
+                        "content": row.content,
+                        "selected_source_ids": row.selected_source_ids,
+                        "references": row.references,
                     }
                     for row in session.scalars(
                         select(Message)
@@ -540,8 +538,16 @@ class RunRuntime:
                     )
                 )
                 assert current is not None
-                if not history or history[-1]["content"] != current.content:
-                    history.append({"role": "user", "content": current.content})
+                if not any(message.get("id") == current.id for message in history):
+                    history.append(
+                        {
+                            "id": current.id,
+                            "role": "user",
+                            "content": current.content,
+                            "selected_source_ids": current.selected_source_ids,
+                            "references": current.references,
+                        }
+                    )
                 language = str(run.config["answer_language"])
                 append_event(
                     session,

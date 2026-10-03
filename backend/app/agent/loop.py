@@ -9,6 +9,7 @@ from pydantic import BaseModel, ValidationError
 
 from app.agent.protocol import Model, ModelToolCall
 from app.agent.model import ModelError
+from app.agent.context import ContextLimitExceeded, select_thread_context
 from app.config import Settings
 from app.contracts import FinalAnswer, SafeError, ToolResult
 
@@ -71,13 +72,25 @@ class AgentLoop:
     async def run(
         self, history: list[dict[str, Any]], answer_language: str
     ) -> FinalAnswer:
-        messages = [
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT + f"\nAnswer language: {answer_language}.",
-            },
-            *history,
-        ]
+        system_message = {
+            "role": "system",
+            "content": SYSTEM_PROMPT + f"\nAnswer language: {answer_language}.",
+        }
+        try:
+            # Leave room for role names and JSON punctuation measured by the run guard.
+            context_overhead = 64 * (len(history) + 1)
+            model_history = select_thread_context(
+                history,
+                max(
+                    0,
+                    self.settings.max_context_characters
+                    - len(system_message["content"])
+                    - context_overhead,
+                ),
+            )
+        except ContextLimitExceeded as exc:
+            raise BudgetExhausted(str(exc)) from exc
+        messages: list[dict[str, Any]] = [system_message, *model_history]
         finish = {
             "type": "function",
             "function": {

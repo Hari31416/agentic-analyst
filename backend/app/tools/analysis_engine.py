@@ -100,7 +100,7 @@ def _decimal_operation(action, left, right):
         }[action]()
     if Fraction(calculated) != exact:
         raise AnalysisError("decimal_precision_loss")
-    return _bounded_decimal(exact_decimal)
+    return _bounded_decimal(calculated)
 
 
 def _sum_decimals(values):

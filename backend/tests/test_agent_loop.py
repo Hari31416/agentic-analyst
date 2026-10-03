@@ -233,3 +233,37 @@ async def test_retryable_provider_failure_does_not_repeat_tools():
     )
     answer = await loop.run([], "en-IN")
     assert answer.text == "2" and calls == [1] and loop.model_calls == 3
+
+
+async def test_validation_feedback_names_fields_without_echoing_input():
+    dispatched = []
+
+    async def execute(*args):
+        dispatched.append(args)
+        return ToolResult(status="ok", summary="unexpected")
+
+    model = ScriptedModel(
+        [
+            response(
+                "run_python",
+                {"code": "print(1)", "input_artifact_ids": ["private-input-sentinel"]},
+            ),
+            response(
+                "finish_answer",
+                {"text": "Please select a valid artifact", "clarification": True},
+            ),
+        ]
+    )
+    loop = AgentLoop(
+        model,
+        settings(),
+        [Tool("run_python", "Python", PythonInput, execute)],
+        ignore,
+        ignore,
+    )
+    assert (await loop.run([], "en-IN")).clarification
+    content = model.requests[1][-1]["content"]
+    result = json.loads(content)
+    assert result["data"]["validation_errors"][0]["field"] == "input_artifact_ids.0"
+    assert "private-input-sentinel" not in content
+    assert not dispatched

@@ -21,20 +21,21 @@ from app.contracts import (
     RunState,
     TERMINAL_STATES,
 )
-from app.db.models import Artifact, Job, Message, Run, Thread, ToolCall, now
+from app.db.models import Artifact, Job, Message, Run, Source, Thread, ToolCall, now
 from app.db.repository import append_event, audit
 from app.evidence.validation import validate_answer
 from app.sandbox.client import SandboxError, SandboxHTTPClient
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
 from app.tools.python import PythonExecution
+from app.tools.errors import ToolInputError
 from app.sources.connections import ConnectorError
 from app.policy.sql import SqlPolicyError
 from app.workers.queue import Claim, LeaseLost, owned
 
 
 class PythonInput(Contract):
-    code: str = Field(min_length=1, max_length=20000)
+    code: str = Field(min_length=1, max_length=64000)
     output_paths: list[str] | None = Field(default=None, max_length=16)
     input_dataset_ids: list[UUID] = Field(default_factory=list, max_length=16)
     input_artifact_ids: list[UUID] = Field(default_factory=list, max_length=16)
@@ -87,7 +88,9 @@ class RunRuntime:
                         run_id=run.id,
                         provider_call_id=payload["call_id"],
                         name=payload["name"],
-                        input_reference={},
+                        input_reference={
+                            "validation_errors": payload.get("validation_errors", [])
+                        },
                         decision="rejected",
                         status="rejected",
                     )
@@ -118,7 +121,16 @@ class RunRuntime:
             if producer is not None and set(producer.selected_source_ids).issubset(
                 set(run.selected_source_ids)
             ):
-                permitted.append(row)
+                versions = producer.config.get("source_versions", {})
+                current_versions = run.config.get("source_versions", {})
+                if all(
+                    (source := session.get(Source, identity)) is not None
+                    and source.state == "ready"
+                    and source.version == version
+                    and current_versions.get(identity) == version
+                    for identity, version in versions.items()
+                ):
+                    permitted.append(row)
         return permitted
 
     async def dispatch(
@@ -169,6 +181,16 @@ class RunRuntime:
             if name == "run_python":
                 assert isinstance(arguments, PythonInput)
                 result = await self.run_python(workspace_id, run_id, tool_id, arguments)
+            elif name == "analyze_data":
+                from app.tools.analysis import AnalysisTools, AnalyzeInput
+
+                assert isinstance(arguments, AnalyzeInput)
+                result = await AnalysisTools(self).execute(arguments, tool_id)
+            elif name == "generate_report":
+                from app.tools.reports import ReportsTool, GenerateReportInput
+
+                assert isinstance(arguments, GenerateReportInput)
+                result = await ReportsTool(self).execute(name, arguments, tool_id)
             elif name == "summarize_documents":
                 from app.tools.summaries import SummaryTools
 
@@ -266,7 +288,9 @@ class RunRuntime:
         ) as exc:
             code = (
                 exc.code
-                if isinstance(exc, (SandboxError, ConnectorError, SqlPolicyError))
+                if isinstance(
+                    exc, (SandboxError, ConnectorError, SqlPolicyError, ToolInputError)
+                )
                 else "tool_execution_failed"
             )
             result = ToolResult(
@@ -276,7 +300,9 @@ class RunRuntime:
                     code=code,
                     message=(
                         str(exc)[:300]
-                        if isinstance(exc, (SqlPolicyError, ConnectorError))
+                        if isinstance(
+                            exc, (SqlPolicyError, ConnectorError, ToolInputError)
+                        )
                         else "Check selected inputs and service availability"
                     ),
                 ),
@@ -314,6 +340,23 @@ class RunRuntime:
                                         "input_dataset_ids", []
                                     )
                                 ],
+                                *[
+                                    f"artifact:{identity}"
+                                    for identity in result.data.get(
+                                        "input_artifact_ids", []
+                                    )
+                                ],
+                                *result.data.get("input_lineage", []),
+                                *[
+                                    f"artifact:{snapshot['id']}@sha256:{snapshot['sha256']}"
+                                    for snapshot in result.data.get(
+                                        "staged_input_artifacts", []
+                                    )
+                                ],
+                                *item.get("lineage", []),
+                                *result.data.get("artifact_lineage", {}).get(
+                                    item["id"], []
+                                ),
                                 f"tool:{tool_id}",
                             ],
                             durable=True,
@@ -419,6 +462,8 @@ class RunRuntime:
             self.guard(session)
         # Staged file inputs are canonical working copies of selected versioned datasets.
         staged_datasets: list[str] = []
+        staged_inputs: list[dict[str, Any]] = []
+        input_lineage: list[str] = []
         if arguments.input_dataset_ids:
             from app.tools.structured import StructuredTools
             from app.sources.files import working_csv
@@ -429,11 +474,13 @@ class RunRuntime:
                     (row for row in datasets if row.id == str(dataset_id)), None
                 )
                 if dataset is None:
-                    raise ValueError("input dataset is not selected")
+                    raise ToolInputError(
+                        "input dataset is not selected; use an exact dataset_id from list_sources"
+                    )
                 source = next(row for row in sources if row.id == dataset.source_id)
-                if source.kind not in {"csv", "xlsx", "xls"}:
-                    raise ValueError(
-                        "database credentials cannot enter the guest; stage query artifacts instead"
+                if source.kind not in {"csv", "xlsx", "xls", "json", "parquet"}:
+                    raise ToolInputError(
+                        "database credentials cannot enter the guest; use run_sql first and stage the returned CSV artifact_id instead"
                     )
                 content = await asyncio.to_thread(
                     working_csv, source, dataset, storage, settings.max_upload_bytes
@@ -445,6 +492,45 @@ class RunRuntime:
                     sandbox_session.id, f"inputs/{dataset_id}.csv", content
                 )
                 staged_datasets.append(dataset.id)
+                input_lineage.extend(dataset.lineage or [])
+                snapshot = await asyncio.to_thread(
+                    storage.put,
+                    f"derived/{workspace_id}/{run_id}/{tool_id}/inputs/{dataset_id}.csv",
+                    content,
+                )
+                with self.db() as session, session.begin():
+                    live = self.guard(session)
+                    retained = Artifact(
+                        run_id=run_id,
+                        tool_call_id=tool_id,
+                        storage_key=snapshot.key,
+                        display_name=f"input-{dataset_id}.csv",
+                        media_type="text/csv",
+                        byte_size=snapshot.byte_size,
+                        sha256=snapshot.sha256,
+                        lineage=[
+                            *live.selected_source_ids,
+                            *(dataset.lineage or []),
+                            *[
+                                f"source:{i}@{v}"
+                                for i, v in live.config.get(
+                                    "source_versions", {}
+                                ).items()
+                            ],
+                            f"dataset:{dataset_id}",
+                            f"tool:{tool_id}",
+                        ],
+                    )
+                    session.add(retained)
+                    session.flush()
+                    staged_inputs.append(
+                        {
+                            "id": retained.id,
+                            "dataset_id": str(dataset_id),
+                            "guest_path": f"/workspace/inputs/{dataset_id}.csv",
+                            "sha256": snapshot.sha256,
+                        }
+                    )
         # Resuming analysis uses durable artifacts; credentials and arbitrary paths are never staged.
         if arguments.input_artifact_ids:
             for artifact_id in arguments.input_artifact_ids:
@@ -459,12 +545,15 @@ class RunRuntime:
                         None,
                     )
                     if artifact is None:
-                        raise ValueError(
-                            "input artifact belongs to an unselected source"
+                        raise ToolInputError(
+                            "input artifact is unavailable for the selected source versions; use an exact accessible artifact_id"
                         )
                     content = await asyncio.to_thread(
                         storage.read, artifact.storage_key, settings.max_upload_bytes
                     )
+                input_lineage.extend(artifact.lineage or [])
+                if hashlib.sha256(content).hexdigest() != artifact.sha256:
+                    raise ValueError("artifact integrity check failed")
                 assert self.sandbox is not None
                 with self.db() as session:
                     self.guard(session)
@@ -482,9 +571,15 @@ class RunRuntime:
             ),
         )
         result.artifact_ids.insert(0, UUID(code_id))
+        result.artifact_ids.extend(UUID(i["id"]) for i in staged_inputs)
+        result.data["staged_input_artifacts"] = staged_inputs
+        result.data["input_lineage"] = list(dict.fromkeys(input_lineage))
         # Paths and object keys are server-owned. Expose only usable guest input locations and references.
         result.data["code_artifact_id"] = code_id
         result.data["input_dataset_ids"] = staged_datasets
+        result.data["input_artifact_ids"] = [
+            str(i) for i in arguments.input_artifact_ids
+        ]
         with self.db() as session, session.begin():
             self.guard(session)
             retained_code = session.get(Artifact, code_id)
@@ -492,6 +587,8 @@ class RunRuntime:
             retained_code.lineage = [
                 *retained_code.lineage,
                 *[f"dataset:{identity}" for identity in staged_datasets],
+                *[f"artifact:{identity}" for identity in arguments.input_artifact_ids],
+                *list(dict.fromkeys(input_lineage)),
             ]
         return result
 
@@ -598,8 +695,20 @@ class RunRuntime:
 
             from app.tools.documents import PassageInput, SearchInput
             from app.tools.summaries import SummaryInput
+            from app.tools.analysis import AnalyzeInput
+            from app.tools.reports import GenerateReportInput
 
             structured_tools = [
+                structured_tool(
+                    "analyze_data",
+                    "Run bounded cleaning, joins, reshaping, exact decimal arithmetic, date/fiscal derivations and statistics in the microVM. Supply selected dataset IDs or CSV artifact snapshots. Explicitly convert numeric/date columns. Rejects missing and duplicate keys unless cleaned; join relationship defaults many_to_one. Record assumptions, units and chart labels. DB/file analysis first uses run_sql to retain a bounded CSV snapshot.",
+                    AnalyzeInput,
+                ),
+                structured_tool(
+                    "generate_report",
+                    "Generate Markdown/PDF and a replay notebook from retained results and document evidence. Supply exact accessible artifact/evidence IDs; calculated numbers and citations are preserved. Inputs and code snapshots must be available for replay.",
+                    GenerateReportInput,
+                ),
                 structured_tool(
                     "summarize_documents",
                     "Get cached document, section or multi-document overview summaries with original supporting evidence. Summaries are navigation aids; cite original passages for claims. Optional thematic headings group the bounded sample.",

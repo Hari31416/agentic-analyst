@@ -17,6 +17,7 @@ from app.policy.sql import SqlPolicyError, validate_sql
 from app.sources.connections import QueryControl, execute_query, sample_dataset_rows
 from app.sources.files import get_dataset_rows, profile_upload, working_csv
 from app.storage.factory import get_storage
+from app.tools.errors import ToolInputError
 from app.tools.file_sql import query_program, table_alias
 
 if TYPE_CHECKING:
@@ -102,7 +103,8 @@ class StructuredTools:
                                     "identity": row.identity,
                                     "sql_table": (
                                         table_alias(row.id)
-                                        if item.kind in {"csv", "xlsx", "xls"}
+                                        if item.kind
+                                        in {"csv", "xlsx", "xls", "json", "parquet"}
                                         else row.identity
                                     ),
                                     "designation": row.designation,
@@ -118,7 +120,7 @@ class StructuredTools:
         if name == "inspect_schema":
             assert isinstance(args, SourceInput)
             if str(args.source_id) not in {source.id for source in sources}:
-                raise ValueError("source is not selected")
+                raise ToolInputError("source is not selected")
             entries = [
                 self.profile(row)
                 for row in datasets
@@ -135,7 +137,7 @@ class StructuredTools:
                 (row for row in datasets if row.id == str(args.dataset_id)), None
             )
             if dataset is None:
-                raise ValueError("dataset is not selected")
+                raise ToolInputError("dataset is not selected")
             if name == "dataset_profile":
                 return ToolResult(
                     status="ok",
@@ -165,7 +167,7 @@ class StructuredTools:
                         max_bytes=self.runtime.settings.max_upload_bytes,
                     )
                     if rows is None:
-                        raise ValueError("dataset disappeared")
+                        raise ToolInputError("dataset disappeared")
                     return rows
 
             return ToolResult(
@@ -186,7 +188,7 @@ class StructuredTools:
                     None,
                 )
                 if artifact is None or artifact.media_type != "text/csv":
-                    raise ValueError("choose an accessible CSV artifact")
+                    raise ToolInputError("choose an accessible CSV artifact")
             source_id, dataset_ids = await self.register(
                 artifact, workspace_id, args.display_name, artifact.lineage
             )
@@ -235,7 +237,7 @@ class StructuredTools:
     ) -> ToolResult:
         requested = {str(identity) for identity in args.dataset_ids}
         if requested - {row.id for row in datasets}:
-            raise ValueError("query dataset is not selected")
+            raise ToolInputError("query dataset is not selected")
         chosen = [row for row in datasets if not requested or row.id in requested]
         source = (
             next((row for row in sources if row.id == str(args.source_id)), None)
@@ -243,11 +245,11 @@ class StructuredTools:
             else None
         )
         if args.source_id and source is None:
-            raise ValueError("query source is not selected")
+            raise ToolInputError("query source is not selected")
         if source:
             chosen = [row for row in chosen if row.source_id == source.id]
         if not chosen:
-            raise ValueError("select a dataset before querying")
+            raise ToolInputError("select a dataset before querying")
         storage = get_storage(self.runtime.settings)
         if source and source.kind in {"mysql", "postgresql"}:
             with self.runtime.db() as session:
@@ -256,7 +258,7 @@ class StructuredTools:
                     select(Connection).where(Connection.source_id == source.id)
                 )
                 if connection is None:
-                    raise ValueError("connection not found")
+                    raise ToolInputError("connection not found")
             allowed = {row.identity for row in chosen}
             sql = validate_sql(args.sql, dialect=source.kind, allowed_tables=allowed)
             control = QueryControl()
@@ -282,7 +284,7 @@ class StructuredTools:
             writer.writerows(rows)
             content = buffer.getvalue().encode()
             if len(content) > self.runtime.settings.max_upload_bytes:
-                raise ValueError("SQL result exceeds artifact size limit")
+                raise ToolInputError("SQL result exceeds artifact size limit")
             stored = await asyncio.to_thread(
                 storage.put,
                 f"derived/{workspace_id}/{run.id}/{tool_id}/result.csv",
@@ -321,10 +323,12 @@ class StructuredTools:
             )
         else:
             file_sources = {
-                row.id: row for row in sources if row.kind in {"csv", "xlsx", "xls"}
+                row.id: row
+                for row in sources
+                if row.kind in {"csv", "xlsx", "xls", "json", "parquet"}
             }
             if any(row.source_id not in file_sources for row in chosen):
-                raise ValueError(
+                raise ToolInputError(
                     "choose a database source_id or file datasets; databases cannot share a guest connection"
                 )
             allowed = {table_alias(row.id) for row in chosen}
@@ -444,6 +448,10 @@ class StructuredTools:
         result.evidence_ids = [UUID(evidence_id)]
         result.data = {
             "code_artifact_id": result.data.get("code_artifact_id"),
+            "staged_input_artifacts": result.data.get("staged_input_artifacts", []),
+            "input_artifact_ids": result.data.get("input_artifact_ids", []),
+            "input_lineage": result.data.get("input_lineage", []),
+            "input_dataset_ids": result.data.get("input_dataset_ids", []),
             "artifacts": descriptors,
             **metadata,
             "query": sql,
@@ -464,7 +472,7 @@ class StructuredTools:
             storage.read, artifact.storage_key, self.runtime.settings.max_upload_bytes
         )
         if hashlib.sha256(content).hexdigest() != artifact.sha256:
-            raise ValueError("artifact integrity check failed")
+            raise ToolInputError("artifact integrity check failed")
         profiles = await asyncio.to_thread(profile_upload, "result.csv", content)
         with self.runtime.db() as session, session.begin():
             self.runtime.guard(session)

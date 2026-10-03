@@ -26,7 +26,22 @@ def get_evidence(evidence_id: str, session: Db) -> dict[str, Any]:
             raise HTTPException(409, "The citation document version is unavailable")
         source = session.get(Source, document.source_id)
         display_name = source.display_name if source else None
-        source_state = "archived" if source and source.state == "deleted" else "active"
+        source_state = (
+            "unavailable"
+            if source is None
+            else "archived" if source.state in {"deleted", "archived"} else "active"
+        )
+    availability = {}
+    for identity in evidence.source_ids:
+        origin = session.get(Source, identity)
+        expected = details.get("source_versions", {}).get(identity)
+        availability[identity] = {
+            "state": "unavailable" if origin is None else origin.state,
+            "expected_version": expected,
+            "current_version": origin.version if origin else None,
+            "version_available": origin is not None
+            and (expected is None or origin.version == expected),
+        }
     return {
         "id": evidence.id,
         "kind": evidence.kind,
@@ -51,4 +66,5 @@ def get_evidence(evidence_id: str, session: Db) -> dict[str, Any]:
         "document_version": details.get("source_version"),
         "display_name": display_name,
         "source_state": source_state,
+        "source_availability": availability,
     }

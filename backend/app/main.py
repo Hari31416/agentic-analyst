@@ -179,3 +179,13 @@ app.include_router(lifecycle_router)
 from app.api.document_crawl import router as crawl_router
 
 app.include_router(crawl_router)
+
+from app.api.artifacts import router as artifacts_router
+from app.api.portability import router as portability_router
+
+app.include_router(artifacts_router)
+app.include_router(portability_router)
+
+from app.api.artifact_datasets import router as artifact_datasets_router
+
+app.include_router(artifact_datasets_router)

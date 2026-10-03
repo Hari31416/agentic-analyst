@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 import math
@@ -707,10 +708,10 @@ def _extension(filename: str) -> str:
             "macros_rejected", "Macro-enabled Excel workbooks are not accepted."
         )
     extension = suffix.removeprefix(".")
-    if extension not in {"csv", "xlsx", "xls"}:
+    if extension not in {"csv", "xlsx", "xls", "json", "parquet"}:
         raise FileIngestionError(
             "file_type_unsupported",
-            "Only CSV, XLSX, and legacy XLS files are supported.",
+            "Only CSV, XLSX, legacy XLS, flat JSON, and Parquet files are supported.",
         )
     return extension
 
@@ -755,6 +756,17 @@ def profile_upload(filename: str, content: bytes) -> list[dict[str, Any]]:
     extension = _extension(filename)
     if extension != "xlsx":
         _validate_content(extension, content)
+    if extension in {"json", "parquet"}:
+        from app.sources.records import records_csv
+
+        try:
+            canonical = records_csv(extension, content)
+        except Exception as error:
+            raise FileIngestionError(
+                "records_invalid",
+                "Flat record file could not be decoded within safe bounds.",
+            ) from error
+        return _profile_csv(canonical)
     if extension == "csv":
         return _profile_csv(content)
     if extension == "xlsx":
@@ -767,6 +779,17 @@ def _iter_dataset_rows(
 ) -> Iterator[list[object | None]]:
     extension = _extension(filename)
     _validate_content(extension, content)
+    if extension in {"json", "parquet"}:
+        from app.sources.records import records_csv
+
+        try:
+            content = records_csv(extension, content)
+        except Exception as error:
+            raise FileIngestionError(
+                "records_invalid",
+                "Flat record file could not be decoded within safe bounds.",
+            ) from error
+        extension = "csv"
     if extension == "csv":
         encoding = _detect_encoding(content)
         delimiter = _detect_delimiter(content.decode(encoding, errors="strict"))
@@ -862,6 +885,13 @@ def working_csv(
             )
         return storage.read(dataset.storage_key, max_bytes)
     original = storage.read(source.storage_key, max_bytes)
+    if (
+        source.content_hash
+        and hashlib.sha256(original).hexdigest() != source.content_hash
+    ):
+        raise FileIngestionError(
+            "source_integrity_failed", "Original source hash verification failed."
+        )
     output = io.BytesIO()
     stream = io.TextIOWrapper(output, encoding="utf-8", newline="", write_through=True)
     writer = csv.writer(stream, lineterminator="\n")
@@ -1015,7 +1045,7 @@ def get_dataset_rows(
         or source.version != dataset.source_version
     ):
         raise FileIngestionError("source_unavailable", "Dataset source is not ready.")
-    if source.kind not in {"csv", "xlsx", "xls"}:
+    if source.kind not in {"csv", "xlsx", "xls", "json", "parquet"}:
         raise FileIngestionError(
             "dataset_kind_unsupported",
             "Dataset rows are not stored as an uploaded file.",

@@ -1,0 +1,256 @@
+{
+  "phase": "08-audit-reconstruction",
+  "inspected_at": "2026-10-03T08:58:34.773612+00:00",
+  "run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+  "run": {
+    "state": "completed",
+    "created_at": "2026-10-03T04:56:49.082622+00:00",
+    "finished_at": "2026-10-03T04:57:15.364355+00:00",
+    "prompt_version": "analyst-v4",
+    "question_sha256": "51aac2f0a56df214b970f436b0375a60c4da36dce8d508d84ef8c22f850d0029",
+    "question_reconstruction": "Regional grant count and total under an inclusive INR 200,000 income boundary.",
+    "question_checks": {
+      "income_boundary_200000": true,
+      "regional_grouping": true,
+      "grant_measure": true
+    }
+  },
+  "sources": [
+    {
+      "source_id": "c3eab1aa-b1ae-44c0-93b4-d3018aaafd9d",
+      "kind": "json",
+      "selected_version": 1,
+      "run_version": 1
+    },
+    {
+      "source_id": "d6080c0d-bb9a-4980-ba20-03281d1fcc04",
+      "kind": "postgresql",
+      "selected_version": 1,
+      "run_version": 1
+    },
+    {
+      "source_id": "fbe22314-0b81-431b-ad5e-d3f500fa468f",
+      "kind": "pdf",
+      "selected_version": 1,
+      "run_version": 1
+    }
+  ],
+  "source_version_map_matches": true,
+  "tool_calls": [
+    {
+      "id": "a8fd8ea5-164e-44ba-a695-c4f0edf81b00",
+      "name": "analyze_data",
+      "decision": "allowed",
+      "status": "completed"
+    },
+    {
+      "id": "18613e4f-0627-4a32-814c-89ecbab9226a",
+      "name": "generate_report",
+      "decision": "allowed",
+      "status": "completed"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "d1747511-6da8-403c-af88-4083831b4d09",
+      "producing_run_id": "1ace91f3-e845-47e8-88b1-1a083c64ebca",
+      "kind": "document",
+      "source_ids": [
+        "fbe22314-0b81-431b-ad5e-d3f500fa468f"
+      ],
+      "status": null,
+      "columns": null,
+      "row_count": null,
+      "units": null,
+      "rows": null,
+      "source_versions": {
+        "fbe22314-0b81-431b-ad5e-d3f500fa468f": 1
+      }
+    },
+    {
+      "id": "7b9d07c8-a078-4dc8-9f08-7d0ca46dab75",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "kind": "structured",
+      "source_ids": [
+        "c3eab1aa-b1ae-44c0-93b4-d3018aaafd9d",
+        "d6080c0d-bb9a-4980-ba20-03281d1fcc04"
+      ],
+      "status": "ok",
+      "columns": [
+        "region",
+        "eligible_count",
+        "total_inr"
+      ],
+      "row_count": 1,
+      "units": {
+        "total_inr": "INR"
+      },
+      "rows": [
+        {
+          "region": "North",
+          "total_inr": "25000.00",
+          "eligible_count": 2
+        }
+      ],
+      "source_versions": {
+        "c3eab1aa-b1ae-44c0-93b4-d3018aaafd9d": 1,
+        "d6080c0d-bb9a-4980-ba20-03281d1fcc04": 1
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "cb77b7fb-e9bd-49bc-b103-571cca7a97ec",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "code.py",
+      "media_type": "text/x-python",
+      "byte_size": 31973,
+      "sha256": "fc363e0636162620c64306a1c4f847469bd7396318d11b92aaf91d32b7156403",
+      "lineage_count": 16,
+      "durable": true
+    },
+    {
+      "id": "2695da4c-541f-4fde-a0b8-a01a4fb9ad1b",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "input-f0546752-99a5-4518-b833-c21991488a2e.csv",
+      "media_type": "text/csv",
+      "byte_size": 91,
+      "sha256": "dc0d7b8c6dcd0a621d0c1b700f3e4e9d293b7f447356b1fbac71be3533a16212",
+      "lineage_count": 9,
+      "durable": true
+    },
+    {
+      "id": "a4f5b518-be7c-5591-a73c-68060c3b0c22",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "analysis.json",
+      "media_type": "application/json",
+      "byte_size": 2790,
+      "sha256": "d16c9ecbe56cc49e1466df8ba061ecf7e2dfd8c4d6d99a2117c14f4f9cef1d3b",
+      "lineage_count": 20,
+      "durable": true
+    },
+    {
+      "id": "e0a6eb0c-f974-5dbc-8984-2535e54e2407",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "chart.json",
+      "media_type": "application/vnd.plotly.v1+json",
+      "byte_size": 256,
+      "sha256": "865bec4c394ff43687bf6f9fd912bde441e92aa1f2548bd27e8851ee1edb7dd4",
+      "lineage_count": 20,
+      "durable": true
+    },
+    {
+      "id": "155f72df-8396-53bd-9af9-8175fcc573f5",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "chart.png",
+      "media_type": "image/png",
+      "byte_size": 20498,
+      "sha256": "cffe6974da717755a6ec610dfaeb7d088827896a4f5642f0cf2b6638399540f9",
+      "lineage_count": 20,
+      "durable": true
+    },
+    {
+      "id": "aff877d1-18f1-5a90-8e53-82b56b93c400",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "result.csv",
+      "media_type": "text/csv",
+      "byte_size": 51,
+      "sha256": "99e47b00ce182088949f33b23ee9e0462036b1c7ac7a140ed2ef75a2fd9695c2",
+      "lineage_count": 20,
+      "durable": true
+    },
+    {
+      "id": "ea75e50b-f611-447c-a2f3-cdcc654320f5",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "Phase-06-eligible-regional-grants.md",
+      "media_type": "text/markdown",
+      "byte_size": 1860,
+      "sha256": "64eb308a7ecf44eb07db14281df6cec6d0b6730d1e6564c0bc9686ea0f7d1656",
+      "lineage_count": 19,
+      "durable": true
+    },
+    {
+      "id": "ce4ec0ea-6d1f-4e20-85f0-3f146af86364",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "Phase-06-eligible-regional-grants.pdf",
+      "media_type": "application/pdf",
+      "byte_size": 11404,
+      "sha256": "6eacfb9eb5ac954d7e118a03b674bbf9ce71128274e00a5db2b8b2022e9b01a0",
+      "lineage_count": 19,
+      "durable": true
+    },
+    {
+      "id": "88c0a069-a3d3-4ae9-8821-de87ea641c22",
+      "producing_run_id": "6d1d074b-dc2a-4594-88e7-ff7565a8cec2",
+      "display_name": "Phase-06-eligible-regional-grants.ipynb",
+      "media_type": "application/x-ipynb+json",
+      "byte_size": 48089,
+      "sha256": "d080765ff02e2bd0486fb900b060b340c0bfcbd0376f02746071891b99506cd6",
+      "lineage_count": 19,
+      "durable": true
+    }
+  ],
+  "event_types": {
+    "status": 9,
+    "context_selected": 1,
+    "tool_started": 2,
+    "tool_finished": 2,
+    "answer": 1,
+    "terminal": 1
+  },
+  "audit_actions": {
+    "run.create:allowed:selected_sources_valid": 1,
+    "tool.dispatch:allowed:validated_input": 2,
+    "tool.result:ok:completed": 2,
+    "run.finalize:completed:completed": 1,
+    "sandbox.cleanup:complete:complete": 1
+  },
+  "counts": {
+    "messages": 2,
+    "tool_calls": 2,
+    "evidence": 2,
+    "artifacts": 9,
+    "events": 16,
+    "audit_events": 7
+  },
+  "prior_evaluation_reconciliation": {
+    "evaluation_tool_calls": null,
+    "retained_tool_calls": 2,
+    "evaluation_evidence_ids": [],
+    "retained_evidence_ids": [
+      "7b9d07c8-a078-4dc8-9f08-7d0ca46dab75",
+      "d1747511-6da8-403c-af88-4083831b4d09"
+    ],
+    "missing_declared_evidence_ids": [],
+    "evaluation_artifact_ids": [],
+    "retained_artifact_ids": [
+      "155f72df-8396-53bd-9af9-8175fcc573f5",
+      "2695da4c-541f-4fde-a0b8-a01a4fb9ad1b",
+      "88c0a069-a3d3-4ae9-8821-de87ea641c22",
+      "a4f5b518-be7c-5591-a73c-68060c3b0c22",
+      "aff877d1-18f1-5a90-8e53-82b56b93c400",
+      "cb77b7fb-e9bd-49bc-b103-571cca7a97ec",
+      "ce4ec0ea-6d1f-4e20-85f0-3f146af86364",
+      "e0a6eb0c-f974-5dbc-8984-2535e54e2407",
+      "ea75e50b-f611-447c-a2f3-cdcc654320f5"
+    ],
+    "missing_declared_artifact_ids": []
+  },
+  "limits": {
+    "max_items_per_collection": 500,
+    "max_export_bytes": 2097152,
+    "truncated_counts": {},
+    "truncated_content_fields": 0,
+    "truncated_nested_items": 3,
+    "entry_byte_budget_truncations": 0,
+    "entry_nested_limit_truncations": 0,
+    "nested_limits_truncated": true,
+    "byte_budget_truncated": false,
+    "policy_unrecorded": true,
+    "unresolved_reference_counts": {
+      "evidence": 0,
+      "artifacts": 0
+    },
+    "source_versions_unrecorded": false
+  }
+}

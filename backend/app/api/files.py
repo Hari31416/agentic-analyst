@@ -10,6 +10,8 @@ from pydantic import Field, StrictStr, model_validator
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
+from app.audit.redaction import contains_secret
+from app.db.repository import audit
 from app.contracts import Contract
 from app.db.models import Dataset, Source, Workspace
 from app.db.session import get_session
@@ -127,6 +129,16 @@ async def upload_file(
                     status_code=413,
                     detail="Uploaded file exceeds the configured size limit",
                 )
+        if contains_secret(bytes(content)):
+            audit(
+                session,
+                action="ingestion.upload",
+                decision="rejected",
+                reason_code="configured_secret_detected",
+                details={"workspace_id": str(workspace_id)},
+            )
+            session.commit()
+            raise HTTPException(422, "Upload contains configured credentials")
         try:
             source, datasets = ingest_file(
                 session,
@@ -137,7 +149,24 @@ async def upload_file(
                 max_bytes=settings.max_upload_bytes,
             )
         except FileIngestionError as error:
+            audit(
+                session,
+                action="ingestion.upload",
+                decision="rejected",
+                reason_code=error.code,
+                details={"workspace_id": str(workspace_id)},
+            )
+            session.commit()
             raise _http_error(error) from error
+        audit(
+            session,
+            action="ingestion.upload",
+            decision="allowed",
+            reason_code="validated_input",
+            source_id=source.id,
+            details={"source_version": source.version},
+        )
+        session.commit()
         return _source_view(source, datasets)
     finally:
         await file.close()

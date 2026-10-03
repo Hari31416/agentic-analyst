@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from app.audit.redaction import contains_secret
+
 import hashlib
 import io
 import json
@@ -149,6 +151,13 @@ def export_workspace(session: Session, workspace_id: str, settings: Any) -> byte
             return
         try:
             raw = storage.read(key, MAX_MEMBER_BYTES)
+            if contains_secret(raw):
+                raise PortabilityError(
+                    "configured_secret_asset",
+                    "Archive asset contains configured credentials",
+                )
+        except PortabilityError:
+            raise
         except Exception as exc:
             raise PortabilityError(
                 "asset_unavailable", f"A stored {purpose} asset could not be read."
@@ -206,6 +215,11 @@ def export_workspace(session: Session, workspace_id: str, settings: Any) -> byte
         "entities": entities,
         "assets": assets,
     }
+    if contains_secret(manifest):
+        raise PortabilityError(
+            "configured_secret_metadata",
+            "Archive metadata contains configured credentials",
+        )
     manifest_bytes = _json_bytes(manifest)
     if len(manifest_bytes) > MAX_MANIFEST_BYTES:
         raise PortabilityError(

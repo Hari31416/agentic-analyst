@@ -11,6 +11,7 @@ from pydantic import Field, field_validator
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from app.audit.redaction import contains_secret, redact
 from app.config import get_settings
 from app.contracts import Contract, RunEvent, RunState, TERMINAL_STATES
 from app.db.models import (
@@ -62,7 +63,7 @@ def run_view(run: Run) -> dict[str, Any]:
         "thread_id": run.thread_id,
         "state": run.state,
         "created_at": run.created_at,
-        "outcome": run.outcome,
+        "outcome": redact(run.outcome),
         "selected_source_ids": run.selected_source_ids,
         "selected_dataset_ids": run.config.get("selected_dataset_ids", []),
         "answer_language": run.config.get("answer_language", "en-IN"),
@@ -90,9 +91,9 @@ def messages(thread_id: str, session: Db) -> list[dict[str, Any]]:
         {
             "id": row.id,
             "role": row.role,
-            "content": row.content,
+            "content": redact(row.content),
             "run_id": row.run_id,
-            "references": row.references,
+            "references": redact(row.references),
             "created_at": row.created_at,
         }
         for row in rows
@@ -117,6 +118,8 @@ def runs(thread_id: str, session: Db) -> list[dict[str, Any]]:
 @router.post("/threads/{thread_id}/runs", status_code=201)
 def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
     settings = get_settings()
+    if contains_secret(body.text):
+        raise HTTPException(422, "Message contains configured credentials")
     if not settings.model_configured:
         raise HTTPException(
             503,
@@ -214,7 +217,8 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             },
             "selected_dataset_ids": selected_datasets,
             "model": settings.openai_model,
-            "prompt_version": "analyst-v5",
+            "prompt_version": "analyst-v6",
+            "policy_version": "execution-policy-v1",
             "source_versions": {source.id: source.version for source in source_rows},
             "max_tool_calls": settings.max_tool_calls,
             "max_model_calls": settings.max_model_calls,
@@ -425,6 +429,8 @@ def artifact_content(artifact_id: str, session: Db) -> Response:
         ):
             raise HTTPException(409, "Artifact integrity check failed")
         content = storage.read(artifact.storage_key, get_settings().max_upload_bytes)
+        if contains_secret(content):
+            raise HTTPException(403, "Artifact contains configured credentials")
     except (OSError, ValueError, StorageUnavailable) as exc:
         raise HTTPException(503, "Artifact bytes are unavailable") from exc
     disposition = "attachment"
@@ -505,6 +511,8 @@ def artifact_preview(
             content = storage.read(
                 artifact.storage_key, get_settings().max_upload_bytes
             ).decode("utf-8", errors="replace")
+            if contains_secret(content):
+                raise HTTPException(403, "Artifact contains configured credentials")
             text_preview = content[:max_characters]
             truncated = len(content) > max_characters
         except (OSError, ValueError, StorageUnavailable) as exc:

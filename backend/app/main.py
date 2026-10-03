@@ -191,3 +191,7 @@ app.include_router(portability_router)
 from app.api.artifact_datasets import router as artifact_datasets_router
 
 app.include_router(artifact_datasets_router)
+
+from app.api.audit import router as audit_router
+
+app.include_router(audit_router)

@@ -90,7 +90,9 @@ async def test_selected_datasets_and_derived_registration(db_factory, tmp_path):
     denied = await dispatch(
         runtime, "run_sql", SQLInput(sql="SELECT 1", dataset_ids=[UUID(excluded_id)])
     )
-    assert denied.status == "failed"
+    assert denied.status == "rejected"
+    assert denied.error.code == "dataset_not_selected"
+    assert denied.data["policy"]["outcome"] == "reject"
     registered = await dispatch(
         runtime,
         "register_dataset",
@@ -110,3 +112,40 @@ async def test_selected_datasets_and_derived_registration(db_factory, tmp_path):
         assert source.details["artifact_id"] == artifact_id
     # Registering a result must not broaden the fixed selection of the current run.
     assert len(StructuredTools(runtime).selection()[1]) == 1
+
+
+async def test_secret_and_unknown_actions_rejected_before_guest_dispatch(
+    db_factory, tmp_path, monkeypatch
+):
+    from pydantic import SecretStr
+    from app.db.models import AuditEvent, ToolCall
+
+    sentinel = "phase08-runtime-credential-sentinel"
+    settings = Settings(
+        _env_file=None,
+        storage_backend="filesystem",
+        storage_root=tmp_path,
+        openai_api_key=SecretStr(sentinel),
+    )
+    monkeypatch.setattr("app.config.get_settings", lambda: settings)
+    run_id, task = queued_run(db_factory)
+    runtime = RunRuntime(task, settings, db_factory)
+    secret = await dispatch(
+        runtime, "run_python", PythonInput(code=f"print({sentinel!r})")
+    )
+    assert (
+        secret.status == "rejected"
+        and secret.error.code == "configured_secret_detected"
+    )
+    unknown = await dispatch(runtime, "enable_provider", NoInput())
+    assert unknown.status == "rejected" and unknown.error.code == "unknown_tool"
+    assert runtime.python is None
+    with db_factory() as session:
+        calls = list(session.scalars(select(ToolCall).where(ToolCall.run_id == run_id)))
+        assert len(calls) == 2 and all(call.status == "completed" for call in calls)
+        assert sentinel not in str([call.input_reference for call in calls])
+        events = list(
+            session.scalars(select(AuditEvent).where(AuditEvent.run_id == run_id))
+        )
+        assert all(event.details["policy"]["outcome"] == "reject" for event in events)
+        assert sentinel not in str([event.details for event in events])

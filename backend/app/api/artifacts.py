@@ -23,6 +23,7 @@ from app.artifacts.tabular import (
     safe_xlsx,
 )
 from app.config import get_settings
+from app.audit.redaction import contains_secret
 from app.db.models import Artifact, Run, Thread, Workspace
 from app.db.session import get_session
 from app.storage.factory import get_storage
@@ -82,7 +83,10 @@ def _read(artifact: Artifact) -> bytes:
             artifact.storage_key, artifact.sha256, artifact.byte_size
         ):
             raise HTTPException(409, "Artifact integrity check failed")
-        return storage.read(artifact.storage_key, settings.max_upload_bytes)
+        content = storage.read(artifact.storage_key, settings.max_upload_bytes)
+        if contains_secret(content):
+            raise HTTPException(403, "Artifact contains configured credentials")
+        return content
     except (OSError, ValueError, StorageUnavailable) as error:
         raise HTTPException(503, "Artifact bytes are unavailable") from error
 

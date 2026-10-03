@@ -23,6 +23,7 @@ export type AnalysisRun = {
   state: RunState
   created_at: string
   outcome: {
+    warnings?: { code: string; message: string }[]
     text?: string
     artifact_ids?: string[]
     cleanup?: 'pending' | 'complete' | 'failed' | string

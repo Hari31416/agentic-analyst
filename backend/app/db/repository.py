@@ -4,6 +4,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.audit.redaction import redact
+from app.policy.decisions import POLICY_VERSION, PolicyDecision
 from app.db.models import AuditEvent, Event, Run
 
 
@@ -41,6 +42,20 @@ def audit(
     source_id: str | None = None,
     details: dict[str, Any] | None = None,
 ) -> AuditEvent:
+    policy = PolicyDecision(
+        action=action,
+        outcome=(
+            "clarify"
+            if decision in {"clarify", "needs_input"}
+            else (
+                "reject"
+                if decision
+                in {"rejected", "failed", "error", "cancelled", "budget_exhausted"}
+                else "allow"
+            )
+        ),
+        reason_code=reason_code,
+    )
     event = AuditEvent(
         action=action,
         decision=decision,
@@ -48,7 +63,13 @@ def audit(
         run_id=run_id,
         tool_call_id=tool_call_id,
         source_id=source_id,
-        details=redact(details or {}),
+        details=redact(
+            {
+                **(details or {}),
+                "policy_version": POLICY_VERSION,
+                "policy": (details or {}).get("policy", policy.model_dump()),
+            }
+        ),
     )
     session.add(event)
     session.flush()

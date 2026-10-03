@@ -10,6 +10,7 @@ from pathlib import PurePosixPath
 from typing import Literal, Sequence
 from uuid import NAMESPACE_URL, UUID, uuid5
 
+from app.audit.redaction import contains_secret, redact
 from app.contracts import ArtifactInfo, SafeError, ToolResult
 from app.sandbox.client import (
     SandboxError,
@@ -61,7 +62,10 @@ def _output_relative_path(value: str) -> str:
 
 
 def _text(data: bytes, limit: int) -> tuple[str, bool]:
-    clipped = data[:limit]
+    # Redact before clipping so a credential crossing the display limit cannot
+    # leave a visible prefix in the console result.
+    safe = redact(data.decode("utf-8", errors="replace")).encode("utf-8")
+    clipped = safe[:limit]
     truncated = len(data) > limit
     result = clipped.decode("utf-8", errors="replace")
     if truncated:
@@ -396,6 +400,9 @@ class PythonExecution:
             if len(content) != entry.size_bytes:
                 errors.append("output_size_changed")
                 continue
+            if contains_secret(content) or contains_secret(relative):
+                errors.append("configured_secret_output_rejected")
+                continue
             total += len(content)
             digest = hashlib.sha256(content).hexdigest()
             key = f"derived/{self.workspace_id}/{self.run_id}/{call_id}/{relative}"
@@ -441,7 +448,21 @@ class PythonExecution:
             if self.session is not None:
                 try:
                     await self.client.stop(self.session.id)
-                finally:
+                except SandboxError:
+                    # A disconnected stop may have succeeded. Delete is idempotent;
+                    # reconcile state without ever repeating guest execution.
+                    await self.client.delete_session(self.session.id)
+                    try:
+                        await self.client.status(self.session.id)
+                    except SandboxError as error:
+                        if error.status_code != 404:
+                            raise
+                    else:
+                        raise SandboxError(
+                            "sandbox cleanup remains unconfirmed",
+                            code="cleanup_unconfirmed",
+                        )
+                else:
                     await self.client.delete_session(self.session.id)
             self._closed = True
 

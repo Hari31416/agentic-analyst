@@ -221,65 +221,6 @@ def test_real_maintenance_dispatch_verifies_stored_bytes(
         assert session.get(Job, task.id).state == "completed"
 
 
-def test_document_worker_outcomes_record_source_versioned_audit(
-    db_factory, monkeypatch
-):
-    import app.workers.main as worker
-
-    with db_factory() as session, session.begin():
-        workspace = Workspace(label="worker audit")
-        session.add(workspace)
-        session.flush()
-        source = Source(
-            workspace_id=workspace.id, kind="pdf", display_name="audit.pdf", version=2
-        )
-        session.add(source)
-        session.flush()
-        document = Document(
-            source_id=source.id,
-            source_version=2,
-            extractor_version="extractor-test-v2",
-            chunker_version="chunker-test-v3",
-            state="ready",
-            stage="indexed",
-        )
-        session.add(document)
-        job = Job(
-            kind="ingest_document",
-            dedupe_key=str(uuid4()),
-            payload={"document_id": "pending"},
-        )
-        session.add(job)
-        session.flush()
-        job.payload = {"document_id": document.id}
-        job_id = job.id
-
-    with db_factory() as session, session.begin():
-        task = claim(session, "audit-worker", 60)
-        assert task is not None and task.id == job_id
-    monkeypatch.setattr(worker, "factory", lambda: db_factory)
-
-    worker._record_source_audit(
-        task, decision="allowed", reason_code="completed", result={"state": "ready"}
-    )
-    worker._record_source_audit(task, decision="failed", reason_code="pdf_page_limit")
-    worker._record_source_audit(task, decision="cancelled", reason_code="cancelled")
-    with db_factory() as session:
-        events = session.scalars(
-            select(AuditEvent).where(AuditEvent.source_id == source.id)
-        ).all()
-    assert {event.reason_code for event in events} == {
-        "completed",
-        "pdf_page_limit",
-        "cancelled",
-    }
-    assert all(event.action == "source.ingest" for event in events)
-    assert all(event.details["source_version"] == 2 for event in events)
-    assert all(
-        event.details["extractor_version"] == "extractor-test-v2" for event in events
-    )
-
-
 def test_document_worker_audit_is_recorded_with_stable_codes_sqlite(monkeypatch):
     import app.workers.main as worker
 

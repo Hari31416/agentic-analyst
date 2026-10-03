@@ -21,9 +21,19 @@ from app.contracts import (
     RunState,
     TERMINAL_STATES,
 )
-from app.db.models import Artifact, Job, Message, Run, Source, Thread, ToolCall, now
+from app.db.models import (
+    Artifact,
+    Dataset,
+    Job,
+    Message,
+    Run,
+    Source,
+    Thread,
+    ToolCall,
+    now,
+)
 from app.db.repository import append_event, audit
-from app.evidence.validation import validate_answer
+from app.evidence.validation import validate_answer, answer_checks
 from app.sandbox.client import SandboxError, SandboxHTTPClient
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
@@ -31,6 +41,8 @@ from app.tools.python import PythonExecution
 from app.tools.errors import ToolInputError
 from app.sources.connections import ConnectorError
 from app.policy.sql import SqlPolicyError
+from app.policy.decisions import tool_decision, POLICY_VERSION
+from app.audit.redaction import redact
 from app.workers.queue import Claim, LeaseLost, owned
 
 
@@ -147,12 +159,63 @@ class RunRuntime:
                 if existing.status == "completed" and existing.result:
                     return ToolResult.model_validate(existing.result)
                 raise ValueError("an earlier tool execution has an unresolved outcome")
+            dataset_ids = set(
+                session.scalars(
+                    select(Dataset.id).where(
+                        Dataset.source_id.in_(run.selected_source_ids)
+                    )
+                )
+            )
+            policy = tool_decision(
+                name,
+                arguments.model_dump(mode="json"),
+                set(run.selected_source_ids),
+                dataset_ids,
+            )
+            run.config = {**run.config, "policy_version": POLICY_VERSION}
+            if policy.outcome != "allow":
+                result = ToolResult(
+                    status="rejected",
+                    summary="The action was rejected by execution policy",
+                    error=SafeError(
+                        code=policy.reason_code,
+                        message="Use selected inputs without credentials or unsupported actions",
+                    ),
+                    data={"policy": policy.model_dump()},
+                )
+                denied = ToolCall(
+                    run_id=run.id,
+                    provider_call_id=call.id,
+                    name=name,
+                    input_reference={
+                        "sha256": hashlib.sha256(call.arguments.encode()).hexdigest(),
+                        "policy": policy.model_dump(),
+                    },
+                    decision="rejected",
+                    status="completed",
+                    result=result.model_dump(mode="json"),
+                    finished_at=now(),
+                )
+                session.add(denied)
+                session.flush()
+                audit(
+                    session,
+                    action="tool.dispatch",
+                    decision="rejected",
+                    reason_code=policy.reason_code,
+                    run_id=run.id,
+                    tool_call_id=denied.id,
+                    details={"policy": policy.model_dump()},
+                )
+                return result
             tool = ToolCall(
                 run_id=run.id,
                 provider_call_id=call.id,
                 name=name,
                 input_reference={
-                    "sha256": hashlib.sha256(call.arguments.encode()).hexdigest()
+                    "sha256": hashlib.sha256(call.arguments.encode()).hexdigest(),
+                    "policy": policy.model_dump(),
+                    "arguments": redact(arguments.model_dump(mode="json")),
                 },
                 decision="allowed",
                 status="running",
@@ -174,7 +237,8 @@ class RunRuntime:
                 tool_call_id=tool_id,
                 action="tool.dispatch",
                 decision="allowed",
-                reason_code="validated_input",
+                reason_code=policy.reason_code,
+                details={"policy": policy.model_dump()},
             )
             self.active_tool_call_id = tool_id
         try:
@@ -363,6 +427,7 @@ class RunRuntime:
                         )
                     )
             completed_tool.status = "completed"
+            result = ToolResult.model_validate(redact(result.model_dump(mode="json")))
             completed_tool.result = result.model_dump(mode="json")
             completed_tool.finished_at = now()
             append_event(
@@ -786,16 +851,34 @@ class RunRuntime:
             with self.db() as session, session.begin():
                 run = self.guard(session)
                 validate_answer(session, run, answer)
+                checks = answer_checks(session, run, answer)
+                if checks:
+                    append_event(
+                        session, run.id, "answer_warnings", {"warnings": checks}
+                    )
+                audit(
+                    session,
+                    action="answer.validate",
+                    decision="clarify" if answer.clarification else "allowed",
+                    reason_code=(
+                        "answer_valid_with_warnings"
+                        if checks
+                        else "answer_references_valid"
+                    ),
+                    run_id=run.id,
+                    details={"warnings": checks},
+                )
                 session.add(
                     Message(
                         thread_id=run.thread_id,
                         run_id=run.id,
                         role="assistant",
-                        content=answer.text,
+                        content=redact(answer.text),
                         selected_source_ids=run.selected_source_ids,
                         references={
                             "evidence_ids": [str(i) for i in answer.evidence_ids],
                             "artifact_ids": [str(i) for i in answer.artifact_ids],
+                            "warnings": checks,
                         },
                     )
                 )
@@ -806,6 +889,7 @@ class RunRuntime:
                     "awaiting_clarification" if answer.clarification else "completed",
                     {
                         **answer.model_dump(mode="json"),
+                        "warnings": checks,
                         "usage": loop.usage,
                         "model_calls": loop.model_calls,
                         "tool_calls": loop.calls,
@@ -1048,7 +1132,7 @@ class RunRuntime:
         session: Session, run: Run, state: str, outcome: dict[str, Any]
     ) -> None:
         run.state = state
-        run.outcome = {**outcome, "cleanup": "pending"}
+        run.outcome = redact({**outcome, "cleanup": "pending"})
         run.finished_at = now()
         if "error" in outcome:
             append_event(session, run.id, "error", outcome["error"])

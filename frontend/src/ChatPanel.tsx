@@ -1116,7 +1116,18 @@ function ChatPanel({
                       />
                     )}
                     {run && message.role === 'assistant' && (
-                      <RetrievalDetails runId={run.id} />
+                      <>
+                        {run.outcome?.warnings?.map((warning) => (
+                          <p
+                            className="answer-warning"
+                            key={warning.code}
+                            role="note"
+                          >
+                            {warning.message}
+                          </p>
+                        ))}
+                        <RetrievalDetails runId={run.id} />
+                      </>
                     )}
                     {run && message.role === 'user' && (
                       <>

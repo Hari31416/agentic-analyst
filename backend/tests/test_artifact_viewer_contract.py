@@ -28,7 +28,14 @@ def test_viewer_kind(name, media, expected):
 
 
 @pytest.mark.parametrize(
-    "syntax", ["[Result](artifact:{id})", "![Plot](artifact:{id})", "[artifact:{id}]"]
+    "syntax",
+    [
+        "[Result](artifact:{id})",
+        "![Plot](artifact:{id})",
+        "[artifact:{id}]",
+        "![Plot]({id})",
+        "[Result]({id})",
+    ],
 )
 def test_artifact_mentions_require_declared_accessible_ids(syntax):
     identity = str(uuid4())

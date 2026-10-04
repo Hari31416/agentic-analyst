@@ -32,4 +32,14 @@ assert.match(
 )
 assert.doesNotMatch(render(`![Result](artifact:${id})`), /<p[^>]*><figure/)
 assert.match(render('Normal paragraph'), /<p[^>]*>Normal paragraph<\/p>/)
-console.log('10 artifact rendering checks passed')
+assert.match(render(`![Result](${id})`), /inline-artifact-preview/)
+assert.match(render(`[Result](${id})`), /Open artifact viewer/)
+assert.doesNotMatch(
+  render(`![Result](${id})`, []),
+  /<img|inline-artifact-preview/,
+)
+assert.doesNotMatch(
+  render(`![Result](artifact:${id})`, []),
+  /<img|inline-artifact-preview/,
+)
+console.log('14 artifact rendering checks passed')

@@ -775,3 +775,18 @@ Keep secrets and raw client data out of this file.
   Black and mypy pass for changed modules. No migration or live model call was
   needed. Historical rejection reasons cannot be reconstructed; running workers
   must load the new code to record diagnostics for future runs.
+
+## 4 October 2026: legacy image destination compatibility
+
+- Investigated saved run `152fcbf6-7164-4d38-bb1f-39961a82d855`: all four
+  inline PNG UUIDs matched durable artifacts and the answer's declared IDs.
+  Prompt `analyst-v6` emitted bare UUID Markdown destinations. The renderer
+  recognized only `artifact:UUID`, so browsers requested relative image URLs.
+- Added bare UUID link/embed compatibility using the existing declared artifact
+  allowlist, without changing saved answers. Undeclared UUIDs render unavailable
+  instead of triggering relative image requests. Backend validation applies
+  declaration and thread/source checks to the legacy form as well.
+- Validation: 14 frontend rendering checks and 25 focused backend contract/chat
+  tests passed; frontend TypeScript/production build and backend mypy passed.
+  Full browser QA remains deferred. Running workers still require restart to
+  use the `analyst-v7` instructions from the earlier viewer change.

@@ -45,6 +45,14 @@ def validate_answer(session: Session, run: Run, answer: FinalAnswer) -> None:
     markdown_artifacts = re.findall(
         r"\]\(artifact:([^\s)]+)(?:\s+[^)]*)?\)", answer.text, re.I
     )
+    # Older prompts sometimes emitted bare UUID Markdown destinations.
+    markdown_artifacts.extend(
+        re.findall(
+            r"\]\(([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})(?:\s+[^)]*)?\)",
+            answer.text,
+            re.I,
+        )
+    )
     declared = {str(identity).lower() for identity in answer.artifact_ids}
     if any(identity.lower() not in declared for identity in markdown_artifacts):
         raise ValueError("inline artifact reference has no declared artifact")

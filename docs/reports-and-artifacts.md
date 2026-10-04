@@ -96,3 +96,8 @@ when different runs produce files with identical names.
 
 Run `pnpm --dir frontend run test:artifacts` for Markdown rendering contract
 checks. Full browser interaction QA and a live model run remain deferred.
+
+Legacy answers may use a bare UUID as a Markdown destination, for example
+`![Plot](EXACT-ARTIFACT-UUID)`. The viewer resolves these through the same declared
+artifact allowlist as `artifact:UUID`; undeclared UUID destinations do not become
+browser image requests. Backend validation also requires these IDs to be declared.

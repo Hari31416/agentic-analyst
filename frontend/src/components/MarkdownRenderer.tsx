@@ -281,7 +281,7 @@ export function MarkdownRenderer({
 
   const artifactIdForUrl = (url?: string) => {
     const match =
-      /^artifact:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(
+      /^(?:artifact:)?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(
         url ?? '',
       )
     return match &&
@@ -435,9 +435,16 @@ export function MarkdownRenderer({
           remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[rehypeKatex]}
           components={components}
-          urlTransform={(url) =>
-            artifactIdForUrl(url) ? url : defaultUrlTransform(url)
-          }
+          urlTransform={(url) => {
+            if (artifactIdForUrl(url)) return url
+            if (
+              /^(?:artifact:)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+                url,
+              )
+            )
+              return ''
+            return defaultUrlTransform(url)
+          }}
         >
           {processedContent}
         </ReactMarkdown>

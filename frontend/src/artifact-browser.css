@@ -540,3 +540,12 @@
   max-height: 90vh;
   overflow: auto;
 }
+
+.inline-artifact-caption {
+  padding: 0 16px 14px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}

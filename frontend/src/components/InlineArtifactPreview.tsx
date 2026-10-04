@@ -92,14 +92,14 @@ export function InlineArtifactPreview({
     )
   return (
     <figure className="inline-artifact-preview">
-      <figcaption className="inline-artifact-header">
+      <div className="inline-artifact-header">
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
         >
           <Eye size={14} />
-          {label}
+          {expanded ? 'Hide preview' : label}
         </button>
         <span className="inline-artifact-actions">
           <button
@@ -118,7 +118,7 @@ export function InlineArtifactPreview({
             <span className="sr-only">Download {label}</span>
           </a>
         </span>
-      </figcaption>
+      </div>
       {expanded && (
         <div className="inline-artifact-body">
           {error ? (
@@ -175,6 +175,9 @@ export function InlineArtifactPreview({
             </div>
           )}
         </div>
+      )}
+      {expanded && caption && (
+        <figcaption className="inline-artifact-caption">{caption}</figcaption>
       )}
       {dialog}
     </figure>

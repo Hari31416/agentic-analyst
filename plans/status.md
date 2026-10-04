@@ -790,3 +790,11 @@ Keep secrets and raw client data out of this file.
   tests passed; frontend TypeScript/production build and backend mypy passed.
   Full browser QA remains deferred. Running workers still require restart to
   use the `analyst-v7` instructions from the earlier viewer change.
+
+## 4 October 2026: artifact caption placement
+
+- Moved inline artifact captions into a centered `figcaption` below the preview.
+  The toolbar retains preview visibility, Open and Download actions. Collapsed
+  artifacts retain their label in the toolbar.
+- Validation: all 14 existing rendering checks and frontend TypeScript/production
+  build passed. Full browser QA remains deferred.

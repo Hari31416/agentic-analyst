@@ -56,3 +56,43 @@ renderer looks for `~/Library/Fonts/NotoSans-Regular.ttf` and
 `fonts-noto-core` and reads the corresponding files under
 `/usr/share/fonts/truetype/noto/`. Without those files, the renderer falls back
 to Helvetica, which does not support Hindi glyphs.
+
+## Viewers and answer mentions
+
+Chat output previews and the workspace artifact browser share image and HTML
+viewers. Supported images are PNG, JPEG, GIF, WebP, AVIF, BMP and SVG. Images
+load through authenticated API requests and temporary object URLs are revoked
+when the viewer closes. Image and HTML previews are limited to 5 MB; larger
+artifacts remain downloadable.
+
+HTML is fetched as text and displayed in an opaque-origin iframe with
+`sandbox="allow-scripts"`. A prepended content security policy blocks external
+scripts, styles, images, fonts, fetches, child frames, objects and form submissions.
+Inline JavaScript and styles support self-contained interactive plots. CDN-based
+Plotly exports must include Plotly locally to work. The sandbox prevents access
+to the parent app's cookies/storage and top navigation. It does not constitute a
+separate network-isolated runtime for arbitrary JavaScript.
+
+CSV, XLSX and Parquet table outputs have a ten-row chat preview. Open launches
+the full artifact viewer with existing bounded table pagination, format downloads,
+hash and lineage. Artifact previews in the output list are collapsed initially.
+Unsupported formats retain text preview, download and full-viewer access.
+
+Prompt `analyst-v7` gives the model these optional Markdown forms:
+
+```markdown
+[Result table](artifact:EXACT-ARTIFACT-UUID)
+
+![Revenue by district](artifact:EXACT-ARTIFACT-UUID)
+```
+
+Links open the full viewer; embeds display an inline preview. Each ID must also
+appear in `finish_answer.artifact_ids`. Backend validation applies the existing
+thread, selected-source and source-version checks to these references. Unknown
+or undeclared Markdown references are rejected. The UI only resolves declared
+IDs, leaves code examples as code, and supports existing `[artifact:UUID]`
+mentions. Unlike Nexus's filename-based previews, these IDs remain unambiguous
+when different runs produce files with identical names.
+
+Run `pnpm --dir frontend run test:artifacts` for Markdown rendering contract
+checks. Full browser interaction QA and a live model run remain deferred.

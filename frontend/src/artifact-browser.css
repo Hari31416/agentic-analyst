@@ -472,3 +472,71 @@
     border-right: 1px solid var(--border);
   }
 }
+
+.artifact-image-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: auto;
+  object-fit: contain;
+}
+.artifact-html-frame {
+  display: block;
+  width: 100%;
+  height: 560px;
+  border: 0;
+  background: white;
+}
+.inline-artifact-preview {
+  margin: 1rem 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+.inline-artifact-header,
+.inline-artifact-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.inline-artifact-header {
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.inline-artifact-header button,
+.inline-artifact-header a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.inline-artifact-header > button {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.inline-artifact-body {
+  padding: 12px;
+}
+.inline-artifact-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.inline-artifact-text {
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+.artifact-preview-dialog {
+  width: min(1100px, 94vw);
+  max-width: 1100px;
+  max-height: 90vh;
+  overflow: auto;
+}

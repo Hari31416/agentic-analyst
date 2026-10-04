@@ -14,8 +14,6 @@ import {
   ArrowUp,
   Check,
   CircleStop,
-  Download,
-  Eye,
   FileSpreadsheet,
   FileText,
   Globe2,
@@ -37,6 +35,7 @@ import {
   RunEvent,
   chatApi,
 } from './chatApi'
+import { InlineArtifactPreview } from './components/InlineArtifactPreview'
 import { DatasetSummary, sourceKindLabel } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
 import { LanguageCapabilities, languageApi } from './languageApi'
@@ -194,12 +193,6 @@ function answerFromEvent(event: RunEvent): ChatMessage | null {
     run_id: event.run_id,
     references: { evidence_ids: evidenceIds, artifact_ids: artifactIds },
   }
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 function SourceGlyph({ kind }: { kind: string }) {
@@ -1087,6 +1080,7 @@ function ChatPanel({
                     <div className="message-content">
                       <MarkdownRenderer
                         content={message.content}
+                        artifactIds={message.references?.artifact_ids ?? []}
                         evidenceIds={message.references?.evidence_ids ?? []}
                         onOpenEvidence={openEvidence}
                       />
@@ -1717,6 +1711,7 @@ function MessageBubble({
         <div className="message-content">
           <MarkdownRenderer
             content={message.content}
+            artifactIds={message.references?.artifact_ids ?? []}
             evidenceIds={message.references?.evidence_ids ?? []}
             onOpenEvidence={onOpenEvidence}
           />
@@ -1773,111 +1768,12 @@ function ArtifactItem({
   id: string
   artifact?: RunArtifact
 }) {
-  const [expanded, setExpanded] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [previewError, setPreviewError] = useState('')
-  const [preview, setPreview] = useState<{
-    id: string
-    display_name: string
-    media_type: string
-    byte_size: number
-    text: string | null
-    truncated: boolean
-  } | null>(null)
-
-  async function togglePreview() {
-    if (expanded) {
-      setExpanded(false)
-      return
-    }
-    setExpanded(true)
-    if (preview || loading) return
-    setLoading(true)
-    setPreviewError('')
-    try {
-      setPreview(await chatApi.previewArtifact(id, 4000))
-    } catch (reason) {
-      setPreviewError(
-        reason instanceof Error ? reason.message : 'Could not load preview.',
-      )
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const mediaType = (preview?.media_type ?? artifact?.media_type ?? '')
-    .toLowerCase()
-    .split(';')[0]
-    .trim()
-  const isPreviewImage = mediaType === 'image/png' || mediaType === 'image/jpeg'
-
   return (
-    <div className="artifact-entry">
-      <div className="artifact-actions-row">
-        <a
-          className="artifact-link"
-          href={chatApi.artifactUrl(id)}
-          download={artifact?.display_name}
-        >
-          <span className="artifact-icon">
-            <FileText size={14} />
-          </span>
-          <span>
-            <strong>
-              {artifact?.display_name ?? `Artifact ${id.slice(0, 8)}`}
-            </strong>
-            <small>
-              {artifact
-                ? `${artifact.media_type} · ${formatSize(artifact.byte_size)}`
-                : 'Download output'}
-            </small>
-          </span>
-          <Download size={14} />
-        </a>
-        <button
-          className="artifact-preview-toggle"
-          type="button"
-          onClick={() => void togglePreview()}
-          aria-expanded={expanded}
-          aria-label={`${expanded ? 'Hide' : 'Preview'} ${artifact?.display_name ?? 'artifact'}`}
-        >
-          <Eye size={13} /> {expanded ? 'Hide' : 'Preview'}
-        </button>
-      </div>
-      {expanded && (
-        <div className="artifact-preview" aria-live="polite">
-          {loading ? (
-            <div className="artifact-preview-message">
-              <LoaderCircle size={13} className="spin" /> Loading bounded
-              preview
-            </div>
-          ) : previewError ? (
-            <div className="artifact-preview-message error">{previewError}</div>
-          ) : preview && isPreviewImage ? (
-            <img
-              src={chatApi.artifactUrl(id)}
-              alt={preview.display_name}
-              loading="lazy"
-            />
-          ) : preview?.text !== null && preview?.text !== undefined ? (
-            <>
-              <pre>{preview.text}</pre>
-              {preview.truncated && (
-                <div className="artifact-preview-truncated">
-                  Preview limited to 4,000 characters. Download the file for the
-                  complete content.
-                </div>
-              )}
-            </>
-          ) : preview ? (
-            <div className="artifact-preview-message">
-              No inline preview is available for this file. Download it to
-              inspect the full content.
-            </div>
-          ) : null}
-        </div>
-      )}
-    </div>
+    <InlineArtifactPreview
+      id={id}
+      caption={artifact?.display_name}
+      initiallyExpanded={false}
+    />
   )
 }
 

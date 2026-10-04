@@ -42,11 +42,17 @@ def validate_answer(session: Session, run: Run, answer: FinalAnswer) -> None:
             for identity, version in versions.items()
         ):
             raise ValueError("evidence comes from another selected source version")
+    markdown_artifacts = re.findall(
+        r"\]\(artifact:([^\s)]+)(?:\s+[^)]*)?\)", answer.text, re.I
+    )
+    declared = {str(identity).lower() for identity in answer.artifact_ids}
+    if any(identity.lower() not in declared for identity in markdown_artifacts):
+        raise ValueError("inline artifact reference has no declared artifact")
     inline = re.findall(r"\[(evidence|artifact):([a-fA-F0-9-]{36})\]", answer.text)
     if any(
-        identity
+        identity.lower()
         not in {
-            str(i)
+            str(i).lower()
             for i in (
                 answer.evidence_ids if kind == "evidence" else answer.artifact_ids
             )

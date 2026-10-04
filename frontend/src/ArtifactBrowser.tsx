@@ -19,6 +19,10 @@ import {
   phase06Api,
 } from './phase06Api'
 import './artifact-browser.css'
+import {
+  ArtifactMediaPreview,
+  mediaViewerKind,
+} from './components/ArtifactMediaPreview'
 
 type ArtifactBrowserProps = {
   workspaceId: string
@@ -256,12 +260,12 @@ function ChartPreview({ spec }: { spec: PlotlySpec }) {
   )
 }
 
-function ArtifactDetail({
+export function ArtifactDetail({
   artifact,
   onSourcesChanged,
 }: {
   artifact: ArtifactManifest
-  onSourcesChanged: () => Promise<void>
+  onSourcesChanged?: () => Promise<void>
 }) {
   const [preview, setPreview] = useState<{
     text: string | null
@@ -275,17 +279,24 @@ function ArtifactDetail({
   const [registering, setRegistering] = useState(false)
   const [offset, setOffset] = useState(0)
   const mediaType = artifact.media_type.toLowerCase().split(';')[0].trim()
+  const mediaKind = mediaViewerKind(artifact)
   const isPdf = mediaType === 'application/pdf'
   const isChart =
-    /chart|plot/i.test(artifact.artifact_type) || mediaType.includes('plotly')
-  const isData = /csv|spreadsheet|parquet|dataset|table/i.test(
-    `${artifact.artifact_type} ${mediaType}`,
-  )
-  const isText =
-    mediaType.startsWith('text/') ||
-    /json|markdown|notebook|report/i.test(
+    !mediaKind &&
+    (/chart|plot/i.test(artifact.artifact_type) || mediaType.includes('plotly'))
+  const isData =
+    !mediaKind &&
+    /csv|spreadsheet|parquet|dataset|table/i.test(
       `${artifact.artifact_type} ${mediaType}`,
     )
+  const isText =
+    !mediaKind &&
+    !isData &&
+    !isChart &&
+    (mediaType.startsWith('text/') ||
+      /json|markdown|notebook|report/i.test(
+        `${artifact.artifact_type} ${mediaType}`,
+      ))
   const isReusableCsv =
     mediaType === 'text/csv' && artifact.artifact_type === 'table'
 
@@ -354,7 +365,7 @@ function ArtifactDetail({
     setReuseMessage('')
     try {
       const result = await phase06Api.registerDataset(artifact.id)
-      await onSourcesChanged()
+      await onSourcesChanged?.()
       setReuseMessage(
         result.reused
           ? `Already available as ${result.display_name}.`
@@ -381,7 +392,7 @@ function ArtifactDetail({
           <h2>{artifact.display_name}</h2>
         </div>
         <div className="artifact-header-actions">
-          {isReusableCsv && (
+          {isReusableCsv && onSourcesChanged && (
             <button
               className="outputs-download"
               type="button"
@@ -432,6 +443,7 @@ function ArtifactDetail({
         </div>
       </dl>
       <div className="artifact-viewer">
+        {mediaKind && <ArtifactMediaPreview artifact={artifact} />}
         {isData && rows && (
           <div className="artifact-download-formats">
             <span>Download data as</span>
@@ -533,12 +545,18 @@ function ArtifactDetail({
             )}
           </div>
         )}
-        {!loading && !error && !isData && !isChart && !isPdf && !isText && (
-          <div className="artifact-empty">
-            No inline preview is available for this file. Download it to inspect
-            the full content.
-          </div>
-        )}
+        {!loading &&
+          !error &&
+          !isData &&
+          !isChart &&
+          !isPdf &&
+          !isText &&
+          !mediaKind && (
+            <div className="artifact-empty">
+              No inline preview is available for this file. Download it to
+              inspect the full content.
+            </div>
+          )}
       </div>
     </article>
   )

@@ -737,3 +737,25 @@ Keep secrets and raw client data out of this file.
   Full browser QA remains deferred. No model or microVM calls were needed.
 - See `docs/authentication.md` for credentials, seed semantics, shared access,
   local/HTTPS cookie configuration, role management, evaluation and limits.
+
+## 4 October 2026: artifact viewers and answer mentions
+
+- Inspected Nexus's inline previews, viewer dispatch and supervisor prompt.
+  Added shared authenticated image/HTML viewers to workspace outputs and chat,
+  bounded table previews and a dialog with the existing paginated full viewer.
+  Downloads, hashes and lineage remain available. No migration was needed.
+- Prompt `analyst-v7` supports optional Markdown artifact links and embeds using
+  exact retained IDs. Reference validation requires declaration and existing
+  thread/source/version access. Existing plain artifact markers open the viewer.
+- Image/HTML previews have a 5 MB limit. HTML executes inline scripts in an
+  opaque-origin sandbox with a policy blocking external resource loads and
+  fetches. Self-contained assets are required. See `docs/reports-and-artifacts.md`
+  for exact behavior and limitations.
+- Validation: 333 deterministic backend tests passed, including 15 viewer/reference
+  cases; 31 focused artifact/chat/boundary checks passed. Backend mypy passed for
+  the three changed modules. Frontend TypeScript/production build passed, and
+  Markdown rendering checks cover declared/undeclared IDs, uppercase IDs,
+  code literals, dangerous URLs and ordinary links/paragraphs.
+- Full UI QA remains deferred by the user. No new live model/microVM call was
+  needed for these rendering and reference-contract changes. Phase 10 remains
+  unstarted.

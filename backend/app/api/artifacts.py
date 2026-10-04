@@ -38,7 +38,11 @@ PARQUET_TYPE = "application/vnd.apache.parquet"
 
 def artifact_kind(row: Artifact) -> str:
     name = row.display_name.lower()
-    media = row.media_type.lower()
+    media = row.media_type.lower().split(";", 1)[0].strip()
+    if media.startswith("image/"):
+        return "image"
+    if media == "text/html" or name.endswith((".html", ".htm")):
+        return "html"
     if name.endswith((".chart.json", "chart.json")):
         return "chart"
     if name.endswith(".pdf") or media == "application/pdf":

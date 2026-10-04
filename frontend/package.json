@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write 'src/**/*.{ts,tsx,css}' index.html package.json pnpm-lock.yaml tsconfig.json vite.config.ts",
-    "format:check": "prettier --check 'src/**/*.{ts,tsx,css}' index.html package.json pnpm-lock.yaml tsconfig.json vite.config.ts"
+    "format:check": "prettier --check 'src/**/*.{ts,tsx,css}' index.html package.json pnpm-lock.yaml tsconfig.json vite.config.ts",
+    "test:artifacts": "node tests/run-artifact-rendering.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

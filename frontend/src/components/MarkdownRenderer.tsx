@@ -12,7 +12,8 @@ import {
   useRef,
   useState,
 } from 'react'
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown'
+import { InlineArtifactPreview } from './InlineArtifactPreview'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -154,9 +155,10 @@ function renderInlineWithEvidence(
   allowed: Set<string>,
   evidenceIds: string[],
   onOpen?: (id: string) => void,
+  artifactIds: string[] = [],
 ): ReactNode {
   if (typeof node === 'string') {
-    const pattern = /\[evidence:([0-9a-f-]{36})\]/gi
+    const pattern = /\[(evidence|artifact):([0-9a-f-]{36})\]/gi
     if (!pattern.test(node)) return node
     pattern.lastIndex = 0
     const parts: ReactNode[] = []
@@ -164,11 +166,25 @@ function renderInlineWithEvidence(
     let matchIdx = 0
     for (const match of node.matchAll(pattern)) {
       const start = match.index ?? 0
-      const id = match[1]
+      const id = match[2]
       if (start > cursor) {
         parts.push(node.slice(cursor, start))
       }
-      if (allowed.has(id.toLowerCase())) {
+      if (
+        match[1].toLowerCase() === 'artifact' &&
+        artifactIds.some((item) => item.toLowerCase() === id.toLowerCase())
+      ) {
+        parts.push(
+          <InlineArtifactPreview
+            key={`art-${id}-${matchIdx}`}
+            id={id.toLowerCase()}
+            referenceOnly
+          />,
+        )
+      } else if (
+        match[1].toLowerCase() === 'evidence' &&
+        allowed.has(id.toLowerCase())
+      ) {
         const label = evidenceIds.findIndex(
           (evidenceId) => evidenceId.toLowerCase() === id.toLowerCase(),
         )
@@ -198,7 +214,13 @@ function renderInlineWithEvidence(
   if (Array.isArray(node)) {
     return node.map((child, idx) => (
       <Fragment key={idx}>
-        {renderInlineWithEvidence(child, allowed, evidenceIds, onOpen)}
+        {renderInlineWithEvidence(
+          child,
+          allowed,
+          evidenceIds,
+          onOpen,
+          artifactIds,
+        )}
       </Fragment>
     ))
   }
@@ -209,7 +231,13 @@ function renderInlineWithEvidence(
     return cloneElement(el, {
       ...el.props,
       children: Children.map(el.props.children, (child) =>
-        renderInlineWithEvidence(child, allowed, evidenceIds, onOpen),
+        renderInlineWithEvidence(
+          child,
+          allowed,
+          evidenceIds,
+          onOpen,
+          artifactIds,
+        ),
       ),
     })
   }
@@ -222,11 +250,13 @@ export interface MarkdownRendererProps {
   className?: string
   evidenceIds?: string[]
   onOpenEvidence?: (id: string) => void
+  artifactIds?: string[]
 }
 
 export function MarkdownRenderer({
   content,
   className,
+  artifactIds = [],
   evidenceIds = [],
   onOpenEvidence,
 }: MarkdownRendererProps) {
@@ -241,7 +271,24 @@ export function MarkdownRenderer({
   )
 
   const renderEvidence = (node: ReactNode) =>
-    renderInlineWithEvidence(node, allowedEvidence, evidenceIds, onOpenEvidence)
+    renderInlineWithEvidence(
+      node,
+      allowedEvidence,
+      evidenceIds,
+      onOpenEvidence,
+      artifactIds,
+    )
+
+  const artifactIdForUrl = (url?: string) => {
+    const match =
+      /^artifact:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(
+        url ?? '',
+      )
+    return match &&
+      artifactIds.some((id) => id.toLowerCase() === match[1].toLowerCase())
+      ? match[1].toLowerCase()
+      : null
+  }
 
   const components = useMemo(() => {
     return {
@@ -302,11 +349,19 @@ export function MarkdownRenderer({
           {renderEvidence(children)}
         </li>
       ),
-      p: ({ children }: any) => (
-        <p className="mb-2 leading-relaxed last:mb-0">
-          {renderEvidence(children)}
-        </p>
-      ),
+      p: ({ children }: any) => {
+        const hasPreview = Children.toArray(children).some(
+          (child) =>
+            isValidElement(child) &&
+            artifactIdForUrl((child.props as { src?: string }).src),
+        )
+        const Tag = hasPreview ? 'div' : 'p'
+        return (
+          <Tag className="mb-2 leading-relaxed last:mb-0">
+            {renderEvidence(children)}
+          </Tag>
+        )
+      },
       h1: ({ children }: any) => (
         <h1 className="mt-4 mb-2 text-lg font-bold tracking-tight text-foreground border-b border-border/40 pb-1 first:mt-0">
           {renderEvidence(children)}
@@ -333,19 +388,40 @@ export function MarkdownRenderer({
         </blockquote>
       ),
       hr: () => <hr className="my-3 border-t border-border" />,
-      a: ({ href, children, ...props }: any) => (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-primary underline underline-offset-2 hover:text-primary-hover"
-          {...props}
-        >
-          {renderEvidence(children)}
-        </a>
-      ),
+      img: ({ src, alt }: any) => {
+        const id = artifactIdForUrl(src)
+        return id ? (
+          <InlineArtifactPreview id={id} caption={alt} />
+        ) : src ? (
+          <img src={src} alt={alt ?? ''} loading="lazy" />
+        ) : (
+          <span>{alt || 'Image reference unavailable'}</span>
+        )
+      },
+      a: ({ href, children, ...props }: any) => {
+        const id = artifactIdForUrl(href)
+        if (id)
+          return (
+            <InlineArtifactPreview
+              id={id}
+              caption={getNodeText(children)}
+              referenceOnly
+            />
+          )
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary underline underline-offset-2 hover:text-primary-hover"
+            {...props}
+          >
+            {renderEvidence(children)}
+          </a>
+        )
+      },
     }
-  }, [allowedEvidence, evidenceIds, onOpenEvidence])
+  }, [allowedEvidence, evidenceIds, onOpenEvidence, artifactIds])
 
   return (
     <PreBlockContext.Provider value={false}>
@@ -359,6 +435,9 @@ export function MarkdownRenderer({
           remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[rehypeKatex]}
           components={components}
+          urlTransform={(url) =>
+            artifactIdForUrl(url) ? url : defaultUrlTransform(url)
+          }
         >
           {processedContent}
         </ReactMarkdown>

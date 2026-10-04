@@ -240,12 +240,12 @@ export const RightSidebar: FC<RightSidebarProps> = ({
       className={cn(
         'flex flex-col shrink-0 h-screen bg-sidebar border-l border-sidebar-border transition-all duration-200 relative z-20 overflow-hidden',
         isOpen
-          ? 'w-[360px] min-w-[360px] max-w-[360px] opacity-100'
+          ? 'w-[320px] lg:w-[340px] min-w-[320px] lg:min-w-[340px] max-w-[340px] opacity-100'
           : 'w-0 min-w-0 max-w-0 border-l-transparent opacity-0 pointer-events-none',
       )}
       aria-label="Workspace Inspector"
     >
-      <div className="flex flex-col w-[360px] h-full overflow-hidden">
+      <div className="flex flex-col w-[320px] lg:w-[340px] h-full overflow-hidden">
         <header className="flex items-center justify-between h-14 px-4 border-b border-sidebar-border shrink-0">
           <div className="flex items-center gap-2">
             <FolderOpen size={16} className="text-foreground" />

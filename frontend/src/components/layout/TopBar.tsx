@@ -71,8 +71,14 @@ export const TopBar: FC<TopBarProps> = ({
               'bg-accent text-accent-foreground border-primary/30',
           )}
           onClick={onToggleRightSidebar}
-          title={isRightSidebarOpen ? 'Hide inspector' : 'Open inspector'}
-          aria-label={isRightSidebarOpen ? 'Hide inspector' : 'Open inspector'}
+          title={
+            isRightSidebarOpen
+              ? 'Hide inspector (Cmd+J / Ctrl+J)'
+              : 'Open inspector (Cmd+J / Ctrl+J)'
+          }
+          aria-label={
+            isRightSidebarOpen ? 'Hide inspector' : 'Open inspector'
+          }
         >
           {isRightSidebarOpen ? (
             <PanelRightClose size={15} />

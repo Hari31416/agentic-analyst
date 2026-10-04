@@ -50,7 +50,7 @@ export function App() {
   )
 
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState<boolean>(() => {
-    return localStorage.getItem('analyst_right_sidebar') !== 'false'
+    return localStorage.getItem('analyst_right_sidebar') === 'true'
   })
 
   const [activeView, setActiveView] = useState<
@@ -105,6 +105,39 @@ export function App() {
       return next
     })
   }, [])
+
+  const handleSelectSource = useCallback((id: string | null) => {
+    setSelectedSourceId(id)
+    if (id) {
+      setIsRightSidebarOpen(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const isInput =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b' && !e.shiftKey) {
+        if (!isInput) {
+          e.preventDefault()
+          toggleLeftSidebar()
+        }
+      } else if (
+        ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'j') ||
+        ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'b')
+      ) {
+        e.preventDefault()
+        toggleRightSidebar()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [toggleLeftSidebar, toggleRightSidebar])
 
   const activeWorkspace = useMemo(
     () => workspaces.find((w) => w.id === workspaceId) ?? null,
@@ -578,7 +611,7 @@ export function App() {
         sources={sources}
         datasets={datasets}
         selectedSourceId={selectedSourceId}
-        onSelectSource={setSelectedSourceId}
+        onSelectSource={handleSelectSource}
         onOpenInWorkbench={handleOpenInWorkbench}
         onUploadFile={handleUploadFile}
         readiness={readiness}

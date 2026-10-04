@@ -349,7 +349,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                   </div>
                   <button
                     type="button"
-                    className="hidden group-hover:flex items-center justify-center w-5.5 h-5.5 rounded-sm text-muted-foreground shrink-0 transition-colors hover:bg-sidebar-accent hover:text-foreground"
+                    className="flex opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 items-center justify-center w-5.5 h-5.5 rounded-sm text-muted-foreground shrink-0 transition-opacity hover:bg-sidebar-accent hover:text-foreground"
                     onClick={(e) => {
                       e.stopPropagation()
                       onRenameThread(thread)
@@ -361,7 +361,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                   </button>
                   <button
                     type="button"
-                    className="hidden group-hover:flex items-center justify-center w-5.5 h-5.5 rounded-sm text-muted-foreground shrink-0 transition-colors hover:bg-status-danger/10 hover:text-status-danger"
+                    className="flex opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 items-center justify-center w-5.5 h-5.5 rounded-sm text-muted-foreground shrink-0 transition-opacity hover:bg-status-danger/10 hover:text-status-danger"
                     onClick={(e) => {
                       e.stopPropagation()
                       onDeleteThread(thread)

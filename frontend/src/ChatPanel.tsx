@@ -42,7 +42,7 @@ import { InlineArtifactPreview } from './components/InlineArtifactPreview'
 import { DatasetSummary } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
 import { LanguageCapabilities, languageApi } from './languageApi'
-import { UiLanguage, UiTextKey, uiText } from './uiText'
+import { UiTextKey, uiText } from './uiText'
 import { useUiLanguage } from './hooks/useUiLanguage'
 import { MarkdownRenderer } from './components/MarkdownRenderer'
 import { AuditEntry, AuditPage, auditApi } from './auditApi'
@@ -332,7 +332,7 @@ function ChatPanel({
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([])
   const [selectedDatasetIds, setSelectedDatasetIds] = useState<string[]>([])
   const [language, setLanguage] = useState<AnswerLanguage>('en-IN')
-  const [uiLanguage, setUiLanguage] = useUiLanguage()
+  const [uiLanguage] = useUiLanguage()
   const [languageCapabilities, setLanguageCapabilities] =
     useState<LanguageCapabilities | null>(null)
   const [voiceBusy, setVoiceBusy] = useState(false)
@@ -1184,35 +1184,12 @@ function ChatPanel({
           </span>
         </div>
       )}
-      <header className="chat-header">
-        <div>
-          <div className="chat-eyebrow">
-            <span className="chat-eyebrow-rule" /> {copy('threadTranscript')}
-          </div>
-          <h2>{threadId ? copy('conversation') : 'New Research Thread'}</h2>
+      {activeRun && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-accent/40 border-b border-border text-xs text-foreground shrink-0">
+          <LoaderCircle size={13} className="animate-spin text-primary shrink-0" />
+          <span className="font-medium">{labelForState(activeRun)}</span>
         </div>
-        <div className="chat-header-status">
-          {activeRun
-            ? labelForState(activeRun)
-            : threadId
-              ? copy('savedThread')
-              : 'New Conversation'}
-          <label className="ui-language-choice">
-            <span className="sr-only">{copy('uiLanguage')}</span>
-            <select
-              value={uiLanguage}
-              aria-label={copy('uiLanguage')}
-              onChange={(event) => {
-                const next = event.target.value as UiLanguage
-                setUiLanguage(next)
-              }}
-            >
-              <option value="en">EN</option>
-              <option value="hi">हिन्दी</option>
-            </select>
-          </label>
-        </div>
-      </header>
+      )}
 
       {!modelAvailable && (
         <div className="chat-model-block" role="status">

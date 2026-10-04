@@ -378,8 +378,8 @@
 }
 .message-content {
   color: var(--foreground);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.65;
   overflow-wrap: anywhere;
   font-family: var(--font-sans);
 }
@@ -1059,18 +1059,18 @@
 .chat-composer textarea {
   display: block;
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   max-height: 180px;
   resize: vertical;
   border: 0;
   outline: 0;
   background: transparent;
   color: var(--foreground);
-  font: 13px/1.6 var(--font-sans);
+  font: 14px/1.55 var(--font-sans);
 }
 .chat-composer textarea::placeholder {
   color: var(--muted-foreground);
-  font: 13px/1.6 var(--font-sans);
+  font: 14px/1.55 var(--font-sans);
 }
 .chat-composer textarea:disabled {
   color: var(--muted-foreground);

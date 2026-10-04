@@ -759,3 +759,19 @@ Keep secrets and raw client data out of this file.
 - Full UI QA remains deferred by the user. No new live model/microVM call was
   needed for these rendering and reference-contract changes. Phase 10 remains
   unstarted.
+
+## 4 October 2026: final-answer rejection diagnostics
+
+- Added bounded, redacted validation errors for rejected `finish_answer` calls
+  and content-based final answers. Model repair feedback includes the same
+  schema field/type/message or reference-validation reason.
+- Persisted reasons in run events, rejected tool records and audit details;
+  worker warning logs include the run ID. Content-answer rejections have their
+  own `answer_rejected` event and audit entry without an invented tool call.
+  Raw answer inputs and Pydantic validation context are omitted. Redaction
+  precedes truncation to avoid leaking partial credentials.
+- Validation: 338 deterministic backend tests passed before the final added
+  truncation-boundary test; final focused agent/chat suite has 21 passing tests.
+  Black and mypy pass for changed modules. No migration or live model call was
+  needed. Historical rejection reasons cannot be reconstructed; running workers
+  must load the new code to record diagnostics for future runs.

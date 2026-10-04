@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import json
+import logging
 from contextlib import suppress
 from typing import Any
 from uuid import UUID, uuid4
@@ -94,6 +95,16 @@ class RunRuntime:
         with self.db() as session, session.begin():
             run = self.guard(session)
             append_event(session, run.id, kind, payload)
+            if kind in {"tool_rejected", "answer_rejected"}:
+                payload = redact(payload)
+                errors = payload.get("validation_errors", [])
+                if payload["code"] == "invalid_answer":
+                    logging.getLogger(__name__).warning(
+                        "Answer validation rejected (%s): %s",
+                        payload.get("name"),
+                        json.dumps(errors, ensure_ascii=False),
+                        extra={"run_id": run.id},
+                    )
             if kind == "tool_rejected":
                 session.add(
                     ToolCall(
@@ -113,6 +124,20 @@ class RunRuntime:
                     action="tool.validate",
                     decision="rejected",
                     reason_code=payload["code"],
+                    details={
+                        "name": payload["name"],
+                        "call_id": payload["call_id"],
+                        "validation_errors": errors,
+                    },
+                )
+            elif kind == "answer_rejected":
+                audit(
+                    session,
+                    run_id=run.id,
+                    action="answer.validate",
+                    decision="rejected",
+                    reason_code=payload["code"],
+                    details=payload,
                 )
 
     async def answer_valid(self, answer: FinalAnswer) -> None:

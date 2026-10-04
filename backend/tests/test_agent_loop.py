@@ -267,3 +267,85 @@ async def test_validation_feedback_names_fields_without_echoing_input():
     assert result["data"]["validation_errors"][0]["field"] == "input_artifact_ids.0"
     assert "private-input-sentinel" not in content
     assert not dispatched
+
+
+@pytest.mark.parametrize("content_answer", [False, True])
+async def test_answer_rejections_record_reason_and_return_repair_feedback(
+    content_answer,
+):
+    events = []
+    invalid = {"text": "bad", "artifact_ids": [str(uuid4())]}
+    first = (
+        ModelResponse(content=json.dumps(invalid), finish_reason="stop")
+        if content_answer
+        else response("finish_answer", invalid)
+    )
+    model = ScriptedModel([first, response("finish_answer", {"text": "repaired"})])
+
+    async def validate(answer):
+        if answer.artifact_ids:
+            raise ValueError("unknown artifact")
+
+    async def emit(kind, payload):
+        events.append((kind, payload))
+
+    answer = await AgentLoop(model, settings(), [], emit, validate).run([], "en-IN")
+    assert answer.text == "repaired"
+    rejected = [
+        payload
+        for kind, payload in events
+        if kind in {"answer_rejected", "tool_rejected"}
+    ]
+    assert rejected[0]["validation_errors"] == [
+        {
+            "field": "answer",
+            "message": "unknown artifact",
+            "type": "reference_validation",
+        }
+    ]
+    assert "unknown artifact" in model.requests[1][-1]["content"]
+
+
+async def test_final_schema_diagnostics_omit_inputs_and_redact_secrets(monkeypatch):
+    import app.audit.redaction as redaction
+
+    monkeypatch.setattr(
+        redaction, "configured_secrets", lambda: ("private-test-value",)
+    )
+    events = []
+    model = ScriptedModel(
+        [
+            response(
+                "finish_answer",
+                {"text": "private-test-value", "artifact_ids": ["private-test-value"]},
+            ),
+            response("finish_answer", {"text": "repaired"}),
+        ]
+    )
+
+    async def emit(kind, payload):
+        events.append((kind, payload))
+
+    await AgentLoop(model, settings(), [], emit, ignore).run([], "en-IN")
+    details = next(
+        payload["validation_errors"]
+        for kind, payload in events
+        if kind == "tool_rejected"
+    )
+    assert details[0]["field"] == "artifact_ids.0"
+    assert details[0]["type"] == "uuid_parsing"
+    assert "private-test-value" not in json.dumps(details)
+    assert set(details[0]) == {"field", "type", "message"}
+
+
+def test_answer_diagnostics_redact_before_truncation(monkeypatch):
+    import app.audit.redaction as redaction
+    from app.agent.loop import answer_validation_errors
+
+    monkeypatch.setattr(
+        redaction, "configured_secrets", lambda: ("private-test-value",)
+    )
+    errors = answer_validation_errors(ValueError("x" * 290 + "private-test-value"))
+    assert "private" not in errors[0]["message"]
+    assert "[redacted]" in errors[0]["message"]
+    assert len(errors[0]["message"]) == 300

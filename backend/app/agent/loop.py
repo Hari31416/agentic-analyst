@@ -3,7 +3,7 @@ import json
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel, ValidationError
 
@@ -32,6 +32,36 @@ Use at most three useful previews. HTML previews cannot load external scripts, s
 include required assets in the HTML itself. CSV/XLSX/Parquet outputs have table viewers.
 Give short operational explanations, no private reasoning.
 """
+
+
+def answer_validation_errors(
+    error: ValidationError | ValueError,
+) -> list[dict[str, str]]:
+    """Bounded diagnostics without model inputs or validation context."""
+    if isinstance(error, ValidationError):
+        issues = [
+            {
+                "field": ".".join(str(part) for part in issue["loc"]),
+                "message": issue["msg"],
+                "type": issue["type"],
+            }
+            for issue in error.errors(
+                include_input=False, include_url=False, include_context=False
+            )[:12]
+        ]
+    else:
+        issues = [
+            {
+                "field": "answer",
+                "message": str(error),
+                "type": "reference_validation",
+            }
+        ]
+    safe = cast(list[dict[str, str]], redact(issues))
+    for issue in safe:
+        issue["field"] = issue["field"][:200]
+        issue["message"] = issue["message"][:300]
+    return safe
 
 
 class BudgetExhausted(RuntimeError):
@@ -183,14 +213,25 @@ class AgentLoop:
                                 answer = FinalAnswer(text=content)
                             await self.validate_answer(answer)
                             return answer
-                        except (ValidationError, ValueError):
+                        except (ValidationError, ValueError) as exc:
+                            errors = answer_validation_errors(exc)
+                            await self.events(
+                                "answer_rejected",
+                                {
+                                    "code": "invalid_answer",
+                                    "name": "content_answer",
+                                    "model_calls": self.model_calls,
+                                    "validation_errors": errors,
+                                },
+                            )
                             # Some compatible endpoints put their final object in
                             # content. Validate it exactly like finish_answer; never
                             # silently lose references or infer invented IDs.
                             messages.append(
                                 {
                                     "role": "user",
-                                    "content": "Return finish_answer on its own, or a JSON object matching its schema. Include the exact artifact/evidence IDs returned by tools. Your prior final answer could not be validated.",
+                                    "content": "Return finish_answer on its own, or a JSON object matching its schema. Include the exact artifact/evidence IDs returned by tools. Your prior final answer could not be validated. Validation errors: "
+                                    + json.dumps(errors, ensure_ascii=False),
                                 }
                             )
                             await self.events(
@@ -240,10 +281,12 @@ class AgentLoop:
                                     )
                                     await self.validate_answer(answer)
                                     return answer
-                                except (ValidationError, ValueError):
+                                except (ValidationError, ValueError) as exc:
+                                    errors = answer_validation_errors(exc)
                                     result = ToolResult(
                                         status="rejected",
-                                        summary="Invalid answer references or structure. Use only returned IDs.",
+                                        summary="Invalid answer references or structure. Correct the listed errors using only returned IDs.",
+                                        data={"validation_errors": errors},
                                         error=SafeError(
                                             code="invalid_answer",
                                             message="Answer validation failed",

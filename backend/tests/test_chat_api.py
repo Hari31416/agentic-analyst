@@ -249,3 +249,61 @@ def test_retrieval_traces_remain_inspectable_without_citations(client_db):
     view = client.get(f"/api/runs/{run_id}/retrieval").json()
     assert view["profile"] == "basic"
     assert view["tools"][0]["trace"][0]["status"] == "unavailable"
+
+
+@pytest.mark.parametrize("kind", ["tool_rejected", "answer_rejected"])
+async def test_answer_rejection_diagnostics_are_durable(
+    client_db, monkeypatch, caplog, kind
+):
+    import logging
+    from app.agent.runtime import RunRuntime
+    from app.db.models import AuditEvent, Event, ToolCall
+    import app.audit.redaction as redaction
+
+    _, sessions, (_, thread_id), _ = client_db
+    with sessions() as session, session.begin():
+        run = Run(thread_id=thread_id, state="running")
+        session.add(run)
+        session.flush()
+        run_id = run.id
+    monkeypatch.setattr(
+        redaction, "configured_secrets", lambda: ("private-diagnostic-secret",)
+    )
+    runtime = RunRuntime(None, Settings(_env_file=None), sessions)
+    monkeypatch.setattr(runtime, "guard", lambda session: session.get(Run, run_id))
+    payload = {
+        "code": "invalid_answer",
+        "name": "finish_answer" if kind == "tool_rejected" else "content_answer",
+        "validation_errors": [
+            {
+                "field": "answer",
+                "type": "reference_validation",
+                "message": "unknown artifact private-diagnostic-secret",
+            }
+        ],
+    }
+    if kind == "tool_rejected":
+        payload["call_id"] = "provider-call"
+    with caplog.at_level(logging.WARNING):
+        await runtime.event(kind, payload)
+    with sessions() as session:
+        event = session.scalar(select(Event).where(Event.run_id == run_id))
+        audit = session.scalar(select(AuditEvent).where(AuditEvent.run_id == run_id))
+        assert event.payload["validation_errors"] == audit.details["validation_errors"]
+        assert (
+            event.payload["validation_errors"][0]["message"]
+            == "unknown artifact [redacted]"
+        )
+        if kind == "tool_rejected":
+            tool = session.scalar(select(ToolCall).where(ToolCall.run_id == run_id))
+            assert (
+                tool.input_reference["validation_errors"]
+                == event.payload["validation_errors"]
+            )
+        else:
+            assert not session.scalars(
+                select(ToolCall).where(ToolCall.run_id == run_id)
+            ).all()
+    assert "unknown artifact" in caplog.text
+    assert "private-diagnostic-secret" not in caplog.text
+    assert caplog.records[-1].run_id == run_id

@@ -307,3 +307,50 @@ async def test_answer_rejection_diagnostics_are_durable(
     assert "unknown artifact" in caplog.text
     assert "private-diagnostic-secret" not in caplog.text
     assert caplog.records[-1].run_id == run_id
+
+
+async def test_policy_rejection_does_not_duplicate_provider_call(
+    client_db, monkeypatch
+):
+    from app.agent.runtime import RunRuntime
+    from app.agent.protocol import ModelToolCall
+    from app.db.models import ToolCall, Event
+    from app.tools.structured import SourceInput
+
+    _, sessions, (_, thread_id), _ = client_db
+    with sessions() as session, session.begin():
+        run = Run(
+            thread_id=thread_id, state="running", selected_source_ids=[], config={}
+        )
+        session.add(run)
+        session.flush()
+        run_id = run.id
+    runtime = RunRuntime(None, Settings(_env_file=None), sessions)
+    monkeypatch.setattr(runtime, "guard", lambda session: session.get(Run, run_id))
+    arguments = SourceInput(source_id=uuid4())
+    call = ModelToolCall(
+        id="denied-call", name="inspect_schema", arguments=arguments.model_dump_json()
+    )
+    result = await runtime.dispatch(call.name, call, arguments)
+    assert result.status == "rejected"
+    assert result.error.code == "source_not_selected"
+    await runtime.event(
+        "tool_rejected",
+        {
+            "name": call.name,
+            "call_id": call.id,
+            "code": result.error.code,
+            "validation_errors": [],
+        },
+    )
+    with sessions() as session:
+        tools = session.scalars(select(ToolCall).where(ToolCall.run_id == run_id)).all()
+        assert len(tools) == 1
+        assert tools[0].result["error"]["code"] == "source_not_selected"
+        assert (
+            tools[0].input_reference["policy"]["reason_code"] == "source_not_selected"
+        )
+        assert (
+            session.scalar(select(Event).where(Event.run_id == run_id)).type
+            == "tool_rejected"
+        )

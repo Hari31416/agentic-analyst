@@ -71,6 +71,9 @@ importers:
       prettier:
         specifier: ^3.4.2
         version: 3.9.9
+      react-test-renderer:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -2313,6 +2316,13 @@ packages:
     engines: { node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1 }
     hasBin: true
 
+  object-assign@4.1.1:
+    resolution:
+      {
+        integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==,
+      }
+    engines: { node: '>=0.10.0' }
+
   parse-entities@4.0.2:
     resolution:
       {
@@ -2390,6 +2400,12 @@ packages:
     peerDependencies:
       react: ^18.3.1
 
+  react-is@18.3.1:
+    resolution:
+      {
+        integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==,
+      }
+
   react-markdown@10.1.0:
     resolution:
       {
@@ -2425,6 +2441,14 @@ packages:
       '@types/react':
         optional: true
 
+  react-shallow-renderer@16.15.0:
+    resolution:
+      {
+        integrity: sha512-oScf2FqQ9LFVQgA73vr86xl2NaOIX73rh+YFqcOp68CWj56tSfgtGKrEbyhCj0rSijyG9M1CYprTh39fBi5hzA==,
+      }
+    peerDependencies:
+      react: ^16.0.0 || ^17.0.0 || ^18.0.0
+
   react-style-singleton@2.2.3:
     resolution:
       {
@@ -2446,6 +2470,14 @@ packages:
     engines: { node: '>= 16.20.2' }
     peerDependencies:
       react: '>= 0.14.0'
+
+  react-test-renderer@18.3.1:
+    resolution:
+      {
+        integrity: sha512-KkAgygexHUkQqtvvx/otwxtuFu5cVjfzTCtjXLH9boS19/Nbtg84zS7wIQn39G8IlrhThBpQsMKkq5ZHZIYFXA==,
+      }
+    peerDependencies:
+      react: ^18.3.1
 
   react@18.3.1:
     resolution:
@@ -4384,6 +4416,8 @@ snapshots:
 
   nanoid@3.3.19: {}
 
+  object-assign@4.1.1: {}
+
   parse-entities@4.0.2:
     dependencies:
       '@types/unist': 2.0.11
@@ -4483,6 +4517,8 @@ snapshots:
       react: 18.3.1
       scheduler: 0.23.2
 
+  react-is@18.3.1: {}
+
   react-markdown@10.1.0(@types/react@18.3.31)(react@18.3.1):
     dependencies:
       '@types/hast': 3.0.5
@@ -4520,6 +4556,12 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.31
 
+  react-shallow-renderer@16.15.0(react@18.3.1):
+    dependencies:
+      object-assign: 4.1.1
+      react: 18.3.1
+      react-is: 18.3.1
+
   react-style-singleton@2.2.3(@types/react@18.3.31)(react@18.3.1):
     dependencies:
       get-nonce: 1.0.1
@@ -4537,6 +4579,13 @@ snapshots:
       prismjs: 1.30.0
       react: 18.3.1
       refractor: 5.0.0
+
+  react-test-renderer@18.3.1(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-is: 18.3.1
+      react-shallow-renderer: 16.15.0(react@18.3.1)
+      scheduler: 0.23.2
 
   react@18.3.1:
     dependencies:

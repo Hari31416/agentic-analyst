@@ -35,6 +35,7 @@ import {
   RunEvent,
   chatApi,
 } from './chatApi'
+import { restoreThreadSelection } from './lib/threadSelection'
 import { InlineArtifactPreview } from './components/InlineArtifactPreview'
 import { DatasetSummary, sourceKindLabel } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
@@ -277,6 +278,7 @@ function ChatPanel({
   const sequenceRef = useRef(0)
   const activeRunIdRef = useRef('')
   const retryInputsRef = useRef(new Map<string, RetryInput>())
+  const selectionHydratedThread = useRef('')
   const selectedSourceIdsRef = useRef(selectedSourceIds)
   const draftsRef = useRef(new Map<string, string>())
   const threadIdRef = useRef(threadId)
@@ -420,6 +422,9 @@ function ChatPanel({
 
   useEffect(() => {
     let active = true
+    selectionHydratedThread.current = ''
+    setSelectedSourceIds([])
+    setSelectedDatasetIds([])
     setLoading(true)
     setError('')
     setEvidenceId('')
@@ -438,6 +443,18 @@ function ChatPanel({
         if (!active) return
         setMessages(nextMessages)
         setRuns(nextRuns)
+        let savedSelection: unknown = null
+        try {
+          savedSelection = JSON.parse(
+            sessionStorage.getItem(`analyst:selection:${threadId}`) ?? 'null',
+          )
+        } catch {
+          /* Restore from run history when storage is unavailable. */
+        }
+        const selection = restoreThreadSelection(nextRuns, savedSelection)
+        setSelectedSourceIds(selection.sourceIds)
+        setSelectedDatasetIds(selection.datasetIds)
+        selectionHydratedThread.current = threadId
         const current = nextRuns.find(isLive) ?? null
         setActiveRun(current)
         activeRunIdRef.current = current?.id ?? ''
@@ -484,11 +501,27 @@ function ChatPanel({
   }, [threadId])
 
   useEffect(() => {
+    if (loading || selectionHydratedThread.current !== threadId) return
+    try {
+      sessionStorage.setItem(
+        `analyst:selection:${threadId}`,
+        JSON.stringify({
+          sourceIds: selectedSourceIds,
+          datasetIds: selectedDatasetIds,
+        }),
+      )
+    } catch {
+      /* The current view still retains its selection. */
+    }
+  }, [loading, threadId, selectedSourceIds, selectedDatasetIds])
+
+  useEffect(() => {
     const allowed = new Set(sources.map((source) => source.id))
     setSelectedSourceIds((current) => current.filter((id) => allowed.has(id)))
   }, [sources])
 
   useEffect(() => {
+    if (selectedSourceIds.length > 0 && datasets.length === 0) return
     const checkedSources = new Set(selectedSourceIds)
     const allowed = new Set(
       datasets
@@ -787,6 +820,20 @@ function ChatPanel({
         language: run.answer_language ?? saved.language ?? language,
         retrievalProfile:
           run.retrieval_profile ?? saved.retrievalProfile ?? 'basic',
+      }
+    }
+    if (
+      input.selectedSourceIds.length === 0 &&
+      selectedSourceIdsRef.current.length > 0
+    ) {
+      input = {
+        ...input,
+        selectedSourceIds: [...selectedSourceIdsRef.current],
+        selectedDatasetIds: effectiveDatasetIds(
+          selectedSourceIdsRef.current,
+          selectedDatasetIds,
+          datasets,
+        ),
       }
     }
     setRetryingRunId(run.id)

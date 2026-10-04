@@ -106,18 +106,25 @@ class RunRuntime:
                         extra={"run_id": run.id},
                     )
             if kind == "tool_rejected":
-                session.add(
-                    ToolCall(
-                        run_id=run.id,
-                        provider_call_id=payload["call_id"],
-                        name=payload["name"],
-                        input_reference={
-                            "validation_errors": payload.get("validation_errors", [])
-                        },
-                        decision="rejected",
-                        status="rejected",
+                # Policy dispatch already retained the rejected provider call.
+                # Reuse it rather than violating the per-run call-ID constraint.
+                existing = session.scalar(
+                    select(ToolCall).where(
+                        ToolCall.run_id == run.id,
+                        ToolCall.provider_call_id == payload["call_id"],
                     )
                 )
+                if existing is None:
+                    session.add(
+                        ToolCall(
+                            run_id=run.id,
+                            provider_call_id=payload["call_id"],
+                            name=payload["name"],
+                            input_reference={"validation_errors": errors},
+                            decision="rejected",
+                            status="rejected",
+                        )
+                    )
                 audit(
                     session,
                     run_id=run.id,

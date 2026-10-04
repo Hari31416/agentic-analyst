@@ -798,3 +798,31 @@ Keep secrets and raw client data out of this file.
   artifacts retain their label in the toolbar.
 - Validation: all 14 existing rendering checks and frontend TypeScript/production
   build passed. Full browser QA remains deferred.
+
+## 4 October 2026: stable previews and follow-up selection
+
+- Composer renders recreated Markdown component functions through new reference
+  arrays and evidence callbacks, remounting image/HTML viewers. Normalized
+  reference values and a current evidence-callback ref now keep component types
+  stable. A React lifecycle regression verifies unchanged fetch count/image URL,
+  current callbacks and object-URL cleanup on unmount.
+- Inspected three failed interactive-chart follow-ups in thread
+  `42119c8f-b715-48a2-a694-9aae05e9eb14`. Each selected zero sources, so policy
+  rejected the prior dataset/source. Dispatch already retained its provider
+  call; the rejection event attempted a duplicate insert and crashed the worker.
+  The event handler now reuses that record, retaining policy results and audit.
+- Source/sheet selections persist per conversation in session storage. Legacy
+  conversations restore their last answered turn's selection, while explicitly
+  empty saved selections remain empty. Inspecting a source no longer triggers
+  workspace reloading that clears chat selection. Retry can use current selected
+  inputs to recover legacy failures submitted with no sources. All backend
+  selection and source-version boundaries remain enforced.
+- Validation: 342 deterministic backend tests, including the retained-policy
+  rejection regression; 22 focused agent/chat checks; 14 Markdown rendering
+  checks; four selection checks; one artifact lifecycle regression. Backend mypy
+  and frontend TypeScript/production build pass. Added React 18.3.1's matching
+  test renderer as a dev dependency. No migration is required.
+- No new live model run was made. PostgreSQL became unavailable during the final
+  idle-worker check, so live retry/worker activation could not be verified.
+  Full browser QA remains deferred. Reload the frontend and load the updated
+  worker code before retrying the failed follow-up.

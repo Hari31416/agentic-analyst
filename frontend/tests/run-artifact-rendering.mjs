@@ -6,16 +6,23 @@ import { build } from 'vite'
 
 const output = await mkdtemp(join(tmpdir(), 'artifact-rendering-'))
 try {
-  await build({
-    logLevel: 'error',
-    ssr: { noExternal: true },
-    build: {
-      ssr: 'tests/artifact-rendering.tsx',
-      outDir: output,
-      rolldownOptions: { output: { entryFileNames: 'check.mjs' } },
-    },
-  })
-  await import(pathToFileURL(join(output, 'check.mjs')).href)
+  for (const entry of ['artifact-rendering', 'artifact-lifecycle']) {
+    const directory = join(output, entry)
+    await build({
+      logLevel: 'error',
+      define: { 'process.env.NODE_ENV': JSON.stringify('development') },
+      ssr: { noExternal: true },
+      build: {
+        ssr: `tests/${entry}.tsx`,
+        outDir: directory,
+        rolldownOptions: { output: { entryFileNames: 'check.mjs' } },
+      },
+    })
+    await import(pathToFileURL(join(directory, 'check.mjs')).href)
+  }
 } finally {
   await rm(output, { recursive: true, force: true })
 }
+
+// React's development scheduler retains MessageChannel handles after tests finish.
+process.exit(0)

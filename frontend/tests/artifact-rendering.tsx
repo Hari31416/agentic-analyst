@@ -43,3 +43,30 @@ assert.doesNotMatch(
   /<img|inline-artifact-preview/,
 )
 console.log('14 artifact rendering checks passed')
+
+const { restoreThreadSelection } = await import('../src/lib/threadSelection')
+const runs = [
+  { state: 'failed', selected_source_ids: [], selected_dataset_ids: [] },
+  {
+    state: 'completed',
+    selected_source_ids: ['iris'],
+    selected_dataset_ids: ['sheet'],
+  },
+] as any
+assert.deepEqual(restoreThreadSelection(runs, null), {
+  sourceIds: ['iris'],
+  datasetIds: ['sheet'],
+})
+assert.deepEqual(
+  restoreThreadSelection(runs, { sourceIds: [], datasetIds: [] }),
+  { sourceIds: [], datasetIds: [] },
+)
+assert.deepEqual(restoreThreadSelection([], null), {
+  sourceIds: [],
+  datasetIds: [],
+})
+assert.deepEqual(
+  restoreThreadSelection(runs, { sourceIds: [123], datasetIds: [] }),
+  { sourceIds: ['iris'], datasetIds: ['sheet'] },
+)
+console.log('4 thread selection checks passed')

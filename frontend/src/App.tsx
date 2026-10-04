@@ -178,9 +178,11 @@ export function App() {
             ? curr
             : (nextThreads[0]?.id ?? ''),
         )
-        if (nextSources.length > 0 && !selectedSourceId) {
-          setSelectedSourceId(nextSources[0].id)
-        }
+        setSelectedSourceId((current) =>
+          nextSources.some((source) => source.id === current)
+            ? current
+            : (nextSources[0]?.id ?? null),
+        )
         setError('')
       })
       .catch((reason: unknown) => {
@@ -196,7 +198,7 @@ export function App() {
     return () => {
       active = false
     }
-  }, [workspaceId, selectedSourceId])
+  }, [workspaceId])
 
   // Load datasets for sources
   useEffect(() => {

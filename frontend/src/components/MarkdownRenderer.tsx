@@ -253,13 +253,30 @@ export interface MarkdownRendererProps {
   artifactIds?: string[]
 }
 
+const EMPTY_REFERENCE_IDS: string[] = []
+
 export function MarkdownRenderer({
   content,
   className,
-  artifactIds = [],
-  evidenceIds = [],
+  artifactIds: artifactIdsInput = EMPTY_REFERENCE_IDS,
+  evidenceIds: evidenceIdsInput = EMPTY_REFERENCE_IDS,
   onOpenEvidence,
 }: MarkdownRendererProps) {
+  // Reference arrays and chat callbacks may be recreated on every composer edit.
+  // Keep Markdown component types stable so artifact viewers retain their state.
+  const artifactIdsKey = artifactIdsInput.join(',')
+  const evidenceIdsKey = evidenceIdsInput.join(',')
+  const artifactIds = useMemo(
+    () => (artifactIdsKey ? artifactIdsKey.split(',') : EMPTY_REFERENCE_IDS),
+    [artifactIdsKey],
+  )
+  const evidenceIds = useMemo(
+    () => (evidenceIdsKey ? evidenceIdsKey.split(',') : EMPTY_REFERENCE_IDS),
+    [evidenceIdsKey],
+  )
+  const openEvidenceRef = useRef(onOpenEvidence)
+  openEvidenceRef.current = onOpenEvidence
+
   const processedContent = useMemo(
     () => preprocessMarkdownMath(content),
     [content],
@@ -275,7 +292,7 @@ export function MarkdownRenderer({
       node,
       allowedEvidence,
       evidenceIds,
-      onOpenEvidence,
+      (id) => openEvidenceRef.current?.(id),
       artifactIds,
     )
 
@@ -421,7 +438,7 @@ export function MarkdownRenderer({
         )
       },
     }
-  }, [allowedEvidence, evidenceIds, onOpenEvidence, artifactIds])
+  }, [allowedEvidence, evidenceIds, artifactIds])
 
   return (
     <PreBlockContext.Provider value={false}>

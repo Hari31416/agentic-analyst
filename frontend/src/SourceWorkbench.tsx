@@ -16,12 +16,14 @@ import {
   Database,
   FileText,
   FileSpreadsheet,
+  Globe,
   LoaderCircle,
   Plus,
   RefreshCw,
   Server,
   Trash2,
   Upload,
+  X,
 } from 'lucide-react'
 import {
   ConnectionDraft,
@@ -106,6 +108,8 @@ function SourceWorkbench({
 }: SourceWorkbenchProps) {
   const [uiLanguage] = useUiLanguage()
   const copy = (key: Parameters<typeof uiText>[1]) => uiText(uiLanguage, key)
+  const [isAddingSource, setIsAddingSource] = useState(false)
+  const [addSourceTab, setAddSourceTab] = useState<'files' | 'website' | 'database'>('files')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -773,479 +777,542 @@ function SourceWorkbench({
           {sourceDeleteNotice}
         </p>
       )}
-      <div className="source-actions">
-        <form className="file-upload-form" onSubmit={uploadFile}>
-          <label className="upload-pick">
-            <Upload size={15} />
-            <span>{selectedFile?.name ?? copy('chooseDataFile')}</span>
-            <input
-              type="file"
-              accept=".csv,.xlsx,.xls,.json,.parquet,text/csv,application/json,application/vnd.apache.parquet,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-              onChange={chooseFile}
-            />
-          </label>
-          <button
-            className="source-primary-button"
-            type="submit"
-            disabled={!selectedFile || uploading}
-          >
-            {uploading ? (
-              <LoaderCircle size={14} className="spin" />
-            ) : (
-              <Plus size={14} />
-            )}
-            {uploading ? copy('uploading') : copy('addFile')}
-          </button>
-          <span className="supported-formats">
-            CSV · XLSX · XLS · JSON · Parquet
+
+      <div className="source-workbench-toolbar">
+        <div className="source-toolbar-title">
+          <h2>Source Catalog</h2>
+          <span>
+            {sources.length} {sources.length === 1 ? 'source' : 'sources'}
           </span>
-        </form>
-        <form className="document-upload-form" onSubmit={uploadDocuments}>
-          <label className="upload-pick document-upload-pick">
-            <FileText size={15} />
-            <span>
-              {selectedDocumentFiles.length
-                ? `${selectedDocumentFiles.length} document${selectedDocumentFiles.length === 1 ? '' : 's'} selected`
-                : copy('chooseResearchDocuments')}
-            </span>
-            <input
-              type="file"
-              multiple
-              accept=".pdf,.docx,.txt,.md,.html,.htm,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.presentationml.presentation"
-              onChange={(event) =>
-                setSelectedDocumentFiles(Array.from(event.target.files ?? []))
-              }
-            />
-          </label>
-          {(
-            ingestionCapabilities?.chunk_strategies ?? [
-              'structure',
-              'recursive',
-              'parent_child',
-            ]
-          ).length > 1 && (
-            <label className="chunk-strategy-select">
-              <span>Chunking</span>
-              <select
-                value={chunkStrategy}
-                onChange={(event) => setChunkStrategy(event.target.value)}
+        </div>
+        <button
+          type="button"
+          className={isAddingSource ? 'secondary-source-button' : 'source-primary-button'}
+          onClick={() => setIsAddingSource((prev) => !prev)}
+        >
+          {isAddingSource ? <X size={14} /> : <Plus size={14} />}
+          {isAddingSource ? 'Close' : 'Add source'}
+        </button>
+      </div>
+
+      {isAddingSource && (
+        <div className="source-actions">
+          <div className="intake-tabs" role="tablist" aria-label="Add source types">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={addSourceTab === 'files'}
+              className={`intake-tab ${addSourceTab === 'files' ? 'active' : ''}`}
+              onClick={() => setAddSourceTab('files')}
+            >
+              <Upload size={14} />
+              Files & Documents
+            </button>
+            {ingestionCapabilities?.crawl.enabled && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={addSourceTab === 'website'}
+                className={`intake-tab ${addSourceTab === 'website' ? 'active' : ''}`}
+                onClick={() => setAddSourceTab('website')}
               >
+                <Globe size={14} />
+                Website Import
+              </button>
+            )}
+            <button
+              type="button"
+              role="tab"
+              aria-selected={addSourceTab === 'database'}
+              className={`intake-tab ${addSourceTab === 'database' ? 'active' : ''}`}
+              onClick={() => setAddSourceTab('database')}
+            >
+              <Database size={14} />
+              Database Connection
+            </button>
+          </div>
+
+          {addSourceTab === 'files' && (
+            <>
+              <form className="file-upload-form" onSubmit={uploadFile}>
+                <label className="upload-pick">
+                  <Upload size={15} />
+                  <span>{selectedFile?.name ?? copy('chooseDataFile')}</span>
+                  <input
+                    type="file"
+                    accept=".csv,.xlsx,.xls,.json,.parquet,text/csv,application/json,application/vnd.apache.parquet,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                    onChange={chooseFile}
+                  />
+                </label>
+                <button
+                  className="source-primary-button"
+                  type="submit"
+                  disabled={!selectedFile || uploading}
+                >
+                  {uploading ? (
+                    <LoaderCircle size={14} className="spin" />
+                  ) : (
+                    <Plus size={14} />
+                  )}
+                  {uploading ? copy('uploading') : copy('addFile')}
+                </button>
+                <span className="supported-formats">
+                  CSV · XLSX · XLS · JSON · Parquet
+                </span>
+              </form>
+              <form className="document-upload-form" onSubmit={uploadDocuments}>
+                <label className="upload-pick document-upload-pick">
+                  <FileText size={15} />
+                  <span>
+                    {selectedDocumentFiles.length
+                      ? `${selectedDocumentFiles.length} document${selectedDocumentFiles.length === 1 ? '' : 's'} selected`
+                      : copy('chooseResearchDocuments')}
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.docx,.txt,.md,.html,.htm,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                    onChange={(event) =>
+                      setSelectedDocumentFiles(Array.from(event.target.files ?? []))
+                    }
+                  />
+                </label>
                 {(
                   ingestionCapabilities?.chunk_strategies ?? [
                     'structure',
                     'recursive',
                     'parent_child',
                   ]
-                ).map((strategy) => (
-                  <option key={strategy} value={strategy}>
-                    {strategy.replaceAll('_', ' ')}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <button
-            className="source-primary-button"
-            type="submit"
-            disabled={uploadingDocuments}
-          >
-            {uploadingDocuments ? (
-              <LoaderCircle size={14} className="spin" />
-            ) : (
-              <Plus size={14} />
-            )}
-            {uploadingDocuments ? copy('uploading') : copy('addDocuments')}
-          </button>
-          <span className="supported-formats">
-            PDF · DOCX · TXT · MD · HTML · PPTX
-          </span>
-        </form>
-        {uploadError && (
-          <p className="source-form-error" role="alert">
-            <AlertCircle size={13} />
-            {uploadError}
-          </p>
-        )}
-        {documentUploadItems.length > 0 && (
-          <div className="document-upload-queue" aria-live="polite">
-            {documentUploadItems.map((item) => (
-              <div
-                className={`document-upload-item ${item.state}`}
-                key={`${item.file.name}-${item.file.lastModified}`}
-              >
-                <span title={item.file.name}>{item.file.name}</span>
-                <span>
-                  {item.error ??
-                    (item.state === 'uploaded'
-                      ? copy('uploadStateUploaded')
-                      : item.state === 'failed'
-                        ? copy('uploadStateFailed')
-                        : `${item.progress}%`)}
+                ).length > 1 && (
+                  <details className="advanced-options">
+                    <summary>Advanced chunking strategy</summary>
+                    <label className="chunk-strategy-select" style={{ marginTop: '8px' }}>
+                      <span>Chunking</span>
+                      <select
+                        value={chunkStrategy}
+                        onChange={(event) => setChunkStrategy(event.target.value)}
+                      >
+                        {(
+                          ingestionCapabilities?.chunk_strategies ?? [
+                            'structure',
+                            'recursive',
+                            'parent_child',
+                          ]
+                        ).map((strategy) => (
+                          <option key={strategy} value={strategy}>
+                            {strategy.replaceAll('_', ' ')}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </details>
+                )}
+                <button
+                  className="source-primary-button"
+                  type="submit"
+                  disabled={uploadingDocuments}
+                >
+                  {uploadingDocuments ? (
+                    <LoaderCircle size={14} className="spin" />
+                  ) : (
+                    <Plus size={14} />
+                  )}
+                  {uploadingDocuments ? copy('uploading') : copy('addDocuments')}
+                </button>
+                <span className="supported-formats">
+                  PDF · DOCX · TXT · MD · HTML · PPTX
                 </span>
-                {item.state !== 'failed' && (
-                  <span className="upload-item-progress">
-                    <i style={{ width: `${item.progress}%` }} />
-                  </span>
-                )}
-                {item.error && <small role="alert">{item.error}</small>}
-              </div>
-            ))}
-          </div>
-        )}
-        {documentsError && (
-          <p className="source-form-error" role="alert">
-            <AlertCircle size={13} />
-            {documentsError}
-          </p>
-        )}
-
-        {ingestionCapabilities?.crawl.enabled && (
-          <form className="crawl-form" onSubmit={queueCrawl}>
-            <div className="crawl-form-heading">
-              <strong>Import an approved website</strong>
-              <span>
-                Allowed hosts:{' '}
-                {ingestionCapabilities.crawl.approved_hosts.join(', ') ||
-                  'none'}
-              </span>
-            </div>
-            <label className="crawl-url-field">
-              <span>Website URL</span>
-              <input
-                type="url"
-                required
-                value={crawlUrl}
-                onChange={(event) => setCrawlUrl(event.target.value)}
-                placeholder="https://docs.example.com/guide"
-              />
-            </label>
-            <div className="crawl-limits">
-              <label>
-                <span>Pages</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={50}
-                  value={crawlMaxPages}
-                  onChange={(event) =>
-                    setCrawlMaxPages(Number(event.target.value))
-                  }
-                />
-              </label>
-              <label>
-                <span>Depth</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={3}
-                  value={crawlMaxDepth}
-                  onChange={(event) =>
-                    setCrawlMaxDepth(Number(event.target.value))
-                  }
-                />
-              </label>
-              <label>
-                <span>Byte limit (MB)</span>
-                <input
-                  type="number"
-                  min={0.01}
-                  max={10}
-                  step={0.25}
-                  value={Number((crawlMaxBytes / 1_000_000).toFixed(2))}
-                  onChange={(event) =>
-                    setCrawlMaxBytes(
-                      Math.round(Number(event.target.value) * 1_000_000),
-                    )
-                  }
-                />
-              </label>
-              <label className="crawl-sitemap-option">
-                <input
-                  type="checkbox"
-                  checked={crawlSitemap}
-                  onChange={(event) => setCrawlSitemap(event.target.checked)}
-                />
-                <span>Read a sitemap URL set</span>
-              </label>
-              <button
-                className="source-primary-button"
-                type="submit"
-                disabled={queueingCrawl}
-              >
-                {queueingCrawl ? (
-                  <LoaderCircle size={14} className="spin" />
-                ) : (
-                  <Plus size={14} />
-                )}
-                {queueingCrawl ? 'Queueing' : 'Queue website import'}
-              </button>
-            </div>
-            {crawlError && (
-              <p className="source-form-error" role="alert">
-                <AlertCircle size={13} /> {crawlError}
-              </p>
-            )}
-          </form>
-        )}
-        {crawlJobs.length > 0 && (
-          <div className="crawl-job-list" aria-live="polite">
-            {crawlJobs.map((job) => {
-              const active = [
-                'queued',
-                'pending',
-                'running',
-                'processing',
-              ].includes(job.state.toLowerCase())
-              const pages = job.result?.pages ?? []
-              return (
-                <article
-                  className={`crawl-job ${job.state.toLowerCase()}`}
-                  key={job.id}
-                >
-                  <header>
-                    <strong>Website import</strong>
-                    <span className="crawl-job-state">
-                      {job.state.replaceAll('_', ' ')}
-                    </span>
-                  </header>
-                  <p>
-                    {
-                      pages.filter((page) =>
-                        ['fetched', 'queued'].includes(page.state),
-                      ).length
-                    }{' '}
-                    pages reached ingestion ·{' '}
-                    {pages.filter((page) => page.state === 'failed').length}{' '}
-                    page failures
-                  </p>
-                  {job.pollError && (
-                    <small className="crawl-job-error">{job.pollError}</small>
-                  )}
-                  {active && job.polls >= 120 && (
-                    <button
-                      type="button"
-                      className="crawl-refresh-button"
-                      onClick={() => void refreshCrawlJob(job.id)}
+              </form>
+              {uploadError && (
+                <p className="source-form-error" role="alert">
+                  <AlertCircle size={13} />
+                  {uploadError}
+                </p>
+              )}
+              {documentUploadItems.length > 0 && (
+                <div className="document-upload-queue" aria-live="polite">
+                  {documentUploadItems.map((item) => (
+                    <div
+                      className={`document-upload-item ${item.state}`}
+                      key={`${item.file.name}-${item.file.lastModified}`}
                     >
-                      Refresh status
-                    </button>
-                  )}
-                  {pages.length > 0 && (
-                    <ul>
-                      {pages.map((page, index) => (
-                        <li
-                          className={page.state === 'failed' ? 'failed' : ''}
-                          key={`${page.url}-${index}`}
-                        >
-                          <span title={page.url}>{page.url}</span>
-                          <strong>{page.message ?? page.state}</strong>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </article>
-              )
-            })}
-          </div>
-        )}
+                      <span title={item.file.name}>{item.file.name}</span>
+                      <span>
+                        {item.error ??
+                          (item.state === 'uploaded'
+                            ? copy('uploadStateUploaded')
+                            : item.state === 'failed'
+                              ? copy('uploadStateFailed')
+                              : `${item.progress}%`)}
+                      </span>
+                      {item.state !== 'failed' && (
+                        <span className="upload-item-progress">
+                          <i style={{ width: `${item.progress}%` }} />
+                        </span>
+                      )}
+                      {item.error && <small role="alert">{item.error}</small>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {documentsError && (
+                <p className="source-form-error" role="alert">
+                  <AlertCircle size={13} />
+                  {documentsError}
+                </p>
+              )}
+            </>
+          )}
 
-        <details className="connection-details">
-          <summary>
-            <Database size={15} />
-            <span>{copy('connectDatabase')}</span>
-            <ChevronDown size={14} className="connection-chevron" />
-          </summary>
-          <form className="connection-form" onSubmit={saveConnection}>
-            <div className="connection-form-heading">
-              <strong>{copy('readOnlyConnection')}</strong>
-              <span>{copy('credentialsServer')}</span>
-            </div>
-            <div className="connection-grid">
-              <label>
-                <span>{copy('database')}</span>
+          {addSourceTab === 'website' && ingestionCapabilities?.crawl.enabled && (
+            <form className="crawl-form" onSubmit={queueCrawl}>
+              <div className="crawl-form-heading">
+                <strong>Import an approved website</strong>
+                <span>
+                  Allowed hosts:{' '}
+                  {ingestionCapabilities.crawl.approved_hosts.join(', ') ||
+                    'none'}
+                </span>
+              </div>
+              <label className="crawl-url-field">
+                <span>Website URL</span>
+                <input
+                  type="url"
+                  required
+                  value={crawlUrl}
+                  onChange={(event) => setCrawlUrl(event.target.value)}
+                  placeholder="https://docs.example.com/guide"
+                />
+              </label>
+              <details className="advanced-options">
+                <summary>Advanced crawl limits & options</summary>
+                <div className="crawl-limits" style={{ marginTop: '8px' }}>
+                  <label>
+                    <span>Pages</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={crawlMaxPages}
+                      onChange={(event) =>
+                        setCrawlMaxPages(Number(event.target.value))
+                      }
+                    />
+                  </label>
+                  <label>
+                    <span>Depth</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={3}
+                      value={crawlMaxDepth}
+                      onChange={(event) =>
+                        setCrawlMaxDepth(Number(event.target.value))
+                      }
+                    />
+                  </label>
+                  <label>
+                    <span>Byte limit (MB)</span>
+                    <input
+                      type="number"
+                      min={0.01}
+                      max={10}
+                      step={0.25}
+                      value={Number((crawlMaxBytes / 1_000_000).toFixed(2))}
+                      onChange={(event) =>
+                        setCrawlMaxBytes(
+                          Math.round(Number(event.target.value) * 1_000_000),
+                        )
+                      }
+                    />
+                  </label>
+                  <label className="crawl-sitemap-option">
+                    <input
+                      type="checkbox"
+                      checked={crawlSitemap}
+                      onChange={(event) => setCrawlSitemap(event.target.checked)}
+                    />
+                    <span>Read a sitemap URL set</span>
+                  </label>
+                </div>
+              </details>
+              <div style={{ marginTop: '12px' }}>
+                <button
+                  className="source-primary-button"
+                  type="submit"
+                  disabled={queueingCrawl}
+                >
+                  {queueingCrawl ? (
+                    <LoaderCircle size={14} className="spin" />
+                  ) : (
+                    <Plus size={14} />
+                  )}
+                  {queueingCrawl ? 'Queueing' : 'Queue website import'}
+                </button>
+              </div>
+              {crawlError && (
+                <p className="source-form-error" role="alert">
+                  <AlertCircle size={13} /> {crawlError}
+                </p>
+              )}
+            </form>
+          )}
+
+          {addSourceTab === 'database' && (
+            <form className="connection-form" onSubmit={saveConnection}>
+              <div className="connection-form-heading">
+                <strong>{copy('readOnlyConnection')}</strong>
+                <span>{copy('credentialsServer')}</span>
+              </div>
+              <div className="connection-grid">
+                <label>
+                  <span>{copy('database')}</span>
+                  <select
+                    value={connection.dialect}
+                    onChange={(event) =>
+                      changeDialect(
+                        event.target.value as ConnectionDraft['dialect'],
+                      )
+                    }
+                  >
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="mysql">MySQL</option>
+                  </select>
+                </label>
+                <label>
+                  <span>
+                    {copy('displayName')} <i>{copy('optional')}</i>
+                  </span>
+                  <input
+                    value={connectionName}
+                    onChange={(event) => setConnectionName(event.target.value)}
+                    placeholder="e.g. Finance reporting"
+                    maxLength={120}
+                  />
+                </label>
+                <label>
+                  <span>{copy('host')}</span>
+                  <input
+                    required
+                    value={connection.host}
+                    onChange={(event) =>
+                      setConnection({ ...connection, host: event.target.value })
+                    }
+                    placeholder="db.example.internal"
+                    autoComplete="off"
+                  />
+                </label>
+                <label>
+                  <span>{copy('port')}</span>
+                  <input
+                    required
+                    type="number"
+                    min={1}
+                    max={65535}
+                    value={connection.port}
+                    onChange={(event) =>
+                      setConnection({
+                        ...connection,
+                        port: Number(event.target.value),
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  <span>{copy('databaseName')}</span>
+                  <input
+                    required
+                    value={connection.database_name}
+                    onChange={(event) =>
+                      setConnection({
+                        ...connection,
+                        database_name: event.target.value,
+                      })
+                    }
+                    autoComplete="off"
+                  />
+                </label>
+                <label>
+                  <span>{copy('username')}</span>
+                  <input
+                    required
+                    value={connection.username}
+                    onChange={(event) =>
+                      setConnection({
+                        ...connection,
+                        username: event.target.value,
+                      })
+                    }
+                    autoComplete="username"
+                  />
+                </label>
+                <label className="connection-password">
+                  <span>{copy('password')}</span>
+                  <input
+                    required
+                    type="password"
+                    value={connection.password}
+                    onChange={(event) =>
+                      setConnection({
+                        ...connection,
+                        password: event.target.value,
+                      })
+                    }
+                    autoComplete="new-password"
+                  />
+                </label>
+              </div>
+              <label className="tls-option">
+                <span>{copy('tlsMode')}</span>
                 <select
-                  value={connection.dialect}
+                  value={connection.options.ssl_mode}
                   onChange={(event) =>
-                    changeDialect(
-                      event.target.value as ConnectionDraft['dialect'],
-                    )
+                    setConnection({
+                      ...connection,
+                      options: {
+                        ...connection.options,
+                        ssl_mode: event.target
+                          .value as ConnectionDraft['options']['ssl_mode'],
+                      },
+                    })
                   }
                 >
-                  <option value="postgresql">PostgreSQL</option>
-                  <option value="mysql">MySQL</option>
+                  <option value="verify-full">Verify certificate and host</option>
+                  <option value="verify-ca">Verify certificate</option>
+                  <option value="require">Require encrypted connection</option>
+                  <option value="prefer">Prefer TLS</option>
+                  <option value="disable">Disable TLS</option>
                 </select>
               </label>
-              <label>
-                <span>
-                  {copy('displayName')} <i>{copy('optional')}</i>
-                </span>
-                <input
-                  value={connectionName}
-                  onChange={(event) => setConnectionName(event.target.value)}
-                  placeholder="e.g. Finance reporting"
-                  maxLength={120}
-                />
-              </label>
-              <label>
-                <span>{copy('host')}</span>
-                <input
-                  required
-                  value={connection.host}
-                  onChange={(event) =>
-                    setConnection({ ...connection, host: event.target.value })
+              {connectionError && (
+                <p className="source-form-error" role="alert">
+                  <AlertCircle size={13} />
+                  {connectionError}
+                </p>
+              )}
+              {testResult && (
+                <p
+                  className={`connection-test-result ${testResult.ok ? 'success' : 'failure'}`}
+                  role="status"
+                >
+                  {testResult.ok ? (
+                    <CheckCircle2 size={14} />
+                  ) : (
+                    <AlertCircle size={14} />
+                  )}
+                  {testResult.message}
+                  {typeof testResult.latency_ms === 'number' && (
+                    <span>{testResult.latency_ms} ms</span>
+                  )}
+                </p>
+              )}
+              <div className="connection-actions">
+                <button
+                  className="secondary-source-button"
+                  type="button"
+                  onClick={() => void testConnection()}
+                  disabled={
+                    testingConnection ||
+                    savingConnection ||
+                    !connection.host ||
+                    !connection.database_name ||
+                    !connection.username ||
+                    !connection.password
                   }
-                  placeholder="db.example.internal"
-                  autoComplete="off"
-                />
-              </label>
-              <label>
-                <span>{copy('port')}</span>
-                <input
-                  required
-                  type="number"
-                  min={1}
-                  max={65535}
-                  value={connection.port}
-                  onChange={(event) =>
-                    setConnection({
-                      ...connection,
-                      port: Number(event.target.value),
-                    })
+                >
+                  {testingConnection ? (
+                    <LoaderCircle size={13} className="spin" />
+                  ) : (
+                    <Server size={13} />
+                  )}
+                  {testingConnection ? copy('testing') : copy('testConnection')}
+                </button>
+                <button
+                  className="source-primary-button"
+                  type="submit"
+                  disabled={
+                    savingConnection ||
+                    testingConnection ||
+                    !connection.host ||
+                    !connection.database_name ||
+                    !connection.username ||
+                    !connection.password
                   }
-                />
-              </label>
-              <label>
-                <span>{copy('databaseName')}</span>
-                <input
-                  required
-                  value={connection.database_name}
-                  onChange={(event) =>
-                    setConnection({
-                      ...connection,
-                      database_name: event.target.value,
-                    })
-                  }
-                  autoComplete="off"
-                />
-              </label>
-              <label>
-                <span>{copy('username')}</span>
-                <input
-                  required
-                  value={connection.username}
-                  onChange={(event) =>
-                    setConnection({
-                      ...connection,
-                      username: event.target.value,
-                    })
-                  }
-                  autoComplete="username"
-                />
-              </label>
-              <label className="connection-password">
-                <span>{copy('password')}</span>
-                <input
-                  required
-                  type="password"
-                  value={connection.password}
-                  onChange={(event) =>
-                    setConnection({
-                      ...connection,
-                      password: event.target.value,
-                    })
-                  }
-                  autoComplete="new-password"
-                />
-              </label>
-            </div>
-            <label className="tls-option">
-              <span>{copy('tlsMode')}</span>
-              <select
-                value={connection.options.ssl_mode}
-                onChange={(event) =>
-                  setConnection({
-                    ...connection,
-                    options: {
-                      ...connection.options,
-                      ssl_mode: event.target
-                        .value as ConnectionDraft['options']['ssl_mode'],
-                    },
-                  })
-                }
+                >
+                  {savingConnection ? (
+                    <LoaderCircle size={13} className="spin" />
+                  ) : (
+                    <Plus size={13} />
+                  )}
+                  {savingConnection ? copy('saving') : copy('saveConnection')}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
+
+      {crawlJobs.length > 0 && (
+        <div className="crawl-job-list" aria-live="polite" style={{ padding: '0 20px 14px' }}>
+          {crawlJobs.map((job) => {
+            const active = [
+              'queued',
+              'pending',
+              'running',
+              'processing',
+            ].includes(job.state.toLowerCase())
+            const pages = job.result?.pages ?? []
+            return (
+              <article
+                className={`crawl-job ${job.state.toLowerCase()}`}
+                key={job.id}
               >
-                <option value="verify-full">Verify certificate and host</option>
-                <option value="verify-ca">Verify certificate</option>
-                <option value="require">Require encrypted connection</option>
-                <option value="prefer">Prefer TLS</option>
-                <option value="disable">Disable TLS</option>
-              </select>
-            </label>
-            {connectionError && (
-              <p className="source-form-error" role="alert">
-                <AlertCircle size={13} />
-                {connectionError}
-              </p>
-            )}
-            {testResult && (
-              <p
-                className={`connection-test-result ${testResult.ok ? 'success' : 'failure'}`}
-                role="status"
-              >
-                {testResult.ok ? (
-                  <CheckCircle2 size={14} />
-                ) : (
-                  <AlertCircle size={14} />
+                <header>
+                  <strong>Website import</strong>
+                  <span className="crawl-job-state">
+                    {job.state.replaceAll('_', ' ')}
+                  </span>
+                </header>
+                <p>
+                  {
+                    pages.filter((page) =>
+                      ['fetched', 'queued'].includes(page.state),
+                    ).length
+                  }{' '}
+                  pages reached ingestion ·{' '}
+                  {pages.filter((page) => page.state === 'failed').length}{' '}
+                  page failures
+                </p>
+                {job.pollError && (
+                  <small className="crawl-job-error">{job.pollError}</small>
                 )}
-                {testResult.message}
-                {typeof testResult.latency_ms === 'number' && (
-                  <span>{testResult.latency_ms} ms</span>
+                {active && job.polls >= 120 && (
+                  <button
+                    type="button"
+                    className="crawl-refresh-button"
+                    onClick={() => void refreshCrawlJob(job.id)}
+                  >
+                    Refresh status
+                  </button>
                 )}
-              </p>
-            )}
-            <div className="connection-actions">
-              <button
-                className="secondary-source-button"
-                type="button"
-                onClick={() => void testConnection()}
-                disabled={
-                  testingConnection ||
-                  savingConnection ||
-                  !connection.host ||
-                  !connection.database_name ||
-                  !connection.username ||
-                  !connection.password
-                }
-              >
-                {testingConnection ? (
-                  <LoaderCircle size={13} className="spin" />
-                ) : (
-                  <Server size={13} />
+                {pages.length > 0 && (
+                  <ul>
+                    {pages.map((page, index) => (
+                      <li
+                        className={page.state === 'failed' ? 'failed' : ''}
+                        key={`${page.url}-${index}`}
+                      >
+                        <span title={page.url}>{page.url}</span>
+                        <strong>{page.message ?? page.state}</strong>
+                      </li>
+                    ))}
+                  </ul>
                 )}
-                {testingConnection ? copy('testing') : copy('testConnection')}
-              </button>
-              <button
-                className="source-primary-button"
-                type="submit"
-                disabled={
-                  savingConnection ||
-                  testingConnection ||
-                  !connection.host ||
-                  !connection.database_name ||
-                  !connection.username ||
-                  !connection.password
-                }
-              >
-                {savingConnection ? (
-                  <LoaderCircle size={13} className="spin" />
-                ) : (
-                  <Plus size={13} />
-                )}
-                {savingConnection ? copy('saving') : copy('saveConnection')}
-              </button>
-            </div>
-          </form>
-        </details>
-      </div>
+              </article>
+            )
+          })}
+        </div>
+      )}
 
       {sources.length === 0 ? (
         <div className="catalog-empty">
@@ -1258,6 +1325,17 @@ function SourceWorkbench({
               Add a PDF or DOCX, upload a spreadsheet, or connect a read-only
               database.
             </p>
+            {!isAddingSource && (
+              <button
+                type="button"
+                className="source-primary-button"
+                style={{ marginTop: '12px' }}
+                onClick={() => setIsAddingSource(true)}
+              >
+                <Plus size={14} />
+                Add your first source
+              </button>
+            )}
           </div>
         </div>
       ) : (

@@ -132,7 +132,11 @@ export function App() {
           target.tagName === 'TEXTAREA' ||
           target.isContentEditable)
 
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b' && !e.shiftKey) {
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.key.toLowerCase() === 'b' &&
+        !e.shiftKey
+      ) {
         if (!isInput) {
           e.preventDefault()
           toggleLeftSidebar()
@@ -203,8 +207,10 @@ export function App() {
         currentWsId = createdWs.id
       }
       const title =
-        firstMessage.trim().slice(0, 36).replace(/[\n\r]+/g, ' ') ||
-        'New Conversation'
+        firstMessage
+          .trim()
+          .slice(0, 36)
+          .replace(/[\n\r]+/g, ' ') || 'New Conversation'
       const createdThread = await api<ThreadItem>(
         `/api/workspaces/${currentWsId}/threads`,
         {
@@ -352,7 +358,9 @@ export function App() {
         setSources(nextSources)
         const targetThread =
           threadIdRef.current || initialRouteRef.current.threadId || ''
-        const chosenThread = nextThreads.some((item) => item.id === targetThread)
+        const chosenThread = nextThreads.some(
+          (item) => item.id === targetThread,
+        )
           ? targetThread
           : (nextThreads[0]?.id ?? '')
         setThreadId(chosenThread)

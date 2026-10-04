@@ -51,6 +51,7 @@ export type AnalysisRun = {
     text?: string
     artifact_ids?: string[]
     cleanup?: 'pending' | 'complete' | 'failed' | string
+    error?: { code?: string; message?: string }
   } | null
   retrieval_profile?: 'basic' | 'advanced'
   answer_language?: AnswerLanguage

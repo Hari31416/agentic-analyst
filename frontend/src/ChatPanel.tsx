@@ -209,19 +209,12 @@ function answerFromEvent(event: RunEvent): ChatMessage | null {
   }
 }
 
-
 function effectiveDatasetIds(
   sourceIds: string[],
   selectedDatasetIds: string[],
   datasets: DatasetSummary[],
 ): string[] {
   const selected = new Set(selectedDatasetIds)
-  const sourceHasSpecificSelection = sourceIds.some((sourceId) =>
-    datasets.some(
-      (dataset) => dataset.source_id === sourceId && selected.has(dataset.id),
-    ),
-  )
-  if (!sourceHasSpecificSelection) return []
   return sourceIds.flatMap((sourceId) => {
     const available = datasets.filter(
       (dataset) => dataset.source_id === sourceId,
@@ -569,8 +562,14 @@ function ChatPanel({
           /* Restore from run history when storage is unavailable. */
         }
         const selection = restoreThreadSelection(nextRuns, savedSelection)
-        setSelectedSourceIds(selection.sourceIds)
-        setSelectedDatasetIds(selection.datasetIds)
+        let initialSourceIds = selection.sourceIds
+        let initialDatasetIds = selection.datasetIds
+        if (!savedSelection && nextRuns.length === 0 && sources.length > 0) {
+          initialSourceIds = sources.map((s) => s.id)
+          initialDatasetIds = []
+        }
+        setSelectedSourceIds(initialSourceIds)
+        setSelectedDatasetIds(initialDatasetIds)
         selectionHydratedThread.current = threadId
         const current = nextRuns.find(isLive) ?? null
         setActiveRun(current)
@@ -634,9 +633,15 @@ function ChatPanel({
   }, [loading, threadId, selectedSourceIds, selectedDatasetIds])
 
   useEffect(() => {
+    if (sources.length === 0) return
     const allowed = new Set(sources.map((source) => source.id))
-    setSelectedSourceIds((current) => current.filter((id) => allowed.has(id)))
-  }, [sources])
+    setSelectedSourceIds((current) => {
+      if (current.length === 0 && !threadId) {
+        return sources.map((source) => source.id)
+      }
+      return current.filter((id) => allowed.has(id))
+    })
+  }, [sources, threadId])
 
   useEffect(() => {
     if (selectedSourceIds.length > 0 && datasets.length === 0) return
@@ -848,11 +853,47 @@ function ChatPanel({
       }
     }
 
+    let effectiveSourceIds = [...selectedSourceIdsRef.current]
+    if (effectiveSourceIds.length === 0 && runs.length > 0) {
+      const prevRun = runs.find(
+        (r) => r.selected_source_ids && r.selected_source_ids.length > 0,
+      )
+      if (prevRun?.selected_source_ids?.length) {
+        effectiveSourceIds = [...prevRun.selected_source_ids]
+        setSelectedSourceIds(effectiveSourceIds)
+      }
+    } else if (
+      effectiveSourceIds.length === 0 &&
+      runs.length === 0 &&
+      sources.length > 0
+    ) {
+      let explicitlyCleared = false
+      try {
+        const saved = JSON.parse(
+          sessionStorage.getItem(`analyst:selection:${targetThreadId}`) ??
+            'null',
+        )
+        if (
+          saved &&
+          Array.isArray(saved.sourceIds) &&
+          saved.sourceIds.length === 0
+        ) {
+          explicitlyCleared = true
+        }
+      } catch {
+        // ignore
+      }
+      if (!explicitlyCleared) {
+        effectiveSourceIds = sources.map((s) => s.id)
+        setSelectedSourceIds(effectiveSourceIds)
+      }
+    }
+
     const input: RetryInput = explicitInput ?? {
       text: cleanText,
-      selectedSourceIds: [...selectedSourceIdsRef.current],
+      selectedSourceIds: effectiveSourceIds,
       selectedDatasetIds: effectiveDatasetIds(
-        selectedSourceIdsRef.current,
+        effectiveSourceIds,
         selectedDatasetIds,
         datasets,
       ),
@@ -1186,7 +1227,10 @@ function ChatPanel({
       )}
       {activeRun && (
         <div className="flex items-center gap-2 px-4 py-2 bg-accent/40 border-b border-border text-xs text-foreground shrink-0">
-          <LoaderCircle size={13} className="animate-spin text-primary shrink-0" />
+          <LoaderCircle
+            size={13}
+            className="animate-spin text-primary shrink-0"
+          />
           <span className="font-medium">{labelForState(activeRun)}</span>
         </div>
       )}
@@ -1977,7 +2021,9 @@ function RunFailure({
       <div>
         <strong>{labelForState(run)}</strong>
         <p>
-          {safeText(run.outcome?.text) ?? 'This run did not produce an answer.'}
+          {safeText(run.outcome?.error?.message) ??
+            safeText(run.outcome?.text) ??
+            'This run did not produce an answer.'}
         </p>
       </div>
       {run.state === 'failed' && (

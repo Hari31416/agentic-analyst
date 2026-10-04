@@ -109,7 +109,9 @@ function SourceWorkbench({
   const [uiLanguage] = useUiLanguage()
   const copy = (key: Parameters<typeof uiText>[1]) => uiText(uiLanguage, key)
   const [isAddingSource, setIsAddingSource] = useState(false)
-  const [addSourceTab, setAddSourceTab] = useState<'files' | 'website' | 'database'>('files')
+  const [addSourceTab, setAddSourceTab] = useState<
+    'files' | 'website' | 'database'
+  >('files')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -787,7 +789,9 @@ function SourceWorkbench({
         </div>
         <button
           type="button"
-          className={isAddingSource ? 'secondary-source-button' : 'source-primary-button'}
+          className={
+            isAddingSource ? 'secondary-source-button' : 'source-primary-button'
+          }
           onClick={() => setIsAddingSource((prev) => !prev)}
         >
           {isAddingSource ? <X size={14} /> : <Plus size={14} />}
@@ -797,7 +801,11 @@ function SourceWorkbench({
 
       {isAddingSource && (
         <div className="source-actions">
-          <div className="intake-tabs" role="tablist" aria-label="Add source types">
+          <div
+            className="intake-tabs"
+            role="tablist"
+            aria-label="Add source types"
+          >
             <button
               type="button"
               role="tab"
@@ -873,7 +881,9 @@ function SourceWorkbench({
                     multiple
                     accept=".pdf,.docx,.txt,.md,.html,.htm,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.presentationml.presentation"
                     onChange={(event) =>
-                      setSelectedDocumentFiles(Array.from(event.target.files ?? []))
+                      setSelectedDocumentFiles(
+                        Array.from(event.target.files ?? []),
+                      )
                     }
                   />
                 </label>
@@ -886,11 +896,16 @@ function SourceWorkbench({
                 ).length > 1 && (
                   <details className="advanced-options">
                     <summary>Advanced chunking strategy</summary>
-                    <label className="chunk-strategy-select" style={{ marginTop: '8px' }}>
+                    <label
+                      className="chunk-strategy-select"
+                      style={{ marginTop: '8px' }}
+                    >
                       <span>Chunking</span>
                       <select
                         value={chunkStrategy}
-                        onChange={(event) => setChunkStrategy(event.target.value)}
+                        onChange={(event) =>
+                          setChunkStrategy(event.target.value)
+                        }
                       >
                         {(
                           ingestionCapabilities?.chunk_strategies ?? [
@@ -917,7 +932,9 @@ function SourceWorkbench({
                   ) : (
                     <Plus size={14} />
                   )}
-                  {uploadingDocuments ? copy('uploading') : copy('addDocuments')}
+                  {uploadingDocuments
+                    ? copy('uploading')
+                    : copy('addDocuments')}
                 </button>
                 <span className="supported-formats">
                   PDF · DOCX · TXT · MD · HTML · PPTX
@@ -964,99 +981,102 @@ function SourceWorkbench({
             </>
           )}
 
-          {addSourceTab === 'website' && ingestionCapabilities?.crawl.enabled && (
-            <form className="crawl-form" onSubmit={queueCrawl}>
-              <div className="crawl-form-heading">
-                <strong>Import an approved website</strong>
-                <span>
-                  Allowed hosts:{' '}
-                  {ingestionCapabilities.crawl.approved_hosts.join(', ') ||
-                    'none'}
-                </span>
-              </div>
-              <label className="crawl-url-field">
-                <span>Website URL</span>
-                <input
-                  type="url"
-                  required
-                  value={crawlUrl}
-                  onChange={(event) => setCrawlUrl(event.target.value)}
-                  placeholder="https://docs.example.com/guide"
-                />
-              </label>
-              <details className="advanced-options">
-                <summary>Advanced crawl limits & options</summary>
-                <div className="crawl-limits" style={{ marginTop: '8px' }}>
-                  <label>
-                    <span>Pages</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={50}
-                      value={crawlMaxPages}
-                      onChange={(event) =>
-                        setCrawlMaxPages(Number(event.target.value))
-                      }
-                    />
-                  </label>
-                  <label>
-                    <span>Depth</span>
-                    <input
-                      type="number"
-                      min={0}
-                      max={3}
-                      value={crawlMaxDepth}
-                      onChange={(event) =>
-                        setCrawlMaxDepth(Number(event.target.value))
-                      }
-                    />
-                  </label>
-                  <label>
-                    <span>Byte limit (MB)</span>
-                    <input
-                      type="number"
-                      min={0.01}
-                      max={10}
-                      step={0.25}
-                      value={Number((crawlMaxBytes / 1_000_000).toFixed(2))}
-                      onChange={(event) =>
-                        setCrawlMaxBytes(
-                          Math.round(Number(event.target.value) * 1_000_000),
-                        )
-                      }
-                    />
-                  </label>
-                  <label className="crawl-sitemap-option">
-                    <input
-                      type="checkbox"
-                      checked={crawlSitemap}
-                      onChange={(event) => setCrawlSitemap(event.target.checked)}
-                    />
-                    <span>Read a sitemap URL set</span>
-                  </label>
+          {addSourceTab === 'website' &&
+            ingestionCapabilities?.crawl.enabled && (
+              <form className="crawl-form" onSubmit={queueCrawl}>
+                <div className="crawl-form-heading">
+                  <strong>Import an approved website</strong>
+                  <span>
+                    Allowed hosts:{' '}
+                    {ingestionCapabilities.crawl.approved_hosts.join(', ') ||
+                      'none'}
+                  </span>
                 </div>
-              </details>
-              <div style={{ marginTop: '12px' }}>
-                <button
-                  className="source-primary-button"
-                  type="submit"
-                  disabled={queueingCrawl}
-                >
-                  {queueingCrawl ? (
-                    <LoaderCircle size={14} className="spin" />
-                  ) : (
-                    <Plus size={14} />
-                  )}
-                  {queueingCrawl ? 'Queueing' : 'Queue website import'}
-                </button>
-              </div>
-              {crawlError && (
-                <p className="source-form-error" role="alert">
-                  <AlertCircle size={13} /> {crawlError}
-                </p>
-              )}
-            </form>
-          )}
+                <label className="crawl-url-field">
+                  <span>Website URL</span>
+                  <input
+                    type="url"
+                    required
+                    value={crawlUrl}
+                    onChange={(event) => setCrawlUrl(event.target.value)}
+                    placeholder="https://docs.example.com/guide"
+                  />
+                </label>
+                <details className="advanced-options">
+                  <summary>Advanced crawl limits & options</summary>
+                  <div className="crawl-limits" style={{ marginTop: '8px' }}>
+                    <label>
+                      <span>Pages</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={crawlMaxPages}
+                        onChange={(event) =>
+                          setCrawlMaxPages(Number(event.target.value))
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>Depth</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={3}
+                        value={crawlMaxDepth}
+                        onChange={(event) =>
+                          setCrawlMaxDepth(Number(event.target.value))
+                        }
+                      />
+                    </label>
+                    <label>
+                      <span>Byte limit (MB)</span>
+                      <input
+                        type="number"
+                        min={0.01}
+                        max={10}
+                        step={0.25}
+                        value={Number((crawlMaxBytes / 1_000_000).toFixed(2))}
+                        onChange={(event) =>
+                          setCrawlMaxBytes(
+                            Math.round(Number(event.target.value) * 1_000_000),
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="crawl-sitemap-option">
+                      <input
+                        type="checkbox"
+                        checked={crawlSitemap}
+                        onChange={(event) =>
+                          setCrawlSitemap(event.target.checked)
+                        }
+                      />
+                      <span>Read a sitemap URL set</span>
+                    </label>
+                  </div>
+                </details>
+                <div style={{ marginTop: '12px' }}>
+                  <button
+                    className="source-primary-button"
+                    type="submit"
+                    disabled={queueingCrawl}
+                  >
+                    {queueingCrawl ? (
+                      <LoaderCircle size={14} className="spin" />
+                    ) : (
+                      <Plus size={14} />
+                    )}
+                    {queueingCrawl ? 'Queueing' : 'Queue website import'}
+                  </button>
+                </div>
+                {crawlError && (
+                  <p className="source-form-error" role="alert">
+                    <AlertCircle size={13} /> {crawlError}
+                  </p>
+                )}
+              </form>
+            )}
 
           {addSourceTab === 'database' && (
             <form className="connection-form" onSubmit={saveConnection}>
@@ -1177,7 +1197,9 @@ function SourceWorkbench({
                     })
                   }
                 >
-                  <option value="verify-full">Verify certificate and host</option>
+                  <option value="verify-full">
+                    Verify certificate and host
+                  </option>
                   <option value="verify-ca">Verify certificate</option>
                   <option value="require">Require encrypted connection</option>
                   <option value="prefer">Prefer TLS</option>
@@ -1253,7 +1275,11 @@ function SourceWorkbench({
       )}
 
       {crawlJobs.length > 0 && (
-        <div className="crawl-job-list" aria-live="polite" style={{ padding: '0 20px 14px' }}>
+        <div
+          className="crawl-job-list"
+          aria-live="polite"
+          style={{ padding: '0 20px 14px' }}
+        >
           {crawlJobs.map((job) => {
             const active = [
               'queued',
@@ -1280,8 +1306,8 @@ function SourceWorkbench({
                     ).length
                   }{' '}
                   pages reached ingestion ·{' '}
-                  {pages.filter((page) => page.state === 'failed').length}{' '}
-                  page failures
+                  {pages.filter((page) => page.state === 'failed').length} page
+                  failures
                 </p>
                 {job.pollError && (
                   <small className="crawl-job-error">{job.pollError}</small>

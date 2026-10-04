@@ -310,9 +310,9 @@ export function ArtifactDetail({
   artifact: ArtifactManifest
   onSourcesChanged?: () => Promise<void>
 }) {
-  const [activeTab, setActiveTab] = useState<'preview' | 'sources' | 'technical'>(
-    'preview',
-  )
+  const [activeTab, setActiveTab] = useState<
+    'preview' | 'sources' | 'technical'
+  >('preview')
   const [copiedJson, setCopiedJson] = useState(false)
   const [preview, setPreview] = useState<{
     text: string | null
@@ -543,7 +543,8 @@ export function ArtifactDetail({
             )}
             {loading && (
               <div className="artifact-empty">
-                <LoaderCircle className="spin" size={15} /> Loading artifact preview
+                <LoaderCircle className="spin" size={15} /> Loading artifact
+                preview
               </div>
             )}
             {error && (
@@ -570,7 +571,9 @@ export function ArtifactDetail({
                       {rows.rows.map((row, index) => (
                         <tr key={index}>
                           {rows.columns.map((column) => (
-                            <td key={column.name}>{readable(row[column.name])}</td>
+                            <td key={column.name}>
+                              {readable(row[column.name])}
+                            </td>
                           ))}
                         </tr>
                       ))}
@@ -670,7 +673,8 @@ export function ArtifactDetail({
               <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-foreground font-semibold">
                 {artifact.run_id}
               </code>
-              . All computational transformations maintain strict cryptographic provenance.
+              . All computational transformations maintain strict cryptographic
+              provenance.
             </p>
             <div className="provenance-item-list">
               {parsedLineage.length > 0 ? (
@@ -699,7 +703,8 @@ export function ArtifactDetail({
                 ))
               ) : (
                 <div className="text-xs text-muted-foreground py-2">
-                  Direct synthesized output from analysis run {artifact.run_id.slice(0, 8)}.
+                  Direct synthesized output from analysis run{' '}
+                  {artifact.run_id.slice(0, 8)}.
                 </div>
               )}
             </div>

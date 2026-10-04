@@ -18,11 +18,23 @@ export function restoreThreadSelection(
   ) {
     return { sourceIds: saved.sourceIds, datasetIds: saved.datasetIds }
   }
-  // Failed legacy follow-ups could have lost selection; resume the last answered turn.
+  // Failed legacy follow-ups could have lost selection; resume the last answered turn with selections.
   const previous =
     runs.find(
+      (run) =>
+        (run.state === 'completed' || run.state === 'needs_input') &&
+        ((run.selected_source_ids && run.selected_source_ids.length > 0) ||
+          (run.selected_dataset_ids && run.selected_dataset_ids.length > 0)),
+    ) ??
+    runs.find(
+      (run) =>
+        (run.selected_source_ids && run.selected_source_ids.length > 0) ||
+        (run.selected_dataset_ids && run.selected_dataset_ids.length > 0),
+    ) ??
+    runs.find(
       (run) => run.state === 'completed' || run.state === 'needs_input',
-    ) ?? runs[0]
+    ) ??
+    runs[0]
   return {
     sourceIds: previous?.selected_source_ids ?? [],
     datasetIds: previous?.selected_dataset_ids ?? [],

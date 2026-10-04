@@ -1,6 +1,17 @@
 import { FC, useRef, useEffect, useState } from 'react'
-import { ChevronDown, Database, FileSpreadsheet, FileText, Layers, X } from 'lucide-react'
-import { DatasetSummary, sourceKindLabel, datasetLabel } from '../../structuredApi'
+import {
+  ChevronDown,
+  Database,
+  FileSpreadsheet,
+  FileText,
+  Layers,
+  X,
+} from 'lucide-react'
+import {
+  DatasetSummary,
+  sourceKindLabel,
+  datasetLabel,
+} from '../../structuredApi'
 import { ChatSource } from '../../ChatPanel'
 import { cn } from '../../lib/utils'
 
@@ -17,10 +28,18 @@ interface ComposerScopePopoverProps {
 
 function SourceIcon({ kind }: { kind: string }) {
   const lower = kind.toLowerCase()
-  if (lower.includes('database') || lower.includes('sql') || lower.includes('postgres')) {
+  if (
+    lower.includes('database') ||
+    lower.includes('sql') ||
+    lower.includes('postgres')
+  ) {
     return <Database size={13} />
   }
-  if (lower.includes('sheet') || lower.includes('csv') || lower.includes('excel')) {
+  if (
+    lower.includes('sheet') ||
+    lower.includes('csv') ||
+    lower.includes('excel')
+  ) {
     return <FileSpreadsheet size={13} />
   }
   return <FileText size={13} />
@@ -59,13 +78,17 @@ export const ComposerScopePopover: FC<ComposerScopePopoverProps> = ({
   if (sources.length === 0) return null
 
   const isAllSelected =
-    selectedSourceIds.length === 0 || selectedSourceIds.length === sources.length
+    sources.length > 0 && selectedSourceIds.length === sources.length
 
-  const label = isAllSelected
-    ? 'All sources'
-    : selectedSourceIds.length === 1
-      ? sources.find((s) => s.id === selectedSourceIds[0])?.display_name || '1 source'
-      : `${selectedSourceIds.length} sources`
+  const label =
+    selectedSourceIds.length === 0
+      ? 'Select sources'
+      : isAllSelected
+        ? 'All sources'
+        : selectedSourceIds.length === 1
+          ? sources.find((s) => s.id === selectedSourceIds[0])?.display_name ||
+            '1 source'
+          : `${selectedSourceIds.length} sources`
 
   return (
     <div className="relative inline-flex items-center" ref={containerRef}>
@@ -84,7 +107,10 @@ export const ComposerScopePopover: FC<ComposerScopePopoverProps> = ({
       >
         <Layers size={13} className="text-primary" />
         <span className="max-w-[150px] truncate">{label}</span>
-        <ChevronDown size={11} className={cn('transition-transform', isOpen && 'rotate-180')} />
+        <ChevronDown
+          size={11}
+          className={cn('transition-transform', isOpen && 'rotate-180')}
+        />
       </button>
 
       {isOpen && (
@@ -126,13 +152,15 @@ export const ComposerScopePopover: FC<ComposerScopePopoverProps> = ({
 
           <div className="flex flex-col gap-1">
             {sources.map((source) => {
-              const checked =
-                selectedSourceIds.length === 0 || selectedSourceIds.includes(source.id)
+              const checked = selectedSourceIds.includes(source.id)
               const sourceDatasets = datasets.filter(
                 (dataset) => dataset.source_id === source.id,
               )
               return (
-                <div key={source.id} className="rounded-lg border border-border/40 p-2 hover:bg-muted/40 transition-colors">
+                <div
+                  key={source.id}
+                  className="rounded-lg border border-border/40 p-2 hover:bg-muted/40 transition-colors"
+                >
                   <label className="flex items-start gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"

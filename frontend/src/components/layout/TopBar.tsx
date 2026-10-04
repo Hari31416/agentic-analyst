@@ -92,9 +92,7 @@ export const TopBar: FC<TopBarProps> = ({
               ? 'Hide inspector (Cmd+J / Ctrl+J)'
               : 'Open inspector (Cmd+J / Ctrl+J)'
           }
-          aria-label={
-            isRightSidebarOpen ? 'Hide inspector' : 'Open inspector'
-          }
+          aria-label={isRightSidebarOpen ? 'Hide inspector' : 'Open inspector'}
         >
           {isRightSidebarOpen ? (
             <PanelRightClose size={15} />

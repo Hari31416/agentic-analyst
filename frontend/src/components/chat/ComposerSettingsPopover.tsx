@@ -111,7 +111,9 @@ export const ComposerSettingsPopover: FC<ComposerSettingsPopoverProps> = ({
               <select
                 className="w-full h-8 px-2 bg-background border border-border rounded-md text-foreground text-xs focus:outline-none focus:border-primary"
                 value={language}
-                onChange={(e) => onLanguageChange(e.target.value as AnswerLanguage)}
+                onChange={(e) =>
+                  onLanguageChange(e.target.value as AnswerLanguage)
+                }
               >
                 {languages.map((lang) => (
                   <option key={lang.tag} value={lang.tag}>

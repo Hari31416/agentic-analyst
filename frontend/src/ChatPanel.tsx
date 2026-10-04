@@ -1,5 +1,6 @@
 import {
   ChangeEvent,
+  DragEvent,
   FormEvent,
   KeyboardEvent,
   useCallback,
@@ -15,16 +16,16 @@ import {
   Check,
   CircleStop,
   Copy,
-  FileSpreadsheet,
   FileText,
-  Globe2,
   LoaderCircle,
   Mic,
   ListChecks,
+  Paperclip,
   Square,
   RotateCcw,
   ShieldCheck,
   Sparkles,
+  Upload,
   X,
 } from 'lucide-react'
 import {
@@ -38,7 +39,7 @@ import {
 } from './chatApi'
 import { restoreThreadSelection } from './lib/threadSelection'
 import { InlineArtifactPreview } from './components/InlineArtifactPreview'
-import { DatasetSummary, sourceKindLabel } from './structuredApi'
+import { DatasetSummary } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
 import { LanguageCapabilities, languageApi } from './languageApi'
 import { UiLanguage, UiTextKey, uiText } from './uiText'
@@ -46,6 +47,13 @@ import { useUiLanguage } from './hooks/useUiLanguage'
 import { MarkdownRenderer } from './components/MarkdownRenderer'
 import { AuditEntry, AuditPage, auditApi } from './auditApi'
 import EmptyChatHero from './components/chat/EmptyChatHero'
+import ComposerUploadChips, {
+  UploadingAttachment,
+} from './components/chat/ComposerUploadChips'
+import ComposerScopePopover from './components/chat/ComposerScopePopover'
+import ComposerSettingsPopover from './components/chat/ComposerSettingsPopover'
+import { uploadWorkspaceFile } from './lib/uploadHelper'
+import { cn } from './lib/utils'
 import './chat.css'
 
 export type ChatSource = {
@@ -57,12 +65,14 @@ export type ChatSource = {
 }
 
 type ChatPanelProps = {
+  workspaceId?: string
   threadId: string | null
   sources: ChatSource[]
   datasets: DatasetSummary[]
   modelAvailable: boolean
   modelMessage?: string
   onStartThread?: (firstMessage: string) => Promise<string>
+  onSourcesChanged?: () => Promise<void>
 }
 
 type RetryInput = {
@@ -199,18 +209,6 @@ function answerFromEvent(event: RunEvent): ChatMessage | null {
   }
 }
 
-function SourceGlyph({ kind }: { kind: string }) {
-  const structured = /csv|sheet|spreadsheet|table|database|json|parquet/i.test(
-    kind,
-  )
-  return structured ? <FileSpreadsheet size={15} /> : <FileText size={15} />
-}
-
-function datasetLabel(dataset: DatasetSummary): string {
-  if (typeof dataset.identity === 'string') return dataset.identity
-  const values = Object.values(dataset.identity)
-  return values.length ? values.map(String).join(' · ') : 'Dataset'
-}
 
 function effectiveDatasetIds(
   sourceIds: string[],
@@ -234,15 +232,100 @@ function effectiveDatasetIds(
 }
 
 function ChatPanel({
+  workspaceId,
   threadId,
   sources,
   datasets,
   modelAvailable,
   modelMessage,
   onStartThread,
+  onSourcesChanged,
 }: ChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [runs, setRuns] = useState<AnalysisRun[]>([])
+  const [attachments, setAttachments] = useState<UploadingAttachment[]>([])
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleAttachFiles = async (files: FileList | File[]) => {
+    if (!workspaceId) return
+    const fileArray = Array.from(files)
+    if (fileArray.length === 0) return
+
+    const newItems: UploadingAttachment[] = fileArray.map((f) => ({
+      id: crypto.randomUUID(),
+      file: f,
+      progress: 0,
+      status: 'uploading',
+    }))
+    setAttachments((prev) => [...prev, ...newItems])
+
+    for (const item of newItems) {
+      try {
+        const source = await uploadWorkspaceFile(
+          workspaceId,
+          item.file,
+          (progress) => {
+            setAttachments((curr) =>
+              curr.map((att) =>
+                att.id === item.id ? { ...att, progress } : att,
+              ),
+            )
+          },
+        )
+        setAttachments((curr) =>
+          curr.map((att) =>
+            att.id === item.id
+              ? {
+                  ...att,
+                  status: 'ready',
+                  progress: 100,
+                  sourceId: source.id,
+                }
+              : att,
+          ),
+        )
+        setSelectedSourceIds((curr) =>
+          curr.includes(source.id) ? curr : [...curr, source.id],
+        )
+        void onSourcesChanged?.()
+      } catch (err) {
+        setAttachments((curr) =>
+          curr.map((att) =>
+            att.id === item.id
+              ? {
+                  ...att,
+                  status: 'error',
+                  error: err instanceof Error ? err.message : 'Upload failed',
+                }
+              : att,
+          ),
+        )
+      }
+    }
+  }
+
+  const handleDragOver = (e: DragEvent<HTMLElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!isDragging) setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: DragEvent<HTMLElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: DragEvent<HTMLElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      void handleAttachFiles(e.dataTransfer.files)
+    }
+  }
   const [artifactLists, setArtifactLists] = useState<
     Record<string, RunArtifact[]>
   >({})
@@ -1081,7 +1164,26 @@ function ChatPanel({
   }, [auditRunId, auditAction, auditState])
 
   return (
-    <section className="chat-panel" aria-label={copy('conversation')}>
+    <section
+      className="chat-panel"
+      aria-label={copy('conversation')}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 bg-primary/10 border-2 border-dashed border-primary backdrop-blur-xs z-50 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
+          <div className="size-12 rounded-xl bg-card flex items-center justify-center text-primary shadow-md mb-2">
+            <Upload size={24} />
+          </div>
+          <strong className="text-sm font-semibold text-foreground">
+            Drop files to attach to this workspace
+          </strong>
+          <span className="text-xs text-muted-foreground mt-1">
+            Supports PDF, DOCX, CSV, Excel, TXT, and Markdown
+          </span>
+        </div>
+      )}
       <header className="chat-header">
         <div>
           <div className="chat-eyebrow">
@@ -1417,85 +1519,25 @@ function ChatPanel({
       )}
 
       <div className="chat-compose-area">
-        {sources.length > 0 && (
-          <details className="source-selector">
-            <summary>
-              <span className="source-selector-mark">
-                <Check size={12} />
-              </span>
-              <span>Use sources</span>
-              <span className="selected-source-count">
-                {selectedSourceIds.length} sources ·{' '}
-                {selectedDatasetIds.length
-                  ? `${selectedDatasetIds.length} sheets`
-                  : 'all sheets'}
-              </span>
-              <ArrowDown size={13} className="selector-chevron" />
-            </summary>
-            <div className="source-check-list">
-              {sources.map((source) => {
-                const checked = selectedSourceIds.includes(source.id)
-                const sourceDatasets = datasets.filter(
-                  (dataset) => dataset.source_id === source.id,
-                )
-                return (
-                  <div className="source-check-group" key={source.id}>
-                    <label className="source-check-row">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleSource(source.id)}
-                      />
-                      <span className="source-check-icon">
-                        <SourceGlyph kind={source.kind} />
-                      </span>
-                      <span className="source-check-copy">
-                        <strong>{source.display_name}</strong>
-                        <small>
-                          {sourceKindLabel(source.kind)} · v{source.version}
-                        </small>
-                      </span>
-                      <span
-                        className={`source-check-state ${source.state.toLowerCase()}`}
-                      >
-                        {source.state}
-                      </span>
-                    </label>
-                    {checked && sourceDatasets.length > 0 && (
-                      <div className="dataset-check-list">
-                        <div className="dataset-check-heading">
-                          Choose sheets or tables <span>optional</span>
-                        </div>
-                        {sourceDatasets.map((dataset) => (
-                          <label className="dataset-check-row" key={dataset.id}>
-                            <input
-                              type="checkbox"
-                              checked={selectedDatasetIds.includes(dataset.id)}
-                              onChange={() => toggleDataset(dataset.id)}
-                            />
-                            <span>{datasetLabel(dataset)}</span>
-                            <small>{dataset.designation}</small>
-                          </label>
-                        ))}
-                        {!selectedDatasetIds.some((id) =>
-                          sourceDatasets.some((dataset) => dataset.id === id),
-                        ) && (
-                          <p className="dataset-check-hint">
-                            All sheets stay available to the analyst.
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </details>
-        )}
         <form
           className={`chat-composer ${!modelAvailable ? 'disabled' : ''}`}
           onSubmit={submit}
         >
+          {attachments.length > 0 && (
+            <ComposerUploadChips
+              attachments={attachments}
+              onRemove={(id) => {
+                const att = attachments.find((a) => a.id === id)
+                if (att?.sourceId) {
+                  setSelectedSourceIds((curr) =>
+                    curr.filter((sId) => sId !== att.sourceId),
+                  )
+                }
+                setAttachments((curr) => curr.filter((a) => a.id !== id))
+              }}
+            />
+          )}
+
           <textarea
             aria-label={copy('askSources')}
             placeholder={
@@ -1510,48 +1552,117 @@ function ChatPanel({
           />
           <div className="composer-bottom">
             <div className="composer-tools">
-              <label className="language-choice">
-                <Globe2 size={13} />
-                <span className="sr-only">{copy('answerLanguage')}</span>
-                <select
-                  value={language}
-                  onChange={(event) =>
-                    setLanguage(event.target.value as AnswerLanguage)
-                  }
-                  disabled={
-                    !modelAvailable || !languageCapabilities?.languages.length
-                  }
-                >
-                  {(
-                    languageCapabilities?.languages ?? [
-                      { tag: 'en-IN', name: 'English' },
-                      { tag: 'hi-IN', name: 'हिन्दी' },
-                    ]
-                  ).map((item) => (
-                    <option value={item.tag} key={item.tag}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label
-                className="language-choice"
-                title="Advanced searches keyword variants and expands surrounding passages"
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv,.tsv,.xlsx,.xls,.json,.parquet"
+                onChange={(e) => {
+                  if (e.target.files) void handleAttachFiles(e.target.files)
+                  e.target.value = ''
+                }}
+              />
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground border border-border bg-card transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={
+                  !workspaceId || !modelAvailable || !!activeRun || loading
+                }
+                title="Attach files (PDF, DOCX, CSV, Excel, TXT, MD)"
               >
-                <span className="sr-only">{copy('retrievalProfile')}</span>
-                <select
-                  value={retrievalProfile}
-                  onChange={(event) =>
-                    setRetrievalProfile(
-                      event.target.value as 'basic' | 'advanced',
-                    )
-                  }
-                  disabled={!!activeRun}
+                <Paperclip size={13} />
+                <span>Attach</span>
+              </button>
+
+              <ComposerScopePopover
+                sources={sources}
+                datasets={datasets}
+                selectedSourceIds={selectedSourceIds}
+                selectedDatasetIds={selectedDatasetIds}
+                onToggleSource={toggleSource}
+                onToggleDataset={toggleDataset}
+                onSelectAll={() => {
+                  setSelectedSourceIds(sources.map((s) => s.id))
+                  setSelectedDatasetIds([])
+                }}
+                onClearScope={() => {
+                  setSelectedSourceIds([])
+                  setSelectedDatasetIds([])
+                }}
+              />
+
+              <ComposerSettingsPopover
+                language={language}
+                onLanguageChange={setLanguage}
+                languageCapabilities={languageCapabilities}
+                retrievalProfile={retrievalProfile}
+                onRetrievalProfileChange={setRetrievalProfile}
+                uiLanguage={uiLanguage}
+                disabled={!modelAvailable || !!activeRun}
+              />
+
+              {languageCapabilities?.stt.available && (
+                <div className="inline-flex items-center gap-1">
+                  <button
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium border transition-colors',
+                      recording
+                        ? 'border-destructive bg-destructive/15 text-destructive font-semibold animate-pulse'
+                        : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground',
+                    )}
+                    type="button"
+                    disabled={
+                      voiceBusy || !modelAvailable || !!activeRun || loading
+                    }
+                    onClick={
+                      recording ? stopRecording : () => void startRecording()
+                    }
+                    title={
+                      recording ? copy('stopRecording') : copy('startRecording')
+                    }
+                  >
+                    {recording ? <Square size={12} /> : <Mic size={13} />}
+                    {recording ? (
+                      <span>{maxRecordingSeconds}s</span>
+                    ) : (
+                      <span>Voice</span>
+                    )}
+                  </button>
+                  <label
+                    className="inline-flex items-center justify-center size-6 rounded text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors"
+                    title={
+                      voiceBusy ? copy('transcribing') : copy('chooseAudio')
+                    }
+                  >
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={chooseAudio}
+                      disabled={
+                        voiceBusy || !modelAvailable || !!activeRun || loading
+                      }
+                    />
+                    {voiceBusy ? (
+                      <LoaderCircle size={12} className="animate-spin" />
+                    ) : (
+                      <FileText size={12} />
+                    )}
+                  </label>
+                </div>
+              )}
+
+              {voiceMessage && (
+                <span
+                  className="voice-message text-[11px] text-muted-foreground ml-1"
+                  role="status"
                 >
-                  <option value="basic">{copy('basicRetrieval')}</option>
-                  <option value="advanced">{copy('advancedRetrieval')}</option>
-                </select>
-              </label>
+                  {voiceMessage}
+                </span>
+              )}
+
               <span className="composer-hint">
                 {activeRun ? copy('activeRun') : copy('enterToSend')}
               </span>
@@ -1575,76 +1686,6 @@ function ChatPanel({
               )}
             </button>
           </div>
-          <div className="voice-controls" aria-label={copy('voice')}>
-            {languageCapabilities?.stt.available ? (
-              <>
-                <button
-                  className={`voice-button ${recording ? 'recording' : ''}`}
-                  type="button"
-                  disabled={
-                    voiceBusy || !modelAvailable || !!activeRun || loading
-                  }
-                  onClick={
-                    recording ? stopRecording : () => void startRecording()
-                  }
-                  aria-label={
-                    recording ? copy('stopRecording') : copy('startRecording')
-                  }
-                >
-                  {recording ? <Square size={13} /> : <Mic size={14} />}
-                  {recording ? copy('stopRecording') : copy('startRecording')}
-                </button>
-                <label className="voice-button">
-                  <input
-                    type="file"
-                    accept="audio/*"
-                    onChange={chooseAudio}
-                    disabled={
-                      voiceBusy || !modelAvailable || !!activeRun || loading
-                    }
-                  />
-                  {voiceBusy ? (
-                    <LoaderCircle size={14} className="spin" />
-                  ) : (
-                    <FileText size={14} />
-                  )}
-                  {voiceBusy ? copy('transcribing') : copy('chooseAudio')}
-                </label>
-              </>
-            ) : (
-              <span
-                className="voice-capability-unavailable"
-                title={languageCapabilities?.stt.reason ?? ''}
-              >
-                <Mic size={13} /> {copy('sttUnavailable')}
-              </span>
-            )}
-            {recording && (
-              <span className="voice-live-status">
-                {copy('recording').replace(
-                  '{seconds}',
-                  String(maxRecordingSeconds),
-                )}
-              </span>
-            )}
-            {voiceMessage && (
-              <span className="voice-message" role="status">
-                {voiceMessage}
-              </span>
-            )}
-          </div>
-          {languageCapabilities &&
-            (!languageCapabilities.translation.available ||
-              !languageCapabilities.tts.available) && (
-              <div className="voice-optional-status">
-                {!languageCapabilities.translation.available &&
-                  copy('translationUnavailable')}
-                {!languageCapabilities.translation.available &&
-                  !languageCapabilities.tts.available &&
-                  ' · '}
-                {!languageCapabilities.tts.available && copy('ttsUnavailable')}
-              </div>
-            )}
         </form>
       </div>
       {evidenceId && (

@@ -69,6 +69,12 @@ export function sourceKindLabel(kind: string): string {
   return labels[kind.toLowerCase()] ?? kind
 }
 
+export function datasetLabel(dataset: DatasetSummary): string {
+  if (typeof dataset.identity === 'string') return dataset.identity
+  const values = Object.values(dataset.identity)
+  return values.length ? values.map(String).join(' · ') : 'Dataset'
+}
+
 export type ConnectionDraft = {
   dialect: 'mysql' | 'postgresql'
   host: string

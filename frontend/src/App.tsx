@@ -521,12 +521,14 @@ export function App() {
             />
           ) : activeView === 'chat' ? (
             <ChatPanel
+              workspaceId={workspaceId}
               threadId={threadId || null}
               sources={sources}
               datasets={datasets}
               modelAvailable={modelAvailable}
               modelMessage={modelMessage}
               onStartThread={handleStartThread}
+              onSourcesChanged={refreshSources}
             />
           ) : workspaceId ? (
             <SourceWorkbench

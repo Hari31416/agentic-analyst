@@ -45,6 +45,7 @@ import { UiLanguage, UiTextKey, uiText } from './uiText'
 import { useUiLanguage } from './hooks/useUiLanguage'
 import { MarkdownRenderer } from './components/MarkdownRenderer'
 import { AuditEntry, AuditPage, auditApi } from './auditApi'
+import EmptyChatHero from './components/chat/EmptyChatHero'
 import './chat.css'
 
 export type ChatSource = {
@@ -56,11 +57,12 @@ export type ChatSource = {
 }
 
 type ChatPanelProps = {
-  threadId: string
+  threadId: string | null
   sources: ChatSource[]
   datasets: DatasetSummary[]
   modelAvailable: boolean
   modelMessage?: string
+  onStartThread?: (firstMessage: string) => Promise<string>
 }
 
 type RetryInput = {
@@ -237,6 +239,7 @@ function ChatPanel({
   datasets,
   modelAvailable,
   modelMessage,
+  onStartThread,
 }: ChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [runs, setRuns] = useState<AnalysisRun[]>([])
@@ -304,7 +307,7 @@ function ChatPanel({
   const retryInputsRef = useRef(new Map<string, RetryInput>())
   const selectionHydratedThread = useRef('')
   const selectedSourceIdsRef = useRef(selectedSourceIds)
-  const draftsRef = useRef(new Map<string, string>())
+  const draftsRef = useRef(new Map<string | null, string>())
   const threadIdRef = useRef(threadId)
   const mountedRef = useRef(true)
   const recorderRef = useRef<MediaRecorder | null>(null)
@@ -430,6 +433,7 @@ function ChatPanel({
   }
 
   const refreshHistory = useCallback(async () => {
+    if (!threadId) return
     const [nextMessages, nextRuns] = await Promise.all([
       chatApi.messages(threadId),
       chatApi.runs(threadId),
@@ -449,7 +453,6 @@ function ChatPanel({
     selectionHydratedThread.current = ''
     setSelectedSourceIds([])
     setSelectedDatasetIds([])
-    setLoading(true)
     setError('')
     setEvidenceId('')
     setEvidence(null)
@@ -462,6 +465,13 @@ function ChatPanel({
     setProgress([])
     activeRunIdRef.current = ''
     retryInputsRef.current.clear()
+
+    if (!threadId) {
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
     Promise.all([chatApi.messages(threadId), chatApi.runs(threadId)])
       .then(([nextMessages, nextRuns]) => {
         if (!active) return
@@ -525,7 +535,8 @@ function ChatPanel({
   }, [threadId])
 
   useEffect(() => {
-    if (loading || selectionHydratedThread.current !== threadId) return
+    if (!threadId || loading || selectionHydratedThread.current !== threadId)
+      return
     try {
       sessionStorage.setItem(
         `analyst:selection:${threadId}`,
@@ -728,12 +739,32 @@ function ChatPanel({
     retryFor?: string,
     explicitInput?: RetryInput,
   ) {
-    const sendThreadId = threadIdRef.current
     const cleanText = text.trim()
     if (!cleanText || !modelAvailable || activeRun || sending) return
     scrollToBottom(true)
     setSending(true)
     setError('')
+
+    let targetThreadId = threadIdRef.current
+    if (!targetThreadId) {
+      if (!onStartThread) {
+        setSending(false)
+        return
+      }
+      try {
+        targetThreadId = await onStartThread(cleanText)
+        threadIdRef.current = targetThreadId
+      } catch (reason) {
+        setError(
+          reason instanceof Error
+            ? reason.message
+            : 'Could not create a conversation for this query.',
+        )
+        setSending(false)
+        return
+      }
+    }
+
     const input: RetryInput = explicitInput ?? {
       text: cleanText,
       selectedSourceIds: [...selectedSourceIdsRef.current],
@@ -746,7 +777,7 @@ function ChatPanel({
       retrievalProfile,
     }
     try {
-      const run = await chatApi.createRun(threadId, {
+      const run = await chatApi.createRun(targetThreadId, {
         text: input.text,
         selected_source_ids: input.selectedSourceIds,
         selected_dataset_ids: input.selectedDatasetIds,
@@ -758,7 +789,7 @@ function ChatPanel({
       retryInputsRef.current.set(run.id, input)
       try {
         sessionStorage.setItem(
-          retrySelectionKey(threadId, run.id),
+          retrySelectionKey(targetThreadId, run.id),
           JSON.stringify({
             selectedSourceIds: input.selectedSourceIds,
             selectedDatasetIds: input.selectedDatasetIds,
@@ -776,7 +807,7 @@ function ChatPanel({
         references: { evidence_ids: [], artifact_ids: [] },
       }
       setOptimisticMessage(userMessage)
-      updateDraft('', sendThreadId)
+      updateDraft('', targetThreadId)
       setRuns((current) => [
         run,
         ...current.filter((item) => item.id !== run.id),
@@ -823,7 +854,7 @@ function ChatPanel({
   }
 
   async function retryRun(run: AnalysisRun) {
-    if (activeRun || sending || retryingRunId) return
+    if (!threadId || activeRun || sending || retryingRunId) return
     let input = retryInputsRef.current.get(run.id)
     if (!input) {
       const userMessage = [...messages]
@@ -1056,10 +1087,14 @@ function ChatPanel({
           <div className="chat-eyebrow">
             <span className="chat-eyebrow-rule" /> {copy('threadTranscript')}
           </div>
-          <h2>{copy('conversation')}</h2>
+          <h2>{threadId ? copy('conversation') : 'New Research Thread'}</h2>
         </div>
         <div className="chat-header-status">
-          {activeRun ? labelForState(activeRun) : copy('savedThread')}
+          {activeRun
+            ? labelForState(activeRun)
+            : threadId
+              ? copy('savedThread')
+              : 'New Conversation'}
           <label className="ui-language-choice">
             <span className="sr-only">{copy('uiLanguage')}</span>
             <select
@@ -1114,16 +1149,11 @@ function ChatPanel({
             conversation
           </div>
         ) : sortedMessages.length === 0 && !activeRun ? (
-          <div className="chat-empty">
-            <div className="chat-empty-glyph">
-              <Globe2 size={17} />
-            </div>
-            <span className="mini-label">A question to begin</span>
-            <p>
-              Ask about the sources attached to this workspace. Each answer will
-              keep its evidence and files with the thread.
-            </p>
-          </div>
+          <EmptyChatHero
+            onSuggestion={(prompt) =>
+              updateDraft(prompt, threadIdRef.current || undefined)
+            }
+          />
         ) : (
           <div className="message-list">
             {sortedMessages.map((message) => {

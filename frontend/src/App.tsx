@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertCircle, Layers, Plus, Sparkles } from 'lucide-react'
+import { AlertCircle, Layers, Plus } from 'lucide-react'
 import ChatPanel from './ChatPanel'
 import SourceWorkbench from './SourceWorkbench'
 import {
@@ -118,7 +118,18 @@ export function App() {
 
   const loadWorkspaces = useCallback(async () => {
     try {
-      const result = await api<WorkspaceItem[]>('/api/workspaces')
+      let result = await api<WorkspaceItem[]>('/api/workspaces')
+      if (result.length === 0) {
+        try {
+          const created = await api<WorkspaceItem>('/api/workspaces', {
+            method: 'POST',
+            body: JSON.stringify({ label: 'Default Workspace' }),
+          })
+          result = [created]
+        } catch {
+          // If creation fails, keep empty array
+        }
+      }
       setWorkspaces(result)
       setError('')
       setWorkspaceId((current) =>
@@ -132,6 +143,35 @@ export function App() {
       )
     }
   }, [])
+
+  const handleStartThread = useCallback(
+    async (firstMessage: string): Promise<string> => {
+      let currentWsId = workspaceIdRef.current
+      if (!currentWsId) {
+        const createdWs = await api<WorkspaceItem>('/api/workspaces', {
+          method: 'POST',
+          body: JSON.stringify({ label: 'Default Workspace' }),
+        })
+        setWorkspaces((prev) => [createdWs, ...prev])
+        setWorkspaceId(createdWs.id)
+        currentWsId = createdWs.id
+      }
+      const title =
+        firstMessage.trim().slice(0, 36).replace(/[\n\r]+/g, ' ') ||
+        'New Conversation'
+      const createdThread = await api<ThreadItem>(
+        `/api/workspaces/${currentWsId}/threads`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ label: title }),
+        },
+      )
+      setThreads((prev) => [createdThread, ...prev])
+      setThreadId(createdThread.id)
+      return createdThread.id
+    },
+    [],
+  )
 
   const refreshSources = useCallback(async () => {
     if (!workspaceId) return
@@ -415,7 +455,10 @@ export function App() {
         threads={threads}
         activeThreadId={threadId}
         onSelectThread={setThreadId}
-        onCreateThreadClick={() => setCreateThreadOpen(true)}
+        onCreateThreadClick={() => {
+          setThreadId('')
+          setActiveView('chat')
+        }}
         onRenameThread={(thread) =>
           setRenameTarget({
             kind: 'thread',
@@ -477,61 +520,14 @@ export function App() {
               onSourcesChanged={refreshSources}
             />
           ) : activeView === 'chat' ? (
-            threadId ? (
-              <ChatPanel
-                threadId={threadId}
-                sources={sources}
-                datasets={datasets}
-                modelAvailable={modelAvailable}
-                modelMessage={modelMessage}
-              />
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-                <div className="flex max-w-md flex-col items-center rounded-2xl border border-border bg-card p-8 shadow-sm">
-                  <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                    <Sparkles size={24} />
-                  </div>
-                  <h2 className="mb-2 text-lg font-semibold text-foreground">
-                    Evidence-Backed Research Studio
-                  </h2>
-                  <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-                    {workspaceId
-                      ? 'Launch a new thread or select an existing conversation to analyze documents, execute Python code, and evaluate SQL data.'
-                      : 'Create or choose a research workspace to begin analyzing evidence.'}
-                  </p>
-                  <div className="flex items-center gap-3">
-                    {workspaceId ? (
-                      <Button
-                        type="button"
-                        onClick={() => setCreateThreadOpen(true)}
-                        className="gap-1.5"
-                      >
-                        <Plus size={15} />
-                        <span>Start research thread</span>
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        onClick={() => setCreateWsOpen(true)}
-                        className="gap-1.5"
-                      >
-                        <Plus size={15} />
-                        <span>Create workspace</span>
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setActiveView('workbench')}
-                      className="gap-1.5"
-                    >
-                      <Layers size={15} />
-                      <span>Explore sources</span>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )
+            <ChatPanel
+              threadId={threadId || null}
+              sources={sources}
+              datasets={datasets}
+              modelAvailable={modelAvailable}
+              modelMessage={modelMessage}
+              onStartThread={handleStartThread}
+            />
           ) : workspaceId ? (
             <SourceWorkbench
               key={workspaceId}

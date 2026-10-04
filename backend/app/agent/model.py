@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import Mapping
+from contextlib import suppress
 from typing import Any
 
 import httpx
@@ -11,6 +13,8 @@ from pydantic import ValidationError
 
 from app.agent.protocol import ModelResponse, ModelToolCall
 from app.config import Settings
+
+logger = logging.getLogger(__name__)
 
 
 class ModelError(RuntimeError):
@@ -71,10 +75,16 @@ class OpenAICompatibleModel:
             raise ModelError(
                 "model_invalid_request", "The model request could not be encoded."
             ) from None
-        if len(encoded_request.decode("utf-8")) > settings.max_context_characters:
+        request_len = len(encoded_request.decode("utf-8"))
+        if request_len > settings.max_context_characters:
+            logger.error(
+                "Model request exceeds context limit: %d characters > limit of %d",
+                request_len,
+                settings.max_context_characters,
+            )
             raise ModelError(
                 "model_context_too_large",
-                "The model request exceeds the configured context limit.",
+                f"The model request exceeds the configured context limit ({request_len} > {settings.max_context_characters}).",
             )
 
         url = f"{base_url.rstrip('/')}/chat/completions"
@@ -98,10 +108,12 @@ class OpenAICompatibleModel:
         except ModelError:
             raise
         except httpx.TimeoutException:
+            logger.error("Model endpoint timed out: %s", url)
             raise ModelError(
                 "model_timeout", "The model endpoint timed out.", retryable=True
             ) from None
-        except httpx.HTTPError:
+        except httpx.HTTPError as exc:
+            logger.error("Model endpoint HTTP error: %s (%s)", url, exc)
             raise ModelError(
                 "model_unavailable",
                 "The model endpoint could not be reached.",
@@ -122,6 +134,15 @@ class OpenAICompatibleModel:
             if response.status_code < 200 or response.status_code >= 300:
                 retryable = (
                     response.status_code in {408, 429} or response.status_code >= 500
+                )
+                err_body = ""
+                with suppress(Exception):
+                    body_bytes = await response.aread()
+                    err_body = body_bytes.decode("utf-8", errors="replace")[:1000]
+                logger.error(
+                    "Model provider rejected request: HTTP %d, body: %s",
+                    response.status_code,
+                    err_body,
                 )
                 raise ModelError(
                     "model_provider_error",

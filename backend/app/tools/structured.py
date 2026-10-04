@@ -134,10 +134,18 @@ class StructuredTools:
         if name in {"dataset_profile", "sample_rows"}:
             assert isinstance(args, DatasetInput)
             dataset = next(
-                (row for row in datasets if row.id == str(args.dataset_id)), None
+                (
+                    row
+                    for row in datasets
+                    if row.id == str(args.dataset_id)
+                    or row.source_id == str(args.dataset_id)
+                ),
+                None,
             )
             if dataset is None:
-                raise ToolInputError("dataset is not selected")
+                raise ToolInputError(
+                    f"Dataset '{args.dataset_id}' is not selected. Available dataset IDs: {sorted(row.id for row in datasets)}"
+                )
             if name == "dataset_profile":
                 return ToolResult(
                     status="ok",
@@ -207,6 +215,18 @@ class StructuredTools:
 
     @staticmethod
     def profile(dataset: Dataset) -> dict[str, Any]:
+        details = dict(dataset.details)
+        sample = details.get("sample")
+        columns = details.get("columns", [])
+
+        if isinstance(sample, list) and len(sample) > 2:
+            max_sample_rows = 2 if len(columns) > 15 else 3
+            details["sample"] = sample[:max_sample_rows]
+            details["sample_note"] = (
+                f"Showing {len(details['sample'])} preview rows of {len(columns)} columns. "
+                "Use sample_rows tool for targeted row pagination."
+            )
+
         return {
             "dataset_id": dataset.id,
             "identity": dataset.identity,
@@ -223,7 +243,7 @@ class StructuredTools:
                 if dataset.details.get("schema")
                 else "VARCHAR; cast numeric/date values explicitly using schema hints"
             ),
-            **dataset.details,
+            **details,
         }
 
     async def query(
@@ -235,9 +255,15 @@ class StructuredTools:
         datasets: list[Dataset],
         workspace_id: str,
     ) -> ToolResult:
-        requested = {str(identity) for identity in args.dataset_ids}
+        source_id_to_dataset = {row.source_id: row.id for row in datasets}
+        requested = {
+            source_id_to_dataset.get(str(identity), str(identity))
+            for identity in args.dataset_ids
+        }
         if requested - {row.id for row in datasets}:
-            raise ToolInputError("query dataset is not selected")
+            raise ToolInputError(
+                f"Query dataset is not selected. Available dataset IDs: {sorted(row.id for row in datasets)}"
+            )
         chosen = [row for row in datasets if not requested or row.id in requested]
         source = (
             next((row for row in sources if row.id == str(args.source_id)), None)

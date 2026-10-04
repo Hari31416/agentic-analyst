@@ -186,8 +186,8 @@ async def run_worker() -> None:
                         )
                 except LeaseLost:
                     logger.warning("cancelled run lease lost before acknowledgement")
-        except Exception:
-            logger.error("worker task failed")
+        except Exception as exc:
+            logger.exception("worker task failed: %s", exc)
             if task:
                 try:
                     with factory()() as session, session.begin():

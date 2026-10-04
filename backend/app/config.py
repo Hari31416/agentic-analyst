@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     speech_cpu_threads: int = 2
     max_tool_calls: int = 20
     max_model_calls: int = 20
-    max_context_characters: int = 60000
+    max_context_characters: int = 300000
     max_result_bytes: int = 65536
     max_upload_bytes: int = 25 * 1024 * 1024
     ocr_enabled: bool = True

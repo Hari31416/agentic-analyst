@@ -45,9 +45,9 @@ def tool_decision(
     else:
         for field, allowed in [
             ("source_id", sources),
-            ("dataset_id", datasets),
-            ("dataset_ids", datasets),
-            ("input_dataset_ids", datasets),
+            ("dataset_id", datasets | sources),
+            ("dataset_ids", datasets | sources),
+            ("input_dataset_ids", datasets | sources),
         ]:
             values = arguments.get(field)
             if values is None:

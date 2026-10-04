@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -13,6 +14,8 @@ from app.agent.context import ContextLimitExceeded, select_thread_context
 from app.config import Settings
 from app.audit.redaction import redact
 from app.contracts import FinalAnswer, SafeError, ToolResult
+
+logger = logging.getLogger(__name__)
 
 PROMPT_VERSION = "analyst-v7"
 SYSTEM_PROMPT = """You are an analytical assistant. Use the available tools to calculate and retain results.
@@ -30,6 +33,10 @@ when asking the user for missing information. You may mention a retained artifac
 include every mentioned or embedded ID in artifact_ids. Never use filenames or guest paths as IDs.
 Use at most three useful previews. HTML previews cannot load external scripts, styles, or data;
 include required assets in the HTML itself. CSV/XLSX/Parquet outputs have table viewers.
+When a tool call fails or is rejected:
+- Inspect the returned error message and summary.
+- If the issue is recoverable with available tools (such as using list_sources to find valid dataset IDs or correcting schema arguments), adjust your call and retry.
+- If the tool cannot proceed (for example, no source or dataset is selected, an expected file was not attached, or an unrecoverable data issue occurs), explain the specific issue clearly and helpfully to the user, identifying exactly what file, source, or clarification is needed. Never claim vague technical or environment permission limitations when an explicit reason is provided.
 Give short operational explanations, no private reasoning.
 """
 
@@ -157,10 +164,13 @@ class AgentLoop:
         try:
             async with asyncio.timeout(self.settings.run_timeout_seconds):
                 while self.model_calls < self.settings.max_model_calls:
-                    if (
-                        len(json.dumps(messages, ensure_ascii=False))
-                        > self.settings.max_context_characters
-                    ):
+                    msg_len = len(json.dumps(messages, ensure_ascii=False))
+                    if msg_len > self.settings.max_context_characters:
+                        logger.error(
+                            "AgentLoop context limit reached: %d > %d characters",
+                            msg_len,
+                            self.settings.max_context_characters,
+                        )
                         raise BudgetExhausted(
                             "Context limit reached; start a narrower question"
                         )
@@ -175,6 +185,12 @@ class AgentLoop:
                     try:
                         response = await self.model.complete(redact(messages), schemas)
                     except ModelError as exc:
+                        logger.error(
+                            "Model call failed: code=%s retryable=%s message=%s",
+                            exc.code,
+                            exc.retryable,
+                            exc.message,
+                        )
                         provider_failures += 1
                         if not exc.retryable or provider_failures > 2:
                             raise
@@ -308,28 +324,30 @@ class AgentLoop:
                                     call.arguments
                                 )
                             except ValidationError as exc:
+                                errors = [
+                                    {
+                                        "field": ".".join(
+                                            str(part) for part in issue["loc"]
+                                        ),
+                                        "message": issue["msg"][:300],
+                                        "type": issue["type"],
+                                    }
+                                    for issue in exc.errors(
+                                        include_input=False,
+                                        include_url=False,
+                                        include_context=False,
+                                    )[:12]
+                                ]
+                                err_summary = "; ".join(
+                                    f"{e['field']}: {e['message']}" for e in errors
+                                )
                                 result = ToolResult(
                                     status="rejected",
-                                    summary="Invalid arguments. Correct the listed fields using the tool schema and returned input IDs.",
-                                    data={
-                                        "validation_errors": [
-                                            {
-                                                "field": ".".join(
-                                                    str(part) for part in issue["loc"]
-                                                ),
-                                                "message": issue["msg"][:300],
-                                                "type": issue["type"],
-                                            }
-                                            for issue in exc.errors(
-                                                include_input=False,
-                                                include_url=False,
-                                                include_context=False,
-                                            )[:12]
-                                        ]
-                                    },
+                                    summary=f"Invalid arguments for {call.name}: {err_summary}",
+                                    data={"validation_errors": errors},
                                     error=SafeError(
                                         code="invalid_arguments",
-                                        message="Tool input validation failed",
+                                        message=f"Tool input validation failed for {call.name}: {err_summary}. Correct the listed fields using the tool schema and returned input IDs.",
                                     ),
                                 )
                             else:

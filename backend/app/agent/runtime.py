@@ -46,6 +46,8 @@ from app.policy.decisions import tool_decision, POLICY_VERSION
 from app.audit.redaction import redact
 from app.workers.queue import Claim, LeaseLost, owned
 
+logger = logging.getLogger(__name__)
+
 
 class PythonInput(Contract):
     code: str = Field(min_length=1, max_length=64000)
@@ -206,12 +208,46 @@ class RunRuntime:
             )
             run.config = {**run.config, "policy_version": POLICY_VERSION}
             if policy.outcome != "allow":
+                if policy.reason_code == "dataset_not_selected":
+                    args_dict = arguments.model_dump(mode="json")
+                    raw_ids: list[Any] = []
+                    for k in ("dataset_id", "dataset_ids", "input_dataset_ids"):
+                        val = args_dict.get(k)
+                        if val:
+                            raw_ids.extend(val if isinstance(val, list) else [val])
+                    msg = (
+                        f"Dataset or input ID {raw_ids} is not selected in this conversation. "
+                        f"Selected source IDs: {sorted(str(s) for s in run.selected_source_ids)}. "
+                        f"Available dataset IDs: {sorted(str(d) for d in dataset_ids)}. "
+                        "Call 'list_sources' to inspect available datasets and table names, or ask the user to select the required source if it is not selected."
+                    )
+                elif policy.reason_code == "source_not_selected":
+                    val = arguments.model_dump(mode="json").get("source_id")
+                    msg = (
+                        f"Source ID '{val}' is not selected in this conversation. "
+                        f"Selected source IDs: {sorted(str(s) for s in run.selected_source_ids)}. "
+                        "Call 'list_sources' to inspect available sources, or ask the user to select the required source."
+                    )
+                elif policy.reason_code == "configured_secret_detected":
+                    msg = "The tool input contained credentials or secret patterns and was blocked by policy."
+                elif policy.reason_code == "unknown_tool":
+                    msg = f"Tool '{name}' is not recognized. Please choose from available tools."
+                else:
+                    msg = "The action was rejected by execution policy. Use selected inputs without credentials or unsupported actions."
+
+                logger.warning(
+                    "Tool %s rejected by policy (%s): %s",
+                    name,
+                    policy.reason_code,
+                    msg,
+                    extra={"run_id": str(run.id)},
+                )
                 result = ToolResult(
                     status="rejected",
-                    summary="The action was rejected by execution policy",
+                    summary=f"Action rejected by policy ({policy.reason_code}): {msg}",
                     error=SafeError(
                         code=policy.reason_code,
-                        message="Use selected inputs without credentials or unsupported actions",
+                        message=msg,
                     ),
                     data={"policy": policy.model_dump()},
                 )
@@ -389,18 +425,26 @@ class RunRuntime:
                 )
                 else "tool_execution_failed"
             )
+            msg = (
+                str(exc)[:300]
+                if isinstance(
+                    exc, (SqlPolicyError, ConnectorError, ToolInputError, SandboxError)
+                )
+                else "Check selected inputs and service availability"
+            )
+            logger.warning(
+                "Tool %s failed: code=%s message=%s",
+                name,
+                code,
+                msg,
+                extra={"run_id": str(self.run_id)},
+            )
             result = ToolResult(
                 status="failed",
-                summary="The tool could not complete safely",
+                summary=f"Tool execution failed ({code}): {msg}",
                 error=SafeError(
                     code=code,
-                    message=(
-                        str(exc)[:300]
-                        if isinstance(
-                            exc, (SqlPolicyError, ConnectorError, ToolInputError)
-                        )
-                        else "Check selected inputs and service availability"
-                    ),
+                    message=msg,
                 ),
             )
         with self.db() as session, session.begin():
@@ -566,14 +610,20 @@ class RunRuntime:
             from app.sources.files import working_csv
 
             _, sources, datasets, _ = StructuredTools(self).selection()
-            for dataset_id in dict.fromkeys(arguments.input_dataset_ids):
+            for raw_id in dict.fromkeys(arguments.input_dataset_ids):
                 dataset = next(
-                    (row for row in datasets if row.id == str(dataset_id)), None
+                    (
+                        row
+                        for row in datasets
+                        if row.id == str(raw_id) or row.source_id == str(raw_id)
+                    ),
+                    None,
                 )
                 if dataset is None:
                     raise ToolInputError(
-                        "input dataset is not selected; use an exact dataset_id from list_sources"
+                        f"input dataset '{raw_id}' is not selected; use an exact dataset_id from list_sources"
                     )
+                dataset_id = dataset.id
                 source = next(row for row in sources if row.id == dataset.source_id)
                 if source.kind not in {"csv", "xlsx", "xls", "json", "parquet"}:
                     raise ToolInputError(
@@ -586,13 +636,17 @@ class RunRuntime:
                     self.guard(session)
                 assert self.sandbox is not None
                 await self.sandbox.write(
-                    sandbox_session.id, f"inputs/{dataset_id}.csv", content
+                    sandbox_session.id, f"inputs/{dataset.id}.csv", content
                 )
+                if str(raw_id) != dataset.id:
+                    await self.sandbox.write(
+                        sandbox_session.id, f"inputs/{raw_id}.csv", content
+                    )
                 staged_datasets.append(dataset.id)
                 input_lineage.extend(dataset.lineage or [])
                 snapshot = await asyncio.to_thread(
                     storage.put,
-                    f"derived/{workspace_id}/{run_id}/{tool_id}/inputs/{dataset_id}.csv",
+                    f"derived/{workspace_id}/{run_id}/{tool_id}/inputs/{dataset.id}.csv",
                     content,
                 )
                 with self.db() as session, session.begin():
@@ -943,6 +997,14 @@ class RunRuntime:
                 if isinstance(exc, (BudgetExhausted, ModelError))
                 else "The model returned an invalid response"
             )
+            logger.error(
+                "Run %s failed with %s: code=%s message=%s",
+                self.run_id,
+                type(exc).__name__,
+                code,
+                message,
+                extra={"run_id": str(self.run_id)},
+            )
             with self.db() as session, session.begin():
                 run = self.guard(session, allow_cancelled=True)
                 if run.state not in TERMINAL_STATES:
@@ -1006,9 +1068,13 @@ class RunRuntime:
                         },
                     )
             raise
-        except Exception:
-            # Keep provider, guest and internal exception details out of user-facing
-            # run state and logs. A failed run is terminal; it is never replayed.
+        except Exception as exc:
+            logger.exception(
+                "Run %s failed unexpectedly with exception: %s",
+                self.run_id,
+                exc,
+                extra={"run_id": str(self.run_id)},
+            )
             with self.db() as session, session.begin():
                 run = self.guard(session, allow_cancelled=True)
                 self._fail_open_tool_calls(session, run, "worker_failed")
@@ -1167,6 +1233,16 @@ class RunRuntime:
         run.outcome = redact({**outcome, "cleanup": "pending"})
         run.finished_at = now()
         if "error" in outcome:
+            err = outcome["error"]
+            err_code = err.get("code") if isinstance(err, dict) else None
+            err_msg = err.get("message") if isinstance(err, dict) else str(err)
+            logger.error(
+                "Run %s finalized with error: code=%s message=%s",
+                run.id,
+                err_code,
+                err_msg,
+                extra={"run_id": str(run.id)},
+            )
             append_event(session, run.id, "error", outcome["error"])
         audit(
             session,

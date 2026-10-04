@@ -132,6 +132,25 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
     thread = lock_thread(session, thread_id)
     selected = list(dict.fromkeys(str(i) for i in body.selected_source_ids))
     selected_datasets = list(dict.fromkeys(str(i) for i in body.selected_dataset_ids))
+    if not selected:
+        previous_run = session.scalar(
+            select(Run)
+            .where(Run.thread_id == thread_id)
+            .order_by(Run.created_at.desc())
+            .limit(1)
+        )
+        if previous_run and previous_run.selected_source_ids:
+            selected = list(
+                dict.fromkeys(str(i) for i in previous_run.selected_source_ids)
+            )
+            if not selected_datasets and previous_run.config.get(
+                "selected_dataset_ids"
+            ):
+                selected_datasets = list(
+                    dict.fromkeys(
+                        str(i) for i in previous_run.config["selected_dataset_ids"]
+                    )
+                )
     language_metadata = analyze_text(
         body.text,
         body.answer_language,
@@ -192,6 +211,16 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
                 422,
                 "Selected datasets must belong to the current selected source versions",
             )
+    elif selected:
+        dataset_rows = list(
+            session.scalars(select(Dataset).where(Dataset.source_id.in_(selected)))
+        )
+        versions = {source.id: source.version for source in source_rows}
+        selected_datasets = [
+            row.id
+            for row in dataset_rows
+            if row.source_version == versions.get(row.source_id)
+        ]
     run = Run(
         id=str(body.request_id),
         thread_id=thread_id,

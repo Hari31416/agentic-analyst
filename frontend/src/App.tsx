@@ -19,6 +19,7 @@ import { DatasetSummary, structuredApi } from './structuredApi'
 import ArtifactBrowser from './ArtifactBrowser'
 import { WorkspaceImportResult } from './phase06Api'
 import { apiFetch } from './lib/apiFetch'
+import { formatPath, parsePath } from './lib/routing'
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await apiFetch(path, {
@@ -53,19 +54,28 @@ export function App() {
     return localStorage.getItem('analyst_right_sidebar') === 'true'
   })
 
+  const initialRouteRef = useRef(parsePath(window.location.pathname))
+
   const [activeView, setActiveView] = useState<
     'chat' | 'workbench' | 'outputs'
-  >('chat')
+  >(initialRouteRef.current.view)
+  const activeViewRef = useRef(activeView)
+  activeViewRef.current = activeView
+
   const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([])
   const workspacesRef = useRef(workspaces)
   workspacesRef.current = workspaces
-  const [workspaceId, setWorkspaceId] = useState<string>('')
+  const [workspaceId, setWorkspaceId] = useState<string>(
+    initialRouteRef.current.workspaceId ?? '',
+  )
   const workspaceIdRef = useRef(workspaceId)
   workspaceIdRef.current = workspaceId
   const [threads, setThreads] = useState<ThreadItem[]>([])
   const threadsRef = useRef(threads)
   threadsRef.current = threads
-  const [threadId, setThreadId] = useState<string>('')
+  const [threadId, setThreadId] = useState<string>(
+    initialRouteRef.current.threadId ?? '',
+  )
   const threadIdRef = useRef(threadId)
   threadIdRef.current = threadId
   const [sources, setSources] = useState<SourceRecord[]>([])
@@ -165,11 +175,13 @@ export function App() {
       }
       setWorkspaces(result)
       setError('')
-      setWorkspaceId((current) =>
-        result.some((item) => item.id === current)
-          ? current
-          : (result[0]?.id ?? ''),
-      )
+      const targetWs =
+        workspaceIdRef.current || initialRouteRef.current.workspaceId || ''
+      const selected = result.some((item) => item.id === targetWs)
+        ? targetWs
+        : (result[0]?.id ?? '')
+      setWorkspaceId(selected)
+      workspaceIdRef.current = selected
     } catch (reason) {
       setError(
         reason instanceof Error ? reason.message : 'Could not load workspaces.',
@@ -187,6 +199,7 @@ export function App() {
         })
         setWorkspaces((prev) => [createdWs, ...prev])
         setWorkspaceId(createdWs.id)
+        workspaceIdRef.current = createdWs.id
         currentWsId = createdWs.id
       }
       const title =
@@ -201,6 +214,13 @@ export function App() {
       )
       setThreads((prev) => [createdThread, ...prev])
       setThreadId(createdThread.id)
+      threadIdRef.current = createdThread.id
+      const targetPath = formatPath({
+        workspaceId: currentWsId,
+        threadId: createdThread.id,
+        view: 'chat',
+      })
+      window.history.replaceState(null, '', targetPath)
       return createdThread.id
     },
     [],
@@ -217,6 +237,90 @@ export function App() {
       // Ignored if network glitch
     }
   }, [workspaceId])
+
+  const handleSelectWorkspace = useCallback((id: string) => {
+    setWorkspaceId(id)
+    workspaceIdRef.current = id
+    setThreadId('')
+    threadIdRef.current = ''
+    const targetPath = formatPath({
+      workspaceId: id,
+      view: activeViewRef.current,
+    })
+    window.history.pushState(null, '', targetPath)
+  }, [])
+
+  const handleSelectThread = useCallback((id: string) => {
+    setThreadId(id)
+    threadIdRef.current = id
+    setActiveView('chat')
+    activeViewRef.current = 'chat'
+    const targetPath = formatPath({
+      workspaceId: workspaceIdRef.current,
+      threadId: id,
+      view: 'chat',
+    })
+    window.history.pushState(null, '', targetPath)
+  }, [])
+
+  const handleSelectView = useCallback(
+    (view: 'chat' | 'workbench' | 'outputs') => {
+      setActiveView(view)
+      activeViewRef.current = view
+      const targetPath = formatPath({
+        workspaceId: workspaceIdRef.current,
+        threadId: view === 'chat' ? threadIdRef.current : undefined,
+        view,
+      })
+      window.history.pushState(null, '', targetPath)
+    },
+    [],
+  )
+
+  const handleCreateThreadClick = useCallback(() => {
+    setThreadId('')
+    threadIdRef.current = ''
+    setActiveView('chat')
+    activeViewRef.current = 'chat'
+    const targetPath = formatPath({
+      workspaceId: workspaceIdRef.current,
+      view: 'chat',
+    })
+    window.history.pushState(null, '', targetPath)
+  }, [])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const parsed = parsePath(window.location.pathname)
+      if (parsed.workspaceId && parsed.workspaceId !== workspaceIdRef.current) {
+        setWorkspaceId(parsed.workspaceId)
+        workspaceIdRef.current = parsed.workspaceId
+      }
+      if (parsed.threadId !== undefined) {
+        setThreadId(parsed.threadId)
+        threadIdRef.current = parsed.threadId
+      } else if (parsed.view !== 'chat') {
+        setThreadId('')
+        threadIdRef.current = ''
+      }
+      setActiveView(parsed.view)
+      activeViewRef.current = parsed.view
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  useEffect(() => {
+    if (!workspaceId) return
+    const currentPath = formatPath({
+      workspaceId,
+      threadId: activeView === 'chat' && threadId ? threadId : undefined,
+      view: activeView,
+    })
+    if (window.location.pathname === '/' || window.location.pathname === '') {
+      window.history.replaceState(null, '', currentPath)
+    }
+  }, [workspaceId, threadId, activeView])
 
   useEffect(() => {
     void loadWorkspaces()
@@ -246,17 +350,20 @@ export function App() {
         if (!active) return
         setThreads(nextThreads)
         setSources(nextSources)
-        setThreadId((curr) =>
-          nextThreads.some((item) => item.id === curr)
-            ? curr
-            : (nextThreads[0]?.id ?? ''),
-        )
+        const targetThread =
+          threadIdRef.current || initialRouteRef.current.threadId || ''
+        const chosenThread = nextThreads.some((item) => item.id === targetThread)
+          ? targetThread
+          : (nextThreads[0]?.id ?? '')
+        setThreadId(chosenThread)
+        threadIdRef.current = chosenThread
         setSelectedSourceId((current) =>
           nextSources.some((source) => source.id === current)
             ? current
             : (nextSources[0]?.id ?? null),
         )
         setError('')
+        initialRouteRef.current.threadId = undefined
       })
       .catch((reason: unknown) => {
         if (active) {
@@ -323,7 +430,7 @@ export function App() {
       body: JSON.stringify({ label }),
     })
     setWorkspaces((prev) => [created, ...prev])
-    setWorkspaceId(created.id)
+    handleSelectWorkspace(created.id)
     setError('')
   }
 
@@ -337,8 +444,7 @@ export function App() {
       },
     )
     setThreads((prev) => [created, ...prev])
-    setThreadId(created.id)
-    setActiveView('chat')
+    handleSelectThread(created.id)
     setError('')
   }
 
@@ -437,7 +543,7 @@ export function App() {
 
   const handleOpenInWorkbench = (sourceId: string) => {
     setSelectedSourceId(sourceId)
-    setActiveView('workbench')
+    handleSelectView('workbench')
   }
 
   const handleWorkspaceImported = (result: WorkspaceImportResult) => {
@@ -451,7 +557,8 @@ export function App() {
       ...current.filter((workspace) => workspace.id !== imported.id),
     ])
     setWorkspaceId(imported.id)
-    setActiveView('workbench')
+    workspaceIdRef.current = imported.id
+    handleSelectView('workbench')
     setError('')
   }
 
@@ -466,7 +573,7 @@ export function App() {
       <LeftSidebar
         workspaces={workspaces}
         activeWorkspaceId={workspaceId}
-        onSelectWorkspace={setWorkspaceId}
+        onSelectWorkspace={handleSelectWorkspace}
         onCreateWorkspaceClick={() => setCreateWsOpen(true)}
         onRenameWorkspace={() =>
           activeWorkspace &&
@@ -487,11 +594,8 @@ export function App() {
         }
         threads={threads}
         activeThreadId={threadId}
-        onSelectThread={setThreadId}
-        onCreateThreadClick={() => {
-          setThreadId('')
-          setActiveView('chat')
-        }}
+        onSelectThread={handleSelectThread}
+        onCreateThreadClick={handleCreateThreadClick}
         onRenameThread={(thread) =>
           setRenameTarget({
             kind: 'thread',
@@ -509,7 +613,7 @@ export function App() {
           })
         }}
         activeView={activeView}
-        onSelectView={setActiveView}
+        onSelectView={handleSelectView}
         isCollapsed={isLeftSidebarCollapsed}
         onToggleCollapse={toggleLeftSidebar}
         health={health}
@@ -528,7 +632,7 @@ export function App() {
           activeWorkspaceLabel={activeWorkspace?.label ?? 'Select Workspace'}
           activeThreadLabel={activeThread?.label}
           activeView={activeView}
-          onSelectView={setActiveView}
+          onSelectView={handleSelectView}
           readiness={readiness}
           health={health}
           onRefresh={() => {

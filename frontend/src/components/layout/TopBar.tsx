@@ -7,10 +7,6 @@ import {
 } from 'lucide-react'
 import { SystemReadiness } from '../RightSidebar'
 import { cn } from '../../lib/utils'
-import { AuthBar } from '../../auth/AuthGate'
-import { UiLanguage } from '../../uiText'
-import { useUiLanguage } from '../../hooks/useUiLanguage'
-
 type TopBarProps = {
   isLeftSidebarCollapsed?: boolean
   onToggleLeftSidebar?: () => void
@@ -35,8 +31,6 @@ export const TopBar: FC<TopBarProps> = ({
   onSelectView,
   sourcesCount = 0,
 }) => {
-  const [uiLanguage, setUiLanguage] = useUiLanguage()
-
   return (
     <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-card px-4 z-10">
       <div className="flex items-center gap-3 min-w-0">
@@ -66,19 +60,6 @@ export const TopBar: FC<TopBarProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="flex items-center text-xs text-muted-foreground">
-          <span className="sr-only">UI Language</span>
-          <select
-            value={uiLanguage}
-            aria-label="UI Language"
-            onChange={(e) => setUiLanguage(e.target.value as UiLanguage)}
-            className="h-7 px-1.5 text-[11px] font-semibold rounded-md border border-border bg-card text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
-          >
-            <option value="en">EN</option>
-            <option value="hi">हिन्दी</option>
-          </select>
-        </label>
-        <AuthBar />
         <button
           type="button"
           className={cn(

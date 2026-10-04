@@ -2,7 +2,9 @@ import { FC, useState, useMemo } from 'react'
 import {
   ChevronDown,
   FolderPlus,
+  Globe,
   Layers,
+  LogOut,
   PackageOpen,
   MessageSquare,
   Moon,
@@ -13,8 +15,13 @@ import {
   Sun,
   Trash2,
   Pencil,
+  UserRound,
+  Users,
 } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { useAuth } from '../auth/AuthGate'
+import { UiLanguage } from '../uiText'
+import { useUiLanguage } from '../hooks/useUiLanguage'
 
 export type WorkspaceItem = {
   id: string
@@ -73,6 +80,8 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   onToggleTheme,
   sourcesCount,
 }) => {
+  const { user, logout, logoutError, openUserManager } = useAuth()
+  const [uiLanguage, setUiLanguage] = useUiLanguage()
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredThreads = useMemo(() => {
@@ -156,15 +165,44 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </button>
           </div>
 
-          <div className="flex flex-col items-center gap-2 w-full">
+          <div className="flex flex-col items-center gap-1.5 w-full mt-auto pt-2 border-t border-sidebar-border shrink-0">
             <button
               type="button"
-              className="flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+              className="flex items-center justify-center w-8 h-8 rounded-md text-[11px] font-bold text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+              onClick={() => setUiLanguage(uiLanguage === 'en' ? 'hi' : 'en')}
+              title={`UI Language: ${uiLanguage === 'en' ? 'English (click for हिन्दी)' : 'हिन्दी (click for English)'}`}
+              aria-label="Toggle UI language"
+            >
+              {uiLanguage.toUpperCase()}
+            </button>
+            <button
+              type="button"
+              className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
               onClick={onToggleTheme}
               title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            {user.role === 'admin' && (
+              <button
+                type="button"
+                className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+                onClick={openUserManager}
+                title={`Manage users (${user.username})`}
+                aria-label="Manage users"
+              >
+                <Users size={16} />
+              </button>
+            )}
+            <button
+              type="button"
+              className="flex items-center justify-center w-8 h-8 rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => void logout()}
+              title={`Sign out (${user.username})`}
+              aria-label="Sign out"
+            >
+              <LogOut size={16} />
             </button>
           </div>
         </div>
@@ -423,16 +461,84 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           </button>
         </div>
 
-        <footer className="flex items-center justify-between h-12 px-3.5 border-t border-sidebar-border shrink-0 bg-sidebar">
-          <button
-            type="button"
-            className="flex items-center justify-center w-7 h-7 rounded-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-            onClick={onToggleTheme}
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
+        <footer className="flex flex-col border-t border-sidebar-border bg-sidebar shrink-0">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-sidebar-border/60">
+            <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
+              <div className="flex items-center justify-center size-7 rounded-full bg-muted text-muted-foreground shrink-0 border border-border/60">
+                <UserRound size={13} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span
+                  className="text-xs font-semibold text-foreground truncate"
+                  title={user.username}
+                >
+                  {user.username}
+                </span>
+                <span className="text-[10px] text-muted-foreground capitalize leading-tight">
+                  {user.role}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0">
+              {user.role === 'admin' && (
+                <button
+                  type="button"
+                  onClick={openUserManager}
+                  className="flex items-center gap-1 h-6 px-1.5 text-[11px] font-medium rounded text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors"
+                  title="Manage user accounts"
+                >
+                  <Users size={12} />
+                  <span>Manage</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="flex items-center gap-1 h-6 px-1.5 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                title="Sign out"
+                aria-label="Sign out"
+              >
+                <LogOut size={13} />
+                <span className="text-[11px]">Logout</span>
+              </button>
+            </div>
+          </div>
+
+          {logoutError && (
+            <div
+              className="px-3 py-1 text-[11px] text-destructive bg-destructive/10 border-b border-destructive/20"
+              role="alert"
+            >
+              {logoutError}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between h-9 px-3">
+            <button
+              type="button"
+              className="flex items-center gap-1.5 h-6 px-1.5 -ml-1 rounded text-xs font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+              onClick={onToggleTheme}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
+              <span className="text-[11px] capitalize">{theme} mode</span>
+            </button>
+
+            <div className="flex items-center gap-1.5">
+              <Globe size={12} className="text-muted-foreground/70" />
+              <select
+                value={uiLanguage}
+                aria-label="UI Language"
+                onChange={(e) => setUiLanguage(e.target.value as UiLanguage)}
+                className="h-6 px-1.5 text-[11px] font-medium rounded border border-border/80 bg-card text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary/40"
+              >
+                <option value="en">EN</option>
+                <option value="hi">हिन्दी</option>
+              </select>
+            </div>
+          </div>
         </footer>
       </div>
     </aside>

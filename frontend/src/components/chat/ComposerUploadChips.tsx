@@ -7,7 +7,7 @@ import {
   AlertCircle,
   Check,
 } from 'lucide-react'
-import { isDocumentFile } from '../../lib/uploadHelper'
+import { isDocumentFile, isStructuredDataFile } from '../../lib/uploadHelper'
 
 export type UploadingAttachment = {
   id: string
@@ -43,13 +43,24 @@ export const ComposerUploadChips: FC<ComposerUploadChipsProps> = ({
     >
       {attachments.map((item) => {
         const isDoc = isDocumentFile(item.file)
+        const isData = isStructuredDataFile(item.file)
         return (
           <div
             key={item.id}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1 text-xs shadow-xs transition-colors"
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs shadow-xs transition-colors ${
+              item.status === 'error'
+                ? 'border-status-danger/30 bg-status-danger/5'
+                : 'border-border bg-card'
+            }`}
           >
             <span className="text-muted-foreground">
-              {isDoc ? <FileText size={13} /> : <FileSpreadsheet size={13} />}
+              {isData ? (
+                <FileSpreadsheet size={13} />
+              ) : isDoc ? (
+                <FileText size={13} />
+              ) : (
+                <FileSpreadsheet size={13} />
+              )}
             </span>
             <span className="max-w-[140px] truncate font-medium text-foreground">
               {item.file.name}
@@ -62,11 +73,11 @@ export const ComposerUploadChips: FC<ComposerUploadChipsProps> = ({
                 </span>
               ) : item.status === 'error' ? (
                 <span
-                  className="inline-flex items-center gap-0.5 text-status-danger"
-                  title={item.error}
+                  className="inline-flex items-center gap-0.5 text-status-danger cursor-help"
+                  title={item.error || 'Upload failed'}
                 >
                   <AlertCircle size={10} />
-                  Failed
+                  <span>Failed</span>
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-0.5 text-status-ready">

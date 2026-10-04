@@ -1515,6 +1515,18 @@ function ChatPanel({
             />
           )}
 
+          {attachments.some((a) => a.status === 'error' && a.error) && (
+            <div
+              className="flex items-center gap-1.5 px-3 py-1 text-xs text-status-danger"
+              role="alert"
+            >
+              <AlertCircle size={12} />
+              <span>
+                {attachments.find((a) => a.status === 'error')?.error}
+              </span>
+            </div>
+          )}
+
           <textarea
             aria-label={copy('askSources')}
             placeholder={

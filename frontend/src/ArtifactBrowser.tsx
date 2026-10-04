@@ -3,11 +3,18 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  Check,
+  Code2,
+  Copy,
+  Database,
   Download,
+  Eye,
   FileArchive,
   FileText,
+  Layers,
   LoaderCircle,
   RefreshCw,
+  Terminal,
   Upload,
 } from 'lucide-react'
 import { chatApi } from './chatApi'
@@ -260,6 +267,42 @@ function ChartPreview({ spec }: { spec: PlotlySpec }) {
   )
 }
 
+type LineageItem = {
+  category: string
+  label: string
+  raw: string
+}
+
+function parseLineageItem(entry: string): LineageItem {
+  if (entry.startsWith('source:')) {
+    return { category: 'Source', label: entry.slice(7), raw: entry }
+  }
+  if (entry.startsWith('dataset:')) {
+    return { category: 'Dataset', label: entry.slice(8), raw: entry }
+  }
+  if (entry.startsWith('tool:')) {
+    return {
+      category: 'Tool Used',
+      label: entry.slice(5).replace('_', ' '),
+      raw: entry,
+    }
+  }
+  if (entry.startsWith('sandbox:')) {
+    return { category: 'Sandbox Session', label: entry.slice(8), raw: entry }
+  }
+  if (entry.startsWith('artifact:')) {
+    return { category: 'Upstream Output', label: entry.slice(9), raw: entry }
+  }
+  if (entry.startsWith('sha256:')) {
+    return {
+      category: 'Content Hash',
+      label: `${entry.slice(7, 19)}...`,
+      raw: entry,
+    }
+  }
+  return { category: 'Lineage', label: entry, raw: entry }
+}
+
 export function ArtifactDetail({
   artifact,
   onSourcesChanged,
@@ -267,6 +310,10 @@ export function ArtifactDetail({
   artifact: ArtifactManifest
   onSourcesChanged?: () => Promise<void>
 }) {
+  const [activeTab, setActiveTab] = useState<'preview' | 'sources' | 'technical'>(
+    'preview',
+  )
+  const [copiedJson, setCopiedJson] = useState(false)
   const [preview, setPreview] = useState<{
     text: string | null
     truncated: boolean
@@ -278,6 +325,35 @@ export function ArtifactDetail({
   const [reuseMessage, setReuseMessage] = useState('')
   const [registering, setRegistering] = useState(false)
   const [offset, setOffset] = useState(0)
+
+  const handleCopyJson = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        JSON.stringify(artifact.lineage, null, 2),
+      )
+      setCopiedJson(true)
+      setTimeout(() => setCopiedJson(false), 2000)
+    } catch {
+      // ignore
+    }
+  }
+
+  const rawLineageList: string[] = useMemo(() => {
+    if (Array.isArray(artifact.lineage)) {
+      return artifact.lineage.map(String)
+    }
+    if (artifact.lineage && typeof artifact.lineage === 'object') {
+      return Object.entries(artifact.lineage).map(
+        ([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`,
+      )
+    }
+    return []
+  }, [artifact.lineage])
+
+  const parsedLineage = useMemo(
+    () => rawLineageList.map(parseLineageItem),
+    [rawLineageList],
+  )
   const mediaType = artifact.media_type.toLowerCase().split(';')[0].trim()
   const mediaKind = mediaViewerKind(artifact)
   const isPdf = mediaType === 'application/pdf'
@@ -416,148 +492,263 @@ export function ArtifactDetail({
         </div>
       </header>
       {reuseMessage && <div className="artifact-success">{reuseMessage}</div>}
-      <dl className="artifact-metadata">
-        <div>
-          <dt>Format</dt>
-          <dd>{artifact.media_type}</dd>
-        </div>
-        <div>
-          <dt>Size</dt>
-          <dd>{sizeLabel(artifact.byte_size)}</dd>
-        </div>
-        <div>
-          <dt>Run</dt>
-          <dd title={artifact.run_id}>{artifact.run_id.slice(0, 12)}</dd>
-        </div>
-        <div>
-          <dt>SHA-256</dt>
-          <dd className="hash-value" title={artifact.sha256}>
-            {artifact.sha256}
-          </dd>
-        </div>
-        <div className="lineage-cell">
-          <dt>Lineage</dt>
-          <dd>
-            <pre>{JSON.stringify(artifact.lineage, null, 2)}</pre>
-          </dd>
-        </div>
-      </dl>
-      <div className="artifact-viewer">
-        {mediaKind && <ArtifactMediaPreview artifact={artifact} />}
-        {isData && rows && (
-          <div className="artifact-download-formats">
-            <span>Download data as</span>
-            {['csv', 'xlsx', 'parquet'].map((format) => (
-              <a
-                key={format}
-                href={phase06Api.downloadUrl(artifact.id, format)}
-              >
-                {format.toUpperCase()}
-              </a>
-            ))}
-          </div>
-        )}
-        {loading && (
-          <div className="artifact-empty">
-            <LoaderCircle className="spin" size={15} /> Loading artifact preview
-          </div>
-        )}
-        {error && (
-          <div className="artifact-error">
-            <AlertCircle size={15} />
-            {error}
-          </div>
-        )}
-        {!loading && !error && isData && rows && (
-          <>
-            <div className="artifact-table-scroll">
-              <table className="artifact-data-table">
-                <thead>
-                  <tr>
-                    {rows.columns.map((column) => (
-                      <th key={column.name}>
-                        <span>{column.name}</span>
-                        <small>{column.type}</small>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.rows.map((row, index) => (
-                    <tr key={index}>
-                      {rows.columns.map((column) => (
-                        <td key={column.name}>{readable(row[column.name])}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="artifact-page-controls">
-              <span>
-                Rows {rows.total_rows ? offset + 1 : 0}–
-                {Math.min(offset + rows.rows.length, rows.total_rows)} of{' '}
-                {rows.total_rows}
-                {rows.truncated ? ' · result truncated' : ''}
-              </span>
-              <div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    void loadPage(Math.max(0, offset - rows.limit))
-                  }
-                  disabled={offset === 0 || loading}
-                >
-                  <ArrowLeft size={14} /> Previous
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void loadPage(offset + rows.limit)}
-                  disabled={
-                    offset + rows.rows.length >= rows.total_rows || loading
-                  }
-                >
-                  Next <ArrowRight size={14} />
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-        {!loading && !error && isChart && chart && (
-          <ChartPreview spec={chart} />
-        )}
-        {!loading && !error && isPdf && (
-          <iframe
-            className="artifact-pdf-frame"
-            title={`${artifact.display_name} preview`}
-            src={phase06Api.previewUrl(artifact.id)}
-            sandbox=""
-          />
-        )}
-        {!loading && !error && isText && preview && (
-          <div className="artifact-report-preview">
-            <pre>{preview.text ?? 'No text preview is available.'}</pre>
-            {preview.truncated && (
-              <p>
-                Preview is limited to 16,000 characters. Download the full
-                report for the complete content.
-              </p>
-            )}
-          </div>
-        )}
-        {!loading &&
-          !error &&
-          !isData &&
-          !isChart &&
-          !isPdf &&
-          !isText &&
-          !mediaKind && (
-            <div className="artifact-empty">
-              No inline preview is available for this file. Download it to
-              inspect the full content.
-            </div>
+      <div className="artifact-nav-tabs">
+        <button
+          type="button"
+          className={`artifact-nav-tab ${activeTab === 'preview' ? 'active' : ''}`}
+          onClick={() => setActiveTab('preview')}
+        >
+          <Eye size={13} />
+          <span>Preview</span>
+        </button>
+        <button
+          type="button"
+          className={`artifact-nav-tab ${activeTab === 'sources' ? 'active' : ''}`}
+          onClick={() => setActiveTab('sources')}
+        >
+          <Layers size={13} />
+          <span>Sources & Lineage</span>
+          {parsedLineage.length > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted font-mono font-normal">
+              {parsedLineage.length}
+            </span>
           )}
+        </button>
+        <button
+          type="button"
+          className={`artifact-nav-tab ${activeTab === 'technical' ? 'active' : ''}`}
+          onClick={() => setActiveTab('technical')}
+        >
+          <Code2 size={13} />
+          <span>Technical Details</span>
+        </button>
       </div>
+
+      {activeTab === 'preview' && (
+        <>
+          <div className="artifact-viewer">
+            {mediaKind && <ArtifactMediaPreview artifact={artifact} />}
+            {isData && rows && (
+              <div className="artifact-download-formats">
+                <span>Download data as</span>
+                {['csv', 'xlsx', 'parquet'].map((format) => (
+                  <a
+                    key={format}
+                    href={phase06Api.downloadUrl(artifact.id, format)}
+                  >
+                    {format.toUpperCase()}
+                  </a>
+                ))}
+              </div>
+            )}
+            {loading && (
+              <div className="artifact-empty">
+                <LoaderCircle className="spin" size={15} /> Loading artifact preview
+              </div>
+            )}
+            {error && (
+              <div className="artifact-error">
+                <AlertCircle size={15} />
+                {error}
+              </div>
+            )}
+            {!loading && !error && isData && rows && (
+              <>
+                <div className="artifact-table-scroll">
+                  <table className="artifact-data-table">
+                    <thead>
+                      <tr>
+                        {rows.columns.map((column) => (
+                          <th key={column.name}>
+                            <span>{column.name}</span>
+                            <small>{column.type}</small>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.rows.map((row, index) => (
+                        <tr key={index}>
+                          {rows.columns.map((column) => (
+                            <td key={column.name}>{readable(row[column.name])}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="artifact-page-controls">
+                  <span>
+                    Rows {rows.total_rows ? offset + 1 : 0}–
+                    {Math.min(offset + rows.rows.length, rows.total_rows)} of{' '}
+                    {rows.total_rows}
+                    {rows.truncated ? ' · result truncated' : ''}
+                  </span>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void loadPage(Math.max(0, offset - rows.limit))
+                      }
+                      disabled={offset === 0 || loading}
+                    >
+                      <ArrowLeft size={14} /> Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void loadPage(offset + rows.limit)}
+                      disabled={
+                        offset + rows.rows.length >= rows.total_rows || loading
+                      }
+                    >
+                      Next <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+            {!loading && !error && isChart && chart && (
+              <ChartPreview spec={chart} />
+            )}
+            {!loading && !error && isPdf && (
+              <iframe
+                className="artifact-pdf-frame"
+                title={`${artifact.display_name} preview`}
+                src={phase06Api.previewUrl(artifact.id)}
+                sandbox=""
+              />
+            )}
+            {!loading && !error && isText && preview && (
+              <div className="artifact-report-preview">
+                <pre>{preview.text ?? 'No text preview is available.'}</pre>
+                {preview.truncated && (
+                  <p>
+                    Preview is limited to 16,000 characters. Download the full
+                    report for the complete content.
+                  </p>
+                )}
+              </div>
+            )}
+            {!loading &&
+              !error &&
+              !isData &&
+              !isChart &&
+              !isPdf &&
+              !isText &&
+              !mediaKind && (
+                <div className="artifact-empty">
+                  No inline preview is available for this file. Download it to
+                  inspect the full content.
+                </div>
+              )}
+          </div>
+          <div className="artifact-viewer-footer">
+            <span>
+              Generated by run{' '}
+              <code className="font-mono text-foreground font-semibold">
+                {artifact.run_id.slice(0, 8)}
+              </code>
+            </span>
+            <button
+              type="button"
+              className="text-xs text-primary hover:underline font-medium inline-flex items-center gap-1"
+              onClick={() => setActiveTab('sources')}
+            >
+              <span>Inspect source lineage</span>
+              <ArrowRight size={12} />
+            </button>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'sources' && (
+        <div className="artifact-provenance-view">
+          <div className="provenance-card">
+            <h4>Lineage & Source Attribution</h4>
+            <p>
+              This artifact was synthesized by analysis run{' '}
+              <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-foreground font-semibold">
+                {artifact.run_id}
+              </code>
+              . All computational transformations maintain strict cryptographic provenance.
+            </p>
+            <div className="provenance-item-list">
+              {parsedLineage.length > 0 ? (
+                parsedLineage.map((item, idx) => (
+                  <div key={idx} className="provenance-item">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">
+                        {item.category === 'Source' ? (
+                          <FileText size={13} />
+                        ) : item.category === 'Dataset' ? (
+                          <Database size={13} />
+                        ) : item.category === 'Tool Used' ? (
+                          <Terminal size={13} />
+                        ) : (
+                          <Layers size={13} />
+                        )}
+                      </span>
+                      <strong className="text-xs font-semibold text-foreground">
+                        {item.category}
+                      </strong>
+                    </div>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {item.label}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-muted-foreground py-2">
+                  Direct synthesized output from analysis run {artifact.run_id.slice(0, 8)}.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'technical' && (
+        <dl className="artifact-metadata">
+          <div>
+            <dt>Format</dt>
+            <dd>{artifact.media_type}</dd>
+          </div>
+          <div>
+            <dt>Size</dt>
+            <dd>{sizeLabel(artifact.byte_size)}</dd>
+          </div>
+          <div>
+            <dt>Run</dt>
+            <dd title={artifact.run_id}>{artifact.run_id.slice(0, 12)}</dd>
+          </div>
+          <div>
+            <dt>SHA-256</dt>
+            <dd className="hash-value" title={artifact.sha256}>
+              {artifact.sha256}
+            </dd>
+          </div>
+          <div className="lineage-cell">
+            <div className="flex items-center justify-between mb-2">
+              <dt className="m-0">Raw Lineage Payload</dt>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] rounded border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                onClick={handleCopyJson}
+              >
+                {copiedJson ? (
+                  <Check size={11} className="text-status-ready" />
+                ) : (
+                  <Copy size={11} />
+                )}
+                <span>{copiedJson ? 'Copied' : 'Copy JSON'}</span>
+              </button>
+            </div>
+            <dd>
+              <pre>{JSON.stringify(artifact.lineage, null, 2)}</pre>
+            </dd>
+          </div>
+        </dl>
+      )}
     </article>
   )
 }

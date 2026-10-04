@@ -212,6 +212,98 @@
   letter-spacing: 0.06em;
 }
 
+.artifact-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.artifact-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.artifact-nav-tab:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.artifact-nav-tab.active {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--foreground);
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
+}
+
+.artifact-viewer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.artifact-provenance-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.provenance-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.provenance-card h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.provenance-card p {
+  margin: 0 0 12px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+
+.provenance-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.provenance-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--background);
+  font-size: 11px;
+}
+
 .artifact-metadata {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

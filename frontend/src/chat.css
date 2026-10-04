@@ -212,6 +212,32 @@
   scrollbar-width: thin;
 }
 
+.chat-jump-bottom {
+  position: absolute;
+  bottom: 112px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 20;
+  transition: all 0.15s ease;
+}
+
+.chat-jump-bottom:hover {
+  background: var(--muted);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
 .chat-empty {
   display: flex;
   max-width: 330px;
@@ -315,6 +341,28 @@
   color: var(--muted-foreground);
   font: 10px var(--font-mono);
   letter-spacing: 0.05em;
+}
+.message-topline-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.message-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 1px 7px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+.message-action-button:hover {
+  background: var(--muted);
+  color: var(--foreground);
 }
 .message-run-state {
   color: var(--muted-foreground);

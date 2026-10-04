@@ -14,6 +14,7 @@ import {
   ArrowUp,
   Check,
   CircleStop,
+  Copy,
   FileSpreadsheet,
   FileText,
   Globe2,
@@ -275,6 +276,29 @@ function ChatPanel({
   const [optimisticMessage, setOptimisticMessage] =
     useState<ChatMessage | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const transcriptRef = useRef<HTMLDivElement>(null)
+  const isAtBottomRef = useRef(true)
+  const [showJumpBottom, setShowJumpBottom] = useState(false)
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    isAtBottomRef.current = true
+    setShowJumpBottom(false)
+    if (transcriptRef.current) {
+      transcriptRef.current.scrollTo({
+        top: transcriptRef.current.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto',
+      })
+    }
+  }, [])
+
+  const handleScroll = useCallback(() => {
+    const el = transcriptRef.current
+    if (!el) return
+    const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    const atBottom = distanceToBottom < 80
+    isAtBottomRef.current = atBottom
+    setShowJumpBottom(!atBottom)
+  }, [])
   const sequenceRef = useRef(0)
   const activeRunIdRef = useRef('')
   const retryInputsRef = useRef(new Map<string, RetryInput>())
@@ -661,8 +685,10 @@ function ChatPanel({
   }, [activeRun?.id, refreshHistory])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [messages, activeRun, liveAnswer, progress])
+    if (isAtBottomRef.current) {
+      scrollToBottom(false)
+    }
+  }, [messages, activeRun, liveAnswer, progress, scrollToBottom])
 
   const sortedMessages = useMemo(() => {
     const all = [...messages]
@@ -705,6 +731,7 @@ function ChatPanel({
     const sendThreadId = threadIdRef.current
     const cleanText = text.trim()
     if (!cleanText || !modelAvailable || activeRun || sending) return
+    scrollToBottom(true)
     setSending(true)
     setError('')
     const input: RetryInput = explicitInput ?? {
@@ -1075,7 +1102,12 @@ function ChatPanel({
         </div>
       )}
 
-      <div className="chat-transcript" aria-live="polite">
+      <div
+        className="chat-transcript"
+        ref={transcriptRef}
+        onScroll={handleScroll}
+        aria-live="polite"
+      >
         {loading ? (
           <div className="chat-loading">
             <LoaderCircle size={17} className="spin" /> Loading saved
@@ -1118,11 +1150,16 @@ function ChatPanel({
                             ? 'ASSISTANT'
                             : 'SYSTEM'}
                       </span>
-                      {run && (
-                        <span className={`message-run-state ${run.state}`}>
-                          {labelForState(run)}
-                        </span>
-                      )}
+                      <div className="message-topline-actions">
+                        {message.role === 'assistant' && (
+                          <CopyButton text={message.content} />
+                        )}
+                        {run && (
+                          <span className={`message-run-state ${run.state}`}>
+                            {labelForState(run)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="message-content">
                       <MarkdownRenderer
@@ -1336,6 +1373,18 @@ function ChatPanel({
           )}
         <div ref={bottomRef} />
       </div>
+
+      {showJumpBottom && (
+        <button
+          type="button"
+          className="chat-jump-bottom"
+          onClick={() => scrollToBottom(true)}
+          aria-label="Jump to latest messages"
+        >
+          <ArrowDown size={14} />
+          <span>Jump to latest</span>
+        </button>
+      )}
 
       <div className="chat-compose-area">
         {sources.length > 0 && (
@@ -1737,6 +1786,32 @@ function EvidenceViewer({
   )
 }
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Ignore clipboard write failures
+    }
+  }
+
+  return (
+    <button
+      className="message-action-button"
+      type="button"
+      onClick={handleCopy}
+      title={copied ? 'Copied to clipboard' : 'Copy message text'}
+      aria-label={copied ? 'Copied' : 'Copy message'}
+    >
+      {copied ? <Check size={12} /> : <Copy size={12} />}
+      <span>{copied ? 'Copied' : 'Copy'}</span>
+    </button>
+  )
+}
+
 function MessageBubble({
   message,
   artifacts,
@@ -1754,6 +1829,7 @@ function MessageBubble({
       <article className="message-card assistant">
         <div className="message-topline">
           <span className="message-run-state running">Answer</span>
+          <CopyButton text={message.content} />
         </div>
         <div className="message-content">
           <MarkdownRenderer

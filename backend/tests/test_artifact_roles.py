@@ -7,6 +7,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.exc import IntegrityError
 
 from app.agent.references import ModelReferences
@@ -21,7 +22,9 @@ from app.storage.filesystem import FileStorage
 
 @pytest.fixture
 def artifacts_db():
-    engine = create_engine("sqlite://")
+    engine = create_engine(
+        "sqlite://", poolclass=StaticPool, connect_args={"check_same_thread": False}
+    )
     Base.metadata.create_all(engine)
     sessions = sessionmaker(engine, expire_on_commit=False)
     with sessions() as session, session.begin():

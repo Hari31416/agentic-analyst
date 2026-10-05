@@ -918,3 +918,18 @@ Keep secrets and raw client data out of this file.
   Existing artifacts receive the intermediate default. No live model/microVM
   benchmark or full browser QA was run; final deliverable selection quality is
   unmeasured. Phase 10 remains unstarted.
+
+## 5 October 2026: scope sidebar artifacts to the active chat
+
+- Added an optional workspace manifest `thread_id` filter with workspace/chat
+  membership validation, applied before the listing limit. The sidebar fetches
+  only the active chat's artifacts across its runs. Sources and the Outputs page
+  retain their workspace scope.
+- Sidebar output counts, intermediate toggle and search use the chat collection.
+  Switching chats clears selection and filters, hides the previous collection
+  immediately, and rejects responses for another scope or an older request.
+- Validation: 28 focused backend contract/chat tests passed, including isolation
+  with 501 artifacts in another chat and unknown/foreign chat rejection. Backend
+  Black/mypy, frontend type/build and artifact rendering/lifecycle/visibility
+  tests passed, including chat switch reset. No schema change or live model call
+  was required. Full browser QA remains deferred.

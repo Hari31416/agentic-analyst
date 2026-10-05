@@ -72,9 +72,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const phase06Api = {
-  artifacts: (workspaceId: string) =>
+  artifacts: (workspaceId: string, threadId?: string) =>
     request<ArtifactManifest[]>(
-      `/api/workspaces/${encodeURIComponent(workspaceId)}/artifacts`,
+      `/api/workspaces/${encodeURIComponent(workspaceId)}/artifacts${threadId ? `?thread_id=${encodeURIComponent(threadId)}` : ''}`,
     ),
   artifact: (artifactId: string) =>
     request<ArtifactManifest>(

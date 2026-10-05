@@ -97,18 +97,25 @@ def _read(artifact: Artifact) -> bytes:
 
 
 @router.get("/api/workspaces/{workspace_id}/artifacts")
-def workspace_artifacts(workspace_id: UUID, session: Db) -> list[dict[str, Any]]:
+def workspace_artifacts(
+    workspace_id: UUID, session: Db, thread_id: UUID | None = None
+) -> list[dict[str, Any]]:
     workspace = session.get(Workspace, str(workspace_id))
     if workspace is None:
         raise HTTPException(404, "Workspace not found")
-    rows = session.scalars(
+    if thread_id is not None:
+        thread = session.get(Thread, str(thread_id))
+        if thread is None or thread.workspace_id != str(workspace_id):
+            raise HTTPException(404, "Chat not found in this workspace")
+    statement = (
         select(Artifact)
         .join(Run, Artifact.run_id == Run.id)
         .join(Thread, Run.thread_id == Thread.id)
         .where(Thread.workspace_id == str(workspace_id), Artifact.durable.is_(True))
-        .order_by(Artifact.created_at.desc())
-        .limit(500)
     )
+    if thread_id is not None:
+        statement = statement.where(Run.thread_id == str(thread_id))
+    rows = session.scalars(statement.order_by(Artifact.created_at.desc()).limit(500))
     return [manifest(row) for row in rows]
 
 

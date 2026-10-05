@@ -1,7 +1,12 @@
 # Artifact visibility
 
-Workspace artifact lists show final deliverables by default. Turn on **Show
-intermediate files** to inspect all retained files. Search applies within the
+The right sidebar shows final deliverables from the active chat by default.
+Its counts, search and **Show intermediate files** toggle stay within that chat.
+Switching chats clears artifact selection and filters; late fetches cannot replace
+another chat's list. With no active chat, the sidebar has no artifacts.
+
+The Outputs page lists final deliverables across the workspace. Turn on **Show
+intermediate files** there to inspect all retained workspace files. Search applies within the
 chosen view, and its counts reflect that view. Filtering does not delete files
 or change downloads, table inspection, provenance, or chat references.
 
@@ -38,3 +43,9 @@ available through the toggle. No files are deleted.
 The agent prompt now asks for final deliverable selection. Deterministic checks
 validate classification, promotion, reference boundaries, and persistence; live
 model compliance with selecting the best deliverables remains unmeasured.
+
+The workspace manifest endpoint accepts an optional `thread_id`. When provided,
+it verifies that the chat belongs to the workspace and filters all runs of that
+chat before ordering and applying the 500-item listing limit. Omitting the filter
+keeps the workspace-wide listing used by the Outputs page. Sources remain shared
+at workspace level.

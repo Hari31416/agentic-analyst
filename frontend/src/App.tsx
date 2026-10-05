@@ -84,7 +84,17 @@ export function App() {
   const threadIdRef = useRef(threadId)
   threadIdRef.current = threadId
   const [sources, setSources] = useState<SourceRecord[]>([])
-  const [artifacts, setArtifacts] = useState<ArtifactManifest[]>([])
+  const [artifactCollection, setArtifactCollection] = useState<{
+    workspaceId: string
+    threadId: string
+    items: ArtifactManifest[]
+  } | null>(null)
+  const artifacts =
+    artifactCollection?.workspaceId === workspaceId &&
+    artifactCollection?.threadId === threadId
+      ? artifactCollection.items
+      : []
+  const artifactRequestRef = useRef(0)
   const [datasets, setDatasets] = useState<DatasetSummary[]>([])
   const [datasetErrors, setDatasetErrors] = useState<Record<string, string>>({})
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null)
@@ -251,17 +261,27 @@ export function App() {
   }, [workspaceId])
 
   const refreshArtifacts = useCallback(async () => {
-    if (!workspaceId) {
-      setArtifacts([])
+    const requestId = ++artifactRequestRef.current
+    if (!workspaceId || !threadId) {
+      setArtifactCollection(null)
       return
     }
     try {
-      const nextArtifacts = await phase06Api.artifacts(workspaceId)
-      if (workspaceIdRef.current === workspaceId) setArtifacts(nextArtifacts)
+      const nextArtifacts = await phase06Api.artifacts(workspaceId, threadId)
+      if (
+        requestId === artifactRequestRef.current &&
+        workspaceIdRef.current === workspaceId &&
+        threadIdRef.current === threadId
+      )
+        setArtifactCollection({ workspaceId, threadId, items: nextArtifacts })
     } catch {
-      // Ignored if network glitch
+      // Preserve this chat's current artifacts during a network glitch.
     }
-  }, [workspaceId])
+  }, [workspaceId, threadId])
+
+  useEffect(() => {
+    void refreshArtifacts()
+  }, [refreshArtifacts])
 
   const refreshResources = useCallback(async () => {
     await Promise.all([refreshSources(), refreshArtifacts()])
@@ -374,13 +394,11 @@ export function App() {
     Promise.all([
       api<ThreadItem[]>(`/api/workspaces/${workspaceId}/threads`),
       api<SourceRecord[]>(`/api/workspaces/${workspaceId}/sources`),
-      phase06Api.artifacts(workspaceId).catch(() => []),
     ])
-      .then(([nextThreads, nextSources, nextArtifacts]) => {
+      .then(([nextThreads, nextSources]) => {
         if (!active) return
         setThreads(nextThreads)
         setSources(nextSources)
-        setArtifacts(nextArtifacts)
         const targetThread =
           threadIdRef.current || initialRouteRef.current.threadId || ''
         const chosenThread = nextThreads.some(
@@ -754,6 +772,7 @@ export function App() {
         onOpenInWorkbench={handleOpenInWorkbench}
         onUploadFile={handleUploadFile}
         artifacts={artifacts}
+        artifactScopeKey={`${workspaceId}:${threadId}`}
         onRefreshArtifacts={refreshArtifacts}
         onSourcesChanged={refreshResources}
         onSelectView={handleSelectView}

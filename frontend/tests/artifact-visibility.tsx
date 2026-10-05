@@ -68,6 +68,29 @@ console.log(
 )
 
 const { default: ArtifactBrowser } = await import('../src/ArtifactBrowser')
+await act(async () => {
+  renderer.update(
+    <RightSidebar
+      isOpen
+      onToggleOpen={() => {}}
+      sources={[]}
+      datasets={[]}
+      selectedSourceId={null}
+      onSelectSource={() => {}}
+      onOpenInWorkbench={() => {}}
+      onUploadFile={async () => {}}
+      artifactScopeKey="different-chat"
+      artifacts={[
+        { ...artifacts[0], id: 'other-output', display_name: 'Other chat.csv' },
+      ]}
+    />,
+  )
+})
+assert.match(JSON.stringify(renderer.toJSON()), /Other chat\.csv/)
+assert.doesNotMatch(JSON.stringify(renderer.toJSON()), /Summary\.csv/)
+assert.equal(renderer.root.findByType('input').props.checked, false)
+console.log('Chat scope switching resets artifact filters and content')
+
 const originalFetch = globalThis.fetch
 const standaloneArtifacts = artifacts.map((artifact) => ({
   ...artifact,

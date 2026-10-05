@@ -66,6 +66,7 @@ type RightSidebarProps = {
   onSelectSource: (id: string) => void
   onOpenInWorkbench: (sourceId: string) => void
   onUploadFile: (file: File) => Promise<void>
+  artifactScopeKey?: string
   artifacts?: ArtifactManifest[]
   onRefreshArtifacts?: () => Promise<void>
   onSourcesChanged?: () => Promise<void>
@@ -166,6 +167,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
   onOpenInWorkbench,
   onUploadFile,
   artifacts = [],
+  artifactScopeKey,
   onRefreshArtifacts,
   onSourcesChanged,
   onSelectView,
@@ -183,6 +185,12 @@ export const RightSidebar: FC<RightSidebarProps> = ({
   const [isRefreshingArtifacts, setIsRefreshingArtifacts] = useState(false)
   const [width, setWidth] = useState(360)
   const [isResizing, setIsResizing] = useState(false)
+
+  useEffect(() => {
+    setSelectedArtifactId(null)
+    setArtifactSearchQuery('')
+    setShowIntermediate(false)
+  }, [artifactScopeKey])
 
   const selectedArtifact = useMemo(
     () => artifacts.find((a) => a.id === selectedArtifactId) ?? null,
@@ -642,9 +650,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                   )}
                   <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
                     <span className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">
-                      {showIntermediate
-                        ? 'All retained files'
-                        : 'Generated outputs'}{' '}
+                      {showIntermediate ? 'All retained files' : 'Chat outputs'}{' '}
                       ({filteredArtifacts.length})
                     </span>
                     {onRefreshArtifacts && (

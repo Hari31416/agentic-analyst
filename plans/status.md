@@ -933,3 +933,28 @@ Keep secrets and raw client data out of this file.
   Black/mypy, frontend type/build and artifact rendering/lifecycle/visibility
   tests passed, including chat switch reset. No schema change or live model call
   was required. Full browser QA remains deferred.
+
+## 5 October 2026: real-data smoke scoring corrections
+
+- Diagnosed the user's completed retail smoke trial: calculations were correct,
+  but the API hard-coded `analyst-v6` while the runtime/evaluation used
+  `analyst-v9`. API run creation now records the shared prompt-version constant.
+- Corrected real-pack source labels from pack name `real-v1` to freshly uploaded
+  API source version `1`. Citation scoring now reads audit `details.excerpt`
+  while retaining selected-source, version and declared-citation checks.
+- Added the legitimate `finish_answer` action to real-pack allowlists. The model
+  attempted answer finalization repeatedly in the fresh trial; the trace remains
+  available rather than tuning for a clean model workflow. No unsafe source
+  actions were added to the allowlist.
+- Reused the original observations for an offline diagnosis, then ran one fresh
+  live retail trial to verify API metadata and real citation shapes. Corrected
+  finalization expectations were applied through offline rescore, preserving
+  execution and scoring identities and the original failures.
+- Retained JSON/CSV/HTML under `evals/reports/real-v1-smoke-2026-10-05/`.
+  Final status is `needs_review`: no failed checks or deployment mismatches;
+  sales GBP 691,364.56, 34,306 qualifying lines, 1,086 distinct invoices, cited
+  rules, source immutability and action allowlist pass. Structured currency unit
+  metadata and unreviewed labels remain review items.
+- Validation: 37 focused API/evaluation/real-inventory tests passed, including
+  rejection of undeclared, foreign-source and stale-version excerpt citations.
+  Black, focused mypy and diff checks passed. No migration or phase-10 work.

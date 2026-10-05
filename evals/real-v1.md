@@ -41,6 +41,10 @@ qualifying lines with a missing CustomerID. The largest qualifying sales total
 is the United Kingdom at GBP 561,289.98; 701 raw rows are cancellations. The
 generator repeats these calculations on every regeneration.
 
+Case source versions are `1`, matching each trial's freshly uploaded API
+source. `real-v1` identifies the evaluation pack in its manifest and is not an
+application source version.
+
 ## Running cases
 
 Start the API, worker, sandbox, and required infrastructure as described in the

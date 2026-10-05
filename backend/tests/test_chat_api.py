@@ -200,6 +200,8 @@ def test_download_preview_and_reference_scope(client_db):
 
 
 def test_retrieval_profile_is_persisted_and_part_of_idempotency(client_db):
+    from app.agent.loop import PROMPT_VERSION
+
     client, sessions, (_, thread_id), _ = client_db
     payload = {
         "text": "overview",
@@ -212,6 +214,7 @@ def test_retrieval_profile_is_persisted_and_part_of_idempotency(client_db):
     with sessions() as session:
         run = session.get(Run, first.json()["id"])
         assert run.config["retrieval_settings"]["candidate_budget"] == 60
+        assert run.config["prompt_version"] == PROMPT_VERSION
     payload["retrieval_profile"] = "basic"
     assert (
         client.post(f"/api/threads/{thread_id}/runs", json=payload).status_code == 409

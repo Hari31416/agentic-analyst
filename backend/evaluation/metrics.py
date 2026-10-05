@@ -285,7 +285,11 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             if isinstance(item, dict):
                 alias = item.get("source_alias") or item.get("alias")
                 text = (
-                    item.get("text") or item.get("content") or item.get("passage") or ""
+                    item.get("text")
+                    or item.get("content")
+                    or item.get("passage")
+                    or item.get("excerpt")
+                    or ""
                 )
                 details_raw = item.get("details")
                 details: dict[str, Any] = (
@@ -305,8 +309,12 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                         None,
                     )
                 if not text:
-                    text = details.get(
-                        "text", details.get("content", details.get("passage", ""))
+                    text = (
+                        details.get("text")
+                        or details.get("content")
+                        or details.get("passage")
+                        or details.get("excerpt")
+                        or ""
                     )
                 if "declared_evidence_ids" in outcome:
                     declared_evidence_ids = set(

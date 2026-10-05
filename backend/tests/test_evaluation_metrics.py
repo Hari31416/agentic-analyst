@@ -258,3 +258,60 @@ def test_unicode_character_error_and_retrieval_metrics():
         "reciprocal_rank": 0.5,
         "hit_rate": 1.0,
     }
+
+
+def test_audit_excerpt_citation_requires_declared_matching_source_version():
+    from copy import deepcopy
+
+    case = EvaluationCase.model_validate(
+        {
+            "id": "audit-excerpt",
+            "question": "What are the qualifying sales rules?",
+            "language": "en-IN",
+            "answerability": "answerable",
+            "sources": [
+                {"alias": "rules", "name": "rules.txt", "kind": "txt", "version": "1"}
+            ],
+            "expectations": {
+                "passages": [
+                    {
+                        "source_alias": "rules",
+                        "contains": "Quantity is greater than zero",
+                    }
+                ]
+            },
+        }
+    )
+    observed = {
+        "run_state": "completed",
+        "source_aliases": {"rules": "source-1"},
+        "declared_evidence_ids": ["evidence-1"],
+        "evidence": [
+            {
+                "id": "evidence-1",
+                "source_ids": ["source-1"],
+                "details": {
+                    "excerpt": "Rule: Quantity is greater than zero, and UnitPrice is positive.",
+                    "source_versions": {"source-1": 1},
+                },
+            }
+        ],
+    }
+
+    def passage_status(outcome):
+        return next(
+            metric.status
+            for metric in score_case(case, outcome)
+            if metric.name == "passage:1"
+        )
+
+    assert passage_status(observed) == "pass"
+    stale = deepcopy(observed)
+    stale["evidence"][0]["details"]["source_versions"]["source-1"] = 2
+    assert passage_status(stale) == "fail"
+    undeclared = deepcopy(observed)
+    undeclared["declared_evidence_ids"] = []
+    assert passage_status(undeclared) == "fail"
+    foreign = deepcopy(observed)
+    foreign["evidence"][0]["source_ids"] = ["source-2"]
+    assert passage_status(foreign) == "fail"

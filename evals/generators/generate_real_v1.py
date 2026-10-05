@@ -41,6 +41,7 @@ MONTH_CSV = GENERATED_ROOT / "online-retail-2011-01.csv"
 RULES = GENERATED_ROOT / "retail-analysis-rules.txt"
 VERSION = "real-v1"
 ALLOWED_ACTIONS = [
+    "finish_answer",
     "list_sources",
     "dataset_profile",
     "inspect_schema",
@@ -242,8 +243,10 @@ def write_rules() -> None:
 
 
 def source(
-    alias: str, name: str, path: Path, kind: str, version: str = VERSION
+    alias: str, name: str, path: Path, kind: str, version: str = "1"
 ) -> dict[str, Any]:
+    # Each runner trial uploads a new immutable source, whose API version is 1.
+    # The pack release identifier belongs in the inventory/manifest, not here.
     return {
         "alias": alias,
         "name": name,

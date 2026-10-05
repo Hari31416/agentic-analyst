@@ -12,6 +12,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.audit.redaction import contains_secret, redact
+from app.agent.loop import PROMPT_VERSION
 from app.config import get_settings
 from app.contracts import Contract, RunEvent, RunState, TERMINAL_STATES
 from app.db.models import (
@@ -244,7 +245,7 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             },
             "selected_dataset_ids": selected_datasets,
             "model": settings.openai_model,
-            "prompt_version": "analyst-v6",
+            "prompt_version": PROMPT_VERSION,
             "policy_version": "execution-policy-v1",
             "source_versions": {source.id: source.version for source in source_rows},
             "max_tool_calls": settings.max_tool_calls,

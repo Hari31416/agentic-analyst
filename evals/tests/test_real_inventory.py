@@ -30,8 +30,12 @@ def test_real_inventory_is_valid_and_has_unreviewed_labels():
     assert any("retail" in case.tags for case in cases)
     for case in cases:
         assert case.sources
+        assert "finish_answer" in case.expectations.allowed_actions
         for source in case.sources:
             assert source.sha256 and source.version
+            # Every trial uploads a new source. The API starts it at version 1;
+            # the evaluation pack's release name is a separate identity.
+            assert source.version == "1"
         for passage in case.expectations.passages:
             assert passage.source_alias in {source.alias for source in case.sources}
             assert passage.contains.strip()

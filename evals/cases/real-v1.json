@@ -19,7 +19,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -27,11 +27,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -98,7 +99,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -106,11 +107,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -160,7 +162,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -168,11 +170,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -228,7 +231,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -236,11 +239,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -291,7 +295,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -299,11 +303,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -360,7 +365,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -368,11 +373,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -444,7 +450,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -452,11 +458,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -518,7 +525,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -526,11 +533,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -588,7 +596,7 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "retail",
@@ -596,11 +604,12 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -655,11 +664,12 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -702,7 +712,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -710,11 +720,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -770,7 +781,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -778,11 +789,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -832,7 +844,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -840,11 +852,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -900,7 +913,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -908,11 +921,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -978,7 +992,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -986,11 +1000,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1048,7 +1063,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -1056,11 +1071,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1110,11 +1126,12 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1164,7 +1181,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -1172,11 +1189,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1226,7 +1244,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -1234,11 +1252,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1288,7 +1307,7 @@
           "kind": "csv",
           "path": "real-v1/derived/online-retail-2011-01.csv",
           "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "rules",
@@ -1296,11 +1315,12 @@
           "kind": "txt",
           "path": "real-v1/derived/retail-analysis-rules.txt",
           "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1344,11 +1364,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/inflation-en.pdf",
           "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1398,11 +1419,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/inflation-en.pdf",
           "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1451,11 +1473,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/inflation-en.pdf",
           "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1504,11 +1527,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/inflation-en.pdf",
           "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1558,11 +1582,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/inflation-hi.pdf",
           "sha256": "abc156fbbfd568e81b06e8424ff634eddaa123eb8a93630c1bd2812ed2637c35",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1606,7 +1631,7 @@
           "kind": "pdf",
           "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
           "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
-          "version": "real-v1"
+          "version": "1"
         },
         {
           "alias": "inflation",
@@ -1614,11 +1639,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/inflation-en.pdf",
           "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1671,11 +1697,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/inflation-en.pdf",
           "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1724,11 +1751,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/economic-survey-2023-24-hi.pdf",
           "sha256": "35a0623530efe9b269fa0bdd16dfc1527fe9a1fce74145acdafc6aef188312bd",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1772,11 +1800,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/statistical-appendix-en.pdf",
           "sha256": "2724d440da77b029934d395bc203c0ae50d140870a5f410645e75ac72b6bb83d",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",
@@ -1826,11 +1855,12 @@
           "kind": "pdf",
           "path": "real-v1/raw/inflation-en.pdf",
           "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
-          "version": "real-v1"
+          "version": "1"
         }
       ],
       "expectations": {
         "allowed_actions": [
+          "finish_answer",
           "list_sources",
           "dataset_profile",
           "inspect_schema",

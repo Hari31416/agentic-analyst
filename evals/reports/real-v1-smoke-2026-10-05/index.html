@@ -1,0 +1,96 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Evaluation report</title><style>body{font:15px system-ui;margin:2rem;max-width:1100px}pre{white-space:pre-wrap;background:#f4f4f4;padding:1rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #bbb;padding:.45rem;text-align:left;vertical-align:top}th{background:#eee}</style><h1>Evaluation report</h1><p>Experiment: 02b2c0d77fc62c06-f7c5e888-score-1d6dd6a6</p><h2>Summary</h2><p>Deterministic metric results do not establish human review or judge calibration. Review provenance is shown per trial; absent review and judge scores remain unavailable.</p><pre>{
+  &quot;overall&quot;: {
+    &quot;count&quot;: 1,
+    &quot;status_counts&quot;: {
+      &quot;needs_review&quot;: 1
+    },
+    &quot;known_answer_failure_trials&quot;: 0,
+    &quot;deterministic_metric_counts&quot;: {
+      &quot;pass&quot;: 13,
+      &quot;fail&quot;: 0,
+      &quot;not_applicable&quot;: 0,
+      &quot;needs_review&quot;: 2
+    },
+    &quot;latency_seconds&quot;: {
+      &quot;p50&quot;: 37.15131129097426,
+      &quot;p95&quot;: 37.15131129097426
+    },
+    &quot;tokens&quot;: {
+      &quot;total&quot;: 95415,
+      &quot;measured_count&quot;: 1,
+      &quot;unavailable_count&quot;: 0
+    },
+    &quot;model_calls&quot;: {
+      &quot;total&quot;: 13,
+      &quot;measured_count&quot;: 1,
+      &quot;unavailable_count&quot;: 0
+    }
+  },
+  &quot;cohorts&quot;: {
+    &quot;English&quot;: {
+      &quot;count&quot;: 1,
+      &quot;status_counts&quot;: {
+        &quot;needs_review&quot;: 1
+      },
+      &quot;known_answer_failure_trials&quot;: 0,
+      &quot;deterministic_metric_counts&quot;: {
+        &quot;pass&quot;: 13,
+        &quot;fail&quot;: 0,
+        &quot;not_applicable&quot;: 0,
+        &quot;needs_review&quot;: 2
+      },
+      &quot;latency_seconds&quot;: {
+        &quot;p50&quot;: 37.15131129097426,
+        &quot;p95&quot;: 37.15131129097426
+      },
+      &quot;tokens&quot;: {
+        &quot;total&quot;: 95415,
+        &quot;measured_count&quot;: 1,
+        &quot;unavailable_count&quot;: 0
+      },
+      &quot;model_calls&quot;: {
+        &quot;total&quot;: 13,
+        &quot;measured_count&quot;: 1,
+        &quot;unavailable_count&quot;: 0
+      }
+    },
+    &quot;Hindi&quot;: {
+      &quot;count&quot;: 0,
+      &quot;status_counts&quot;: {},
+      &quot;known_answer_failure_trials&quot;: 0,
+      &quot;deterministic_metric_counts&quot;: {
+        &quot;pass&quot;: 0,
+        &quot;fail&quot;: 0,
+        &quot;not_applicable&quot;: 0,
+        &quot;needs_review&quot;: 0
+      },
+      &quot;latency_seconds&quot;: {
+        &quot;p50&quot;: null,
+        &quot;p95&quot;: null
+      },
+      &quot;tokens&quot;: {
+        &quot;total&quot;: null,
+        &quot;measured_count&quot;: 0,
+        &quot;unavailable_count&quot;: 0
+      },
+      &quot;model_calls&quot;: {
+        &quot;total&quot;: null,
+        &quot;measured_count&quot;: 0,
+        &quot;unavailable_count&quot;: 0
+      }
+    }
+  }
+}</pre><h2>Trials</h2><table><thead><tr><th>Case</th><th>Language</th><th>Question</th><th>Repeat</th><th>Status</th><th>Seconds</th><th>Tokens</th><th>Model calls</th><th>Links</th><th>Answer</th><th>Metrics</th><th>Review provenance</th></tr></thead><tbody><tr><td>retail-jan-sales-en</td><td>en-IN</td><td>Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite calculation evidence and state GBP. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp, qualifying_rows, invoice_count.</td><td>0</td><td>needs_review</td><td>37.15131129097426</td><td>95415</td><td>13</td><td><a href="http://127.0.0.1:8000/api/runs/3b9a309d-94b9-4ecc-b1e1-f2ba1f819621/audit">Run audit</a> </td><td>Based on the retail analysis rules provided, the aggregate results for January 2011 are as follows:
+
+| sales_gbp | qualifying_rows | invoice_count |
+| :--- | :--- | :--- |
+| 691364.56 | 34306 | 1086 |
+
+**Calculation Evidence:**
+The results were derived using the following logic defined in the retail analysis rules [e2, e4]:
+* **Qualifying Rows:** Included only rows where InvoiceNo does not begin with &#x27;C&#x27; (case-insensitive), Quantity &gt; 0, and UnitPrice &gt; 0 [evidence:f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2].
+* **Sales (GBP):** Calculated as Quantity multiplied by UnitPrice [evidence:76104974-acd3-4b76-8ab9-3f66ae712ea9].
+* **Invoice Count:** Count of distinct InvoiceNo identifiers [evidence:1b16c108-8b63-4262-ab84-c1d029cc3cdd].
+* **Timeframe:** All data processed belongs to January 2011 [evidence:ffaa4d10-49c8-4846-80c7-79ca63266358].
+
+All monetary values are in GBP.</td><td>[{&quot;code&quot;: &quot;run_completion&quot;, &quot;details&quot;: {&quot;run_state&quot;: &quot;completed&quot;}, &quot;name&quot;: &quot;run_completion&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;calculation:sales_gbp&quot;, &quot;details&quot;: {&quot;actual_unit&quot;: &quot;&quot;, &quot;actual_value&quot;: &quot;691364.560000&quot;, &quot;expected_unit&quot;: &quot;GBP&quot;, &quot;expected_value&quot;: &quot;691364.56&quot;}, &quot;name&quot;: &quot;calculation:sales_gbp&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;calculation_unit:sales_gbp&quot;, &quot;details&quot;: {&quot;expected_unit&quot;: &quot;GBP&quot;, &quot;reason&quot;: &quot;structured result and selected-source evidence contain no unit hint&quot;}, &quot;name&quot;: &quot;calculation_unit:sales_gbp&quot;, &quot;score&quot;: null, &quot;status&quot;: &quot;needs_review&quot;}, {&quot;code&quot;: &quot;answer_unit:sales_gbp&quot;, &quot;details&quot;: {&quot;expected_unit&quot;: &quot;GBP&quot;}, &quot;name&quot;: &quot;answer_unit:sales_gbp&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;calculation:qualifying_rows&quot;, &quot;details&quot;: {&quot;actual_unit&quot;: &quot;&quot;, &quot;actual_value&quot;: &quot;34306&quot;, &quot;expected_unit&quot;: null, &quot;expected_value&quot;: &quot;34306&quot;}, &quot;name&quot;: &quot;calculation:qualifying_rows&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;calculation:invoice_count&quot;, &quot;details&quot;: {&quot;actual_unit&quot;: &quot;&quot;, &quot;actual_value&quot;: &quot;1086&quot;, &quot;expected_unit&quot;: null, &quot;expected_value&quot;: &quot;1086&quot;}, &quot;name&quot;: &quot;calculation:invoice_count&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;passage:1&quot;, &quot;details&quot;: {&quot;expected_phrase&quot;: &quot;Quantity is greater than zero&quot;, &quot;source_alias&quot;: &quot;rules&quot;}, &quot;name&quot;: &quot;passage:1&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;action_allowlist&quot;, &quot;details&quot;: {&quot;called_actions&quot;: [&quot;list_sources&quot;, &quot;summarize_documents&quot;, &quot;dataset_profile&quot;, &quot;run_sql&quot;, &quot;finish_answer&quot;, &quot;finish_answer&quot;, &quot;finish_answer&quot;, &quot;finish_answer&quot;, &quot;finish_answer&quot;], &quot;unexpected_actions&quot;: []}, &quot;name&quot;: &quot;action_allowlist&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;source_immutable:retail&quot;, &quot;details&quot;: {&quot;after&quot;: &quot;e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6&quot;, &quot;before&quot;: &quot;e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6&quot;}, &quot;name&quot;: &quot;source_immutable:retail&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;source_immutable:rules&quot;, &quot;details&quot;: {&quot;after&quot;: &quot;b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276&quot;, &quot;before&quot;: &quot;b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276&quot;}, &quot;name&quot;: &quot;source_immutable:rules&quot;, &quot;score&quot;: 1.0, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;label_provenance&quot;, &quot;details&quot;: {&quot;provenance&quot;: &quot;unreviewed&quot;}, &quot;name&quot;: &quot;label_provenance&quot;, &quot;score&quot;: null, &quot;status&quot;: &quot;needs_review&quot;}, {&quot;code&quot;: &quot;answer_number:sales_gbp&quot;, &quot;details&quot;: {&quot;expected&quot;: &quot;691364.56&quot;, &quot;scope&quot;: &quot;Numeric literal presence; not semantic proof&quot;}, &quot;name&quot;: &quot;answer_number:sales_gbp&quot;, &quot;score&quot;: null, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;answer_unit:sales_gbp&quot;, &quot;details&quot;: {&quot;expected&quot;: &quot;GBP&quot;}, &quot;name&quot;: &quot;answer_unit:sales_gbp&quot;, &quot;score&quot;: null, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;answer_number:qualifying_rows&quot;, &quot;details&quot;: {&quot;expected&quot;: &quot;34306&quot;, &quot;scope&quot;: &quot;Numeric literal presence; not semantic proof&quot;}, &quot;name&quot;: &quot;answer_number:qualifying_rows&quot;, &quot;score&quot;: null, &quot;status&quot;: &quot;pass&quot;}, {&quot;code&quot;: &quot;answer_number:invoice_count&quot;, &quot;details&quot;: {&quot;expected&quot;: &quot;1086&quot;, &quot;scope&quot;: &quot;Numeric literal presence; not semantic proof&quot;}, &quot;name&quot;: &quot;answer_number:invoice_count&quot;, &quot;score&quot;: null, &quot;status&quot;: &quot;pass&quot;}]</td><td>unreviewed</td></tr></tbody></table></html>

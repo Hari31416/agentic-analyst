@@ -1,0 +1,2010 @@
+{
+  "api_base_url": "http://127.0.0.1:8000",
+  "cases": [
+    {
+      "case_id": "retail-jan-sales-en",
+      "language": "en-IN",
+      "question": "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite calculation evidence and state GBP. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp, qualifying_rows, invoice_count.",
+      "review": {
+        "provenance": "unreviewed",
+        "reviewed_at": null,
+        "reviewer": null
+      },
+      "rubric": {
+        "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy."
+      },
+      "tags": [
+        "retail",
+        "sql",
+        "aggregation"
+      ]
+    }
+  ],
+  "created_at": "2026-10-05T09:37:57.279501+00:00",
+  "execution_experiment_id": "02b2c0d77fc62c06-f7c5e888",
+  "experiment_id": "02b2c0d77fc62c06-f7c5e888-score-1d6dd6a6",
+  "finished_at": "2026-10-05T09:38:34.556430+00:00",
+  "gate": {
+    "minimum_trials_for_release_comparison": 3,
+    "passed": false,
+    "scope": "Synthetic deterministic expectations only; human language/grounding review and optional judges are uncalibrated.",
+    "trial_count_requirement_met": false
+  },
+  "identity": {
+    "api": {
+      "fingerprint": "8a40c98b8c29fa5ac79fa38c72a3c16e154e2475028e563d59b58e59ec77a541",
+      "origin": "http://127.0.0.1:8000"
+    },
+    "application_and_runner_code_hash": "728662c0df0b79524bcceccec7b6b98992e1aac3e77f706f37e7518830628e88",
+    "budgets": {
+      "context_characters": 300000,
+      "model_calls": 20,
+      "tool_calls": 20
+    },
+    "cases": [
+      {
+        "answerability": "answerable",
+        "expectations": {
+          "allowed_actions": [
+            "list_sources",
+            "dataset_profile",
+            "inspect_schema",
+            "sample_rows",
+            "run_sql",
+            "run_python",
+            "analyze_data",
+            "inspect_artifact",
+            "list_artifacts",
+            "search_documents",
+            "source_passage",
+            "summarize_documents"
+          ],
+          "artifacts": [],
+          "calculations": [
+            {
+              "column": null,
+              "key": "sales_gbp",
+              "tolerance": "0.01",
+              "unit": "GBP",
+              "value": "691364.56"
+            },
+            {
+              "column": null,
+              "key": "qualifying_rows",
+              "tolerance": "0",
+              "unit": null,
+              "value": "34306"
+            },
+            {
+              "column": null,
+              "key": "invoice_count",
+              "tolerance": "0",
+              "unit": null,
+              "value": "1086"
+            }
+          ],
+          "passages": [
+            {
+              "contains": "Quantity is greater than zero",
+              "source_alias": "rules"
+            }
+          ],
+          "rubric": {
+            "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy."
+          }
+        },
+        "id": "retail-jan-sales-en",
+        "language": "en-IN",
+        "question": "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite calculation evidence and state GBP. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp, qualifying_rows, invoice_count.",
+        "review": {
+          "provenance": "unreviewed",
+          "reviewed_at": null,
+          "reviewer": null
+        },
+        "schema_version": 1,
+        "sources": [
+          {
+            "alias": "retail",
+            "kind": "csv",
+            "name": "online-retail-2011-01.csv",
+            "path": "real-v1/derived/online-retail-2011-01.csv",
+            "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+            "version": "1"
+          },
+          {
+            "alias": "rules",
+            "kind": "txt",
+            "name": "retail-analysis-rules.txt",
+            "path": "real-v1/derived/retail-analysis-rules.txt",
+            "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+            "version": "1"
+          }
+        ],
+        "tags": [
+          "retail",
+          "sql",
+          "aggregation"
+        ]
+      }
+    ],
+    "dependency_lock_hash": "bf93c379d532ce3d47712ca4f061eb7d9381ce12df1563ea2cf63bdeba047293",
+    "document_chunker_version": "structure-token-v3",
+    "document_extractor_version": "document-extract-v2",
+    "embedding": {
+      "model": "intfloat/multilingual-e5-small",
+      "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78"
+    },
+    "fixtures": {
+      "real-v1/derived/online-retail-2011-01.csv": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+      "real-v1/derived/retail-analysis-rules.txt": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276"
+    },
+    "ingestion_profile": "baseline",
+    "judge": {
+      "calibrated": false,
+      "configured": false
+    },
+    "model": "gemma-4-26B-A4B-it",
+    "model_endpoint": {
+      "fingerprint": "9d4100082e60f79b9ce3c0962bef783b5fcecd1f7127a9b8afcfc6d8ad6f4f61",
+      "origin": "https://cloud.olakrutrim.com"
+    },
+    "ocr": {
+      "enabled": true,
+      "languages": "eng+hin"
+    },
+    "policy_version": "execution-policy-v1",
+    "prompt_version": "analyst-v9",
+    "repeats": 1,
+    "reranker": {
+      "model": "jinaai/jina-reranker-v2-base-multilingual",
+      "revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9"
+    },
+    "retrieval_aliases": {},
+    "retrieval_pipeline_version": "advanced-retrieval-v1",
+    "retrieval_profile": "basic",
+    "sandbox_image": "agentic-rag-analyst:analysis-v1@sha256:693c157fccec858ec5f603b3a590adb9fc9f72b2223abde8f3526f847dbfe609",
+    "schema_version": 1,
+    "timeout_seconds": 300
+  },
+  "identity_hash": "02b2c0d77fc62c06282306b6bb3322924816a432191518fefefb4898ab374f73",
+  "schema_version": 1,
+  "scoring_identity": {
+    "cases": [
+      {
+        "answerability": "answerable",
+        "expectations": {
+          "allowed_actions": [
+            "finish_answer",
+            "list_sources",
+            "dataset_profile",
+            "inspect_schema",
+            "sample_rows",
+            "run_sql",
+            "run_python",
+            "analyze_data",
+            "inspect_artifact",
+            "list_artifacts",
+            "search_documents",
+            "source_passage",
+            "summarize_documents"
+          ],
+          "artifacts": [],
+          "calculations": [
+            {
+              "column": null,
+              "key": "sales_gbp",
+              "tolerance": "0.01",
+              "unit": "GBP",
+              "value": "691364.56"
+            },
+            {
+              "column": null,
+              "key": "qualifying_rows",
+              "tolerance": "0",
+              "unit": null,
+              "value": "34306"
+            },
+            {
+              "column": null,
+              "key": "invoice_count",
+              "tolerance": "0",
+              "unit": null,
+              "value": "1086"
+            }
+          ],
+          "passages": [
+            {
+              "contains": "Quantity is greater than zero",
+              "source_alias": "rules"
+            }
+          ],
+          "rubric": {
+            "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy."
+          }
+        },
+        "id": "retail-jan-sales-en",
+        "language": "en-IN",
+        "question": "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite calculation evidence and state GBP. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp, qualifying_rows, invoice_count.",
+        "review": {
+          "provenance": "unreviewed",
+          "reviewed_at": null,
+          "reviewer": null
+        },
+        "schema_version": 1,
+        "sources": [
+          {
+            "alias": "retail",
+            "kind": "csv",
+            "name": "online-retail-2011-01.csv",
+            "path": "real-v1/derived/online-retail-2011-01.csv",
+            "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+            "version": "1"
+          },
+          {
+            "alias": "rules",
+            "kind": "txt",
+            "name": "retail-analysis-rules.txt",
+            "path": "real-v1/derived/retail-analysis-rules.txt",
+            "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+            "version": "1"
+          }
+        ],
+        "tags": [
+          "retail",
+          "sql",
+          "aggregation"
+        ]
+      }
+    ],
+    "metric_code_hash": "df9f18a6910b2fc3a94670401d3d72063ae94eaf96f457d86b9e8360cba65226"
+  },
+  "summary": {
+    "cohorts": {
+      "English": {
+        "count": 1,
+        "deterministic_metric_counts": {
+          "fail": 0,
+          "needs_review": 2,
+          "not_applicable": 0,
+          "pass": 13
+        },
+        "known_answer_failure_trials": 0,
+        "latency_seconds": {
+          "p50": 37.15131129097426,
+          "p95": 37.15131129097426
+        },
+        "model_calls": {
+          "measured_count": 1,
+          "total": 13,
+          "unavailable_count": 0
+        },
+        "status_counts": {
+          "needs_review": 1
+        },
+        "tokens": {
+          "measured_count": 1,
+          "total": 95415,
+          "unavailable_count": 0
+        }
+      },
+      "Hindi": {
+        "count": 0,
+        "deterministic_metric_counts": {
+          "fail": 0,
+          "needs_review": 0,
+          "not_applicable": 0,
+          "pass": 0
+        },
+        "known_answer_failure_trials": 0,
+        "latency_seconds": {
+          "p50": null,
+          "p95": null
+        },
+        "model_calls": {
+          "measured_count": 0,
+          "total": null,
+          "unavailable_count": 0
+        },
+        "status_counts": {},
+        "tokens": {
+          "measured_count": 0,
+          "total": null,
+          "unavailable_count": 0
+        }
+      }
+    },
+    "overall": {
+      "count": 1,
+      "deterministic_metric_counts": {
+        "fail": 0,
+        "needs_review": 2,
+        "not_applicable": 0,
+        "pass": 13
+      },
+      "known_answer_failure_trials": 0,
+      "latency_seconds": {
+        "p50": 37.15131129097426,
+        "p95": 37.15131129097426
+      },
+      "model_calls": {
+        "measured_count": 1,
+        "total": 13,
+        "unavailable_count": 0
+      },
+      "status_counts": {
+        "needs_review": 1
+      },
+      "tokens": {
+        "measured_count": 1,
+        "total": 95415,
+        "unavailable_count": 0
+      }
+    }
+  },
+  "trials": [
+    {
+      "actual_run_config": {
+        "answer_language": "en-IN",
+        "language_metadata": {
+          "capabilities": {
+            "text_metadata": true,
+            "translation": false
+          },
+          "confidence": "uncertain",
+          "confidence_score": null,
+          "provider": "script-heuristic",
+          "requested_answer_language": "en-IN",
+          "script": "Latn",
+          "segments": [
+            {
+              "end": 325,
+              "language": "en-IN",
+              "script": "Latn",
+              "start": 0,
+              "text": "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite calculation evidence and state GBP. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp, qualifying_rows, invoice_count."
+            }
+          ],
+          "tags": [
+            "en-IN"
+          ]
+        },
+        "max_model_calls": 20,
+        "max_tool_calls": 20,
+        "model": "gemma-4-26B-A4B-it",
+        "policy_version": "execution-policy-v1",
+        "prompt_version": "analyst-v9",
+        "reference_aliases": {
+          "artifact_1": "65136392-3ad9-49b5-96c0-d60a35b27d0d",
+          "artifact_2": "4ccefa76-970a-5a24-9738-1a36828f8af2",
+          "artifact_3": "7b07a553-73ba-5d49-b9f5-fd3bb50886ac",
+          "artifact_4": "e75e2fe9-6533-449f-9bc4-9d8074a19038",
+          "artifact_5": "7b963a80-b91f-410a-9088-e5ebe918d07d",
+          "chunk_1": "ace61ad2-8cc9-4dd1-9901-409275111578",
+          "dataset_1": "ad726eba-2542-47b9-b9e0-785709994a96",
+          "e1": "2bc7e908-b097-49e0-9af2-68eb76ae31f7",
+          "e2": "f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2",
+          "e3": "1b16c108-8b63-4262-ab84-c1d029cc3cdd",
+          "e4": "76104974-acd3-4b76-8ab9-3f66ae712ea9",
+          "e5": "ffaa4d10-49c8-4846-80c7-79ca63266358",
+          "e6": "2ebac796-ac64-4d70-9718-c109aae1f908",
+          "e7": "bd604865-0758-41cc-8a71-aa1319919327",
+          "source_1": "a3451cb5-d285-47b7-9120-672b30c87087",
+          "source_2": "c1456bba-a8d0-4228-b292-497b9a6cd337"
+        },
+        "retrieval_pipeline_version": "advanced-retrieval-v1",
+        "retrieval_profile": "basic",
+        "retrieval_settings": {
+          "aliases": {},
+          "candidate_budget": 60,
+          "embedding_model": "intfloat/multilingual-e5-small",
+          "embedding_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "rerank_default": false,
+          "reranker_model": "jinaai/jina-reranker-v2-base-multilingual",
+          "reranker_revision": "9cfeff2df7d40d1b78e75e5e9cebec92a99813c9",
+          "summary_algorithm": "extractive-summary-v3",
+          "token_budget_default": "[redacted]",
+          "variant_limit": 3
+        },
+        "sandbox_session_id": "sess_9f11924bcb1546c0ab6a43778376ec93",
+        "selected_dataset_ids": [
+          "ad726eba-2542-47b9-b9e0-785709994a96"
+        ],
+        "source_versions": {
+          "a3451cb5-d285-47b7-9120-672b30c87087": 1,
+          "c1456bba-a8d0-4228-b292-497b9a6cd337": 1
+        }
+      },
+      "answer_text": "Based on the retail analysis rules provided, the aggregate results for January 2011 are as follows:\n\n| sales_gbp | qualifying_rows | invoice_count |\n| :--- | :--- | :--- |\n| 691364.56 | 34306 | 1086 |\n\n**Calculation Evidence:**\nThe results were derived using the following logic defined in the retail analysis rules [e2, e4]:\n* **Qualifying Rows:** Included only rows where InvoiceNo does not begin with 'C' (case-insensitive), Quantity > 0, and UnitPrice > 0 [evidence:f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2].\n* **Sales (GBP):** Calculated as Quantity multiplied by UnitPrice [evidence:76104974-acd3-4b76-8ab9-3f66ae712ea9].\n* **Invoice Count:** Count of distinct InvoiceNo identifiers [evidence:1b16c108-8b63-4262-ab84-c1d029cc3cdd].\n* **Timeframe:** All data processed belongs to January 2011 [evidence:ffaa4d10-49c8-4846-80c7-79ca63266358].\n\nAll monetary values are in GBP.",
+      "artifact_ids": [],
+      "audit_limits": {
+        "byte_budget_truncated": false,
+        "entry_byte_budget_truncations": 0,
+        "entry_nested_limit_truncations": 0,
+        "max_export_bytes": 2097152,
+        "max_items_per_collection": 500,
+        "nested_limits_truncated": false,
+        "policy_unrecorded": false,
+        "source_versions_unrecorded": false,
+        "truncated_content_fields": 0,
+        "truncated_counts": {},
+        "truncated_nested_items": 0,
+        "unresolved_reference_counts": {
+          "artifacts": 0,
+          "evidence": 0
+        }
+      },
+      "case_id": "retail-jan-sales-en",
+      "document_versions": [
+        {
+          "chunker_version": "structure-token-v3",
+          "details": {
+            "block_count": 3,
+            "chunk_body_token_limit": "[redacted]",
+            "chunk_count": 1,
+            "chunk_overlap_token_limit": "[redacted]",
+            "chunk_strategy": "structure",
+            "chunker_version": "structure-token-v3",
+            "extractor_version": "document-extract-v2",
+            "index_status": "ready",
+            "ingestion_profile": "baseline",
+            "languages": [
+              "en-IN",
+              "und"
+            ],
+            "tokenization_method": "[redacted]",
+            "tokenizer_sha256": "[redacted]",
+            "warnings": []
+          },
+          "extractor_version": "document-extract-v2",
+          "id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+          "index_generation_id": "ac05bf07-57c5-4fc2-9e03-cbb71f79ae55",
+          "source_version": 1
+        }
+      ],
+      "elapsed_seconds": 37.15131129097426,
+      "error": null,
+      "evidence_ids": [
+        "f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2",
+        "1b16c108-8b63-4262-ab84-c1d029cc3cdd",
+        "76104974-acd3-4b76-8ab9-3f66ae712ea9",
+        "ffaa4d10-49c8-4846-80c7-79ca63266358"
+      ],
+      "ingestion_seconds": 2.064889041997958,
+      "language": "en-IN",
+      "metrics": [
+        {
+          "code": "run_completion",
+          "details": {
+            "run_state": "completed"
+          },
+          "name": "run_completion",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "calculation:sales_gbp",
+          "details": {
+            "actual_unit": "",
+            "actual_value": "691364.560000",
+            "expected_unit": "GBP",
+            "expected_value": "691364.56"
+          },
+          "name": "calculation:sales_gbp",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "calculation_unit:sales_gbp",
+          "details": {
+            "expected_unit": "GBP",
+            "reason": "structured result and selected-source evidence contain no unit hint"
+          },
+          "name": "calculation_unit:sales_gbp",
+          "score": null,
+          "status": "needs_review"
+        },
+        {
+          "code": "answer_unit:sales_gbp",
+          "details": {
+            "expected_unit": "GBP"
+          },
+          "name": "answer_unit:sales_gbp",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "calculation:qualifying_rows",
+          "details": {
+            "actual_unit": "",
+            "actual_value": "34306",
+            "expected_unit": null,
+            "expected_value": "34306"
+          },
+          "name": "calculation:qualifying_rows",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "calculation:invoice_count",
+          "details": {
+            "actual_unit": "",
+            "actual_value": "1086",
+            "expected_unit": null,
+            "expected_value": "1086"
+          },
+          "name": "calculation:invoice_count",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "passage:1",
+          "details": {
+            "expected_phrase": "Quantity is greater than zero",
+            "source_alias": "rules"
+          },
+          "name": "passage:1",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "action_allowlist",
+          "details": {
+            "called_actions": [
+              "list_sources",
+              "summarize_documents",
+              "dataset_profile",
+              "run_sql",
+              "finish_answer",
+              "finish_answer",
+              "finish_answer",
+              "finish_answer",
+              "finish_answer"
+            ],
+            "unexpected_actions": []
+          },
+          "name": "action_allowlist",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "source_immutable:retail",
+          "details": {
+            "after": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+            "before": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6"
+          },
+          "name": "source_immutable:retail",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "source_immutable:rules",
+          "details": {
+            "after": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+            "before": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276"
+          },
+          "name": "source_immutable:rules",
+          "score": 1.0,
+          "status": "pass"
+        },
+        {
+          "code": "label_provenance",
+          "details": {
+            "provenance": "unreviewed"
+          },
+          "name": "label_provenance",
+          "score": null,
+          "status": "needs_review"
+        },
+        {
+          "code": "answer_number:sales_gbp",
+          "details": {
+            "expected": "691364.56",
+            "scope": "Numeric literal presence; not semantic proof"
+          },
+          "name": "answer_number:sales_gbp",
+          "score": null,
+          "status": "pass"
+        },
+        {
+          "code": "answer_unit:sales_gbp",
+          "details": {
+            "expected": "GBP"
+          },
+          "name": "answer_unit:sales_gbp",
+          "score": null,
+          "status": "pass"
+        },
+        {
+          "code": "answer_number:qualifying_rows",
+          "details": {
+            "expected": "34306",
+            "scope": "Numeric literal presence; not semantic proof"
+          },
+          "name": "answer_number:qualifying_rows",
+          "score": null,
+          "status": "pass"
+        },
+        {
+          "code": "answer_number:invoice_count",
+          "details": {
+            "expected": "1086",
+            "scope": "Numeric literal presence; not semantic proof"
+          },
+          "name": "answer_number:invoice_count",
+          "score": null,
+          "status": "pass"
+        }
+      ],
+      "model_calls": 13,
+      "observations": {
+        "answer_text": "Based on the retail analysis rules provided, the aggregate results for January 2011 are as follows:\n\n| sales_gbp | qualifying_rows | invoice_count |\n| :--- | :--- | :--- |\n| 691364.56 | 34306 | 1086 |\n\n**Calculation Evidence:**\nThe results were derived using the following logic defined in the retail analysis rules [e2, e4]:\n* **Qualifying Rows:** Included only rows where InvoiceNo does not begin with 'C' (case-insensitive), Quantity > 0, and UnitPrice > 0 [evidence:f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2].\n* **Sales (GBP):** Calculated as Quantity multiplied by UnitPrice [evidence:76104974-acd3-4b76-8ab9-3f66ae712ea9].\n* **Invoice Count:** Count of distinct InvoiceNo identifiers [evidence:1b16c108-8b63-4262-ab84-c1d029cc3cdd].\n* **Timeframe:** All data processed belongs to January 2011 [evidence:ffaa4d10-49c8-4846-80c7-79ca63266358].\n\nAll monetary values are in GBP.",
+        "artifacts": [
+          {
+            "byte_size": 3698,
+            "display_name": "code.py",
+            "durable": true,
+            "exists": true,
+            "id": "65136392-3ad9-49b5-96c0-d60a35b27d0d",
+            "lineage": [
+              "a3451cb5-d285-47b7-9120-672b30c87087",
+              "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@1",
+              "source:c1456bba-a8d0-4228-b292-497b9a6cd337@1",
+              "dataset:ad726eba-2542-47b9-b9e0-785709994a96",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@v1"
+            ],
+            "media_type": "text/x-python",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "sha256": "10c5da92a5108fe036d529eb4a74686f0cf60da82e4f80b29bab8ef1c156782e"
+          },
+          {
+            "byte_size": 3040771,
+            "display_name": "input-ad726eba-2542-47b9-b9e0-785709994a96.csv",
+            "durable": true,
+            "exists": true,
+            "id": "e75e2fe9-6533-449f-9bc4-9d8074a19038",
+            "lineage": [
+              "a3451cb5-d285-47b7-9120-672b30c87087",
+              "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@v1",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@1",
+              "source:c1456bba-a8d0-4228-b292-497b9a6cd337@1",
+              "dataset:ad726eba-2542-47b9-b9e0-785709994a96",
+              "tool:536e4ca2-26ac-4a94-b779-3b96ab8ec0f1"
+            ],
+            "media_type": "text/csv",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6"
+          },
+          {
+            "byte_size": 528,
+            "display_name": "query-result.json",
+            "durable": true,
+            "exists": true,
+            "id": "4ccefa76-970a-5a24-9738-1a36828f8af2",
+            "lineage": [
+              "a3451cb5-d285-47b7-9120-672b30c87087",
+              "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@1",
+              "source:c1456bba-a8d0-4228-b292-497b9a6cd337@1",
+              "dataset:ad726eba-2542-47b9-b9e0-785709994a96",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@v1",
+              "artifact:e75e2fe9-6533-449f-9bc4-9d8074a19038@sha256:e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+              "sandbox:sess_9f11924bcb1546c0ab6a43778376ec93",
+              "tool:run_python",
+              "tool:536e4ca2-26ac-4a94-b779-3b96ab8ec0f1"
+            ],
+            "media_type": "application/json",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "schema": {
+              "byte_limit_reached": false,
+              "column_mapping": [
+                {
+                  "name": "sales_gbp",
+                  "original_name": "sales_gbp"
+                },
+                {
+                  "name": "qualifying_rows",
+                  "original_name": "qualifying_rows"
+                },
+                {
+                  "name": "invoice_count",
+                  "original_name": "invoice_count"
+                }
+              ],
+              "columns": [
+                "sales_gbp",
+                "qualifying_rows",
+                "invoice_count"
+              ],
+              "duckdb_version": "1.4.4",
+              "input_types": "VARCHAR; numeric/date casts are explicit in SQL",
+              "row_count": 1,
+              "rows": [
+                {
+                  "invoice_count": 1086,
+                  "qualifying_rows": 34306,
+                  "sales_gbp": "691364.560000"
+                }
+              ],
+              "sample_rows": 1,
+              "truncated": false
+            },
+            "sha256": "0718db0d7eff400666d3497819390ac868c2db253ed92c70d8345a0ade679b8e"
+          },
+          {
+            "byte_size": 67,
+            "display_name": "result.csv",
+            "durable": true,
+            "exists": true,
+            "id": "7b07a553-73ba-5d49-b9f5-fd3bb50886ac",
+            "lineage": [
+              "a3451cb5-d285-47b7-9120-672b30c87087",
+              "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@1",
+              "source:c1456bba-a8d0-4228-b292-497b9a6cd337@1",
+              "dataset:ad726eba-2542-47b9-b9e0-785709994a96",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@v1",
+              "artifact:e75e2fe9-6533-449f-9bc4-9d8074a19038@sha256:e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+              "sandbox:sess_9f11924bcb1546c0ab6a43778376ec93",
+              "tool:run_python",
+              "tool:536e4ca2-26ac-4a94-b779-3b96ab8ec0f1"
+            ],
+            "media_type": "text/csv",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "sha256": "c82f70b82f8c06dcac588f558c13abddc69856989a7558c41b6ffbc7deff9fb0"
+          },
+          {
+            "byte_size": 374,
+            "display_name": "query.sql",
+            "durable": true,
+            "exists": true,
+            "id": "7b963a80-b91f-410a-9088-e5ebe918d07d",
+            "lineage": [
+              "a3451cb5-d285-47b7-9120-672b30c87087",
+              "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@1",
+              "source:c1456bba-a8d0-4228-b292-497b9a6cd337@1",
+              "dataset:ad726eba-2542-47b9-b9e0-785709994a96",
+              "source:a3451cb5-d285-47b7-9120-672b30c87087@v1",
+              "artifact:e75e2fe9-6533-449f-9bc4-9d8074a19038@sha256:e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+              "tool:536e4ca2-26ac-4a94-b779-3b96ab8ec0f1"
+            ],
+            "media_type": "text/plain",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "sha256": "630a81342c96de5668081e5e1f936633ed07a65c5be8e12b116780755525304e"
+          }
+        ],
+        "clarification": false,
+        "declared_artifact_ids": [],
+        "declared_evidence_ids": [
+          "f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2",
+          "1b16c108-8b63-4262-ab84-c1d029cc3cdd",
+          "76104974-acd3-4b76-8ab9-3f66ae712ea9",
+          "ffaa4d10-49c8-4846-80c7-79ca63266358"
+        ],
+        "evidence": [
+          {
+            "details": {
+              "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+              "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+              "document_name": "retail-analysis-rules.txt",
+              "document_version": 1,
+              "excerpt": "Dates in this slice use the workbook's local timestamps.",
+              "heading": null,
+              "location": {
+                "block_end": 2,
+                "block_start": 0,
+                "chunk_strategy": "structure",
+                "type": "blocks"
+              },
+              "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source_version": 1,
+              "source_versions": {
+                "c1456bba-a8d0-4228-b292-497b9a6cd337": 1
+              },
+              "summary_fingerprint": "ed0e106bd154cc240d2fd4dedc032e956c928449303c526da58aef0d76446481",
+              "tool_call_id": "dc0270a2-d997-4454-96e4-a1e39a178b73"
+            },
+            "id": "2bc7e908-b097-49e0-9af2-68eb76ae31f7",
+            "kind": "document",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "source_alias": "rules",
+            "source_ids": [
+              "c1456bba-a8d0-4228-b292-497b9a6cd337"
+            ],
+            "source_version": 1,
+            "text": "Dates in this slice use the workbook's local timestamps."
+          },
+          {
+            "details": {
+              "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+              "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+              "document_name": "retail-analysis-rules.txt",
+              "document_version": 1,
+              "excerpt": "For qualifying sales questions, include a row only when InvoiceNo does not begin with C (case-insensitive), Quantity is greater than zero, and UnitPrice is greater than zero.",
+              "heading": null,
+              "location": {
+                "block_end": 2,
+                "block_start": 0,
+                "chunk_strategy": "structure",
+                "type": "blocks"
+              },
+              "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source_version": 1,
+              "source_versions": {
+                "c1456bba-a8d0-4228-b292-497b9a6cd337": 1
+              },
+              "summary_fingerprint": "ed0e106bd154cc240d2fd4dedc032e956c928449303c526da58aef0d76446481",
+              "tool_call_id": "dc0270a2-d997-4454-96e4-a1e39a178b73"
+            },
+            "id": "f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2",
+            "kind": "document",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "source_alias": "rules",
+            "source_ids": [
+              "c1456bba-a8d0-4228-b292-497b9a6cd337"
+            ],
+            "source_version": 1,
+            "text": "For qualifying sales questions, include a row only when InvoiceNo does not begin with C (case-insensitive), Quantity is greater than zero, and UnitPrice is greater than zero."
+          },
+          {
+            "details": {
+              "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+              "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+              "document_name": "retail-analysis-rules.txt",
+              "document_version": 1,
+              "excerpt": "InvoiceNo is an invoice identifier; rows are invoice lines and should not be treated as unique invoices.",
+              "heading": null,
+              "location": {
+                "block_end": 2,
+                "block_start": 0,
+                "chunk_strategy": "structure",
+                "type": "blocks"
+              },
+              "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source_version": 1,
+              "source_versions": {
+                "c1456bba-a8d0-4228-b292-497b9a6cd337": 1
+              },
+              "summary_fingerprint": "ed0e106bd154cc240d2fd4dedc032e956c928449303c526da58aef0d76446481",
+              "tool_call_id": "dc0270a2-d997-4454-96e4-a1e39a178b73"
+            },
+            "id": "1b16c108-8b63-4262-ab84-c1d029cc3cdd",
+            "kind": "document",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "source_alias": "rules",
+            "source_ids": [
+              "c1456bba-a8d0-4228-b292-497b9a6cd337"
+            ],
+            "source_version": 1,
+            "text": "InvoiceNo is an invoice identifier; rows are invoice lines and should not be treated as unique invoices."
+          },
+          {
+            "details": {
+              "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+              "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+              "document_name": "retail-analysis-rules.txt",
+              "document_version": 1,
+              "excerpt": "Sales are Quantity multiplied by UnitPrice and are denominated in GBP.",
+              "heading": null,
+              "location": {
+                "block_end": 2,
+                "block_start": 0,
+                "chunk_strategy": "structure",
+                "type": "blocks"
+              },
+              "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source_version": 1,
+              "source_versions": {
+                "c1456bba-a8d0-4228-b292-497b9a6cd337": 1
+              },
+              "summary_fingerprint": "ed0e106bd154cc240d2fd4dedc032e956c928449303c526da58aef0d76446481",
+              "tool_call_id": "dc0270a2-d997-4454-96e4-a1e39a178b73"
+            },
+            "id": "76104974-acd3-4b76-8ab9-3f66ae712ea9",
+            "kind": "document",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "source_alias": "rules",
+            "source_ids": [
+              "c1456bba-a8d0-4228-b292-497b9a6cd337"
+            ],
+            "source_version": 1,
+            "text": "Sales are Quantity multiplied by UnitPrice and are denominated in GBP."
+          },
+          {
+            "details": {
+              "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+              "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+              "document_name": "retail-analysis-rules.txt",
+              "document_version": 1,
+              "excerpt": "The attached CSV is a row-preserving slice of the UCI Online Retail workbook containing every source row whose InvoiceDate falls in January 2011.",
+              "heading": null,
+              "location": {
+                "block_end": 2,
+                "block_start": 0,
+                "chunk_strategy": "structure",
+                "type": "blocks"
+              },
+              "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source_version": 1,
+              "source_versions": {
+                "c1456bba-a8d0-4228-b292-497b9a6cd337": 1
+              },
+              "summary_fingerprint": "ed0e106bd154cc240d2fd4dedc032e956c928449303c526da58aef0d76446481",
+              "tool_call_id": "dc0270a2-d997-4454-96e4-a1e39a178b73"
+            },
+            "id": "ffaa4d10-49c8-4846-80c7-79ca63266358",
+            "kind": "document",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "source_alias": "rules",
+            "source_ids": [
+              "c1456bba-a8d0-4228-b292-497b9a6cd337"
+            ],
+            "source_version": 1,
+            "text": "The attached CSV is a row-preserving slice of the UCI Online Retail workbook containing every source row whose InvoiceDate falls in January 2011."
+          },
+          {
+            "details": {
+              "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+              "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+              "document_name": "retail-analysis-rules.txt",
+              "document_version": 1,
+              "excerpt": "These rules define an evaluation convention and do not claim to be UCI's official accounting policy.",
+              "heading": null,
+              "location": {
+                "block_end": 2,
+                "block_start": 0,
+                "chunk_strategy": "structure",
+                "type": "blocks"
+              },
+              "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+              "source_version": 1,
+              "source_versions": {
+                "c1456bba-a8d0-4228-b292-497b9a6cd337": 1
+              },
+              "summary_fingerprint": "ed0e106bd154cc240d2fd4dedc032e956c928449303c526da58aef0d76446481",
+              "tool_call_id": "dc0270a2-d997-4454-96e4-a1e39a178b73"
+            },
+            "id": "2ebac796-ac64-4d70-9718-c109aae1f908",
+            "kind": "document",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "source_alias": "rules",
+            "source_ids": [
+              "c1456bba-a8d0-4228-b292-497b9a6cd337"
+            ],
+            "source_version": 1,
+            "text": "These rules define an evaluation convention and do not claim to be UCI's official accounting policy."
+          },
+          {
+            "details": {
+              "assumptions": [],
+              "code_artifact_id": "65136392-3ad9-49b5-96c0-d60a35b27d0d",
+              "dataset_ids": [
+                "ad726eba-2542-47b9-b9e0-785709994a96"
+              ],
+              "executed_at": "2026-10-05T09:38:05.927608+00:00",
+              "limit_semantics": "retained output only; aggregation reads full input",
+              "query": "SELECT SUM(CAST(Quantity AS DECIMAL(18, 3)) * CAST(UnitPrice AS DECIMAL(18, 3))) AS sales_gbp, COUNT(*) AS qualifying_rows, COUNT(DISTINCT InvoiceNo) AS invoice_count FROM dataset_1 WHERE UPPER(SUBSTRING(InvoiceNo, 1, 1)) <> 'C' AND CAST(Quantity AS DECIMAL(18, 3)) > 0 AND CAST(UnitPrice AS DECIMAL(18, 3)) > 0 AND InvoiceDate >= '2011-01-01' AND InvoiceDate < '2011-02-01'",
+              "query_artifact_id": "7b963a80-b91f-410a-9088-e5ebe918d07d",
+              "result_artifact_id": "7b07a553-73ba-5d49-b9f5-fd3bb50886ac",
+              "result_sha256": "c82f70b82f8c06dcac588f558c13abddc69856989a7558c41b6ffbc7deff9fb0",
+              "row_limit": 1000,
+              "schema_versions": {
+                "ad726eba-2542-47b9-b9e0-785709994a96": "file-profile-v1"
+              },
+              "source_versions": {
+                "a3451cb5-d285-47b7-9120-672b30c87087": 1
+              },
+              "truncated": false,
+              "units": {}
+            },
+            "id": "bd604865-0758-41cc-8a71-aa1319919327",
+            "kind": "structured",
+            "producing_run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+            "source_alias": "retail",
+            "source_ids": [
+              "a3451cb5-d285-47b7-9120-672b30c87087"
+            ],
+            "source_version": 1,
+            "text": ""
+          }
+        ],
+        "run_state": "completed",
+        "source_aliases": {
+          "retail": "a3451cb5-d285-47b7-9120-672b30c87087",
+          "rules": "c1456bba-a8d0-4228-b292-497b9a6cd337"
+        },
+        "source_hashes": {
+          "retail": {
+            "after": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+            "before": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6"
+          },
+          "rules": {
+            "after": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+            "before": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276"
+          }
+        },
+        "tool_calls": [
+          {
+            "decision": "allowed",
+            "finished_at": "2026-10-05T09:38:01.529224+00:00",
+            "id": "1a6d5002-9ea6-4931-9a24-7cfd3f78e59c",
+            "input_reference": {
+              "arguments": {},
+              "policy": {
+                "action": "list_sources",
+                "outcome": "allow",
+                "policy_version": "execution-policy-v1",
+                "reason_code": "validated_input"
+              },
+              "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+            },
+            "name": "list_sources",
+            "result": {
+              "artifact_ids": [],
+              "data": {
+                "sources": [
+                  {
+                    "datasets": [
+                      {
+                        "designation": "original",
+                        "id": "ad726eba-2542-47b9-b9e0-785709994a96",
+                        "identity": "data",
+                        "sql_table": "dataset_1"
+                      }
+                    ],
+                    "description": null,
+                    "id": "a3451cb5-d285-47b7-9120-672b30c87087",
+                    "kind": "csv",
+                    "metric_hints": {},
+                    "name": "online-retail-2011-01.csv",
+                    "state": "ready",
+                    "version": 1
+                  },
+                  {
+                    "datasets": [],
+                    "description": null,
+                    "id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                    "kind": "txt",
+                    "metric_hints": {},
+                    "name": "retail-analysis-rules.txt",
+                    "state": "ready",
+                    "version": 1
+                  }
+                ]
+              },
+              "error": null,
+              "evidence_ids": [],
+              "status": "ok",
+              "summary": "2 sources selected"
+            },
+            "started_at": "2026-10-05T09:38:01.505627+00:00",
+            "status": "completed"
+          },
+          {
+            "decision": "allowed",
+            "finished_at": "2026-10-05T09:38:02.225604+00:00",
+            "id": "dc0270a2-d997-4454-96e4-a1e39a178b73",
+            "input_reference": {
+              "arguments": {
+                "scope": "overview",
+                "section": null,
+                "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                "thematic": false
+              },
+              "policy": {
+                "action": "summarize_documents",
+                "outcome": "allow",
+                "policy_version": "execution-policy-v1",
+                "reason_code": "validated_input"
+              },
+              "sha256": "5e5561d2144fcf2dd5550abece00c59d41ffd0ac0d691d6e580ca6ff73fd3b49"
+            },
+            "name": "summarize_documents",
+            "result": {
+              "artifact_ids": [],
+              "data": {
+                "cache": {
+                  "fingerprint": "ed0e106bd154cc240d2fd4dedc032e956c928449303c526da58aef0d76446481",
+                  "hit": false
+                },
+                "documents": [
+                  {
+                    "name": "retail-analysis-rules.txt",
+                    "sampled_chunks": 1,
+                    "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                    "source_version": 1,
+                    "total_chunks": 1
+                  }
+                ],
+                "evidence_policy": "Summary text is extractive navigation only; use supporting original passages for factual claims.",
+                "method": {
+                  "algorithm": "extractive-summary-v3",
+                  "cost_currency": "USD",
+                  "estimated_cost": 0,
+                  "input_tokens": "[redacted]",
+                  "model": "none",
+                  "model_calls": 0,
+                  "output_tokens": "[redacted]",
+                  "prompt_version": "none"
+                },
+                "scope": "overview",
+                "summary": "Dates in this slice use the workbook's local timestamps. For qualifying sales questions, include a row only when InvoiceNo does not begin with C (case-insensitive), Quantity is greater than zero, and UnitPrice is greater than zero. InvoiceNo is an invoice identifier; rows are invoice lines and should not be treated as unique invoices. Sales are Quantity multiplied by UnitPrice and are denominated in GBP. The attached CSV is a row-preserving slice of the UCI Online Retail workbook containing every source row whose InvoiceDate falls in January 2011. These rules define an evaluation convention and do not claim to be UCI's official accounting policy.",
+                "supporting_passages": [
+                  {
+                    "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+                    "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+                    "document_version": 1,
+                    "evidence_id": "2bc7e908-b097-49e0-9af2-68eb76ae31f7",
+                    "excerpt": "Dates in this slice use the workbook's local timestamps.",
+                    "heading": null,
+                    "location": {
+                      "block_end": 2,
+                      "block_start": 0,
+                      "chunk_strategy": "structure",
+                      "type": "blocks"
+                    },
+                    "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                    "source_name": "retail-analysis-rules.txt",
+                    "source_version": 1,
+                    "truncated": false
+                  },
+                  {
+                    "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+                    "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+                    "document_version": 1,
+                    "evidence_id": "f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2",
+                    "excerpt": "For qualifying sales questions, include a row only when InvoiceNo does not begin with C (case-insensitive), Quantity is greater than zero, and UnitPrice is greater than zero.",
+                    "heading": null,
+                    "location": {
+                      "block_end": 2,
+                      "block_start": 0,
+                      "chunk_strategy": "structure",
+                      "type": "blocks"
+                    },
+                    "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                    "source_name": "retail-analysis-rules.txt",
+                    "source_version": 1,
+                    "truncated": false
+                  },
+                  {
+                    "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+                    "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+                    "document_version": 1,
+                    "evidence_id": "1b16c108-8b63-4262-ab84-c1d029cc3cdd",
+                    "excerpt": "InvoiceNo is an invoice identifier; rows are invoice lines and should not be treated as unique invoices.",
+                    "heading": null,
+                    "location": {
+                      "block_end": 2,
+                      "block_start": 0,
+                      "chunk_strategy": "structure",
+                      "type": "blocks"
+                    },
+                    "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                    "source_name": "retail-analysis-rules.txt",
+                    "source_version": 1,
+                    "truncated": false
+                  },
+                  {
+                    "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+                    "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+                    "document_version": 1,
+                    "evidence_id": "76104974-acd3-4b76-8ab9-3f66ae712ea9",
+                    "excerpt": "Sales are Quantity multiplied by UnitPrice and are denominated in GBP.",
+                    "heading": null,
+                    "location": {
+                      "block_end": 2,
+                      "block_start": 0,
+                      "chunk_strategy": "structure",
+                      "type": "blocks"
+                    },
+                    "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                    "source_name": "retail-analysis-rules.txt",
+                    "source_version": 1,
+                    "truncated": false
+                  },
+                  {
+                    "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+                    "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+                    "document_version": 1,
+                    "evidence_id": "ffaa4d10-49c8-4846-80c7-79ca63266358",
+                    "excerpt": "The attached CSV is a row-preserving slice of the UCI Online Retail workbook containing every source row whose InvoiceDate falls in January 2011.",
+                    "heading": null,
+                    "location": {
+                      "block_end": 2,
+                      "block_start": 0,
+                      "chunk_strategy": "structure",
+                      "type": "blocks"
+                    },
+                    "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                    "source_name": "retail-analysis-rules.txt",
+                    "source_version": 1,
+                    "truncated": false
+                  },
+                  {
+                    "chunk_id": "ace61ad2-8cc9-4dd1-9901-409275111578",
+                    "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+                    "document_version": 1,
+                    "evidence_id": "2ebac796-ac64-4d70-9718-c109aae1f908",
+                    "excerpt": "These rules define an evaluation convention and do not claim to be UCI's official accounting policy.",
+                    "heading": null,
+                    "location": {
+                      "block_end": 2,
+                      "block_start": 0,
+                      "chunk_strategy": "structure",
+                      "type": "blocks"
+                    },
+                    "source_id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+                    "source_name": "retail-analysis-rules.txt",
+                    "source_version": 1,
+                    "truncated": false
+                  }
+                ],
+                "thematic": [],
+                "truncated": false
+              },
+              "error": null,
+              "evidence_ids": [
+                "2bc7e908-b097-49e0-9af2-68eb76ae31f7",
+                "f29e8fb1-cc6e-4b3d-9b59-4af9cf96ead2",
+                "1b16c108-8b63-4262-ab84-c1d029cc3cdd",
+                "76104974-acd3-4b76-8ab9-3f66ae712ea9",
+                "ffaa4d10-49c8-4846-80c7-79ca63266358",
+                "2ebac796-ac64-4d70-9718-c109aae1f908"
+              ],
+              "status": "ok",
+              "summary": "Created a bounded extractive summary; inspect its supporting passages."
+            },
+            "started_at": "2026-10-05T09:38:02.159461+00:00",
+            "status": "completed"
+          },
+          {
+            "decision": "allowed",
+            "finished_at": "2026-10-05T09:38:02.876778+00:00",
+            "id": "6137f838-dd3f-4f14-9619-ee60bc76aa00",
+            "input_reference": {
+              "arguments": {
+                "dataset_id": "ad726eba-2542-47b9-b9e0-785709994a96"
+              },
+              "policy": {
+                "action": "dataset_profile",
+                "outcome": "allow",
+                "policy_version": "execution-policy-v1",
+                "reason_code": "validated_input"
+              },
+              "sha256": "e5928bfc218c4ac3f95700d41a732336f02b48cb3497d6cd44e6dbdae027dc9e"
+            },
+            "name": "dataset_profile",
+            "result": {
+              "artifact_ids": [],
+              "data": {
+                "column_names_truncated_count": 0,
+                "columns": [
+                  {
+                    "duckdb_type": "VARCHAR",
+                    "examples": [
+                      "539993",
+                      "539994",
+                      "539995",
+                      "539996",
+                      "539997"
+                    ],
+                    "hints": {
+                      "type_inference_uncertain": true
+                    },
+                    "missing_count": 0,
+                    "name": "InvoiceNo",
+                    "nullable": false,
+                    "position": 0,
+                    "type": "string"
+                  },
+                  {
+                    "duckdb_type": "VARCHAR",
+                    "examples": [
+                      "22386",
+                      "21499",
+                      "21498",
+                      "22379",
+                      "20718"
+                    ],
+                    "hints": {
+                      "type_inference_uncertain": true
+                    },
+                    "missing_count": 0,
+                    "name": "StockCode",
+                    "nullable": false,
+                    "position": 1,
+                    "type": "string"
+                  },
+                  {
+                    "duckdb_type": "VARCHAR",
+                    "examples": [
+                      "JUMBO BAG PINK POLKADOT",
+                      "BLUE POLKADOT WRAP",
+                      "RED RETROSPOT WRAP ",
+                      "RECYCLING BAG RETROSPOT ",
+                      "RED RETROSPOT SHOPPER BAG"
+                    ],
+                    "hints": {},
+                    "missing_count": 114,
+                    "name": "Description",
+                    "nullable": true,
+                    "position": 2,
+                    "type": "string"
+                  },
+                  {
+                    "duckdb_type": "BIGINT",
+                    "examples": [
+                      "10",
+                      "25",
+                      "5",
+                      "6",
+                      "12"
+                    ],
+                    "hints": {},
+                    "missing_count": 0,
+                    "name": "Quantity",
+                    "nullable": false,
+                    "position": 3,
+                    "type": "integer"
+                  },
+                  {
+                    "duckdb_type": "TIMESTAMP",
+                    "examples": [
+                      "2011-01-04 10:00:00",
+                      "2011-01-04 10:09:00",
+                      "2011-01-04 10:12:00",
+                      "2011-01-04 10:15:00",
+                      "2011-01-04 10:16:00"
+                    ],
+                    "hints": {},
+                    "missing_count": 0,
+                    "name": "InvoiceDate",
+                    "nullable": false,
+                    "position": 4,
+                    "type": "timestamp"
+                  },
+                  {
+                    "duckdb_type": "DECIMAL(38, 10)",
+                    "examples": [
+                      "1.95",
+                      "0.42",
+                      "2.1",
+                      "1.25",
+                      "3.25"
+                    ],
+                    "hints": {
+                      "currency_unknown": true
+                    },
+                    "missing_count": 0,
+                    "name": "UnitPrice",
+                    "nullable": false,
+                    "position": 5,
+                    "type": "decimal"
+                  },
+                  {
+                    "duckdb_type": "BIGINT",
+                    "examples": [
+                      "13313",
+                      "18097",
+                      "16656",
+                      "16875",
+                      "13094"
+                    ],
+                    "hints": {},
+                    "missing_count": 13235,
+                    "name": "CustomerID",
+                    "nullable": true,
+                    "position": 6,
+                    "type": "integer"
+                  },
+                  {
+                    "duckdb_type": "VARCHAR",
+                    "examples": [
+                      "United Kingdom",
+                      "Sweden",
+                      "Italy",
+                      "Portugal",
+                      "France"
+                    ],
+                    "hints": {},
+                    "missing_count": 0,
+                    "name": "Country",
+                    "nullable": false,
+                    "position": 7,
+                    "type": "string"
+                  }
+                ],
+                "dataset_id": "ad726eba-2542-47b9-b9e0-785709994a96",
+                "delimiter": ",",
+                "encoding": "utf_8",
+                "file_sql_types": "VARCHAR; cast numeric/date values explicitly using schema hints",
+                "header_row": 1,
+                "identity": "data",
+                "row_count": 35147,
+                "row_count_exact": true,
+                "sample": [
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "JUMBO BAG PINK POLKADOT",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "10",
+                    "StockCode": "22386",
+                    "UnitPrice": "1.95"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "BLUE POLKADOT WRAP",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "25",
+                    "StockCode": "21499",
+                    "UnitPrice": "0.42"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "RED RETROSPOT WRAP ",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "25",
+                    "StockCode": "21498",
+                    "UnitPrice": "0.42"
+                  }
+                ],
+                "sample_note": "Showing 3 preview rows of 8 columns. Use sample_rows tool for targeted row pagination.",
+                "sample_omitted_row_count": 35137,
+                "sample_truncated_cell_count": 0,
+                "schema_version": "file-profile-v1",
+                "sheet_name": null,
+                "source_id": "a3451cb5-d285-47b7-9120-672b30c87087",
+                "source_version": 1,
+                "sql_table": "data_ad726eba254247b9b9e0785709994a96",
+                "warnings": [
+                  "type_inference_sampled_first_10000_rows"
+                ]
+              },
+              "error": null,
+              "evidence_ids": [],
+              "status": "ok",
+              "summary": "Profile for data"
+            },
+            "started_at": "2026-10-05T09:38:02.846689+00:00",
+            "status": "completed"
+          },
+          {
+            "decision": "allowed",
+            "finished_at": "2026-10-05T09:38:05.933272+00:00",
+            "id": "536e4ca2-26ac-4a94-b779-3b96ab8ec0f1",
+            "input_reference": {
+              "code_artifact_id": "65136392-3ad9-49b5-96c0-d60a35b27d0d"
+            },
+            "name": "run_sql",
+            "result": {
+              "artifact_ids": [
+                "65136392-3ad9-49b5-96c0-d60a35b27d0d",
+                "4ccefa76-970a-5a24-9738-1a36828f8af2",
+                "7b07a553-73ba-5d49-b9f5-fd3bb50886ac",
+                "e75e2fe9-6533-449f-9bc4-9d8074a19038",
+                "7b963a80-b91f-410a-9088-e5ebe918d07d"
+              ],
+              "data": {
+                "artifacts": [
+                  {
+                    "byte_size": 528,
+                    "display_name": "query-result.json",
+                    "durable": true,
+                    "id": "4ccefa76-970a-5a24-9738-1a36828f8af2",
+                    "lineage": [
+                      "sandbox:sess_9f11924bcb1546c0ab6a43778376ec93",
+                      "tool:run_python"
+                    ],
+                    "media_type": "application/json",
+                    "relative_path": "query-result.json",
+                    "role": "metadata",
+                    "run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+                    "sha256": "0718db0d7eff400666d3497819390ac868c2db253ed92c70d8345a0ade679b8e",
+                    "storage_key": "derived/cdaf03ab-bfc0-4378-91ab-f71aa5ebc234/3b9a309d-94b9-4ecc-b1e1-f2ba1f819621/536e4ca2-26ac-4a94-b779-3b96ab8ec0f1/query-result.json",
+                    "tool_call_id": "536e4ca2-26ac-4a94-b779-3b96ab8ec0f1"
+                  },
+                  {
+                    "byte_size": 67,
+                    "display_name": "result.csv",
+                    "durable": true,
+                    "id": "7b07a553-73ba-5d49-b9f5-fd3bb50886ac",
+                    "lineage": [
+                      "sandbox:sess_9f11924bcb1546c0ab6a43778376ec93",
+                      "tool:run_python"
+                    ],
+                    "media_type": "text/csv",
+                    "relative_path": "result.csv",
+                    "role": "intermediate",
+                    "run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+                    "sha256": "c82f70b82f8c06dcac588f558c13abddc69856989a7558c41b6ffbc7deff9fb0",
+                    "storage_key": "derived/cdaf03ab-bfc0-4378-91ab-f71aa5ebc234/3b9a309d-94b9-4ecc-b1e1-f2ba1f819621/536e4ca2-26ac-4a94-b779-3b96ab8ec0f1/result.csv",
+                    "tool_call_id": "536e4ca2-26ac-4a94-b779-3b96ab8ec0f1"
+                  },
+                  {
+                    "byte_size": 374,
+                    "display_name": "query.sql",
+                    "id": "7b963a80-b91f-410a-9088-e5ebe918d07d",
+                    "media_type": "text/plain",
+                    "role": "execution_code",
+                    "sha256": "630a81342c96de5668081e5e1f936633ed07a65c5be8e12b116780755525304e",
+                    "storage_key": "derived/cdaf03ab-bfc0-4378-91ab-f71aa5ebc234/3b9a309d-94b9-4ecc-b1e1-f2ba1f819621/536e4ca2-26ac-4a94-b779-3b96ab8ec0f1/query.sql"
+                  }
+                ],
+                "byte_limit_reached": false,
+                "code_artifact_id": "65136392-3ad9-49b5-96c0-d60a35b27d0d",
+                "column_mapping": [
+                  {
+                    "name": "sales_gbp",
+                    "original_name": "sales_gbp"
+                  },
+                  {
+                    "name": "qualifying_rows",
+                    "original_name": "qualifying_rows"
+                  },
+                  {
+                    "name": "invoice_count",
+                    "original_name": "invoice_count"
+                  }
+                ],
+                "columns": [
+                  "sales_gbp",
+                  "qualifying_rows",
+                  "invoice_count"
+                ],
+                "duckdb_version": "1.4.4",
+                "input_artifact_ids": [],
+                "input_dataset_ids": [
+                  "ad726eba-2542-47b9-b9e0-785709994a96"
+                ],
+                "input_lineage": [
+                  "source:a3451cb5-d285-47b7-9120-672b30c87087@v1"
+                ],
+                "input_types": "VARCHAR; numeric/date casts are explicit in SQL",
+                "query": "SELECT SUM(CAST(Quantity AS DECIMAL(18, 3)) * CAST(UnitPrice AS DECIMAL(18, 3))) AS sales_gbp, COUNT(*) AS qualifying_rows, COUNT(DISTINCT InvoiceNo) AS invoice_count FROM dataset_1 WHERE UPPER(SUBSTRING(InvoiceNo, 1, 1)) <> 'C' AND CAST(Quantity AS DECIMAL(18, 3)) > 0 AND CAST(UnitPrice AS DECIMAL(18, 3)) > 0 AND InvoiceDate >= '2011-01-01' AND InvoiceDate < '2011-02-01'",
+                "query_artifact_id": "7b963a80-b91f-410a-9088-e5ebe918d07d",
+                "row_count": 1,
+                "rows": [
+                  {
+                    "invoice_count": 1086,
+                    "qualifying_rows": 34306,
+                    "sales_gbp": "691364.560000"
+                  }
+                ],
+                "sample_note": "Only the first 20 returned rows are shown; retained CSV contains the bounded full result",
+                "sample_rows": 1,
+                "staged_input_artifacts": [
+                  {
+                    "dataset_id": "ad726eba-2542-47b9-b9e0-785709994a96",
+                    "guest_aliases": [
+                      "/workspace/inputs/dataset_1.csv"
+                    ],
+                    "guest_path": "/workspace/inputs/ad726eba-2542-47b9-b9e0-785709994a96.csv",
+                    "id": "e75e2fe9-6533-449f-9bc4-9d8074a19038",
+                    "role": "input_snapshot",
+                    "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6"
+                  }
+                ],
+                "truncated": false
+              },
+              "error": null,
+              "evidence_ids": [
+                "bd604865-0758-41cc-8a71-aa1319919327"
+              ],
+              "status": "ok",
+              "summary": "Query returned 1 retained rows; output limit 1000"
+            },
+            "started_at": "2026-10-05T09:38:04.582177+00:00",
+            "status": "completed"
+          },
+          {
+            "decision": "rejected",
+            "finished_at": null,
+            "id": "42eb7407-d4dc-4bd2-aacd-bc4b2a34e6dc",
+            "input_reference": {
+              "validation_errors": [
+                {
+                  "field": "answer",
+                  "message": "output artifacts cannot be execution code, input snapshots or metadata",
+                  "type": "reference_validation"
+                }
+              ]
+            },
+            "name": "finish_answer",
+            "result": null,
+            "started_at": "2026-10-05T09:38:10.433051+00:00",
+            "status": "rejected"
+          },
+          {
+            "decision": "rejected",
+            "finished_at": null,
+            "id": "af4d825c-04b6-4dd0-9b1a-18df71839c50",
+            "input_reference": {
+              "validation_errors": [
+                {
+                  "field": "answer",
+                  "message": "output artifacts cannot be execution code, input snapshots or metadata",
+                  "type": "reference_validation"
+                }
+              ]
+            },
+            "name": "finish_answer",
+            "result": null,
+            "started_at": "2026-10-05T09:38:13.056703+00:00",
+            "status": "rejected"
+          },
+          {
+            "decision": "rejected",
+            "finished_at": null,
+            "id": "4969beaf-2c42-4f64-adad-c41fdb275aed",
+            "input_reference": {
+              "validation_errors": [
+                {
+                  "field": "answer",
+                  "message": "output artifacts cannot be execution code, input snapshots or metadata",
+                  "type": "reference_validation"
+                }
+              ]
+            },
+            "name": "finish_answer",
+            "result": null,
+            "started_at": "2026-10-05T09:38:23.511495+00:00",
+            "status": "rejected"
+          },
+          {
+            "decision": "rejected",
+            "finished_at": null,
+            "id": "325725cf-872e-4b92-bd0f-4810ef5ba40d",
+            "input_reference": {
+              "validation_errors": [
+                {
+                  "field": "answer",
+                  "message": "output artifacts cannot be execution code, input snapshots or metadata",
+                  "type": "reference_validation"
+                }
+              ]
+            },
+            "name": "finish_answer",
+            "result": null,
+            "started_at": "2026-10-05T09:38:26.259174+00:00",
+            "status": "rejected"
+          },
+          {
+            "decision": "rejected",
+            "finished_at": null,
+            "id": "07542208-0ee9-4b66-b41a-d646a416779a",
+            "input_reference": {
+              "validation_errors": [
+                {
+                  "field": "answer",
+                  "message": "output artifacts cannot be execution code, input snapshots or metadata",
+                  "type": "reference_validation"
+                }
+              ]
+            },
+            "name": "finish_answer",
+            "result": null,
+            "started_at": "2026-10-05T09:38:31.059585+00:00",
+            "status": "rejected"
+          }
+        ]
+      },
+      "previous_scoring_status": "failed",
+      "profile_mismatches": [],
+      "query_seconds": 33.341008,
+      "repetition": 0,
+      "review_status": "unreviewed",
+      "run_id": "3b9a309d-94b9-4ecc-b1e1-f2ba1f819621",
+      "run_state": "completed",
+      "runner_peak_rss_bytes": 113262592,
+      "source_hashes": {
+        "retail": {
+          "after": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "before": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6"
+        },
+        "rules": {
+          "after": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "before": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276"
+        }
+      },
+      "sources": [
+        {
+          "alias": "retail",
+          "content_hash": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "datasets": [
+            {
+              "designation": "original",
+              "details": {
+                "column_names_truncated_count": 0,
+                "columns": [
+                  {
+                    "duckdb_type": "VARCHAR",
+                    "examples": [
+                      "539993",
+                      "539994",
+                      "539995",
+                      "539996",
+                      "539997"
+                    ],
+                    "hints": {
+                      "type_inference_uncertain": true
+                    },
+                    "missing_count": 0,
+                    "name": "InvoiceNo",
+                    "nullable": false,
+                    "position": 0,
+                    "type": "string"
+                  },
+                  {
+                    "duckdb_type": "VARCHAR",
+                    "examples": [
+                      "22386",
+                      "21499",
+                      "21498",
+                      "22379",
+                      "20718"
+                    ],
+                    "hints": {
+                      "type_inference_uncertain": true
+                    },
+                    "missing_count": 0,
+                    "name": "StockCode",
+                    "nullable": false,
+                    "position": 1,
+                    "type": "string"
+                  },
+                  {
+                    "duckdb_type": "VARCHAR",
+                    "examples": [
+                      "JUMBO BAG PINK POLKADOT",
+                      "BLUE POLKADOT WRAP",
+                      "RED RETROSPOT WRAP ",
+                      "RECYCLING BAG RETROSPOT ",
+                      "RED RETROSPOT SHOPPER BAG"
+                    ],
+                    "hints": {},
+                    "missing_count": 114,
+                    "name": "Description",
+                    "nullable": true,
+                    "position": 2,
+                    "type": "string"
+                  },
+                  {
+                    "duckdb_type": "BIGINT",
+                    "examples": [
+                      "10",
+                      "25",
+                      "5",
+                      "6",
+                      "12"
+                    ],
+                    "hints": {},
+                    "missing_count": 0,
+                    "name": "Quantity",
+                    "nullable": false,
+                    "position": 3,
+                    "type": "integer"
+                  },
+                  {
+                    "duckdb_type": "TIMESTAMP",
+                    "examples": [
+                      "2011-01-04 10:00:00",
+                      "2011-01-04 10:09:00",
+                      "2011-01-04 10:12:00",
+                      "2011-01-04 10:15:00",
+                      "2011-01-04 10:16:00"
+                    ],
+                    "hints": {},
+                    "missing_count": 0,
+                    "name": "InvoiceDate",
+                    "nullable": false,
+                    "position": 4,
+                    "type": "timestamp"
+                  },
+                  {
+                    "duckdb_type": "DECIMAL(38, 10)",
+                    "examples": [
+                      "1.95",
+                      "0.42",
+                      "2.1",
+                      "1.25",
+                      "3.25"
+                    ],
+                    "hints": {
+                      "currency_unknown": true
+                    },
+                    "missing_count": 0,
+                    "name": "UnitPrice",
+                    "nullable": false,
+                    "position": 5,
+                    "type": "decimal"
+                  },
+                  {
+                    "duckdb_type": "BIGINT",
+                    "examples": [
+                      "13313",
+                      "18097",
+                      "16656",
+                      "16875",
+                      "13094"
+                    ],
+                    "hints": {},
+                    "missing_count": 13235,
+                    "name": "CustomerID",
+                    "nullable": true,
+                    "position": 6,
+                    "type": "integer"
+                  },
+                  {
+                    "duckdb_type": "VARCHAR",
+                    "examples": [
+                      "United Kingdom",
+                      "Sweden",
+                      "Italy",
+                      "Portugal",
+                      "France"
+                    ],
+                    "hints": {},
+                    "missing_count": 0,
+                    "name": "Country",
+                    "nullable": false,
+                    "position": 7,
+                    "type": "string"
+                  }
+                ],
+                "delimiter": ",",
+                "encoding": "utf_8",
+                "header_row": 1,
+                "row_count": 35147,
+                "row_count_exact": true,
+                "sample": [
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "JUMBO BAG PINK POLKADOT",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "10",
+                    "StockCode": "22386",
+                    "UnitPrice": "1.95"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "BLUE POLKADOT WRAP",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "25",
+                    "StockCode": "21499",
+                    "UnitPrice": "0.42"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "RED RETROSPOT WRAP ",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "25",
+                    "StockCode": "21498",
+                    "UnitPrice": "0.42"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "RECYCLING BAG RETROSPOT ",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "5",
+                    "StockCode": "22379",
+                    "UnitPrice": "2.1"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "RED RETROSPOT SHOPPER BAG",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "10",
+                    "StockCode": "20718",
+                    "UnitPrice": "1.25"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "JUMBO BAG RED RETROSPOT",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "10",
+                    "StockCode": "85099B",
+                    "UnitPrice": "1.95"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "RED RETROSPOT CHILDRENS UMBRELLA",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "6",
+                    "StockCode": "20682",
+                    "UnitPrice": "3.25"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "JAM MAKING SET PRINTED",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "12",
+                    "StockCode": "22961",
+                    "UnitPrice": "1.45"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "RECIPE BOX RETROSPOT ",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "6",
+                    "StockCode": "22667",
+                    "UnitPrice": "2.95"
+                  },
+                  {
+                    "Country": "United Kingdom",
+                    "CustomerID": "13313",
+                    "Description": "CHILDRENS APRON APPLES DESIGN",
+                    "InvoiceDate": "2011-01-04 10:00:00",
+                    "InvoiceNo": "539993",
+                    "Quantity": "8",
+                    "StockCode": "22898",
+                    "UnitPrice": "1.95"
+                  }
+                ],
+                "sample_omitted_row_count": 35137,
+                "sample_truncated_cell_count": 0,
+                "sheet_name": null,
+                "warnings": [
+                  "type_inference_sampled_first_10000_rows"
+                ]
+              },
+              "id": "ad726eba-2542-47b9-b9e0-785709994a96",
+              "identity": "data",
+              "schema_version": "file-profile-v1",
+              "source_id": "a3451cb5-d285-47b7-9120-672b30c87087",
+              "source_version": 1
+            }
+          ],
+          "description": null,
+          "display_name": "online-retail-2011-01.csv",
+          "id": "a3451cb5-d285-47b7-9120-672b30c87087",
+          "kind": "csv",
+          "metric_hints": {},
+          "state": "ready",
+          "version": 1
+        },
+        {
+          "alias": "rules",
+          "content_hash": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "description": null,
+          "display_name": "retail-analysis-rules.txt",
+          "document_id": "96d3ecae-657e-4eab-b6f9-0db34919f447",
+          "id": "c1456bba-a8d0-4228-b292-497b9a6cd337",
+          "kind": "txt",
+          "metric_hints": {},
+          "state": "processing",
+          "version": 1
+        }
+      ],
+      "status": "needs_review",
+      "thread_id": "1bcd1710-124a-4e50-a5a6-2e5d2ec1fdfd",
+      "tokens": 95415,
+      "workspace_id": "cdaf03ab-bfc0-4378-91ab-f71aa5ebc234"
+    }
+  ]
+}

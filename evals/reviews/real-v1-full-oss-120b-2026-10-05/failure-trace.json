@@ -1,0 +1,271 @@
+{
+  "run_id": "df6c0123-06ca-409d-9441-c84b87320c3f",
+  "state": "failed",
+  "started_at": "2026-10-05 11:03:42.871611+00:00",
+  "finished_at": "2026-10-05 11:03:55.964191+00:00",
+  "outcome": {
+    "error": {
+      "code": "invalid_model_response",
+      "message": "The model returned an invalid response"
+    },
+    "cleanup": "complete",
+    "partial": true
+  },
+  "events": [
+    {
+      "sequence": 1,
+      "type": "status",
+      "at": "2026-10-05 11:03:42.303497+00:00",
+      "payload": {
+        "state": "queued",
+        "message": "Waiting for a worker"
+      }
+    },
+    {
+      "sequence": 2,
+      "type": "status",
+      "at": "2026-10-05 11:03:42.874577+00:00",
+      "payload": {
+        "state": "running",
+        "message": "Worker started"
+      }
+    },
+    {
+      "sequence": 3,
+      "type": "context_selected",
+      "at": "2026-10-05 11:03:42.882269+00:00",
+      "payload": {
+        "compacted": false,
+        "protected_fact_sentences": 0,
+        "omitted_assistant_messages": 0,
+        "dropped_assistant_characters": 0,
+        "original_assistant_characters": 0,
+        "retained_assistant_characters": 0
+      }
+    },
+    {
+      "sequence": 4,
+      "type": "status",
+      "at": "2026-10-05 11:03:42.890728+00:00",
+      "payload": {
+        "message": "Requesting the next action",
+        "model_calls": 1
+      }
+    },
+    {
+      "sequence": 5,
+      "type": "tool_started",
+      "at": "2026-10-05 11:03:43.704756+00:00",
+      "payload": {
+        "name": "list_sources",
+        "tool_call_id": "dd345b64-86e9-4224-b765-9bfd2771d329"
+      }
+    },
+    {
+      "sequence": 6,
+      "type": "tool_finished",
+      "at": "2026-10-05 11:03:43.719855+00:00",
+      "payload": {
+        "name": "list_sources",
+        "status": "ok",
+        "summary": "2 sources selected",
+        "artifact_ids": [],
+        "tool_call_id": "dd345b64-86e9-4224-b765-9bfd2771d329"
+      }
+    },
+    {
+      "sequence": 7,
+      "type": "status",
+      "at": "2026-10-05 11:03:43.732360+00:00",
+      "payload": {
+        "message": "list_sources: ok",
+        "tool_calls": 1
+      }
+    },
+    {
+      "sequence": 8,
+      "type": "status",
+      "at": "2026-10-05 11:03:43.737932+00:00",
+      "payload": {
+        "message": "Requesting the next action",
+        "model_calls": 2
+      }
+    },
+    {
+      "sequence": 9,
+      "type": "tool_started",
+      "at": "2026-10-05 11:03:44.420020+00:00",
+      "payload": {
+        "name": "inspect_schema",
+        "tool_call_id": "b1fa85e8-293f-408b-b38d-a9c960e983de"
+      }
+    },
+    {
+      "sequence": 10,
+      "type": "tool_finished",
+      "at": "2026-10-05 11:03:44.441743+00:00",
+      "payload": {
+        "name": "inspect_schema",
+        "status": "ok",
+        "summary": "1 selected datasets",
+        "artifact_ids": [],
+        "tool_call_id": "b1fa85e8-293f-408b-b38d-a9c960e983de"
+      }
+    },
+    {
+      "sequence": 11,
+      "type": "status",
+      "at": "2026-10-05 11:03:44.454681+00:00",
+      "payload": {
+        "message": "inspect_schema: ok",
+        "tool_calls": 2
+      }
+    },
+    {
+      "sequence": 12,
+      "type": "status",
+      "at": "2026-10-05 11:03:44.460834+00:00",
+      "payload": {
+        "message": "Requesting the next action",
+        "model_calls": 3
+      }
+    },
+    {
+      "sequence": 13,
+      "type": "tool_rejected",
+      "at": "2026-10-05 11:03:45.600021+00:00",
+      "payload": {
+        "code": "invalid_arguments",
+        "name": "inspect_artifact",
+        "call_id": "chatcmpl-tool-bbd6532b7ed2464f",
+        "validation_errors": [
+          {
+            "type": "reference_validation",
+            "field": "answer",
+            "message": "Unknown artifact reference 'source_2'. Use returned references: none"
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 14,
+      "type": "status",
+      "at": "2026-10-05 11:03:45.624771+00:00",
+      "payload": {
+        "message": "inspect_artifact: rejected",
+        "tool_calls": 3
+      }
+    },
+    {
+      "sequence": 15,
+      "type": "status",
+      "at": "2026-10-05 11:03:45.633311+00:00",
+      "payload": {
+        "message": "Requesting the next action",
+        "model_calls": 4
+      }
+    },
+    {
+      "sequence": 16,
+      "type": "tool_rejected",
+      "at": "2026-10-05 11:03:46.957520+00:00",
+      "payload": {
+        "code": "invalid_arguments",
+        "name": "search_documents",
+        "call_id": "chatcmpl-tool-ae9219849dc36965",
+        "validation_errors": [
+          {
+            "type": "extra_forbidden",
+            "field": "source_id",
+            "message": "Extra inputs are not permitted"
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 17,
+      "type": "status",
+      "at": "2026-10-05 11:03:46.970593+00:00",
+      "payload": {
+        "message": "search_documents: rejected",
+        "tool_calls": 4
+      }
+    },
+    {
+      "sequence": 18,
+      "type": "status",
+      "at": "2026-10-05 11:03:46.975612+00:00",
+      "payload": {
+        "message": "Requesting the next action",
+        "model_calls": 5
+      }
+    },
+    {
+      "sequence": 19,
+      "type": "tool_started",
+      "at": "2026-10-05 11:03:48.858458+00:00",
+      "payload": {
+        "name": "search_documents",
+        "tool_call_id": "adb724d9-ae79-4f00-bfbd-fb4c09ee31c6"
+      }
+    },
+    {
+      "sequence": 20,
+      "type": "tool_finished",
+      "at": "2026-10-05 11:03:48.880937+00:00",
+      "payload": {
+        "name": "search_documents",
+        "status": "ok",
+        "summary": "Retrieved 1 document passages using lexical.",
+        "artifact_ids": [],
+        "tool_call_id": "adb724d9-ae79-4f00-bfbd-fb4c09ee31c6"
+      }
+    },
+    {
+      "sequence": 21,
+      "type": "status",
+      "at": "2026-10-05 11:03:48.888630+00:00",
+      "payload": {
+        "message": "search_documents: ok",
+        "tool_calls": 5
+      }
+    },
+    {
+      "sequence": 22,
+      "type": "status",
+      "at": "2026-10-05 11:03:48.892058+00:00",
+      "payload": {
+        "message": "Requesting the next action",
+        "model_calls": 6
+      }
+    },
+    {
+      "sequence": 23,
+      "type": "error",
+      "at": "2026-10-05 11:03:55.967424+00:00",
+      "payload": {
+        "code": "invalid_model_response",
+        "message": "The model returned an invalid response"
+      }
+    },
+    {
+      "sequence": 24,
+      "type": "terminal",
+      "at": "2026-10-05 11:03:55.977146+00:00",
+      "payload": {
+        "state": "failed",
+        "cleanup": "complete"
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "state": "completed",
+      "attempts": 1,
+      "result": {
+        "run_id": "df6c0123-06ca-409d-9441-c84b87320c3f"
+      }
+    }
+  ],
+  "provenance": "Read-only local PostgreSQL inspection on 2026-10-05; worker log independently identifies ValidationError. No model re-execution."
+}

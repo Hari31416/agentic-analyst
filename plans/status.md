@@ -1058,3 +1058,15 @@ Keep secrets and raw client data out of this file.
   evals/reviews/real-v1-full-oss-120b-2026-10-05/, and paired comparison artifacts
   under evals/reviews/real-v1-model-comparison-2026-10-05/. Original reports,
   automatic metrics and trial statuses remain unchanged. Phase 10 unstarted.
+
+## 5 October 2026: trace an OSS failure and HTML comparison
+
+- Read the English chart/export run from PostgreSQL in a read-only transaction.
+  Events confirm two recovered argument rejections, successful rules retrieval,
+  then fatal ValidationError on model call six before SQL/chart execution.
+- Retained the event snapshot and diagnostic notes. Missing raw response and
+  exception fields prevent exact attribution. A deterministic local check shows
+  oversized tool-validation diagnostics can violate SafeError.message's bound;
+  this remains an unproven cause for the recorded run. No model re-execution.
+- Added the user-requested detailed HTML comparison through a Luna subagent,
+  using the reviewed results and explicit single-run/AI-review limitations.

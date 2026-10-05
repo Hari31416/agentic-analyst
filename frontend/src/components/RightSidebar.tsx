@@ -32,6 +32,7 @@ import { ArtifactManifest, phase06Api } from '../phase06Api'
 import { ArtifactDetail } from '../ArtifactBrowser'
 import { Button } from './ui/button'
 import { cn } from '../lib/utils'
+import { filterVisibleArtifacts } from '../lib/artifactVisibility'
 
 export type SourceRecord = {
   id: string
@@ -175,6 +176,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [artifactSearchQuery, setArtifactSearchQuery] = useState('')
+  const [showIntermediate, setShowIntermediate] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -198,16 +200,17 @@ export const RightSidebar: FC<RightSidebarProps> = ({
     return sources.filter((s) => s.display_name.toLowerCase().includes(q))
   }, [sources, searchQuery])
 
-  const filteredArtifacts = useMemo(() => {
-    const q = artifactSearchQuery.trim().toLowerCase()
-    if (!q) return artifacts
-    return artifacts.filter(
-      (a) =>
-        a.display_name.toLowerCase().includes(q) ||
-        a.artifact_type.toLowerCase().includes(q) ||
-        a.media_type.toLowerCase().includes(q),
-    )
-  }, [artifacts, artifactSearchQuery])
+  const filteredArtifacts = useMemo(
+    () =>
+      filterVisibleArtifacts(artifacts, showIntermediate, artifactSearchQuery),
+    [artifacts, showIntermediate, artifactSearchQuery],
+  )
+  const visibleArtifactCount = useMemo(
+    () => filterVisibleArtifacts(artifacts, showIntermediate).length,
+    [artifacts, showIntermediate],
+  )
+  const hiddenArtifactCount =
+    artifacts.length - filterVisibleArtifacts(artifacts, false).length
 
   const startResizing = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -385,7 +388,9 @@ export const RightSidebar: FC<RightSidebarProps> = ({
             onClick={() => setActiveTab('artifacts')}
           >
             <Layers size={13} />
-            <span>Artifacts ({artifacts.length})</span>
+            <span>
+              Artifacts ({filterVisibleArtifacts(artifacts, false).length})
+            </span>
           </button>
         </nav>
 
@@ -600,7 +605,8 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                 </div>
               ) : (
                 <>
-                  {artifacts.length > 2 && (
+                  {(visibleArtifactCount > 2 ||
+                    artifactSearchQuery.length > 0) && (
                     <div className="relative flex items-center">
                       <Search
                         size={13}
@@ -617,9 +623,29 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                     </div>
                   )}
 
+                  <label className="flex items-center gap-2 text-[11px] text-muted-foreground px-0.5">
+                    <input
+                      type="checkbox"
+                      checked={showIntermediate}
+                      onChange={(event) =>
+                        setShowIntermediate(event.target.checked)
+                      }
+                    />
+                    Show intermediate files
+                  </label>
+                  {!showIntermediate && hiddenArtifactCount > 0 && (
+                    <p className="px-0.5 text-[10px] text-muted-foreground">
+                      {hiddenArtifactCount} intermediate{' '}
+                      {hiddenArtifactCount === 1 ? 'file is' : 'files are'}{' '}
+                      hidden.
+                    </p>
+                  )}
                   <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
                     <span className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">
-                      Generated Outputs ({filteredArtifacts.length})
+                      {showIntermediate
+                        ? 'All retained files'
+                        : 'Generated outputs'}{' '}
+                      ({filteredArtifacts.length})
                     </span>
                     {onRefreshArtifacts && (
                       <button
@@ -711,11 +737,14 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                           className="text-muted-foreground/40 mb-2.5"
                         />
                         <p className="font-semibold text-foreground">
-                          No generated artifacts
+                          {visibleArtifactCount === 0
+                            ? 'No outputs yet'
+                            : 'No matching outputs'}
                         </p>
                         <p className="text-[11px] mt-1 text-muted-foreground">
-                          Reports, charts, CSVs, and tables generated in
-                          research threads will appear here.
+                          {visibleArtifactCount === 0
+                            ? 'Reports, charts, and tables produced by research runs will appear here.'
+                            : 'Try a different search, or show intermediate files.'}
                         </p>
                       </div>
                     )}

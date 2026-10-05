@@ -17,6 +17,7 @@ from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.contracts import ArtifactRole
 from app.db.models import (
     Artifact,
     Connection,
@@ -528,6 +529,7 @@ def import_workspace(
                 id=id_map[row["id"]],
                 run_id=_mapped_optional(id_map, row.get("run_id")),
                 tool_call_id=None,
+                role=ArtifactRole(row.get("role", "intermediate")).value,
                 storage_key=key,
                 display_name=_required_string(
                     row.get("display_name"), "artifact.display_name", 255
@@ -782,6 +784,12 @@ def _validate_entity_references(
         _mapped_list(id_map, row.get("source_ids"), "evidence.source_ids")
     for row in entities["artifacts"]:
         _mapped_optional(id_map, row.get("run_id"))
+        try:
+            ArtifactRole(row.get("role", "intermediate"))
+        except (ValueError, TypeError) as error:
+            raise PortabilityError(
+                "archive_invalid", "Invalid artifact role"
+            ) from error
 
 
 def _validate_member(info: zipfile.ZipInfo) -> None:
@@ -1047,6 +1055,7 @@ def _evidence_record(row: Evidence) -> dict[str, Any]:
 
 def _artifact_record(row: Artifact) -> dict[str, Any]:
     return {
+        "role": row.role,
         "id": row.id,
         "run_id": row.run_id,
         "display_name": row.display_name,
@@ -1112,6 +1121,7 @@ def _safe_outcome(value: Any) -> dict[str, Any] | None:
         "status",
         "evidence_ids",
         "artifact_ids",
+        "output_artifact_ids",
         "language",
     }
     return {key: value[key] for key in allowed if key in value}

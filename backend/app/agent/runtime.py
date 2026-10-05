@@ -17,6 +17,7 @@ from app.agent.protocol import ModelToolCall
 from app.config import Settings
 from app.contracts import (
     Contract,
+    ArtifactRole,
     FinalAnswer,
     SafeError,
     ToolResult,
@@ -35,7 +36,7 @@ from app.db.models import (
     now,
 )
 from app.db.repository import append_event, audit
-from app.evidence.validation import validate_answer, answer_checks
+from app.evidence.validation import validate_answer, answer_checks, promote_outputs
 from app.sandbox.client import SandboxError, SandboxHTTPClient
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
@@ -367,6 +368,7 @@ class RunRuntime:
                                 {
                                     "id": row.id,
                                     "name": row.display_name,
+                                    "role": row.role,
                                     "media_type": row.media_type,
                                     "bytes": row.byte_size,
                                 }
@@ -473,6 +475,7 @@ class RunRuntime:
                             id=item["id"],
                             run_id=run_id,
                             tool_call_id=tool_id,
+                            role=ArtifactRole(item.get("role", "intermediate")).value,
                             storage_key=item["storage_key"],
                             display_name=item["display_name"],
                             media_type=item["media_type"],
@@ -563,6 +566,7 @@ class RunRuntime:
                 tool_call_id=tool_id,
                 storage_key=stored.key,
                 display_name="code.py",
+                role=ArtifactRole.EXECUTION_CODE.value,
                 media_type="text/x-python",
                 byte_size=stored.byte_size,
                 sha256=stored.sha256,
@@ -673,6 +677,7 @@ class RunRuntime:
                         tool_call_id=tool_id,
                         storage_key=snapshot.key,
                         display_name=f"input-{dataset_id}.csv",
+                        role=ArtifactRole.INPUT_SNAPSHOT.value,
                         media_type="text/csv",
                         byte_size=snapshot.byte_size,
                         sha256=snapshot.sha256,
@@ -694,6 +699,7 @@ class RunRuntime:
                     staged_inputs.append(
                         {
                             "id": retained.id,
+                            "role": ArtifactRole.INPUT_SNAPSHOT.value,
                             "dataset_id": str(dataset_id),
                             "guest_path": f"/workspace/inputs/{dataset_id}.csv",
                             "guest_aliases": (
@@ -982,6 +988,7 @@ class RunRuntime:
             with self.db() as session, session.begin():
                 run = self.guard(session)
                 validate_answer(session, run, answer)
+                promote_outputs(session, answer)
                 checks = answer_checks(session, run, answer)
                 if checks:
                     append_event(
@@ -1009,6 +1016,9 @@ class RunRuntime:
                         references={
                             "evidence_ids": [str(i) for i in answer.evidence_ids],
                             "artifact_ids": [str(i) for i in answer.artifact_ids],
+                            "output_artifact_ids": [
+                                str(i) for i in answer.output_artifact_ids
+                            ],
                             "warnings": checks,
                             "reference_aliases": (
                                 dict(self.references.aliases) if self.references else {}
@@ -1088,6 +1098,9 @@ class RunRuntime:
                                     id=item["id"],
                                     run_id=run.id,
                                     tool_call_id=item["tool_call_id"],
+                                    role=ArtifactRole(
+                                        item.get("role", "intermediate")
+                                    ).value,
                                     storage_key=item["storage_key"],
                                     display_name=item["display_name"],
                                     media_type=item["media_type"],
@@ -1225,6 +1238,7 @@ class RunRuntime:
                             id=item["id"],
                             run_id=run.id,
                             tool_call_id=item["tool_call_id"],
+                            role=ArtifactRole(item.get("role", "intermediate")).value,
                             storage_key=item["storage_key"],
                             display_name=item["display_name"],
                             media_type=item["media_type"],

@@ -69,6 +69,7 @@ def manifest(row: Artifact) -> dict[str, Any]:
         "lineage": row.lineage or [],
         "durable": row.durable,
         "artifact_type": artifact_kind(row),
+        "role": row.role,
     }
 
 

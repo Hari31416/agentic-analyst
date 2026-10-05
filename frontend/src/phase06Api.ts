@@ -1,4 +1,5 @@
 export type ArtifactManifest = {
+  role: ArtifactRole
   id: string
   display_name: string
   media_type: string
@@ -10,6 +11,9 @@ export type ArtifactManifest = {
   artifact_type: string
   metadata: Record<string, unknown>
 }
+
+export type ArtifactRole =
+  'output' | 'intermediate' | 'execution_code' | 'input_snapshot' | 'metadata'
 
 export type ArtifactRows = {
   artifact_id: string

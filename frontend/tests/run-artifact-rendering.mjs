@@ -6,7 +6,11 @@ import { build } from 'vite'
 
 const output = await mkdtemp(join(tmpdir(), 'artifact-rendering-'))
 try {
-  for (const entry of ['artifact-rendering', 'artifact-lifecycle']) {
+  for (const entry of [
+    'artifact-rendering',
+    'artifact-lifecycle',
+    'artifact-visibility',
+  ]) {
     const directory = join(output, entry)
     await build({
       logLevel: 'error',

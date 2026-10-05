@@ -26,6 +26,7 @@ import {
   phase06Api,
 } from './phase06Api'
 import './artifact-browser.css'
+import { filterVisibleArtifacts } from './lib/artifactVisibility'
 import {
   ArtifactMediaPreview,
   mediaViewerKind,
@@ -765,15 +766,32 @@ export default function ArtifactBrowser({
 }: ArtifactBrowserProps) {
   const [artifacts, setArtifacts] = useState<ArtifactManifest[]>([])
   const [selectedId, setSelectedId] = useState('')
+  const [showIntermediate, setShowIntermediate] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const importRef = useRef<HTMLInputElement>(null)
-  const selected = useMemo(
-    () => artifacts.find((item) => item.id === selectedId),
-    [artifacts, selectedId],
+  const visibleArtifacts = useMemo(
+    () => filterVisibleArtifacts(artifacts, showIntermediate, searchQuery),
+    [artifacts, showIntermediate, searchQuery],
   )
+  const roleVisibleArtifacts = useMemo(
+    () => filterVisibleArtifacts(artifacts, showIntermediate),
+    [artifacts, showIntermediate],
+  )
+  const hiddenArtifactCount =
+    artifacts.length - filterVisibleArtifacts(artifacts, false).length
+  const selected = useMemo(
+    () => visibleArtifacts.find((item) => item.id === selectedId),
+    [visibleArtifacts, selectedId],
+  )
+
+  useEffect(() => {
+    if (!visibleArtifacts.some((item) => item.id === selectedId))
+      setSelectedId(visibleArtifacts[0]?.id ?? '')
+  }, [visibleArtifacts, selectedId])
 
   async function refresh() {
     if (!workspaceId) return
@@ -783,9 +801,12 @@ export default function ArtifactBrowser({
       const result = await phase06Api.artifacts(workspaceId)
       setArtifacts(result)
       setSelectedId((current) =>
-        result.some((item) => item.id === current)
+        result.some(
+          (item) =>
+            item.id === current && (showIntermediate || item.role === 'output'),
+        )
           ? current
-          : (result[0]?.id ?? ''),
+          : (result.find((item) => item.role === 'output')?.id ?? ''),
       )
     } catch (reason) {
       setError(
@@ -866,7 +887,10 @@ export default function ArtifactBrowser({
       <div className="outputs-layout">
         <aside className="outputs-list-pane">
           <div className="outputs-list-heading">
-            <strong>Artifacts</strong>
+            <strong>
+              {showIntermediate ? 'All retained files' : 'Outputs'} (
+              {visibleArtifacts.length})
+            </strong>
             <button
               type="button"
               onClick={() => void refresh()}
@@ -877,16 +901,43 @@ export default function ArtifactBrowser({
               <RefreshCw size={14} />
             </button>
           </div>
+          <div className="outputs-filter-controls">
+            <label>
+              <input
+                type="checkbox"
+                checked={showIntermediate}
+                onChange={(event) => setShowIntermediate(event.target.checked)}
+              />
+              Show intermediate files
+            </label>
+            {!showIntermediate && hiddenArtifactCount > 0 && (
+              <small>
+                {hiddenArtifactCount} intermediate{' '}
+                {hiddenArtifactCount === 1 ? 'file' : 'files'} hidden
+              </small>
+            )}
+            <input
+              type="search"
+              aria-label="Search artifacts"
+              placeholder="Search outputs..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </div>
           {loading && artifacts.length === 0 ? (
             <div className="artifact-empty">
               <LoaderCircle className="spin" size={14} /> Loading artifacts
             </div>
-          ) : artifacts.length === 0 ? (
+          ) : visibleArtifacts.length === 0 ? (
             <div className="artifact-empty">
-              No artifacts in this workspace yet.
+              {artifacts.length === 0
+                ? 'No outputs in this workspace yet.'
+                : roleVisibleArtifacts.length === 0
+                  ? 'No output files yet. Show intermediate files to inspect retained run files.'
+                  : 'No outputs match this search.'}
             </div>
           ) : (
-            artifacts.map((artifact) => (
+            visibleArtifacts.map((artifact) => (
               <button
                 type="button"
                 key={artifact.id}
@@ -897,6 +948,7 @@ export default function ArtifactBrowser({
                 <span>
                   <strong>{artifact.display_name}</strong>
                   <small>
+                    {artifact.role.replace('_', ' ')} ·{' '}
                     {artifact.artifact_type || artifact.media_type} ·{' '}
                     {sizeLabel(artifact.byte_size)}
                   </small>

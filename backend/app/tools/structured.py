@@ -329,6 +329,7 @@ class StructuredTools:
                 {
                     "id": artifact_id,
                     "display_name": "result.csv",
+                    "role": "intermediate",
                     "storage_key": stored.key,
                     "media_type": "text/csv",
                     "byte_size": stored.byte_size,
@@ -386,9 +387,12 @@ class StructuredTools:
                     timeout_seconds=min(300, args.timeout_seconds + 15),
                 ),
             )
+            descriptors = result.data.get("artifacts", [])
+            for descriptor in descriptors:
+                if descriptor["display_name"] == "query-result.json":
+                    descriptor["role"] = "metadata"
             if result.status not in {"ok", "partial"}:
                 return result
-            descriptors = result.data.get("artifacts", [])
             output = next(
                 (row for row in descriptors if row["display_name"] == "result.csv"),
                 None,
@@ -432,6 +436,7 @@ class StructuredTools:
             {
                 "id": query_id,
                 "display_name": "query.sql",
+                "role": "execution_code",
                 "storage_key": query_artifact.key,
                 "media_type": "text/plain",
                 "byte_size": query_artifact.byte_size,

@@ -783,6 +783,7 @@ class ReportsTool:
                 {
                     "id": artifact_id,
                     "display_name": filename,
+                    "role": "intermediate",
                     "storage_key": stored.key,
                     "media_type": media_type,
                     "byte_size": stored.byte_size,

@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from sqlalchemy import (
     JSON,
+    CheckConstraint,
     DateTime,
     ForeignKey,
     Index,
@@ -16,6 +17,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
 from pgvector.sqlalchemy import Vector  # type: ignore[import-untyped]
+
+from app.contracts import ArtifactRole
 
 
 def now() -> datetime:
@@ -205,6 +208,17 @@ class ToolCall(Identity, Base):
 
 class Artifact(Identity, Base):
     __tablename__ = "artifacts"
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('output', 'intermediate', 'execution_code', 'input_snapshot', 'metadata')",
+            name="ck_artifacts_role",
+        ),
+    )
+    role: Mapped[str] = mapped_column(
+        String(30),
+        default=ArtifactRole.INTERMEDIATE.value,
+        server_default=ArtifactRole.INTERMEDIATE.value,
+    )
     run_id: Mapped[str | None] = mapped_column(
         ForeignKey("runs.id", ondelete="CASCADE"), index=True
     )

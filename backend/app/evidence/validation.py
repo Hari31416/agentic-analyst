@@ -2,17 +2,27 @@ import re
 
 from sqlalchemy.orm import Session
 
-from app.contracts import FinalAnswer
+from app.contracts import ArtifactRole, FinalAnswer
 from app.db.models import Artifact, Evidence, Run
 
 
 def validate_answer(session: Session, run: Run, answer: FinalAnswer) -> None:
     # A prior artifact is valid only in this thread and with compatible selected-source lineage.
+    declared_outputs = set(answer.output_artifact_ids)
+    if not declared_outputs.issubset(set(answer.artifact_ids)):
+        raise ValueError("output artifacts must also be declared in artifact_ids")
     allowed_sources = set(run.selected_source_ids)
     for artifact_id in answer.artifact_ids:
         artifact = session.get(Artifact, str(artifact_id))
         if artifact is None or not artifact.durable:
             raise ValueError("unknown artifact")
+        if artifact_id in declared_outputs and artifact.role not in {
+            ArtifactRole.INTERMEDIATE,
+            ArtifactRole.OUTPUT,
+        }:
+            raise ValueError(
+                "output artifacts cannot be execution code, input snapshots or metadata"
+            )
         producer = session.get(Run, artifact.run_id) if artifact.run_id else None
         if producer is None or producer.thread_id != run.thread_id:
             raise ValueError("artifact belongs to another thread")
@@ -68,6 +78,14 @@ def validate_answer(session: Session, run: Run, answer: FinalAnswer) -> None:
         for kind, identity in inline
     ):
         raise ValueError("inline reference has no declared evidence")
+
+
+def promote_outputs(session: Session, answer: FinalAnswer) -> None:
+    """Called after reference validation, in the same transaction as the answer."""
+    for identity in answer.output_artifact_ids:
+        artifact = session.get(Artifact, str(identity))
+        assert artifact is not None
+        artifact.role = ArtifactRole.OUTPUT.value
 
 
 def answer_checks(

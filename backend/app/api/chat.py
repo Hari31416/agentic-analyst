@@ -445,6 +445,7 @@ def artifacts(run_id: str, session: Db) -> list[dict[str, Any]]:
             "media_type": row.media_type,
             "byte_size": row.byte_size,
             "sha256": row.sha256,
+            "role": row.role,
         }
         for row in session.scalars(
             select(Artifact)

@@ -24,6 +24,7 @@ import {
 } from './phase06Api'
 import { apiFetch } from './lib/apiFetch'
 import { formatPath, parsePath } from './lib/routing'
+import { outputArtifactCount } from './lib/artifactVisibility'
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await apiFetch(path, {
@@ -673,7 +674,7 @@ export function App() {
             void refreshResources()
           }}
           sourcesCount={sources.length}
-          artifactsCount={artifacts.length}
+          artifactsCount={outputArtifactCount(artifacts)}
         />
 
         {error && (

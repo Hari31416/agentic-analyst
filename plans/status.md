@@ -895,3 +895,26 @@ Keep secrets and raw client data out of this file.
   reference validity does not establish claim support or correct dataset choice.
   Restart the worker to load the new model boundary. See
   [reference guide](../docs/model-references.md). Phase 10 remains unstarted.
+
+## 5 October 2026: filter workspace artifacts by purpose
+
+- Added backend-assigned artifact roles for execution code, input snapshots,
+  file-SQL metadata and intermediate results. Final answers select deliverables
+  through `output_artifact_ids`, separate from supporting references; validation
+  prevents promotion of internal files and enforces existing access boundaries.
+- Promotion and answer persistence share a transaction. Manifest APIs expose
+  roles, and workspace export/import retains them. See
+  `docs/artifact-visibility.md` for the contract and incomplete-run behavior.
+- Both workspace artifact views show outputs by default with a single intermediate
+  files checkbox. Search stays within the chosen view, output counts exclude
+  internal files, and standalone selection follows the filter. Search remains
+  editable when switching the filter hides the matching intermediate file.
+- Validation: 379 deterministic tests passed, including 11 role contract/rollback/
+  roundtrip checks. Twenty focused PostgreSQL checks passed across worker final
+  promotion, automatic Python/SQL roles, cancellation/recovery and portability.
+  Backend Black/mypy and frontend type/build/artifact rendering checks passed.
+- Applied schema migration `b19d4a2e730f`; Alembic reports no pending operations.
+  Per user direction, no historical classification or data cleanup was performed.
+  Existing artifacts receive the intermediate default. No live model/microVM
+  benchmark or full browser QA was run; final deliverable selection quality is
+  unmeasured. Phase 10 remains unstarted.

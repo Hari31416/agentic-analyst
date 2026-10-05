@@ -29,7 +29,6 @@ _FIELDS = {
     "artifact_id": "artifact",
     "artifact_ids": "artifact",
     "output_artifact_ids": "artifact",
-    "output_artifact_ids": "artifact",
     "input_artifact_ids": "artifact",
     "code_artifact_id": "artifact",
     "code_artifact_ids": "artifact",

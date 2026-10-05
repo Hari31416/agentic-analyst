@@ -44,10 +44,23 @@ class ToolResult(Contract):
     data: dict[str, Any] = Field(default_factory=dict)
 
 
+class ArtifactRole(StrEnum):
+    OUTPUT = "output"
+    INTERMEDIATE = "intermediate"
+    EXECUTION_CODE = "execution_code"
+    INPUT_SNAPSHOT = "input_snapshot"
+    METADATA = "metadata"
+
+
 class FinalAnswer(Contract):
     text: str
     evidence_ids: list[UUID] = Field(default_factory=list)
     artifact_ids: list[UUID] = Field(default_factory=list)
+    output_artifact_ids: list[UUID] = Field(
+        default_factory=list,
+        max_length=20,
+        description="Deliverables the user should receive, also declared in artifact_ids. Exclude execution code, input snapshots and metadata.",
+    )
     clarification: bool = False
 
 
@@ -62,6 +75,7 @@ class RunEvent(Contract):
 
 
 class ArtifactInfo(Contract):
+    role: ArtifactRole = ArtifactRole.INTERMEDIATE
     id: UUID
     storage_key: str
     media_type: str

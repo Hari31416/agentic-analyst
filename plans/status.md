@@ -1089,3 +1089,23 @@ Keep secrets and raw client data out of this file.
 - Validation: 33 focused tests pass, two opt-in live transport tests skipped;
   eight PostgreSQL runtime integration checks and mypy pass. Worker restarted to load the instrumentation
   and repair after checking no active jobs.
+
+## 5 October 2026: rerun failed OSS queries once
+
+- Reran the union of original automatic failures and manually failed OSS tasks,
+  eight queries once each, using GPT OSS 120B after the diagnostic-handler fix.
+  All eight application runs completed with no fatal model-response or infra
+  failure. Automatic statuses: four needs_review, four failed. No profile mismatch.
+- Missing-customer results still use the wrong population. Hindi rules now gives
+  correct numbers but narrow nonbreaking digit-grouping spaces trigger literal
+  answer-number misses. Two survey failures are expected-passage proxy checks,
+  with semantic review still required. No revised full-benchmark score claimed.
+- Read-only database diagnostics confirm Hindi chart's analyze_data call produced
+  a 626-character diagnostic and recovered with the repaired message bound.
+  This exercises the fix live but cannot attribute the missing historical response.
+- Saved the separate run under
+  evals/runs/real-v1-oss-120b-failed-rerun-2026-10-05/. Updated the detailed
+  HTML comparison report and companion comparison data directly with the rerun
+  runs replacing older failed tasks: zero execution crashes recorded across all 30
+  cases for both models (29 completed, 1 awaiting clarification), with 24 passes,
+  five partials, and one population-check failure for GPT OSS 120B.

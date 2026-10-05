@@ -1,0 +1,327 @@
+[
+  {
+    "case_id": "retail-sales-chart-csv",
+    "run_id": "b76b17b6-2fef-4cd2-8e63-3ae1f0ac91a3",
+    "sequence": 16,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "inspect_artifact",
+      "model_calls": 3,
+      "validation_errors": [
+        {
+          "type": "reference_validation",
+          "field": "answer",
+          "message": "Unknown artifact reference 'source_2'. Use returned references: none"
+        }
+      ],
+      "error_message_characters": 200
+    }
+  },
+  {
+    "case_id": "retail-sales-chart-csv",
+    "run_id": "b76b17b6-2fef-4cd2-8e63-3ae1f0ac91a3",
+    "sequence": 21,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 4,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  },
+  {
+    "case_id": "retail-hindi-english-rules",
+    "run_id": "744680f5-4d22-4c7a-98f6-58bb2fcf5eb7",
+    "sequence": 6,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 1,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  },
+  {
+    "case_id": "retail-hindi-english-rules",
+    "run_id": "744680f5-4d22-4c7a-98f6-58bb2fcf5eb7",
+    "sequence": 21,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "source_passage",
+      "model_calls": 4,
+      "validation_errors": [
+        {
+          "type": "reference_validation",
+          "field": "answer",
+          "message": "Unknown chunk reference 'source_2:0'. Use returned references: none"
+        }
+      ],
+      "error_message_characters": 197
+    }
+  },
+  {
+    "case_id": "retail-hindi-english-rules",
+    "run_id": "744680f5-4d22-4c7a-98f6-58bb2fcf5eb7",
+    "sequence": 26,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 5,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  },
+  {
+    "case_id": "retail-hindi-english-rules",
+    "run_id": "744680f5-4d22-4c7a-98f6-58bb2fcf5eb7",
+    "sequence": 36,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "inspect_artifact",
+      "model_calls": 7,
+      "validation_errors": [
+        {
+          "type": "reference_validation",
+          "field": "answer",
+          "message": "Unknown artifact reference 'source_2'. Use returned references: none"
+        }
+      ],
+      "error_message_characters": 200
+    }
+  },
+  {
+    "case_id": "retail-hindi-english-rules",
+    "run_id": "744680f5-4d22-4c7a-98f6-58bb2fcf5eb7",
+    "sequence": 46,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 9,
+      "validation_errors": [
+        {
+          "type": "less_than_equal",
+          "field": "limit",
+          "message": "Input should be less than or equal to 10"
+        }
+      ],
+      "error_message_characters": 171
+    }
+  },
+  {
+    "case_id": "retail-export-and-chart-hi",
+    "run_id": "e845eb14-2662-41da-828e-1d3ebd5b38a7",
+    "sequence": 11,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "inspect_artifact",
+      "model_calls": 2,
+      "validation_errors": [
+        {
+          "type": "reference_validation",
+          "field": "answer",
+          "message": "Unknown artifact reference 'source_2'. Use returned references: none"
+        }
+      ],
+      "error_message_characters": 200
+    }
+  },
+  {
+    "case_id": "retail-export-and-chart-hi",
+    "run_id": "e845eb14-2662-41da-828e-1d3ebd5b38a7",
+    "sequence": 21,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 4,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  },
+  {
+    "case_id": "retail-export-and-chart-hi",
+    "run_id": "e845eb14-2662-41da-828e-1d3ebd5b38a7",
+    "sequence": 36,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "analyze_data",
+      "model_calls": 7,
+      "validation_errors": [
+        {
+          "type": "missing",
+          "field": "inputs.0.alias",
+          "message": "Field required"
+        },
+        {
+          "type": "extra_forbidden",
+          "field": "inputs.0.name",
+          "message": "Extra inputs are not permitted"
+        },
+        {
+          "type": "missing",
+          "field": "operations.0.kind",
+          "message": "Field required"
+        },
+        {
+          "type": "missing",
+          "field": "operations.0.frame",
+          "message": "Field required"
+        },
+        {
+          "type": "extra_forbidden",
+          "field": "operations.0.type",
+          "message": "Extra inputs are not permitted"
+        },
+        {
+          "type": "extra_forbidden",
+          "field": "operations.0.condition",
+          "message": "Extra inputs are not permitted"
+        },
+        {
+          "type": "missing",
+          "field": "operations.1.kind",
+          "message": "Field required"
+        },
+        {
+          "type": "missing",
+          "field": "operations.1.frame",
+          "message": "Field required"
+        },
+        {
+          "type": "extra_forbidden",
+          "field": "operations.1.type",
+          "message": "Extra inputs are not permitted"
+        },
+        {
+          "type": "extra_forbidden",
+          "field": "operations.1.new_columns",
+          "message": "Extra inputs are not permitted"
+        },
+        {
+          "type": "missing",
+          "field": "operations.2.kind",
+          "message": "Field required"
+        },
+        {
+          "type": "missing",
+          "field": "operations.2.frame",
+          "message": "Field required"
+        }
+      ],
+      "error_message_characters": 626
+    }
+  },
+  {
+    "case_id": "survey-fy24-retail-inflation-en",
+    "run_id": "8b7936a8-cc49-41cf-9226-d74bb578681b",
+    "sequence": 6,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 1,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  },
+  {
+    "case_id": "survey-summary-vs-chapter",
+    "run_id": "01667ad0-750b-4cbc-8296-1c931a318a41",
+    "sequence": 11,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 2,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  },
+  {
+    "case_id": "survey-summary-vs-chapter",
+    "run_id": "01667ad0-750b-4cbc-8296-1c931a318a41",
+    "sequence": 31,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 6,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  },
+  {
+    "case_id": "survey-inflation-hi-cross-language",
+    "run_id": "40c75933-7a3b-4bc4-96de-65c9aebc4ddb",
+    "sequence": 11,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 2,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  },
+  {
+    "case_id": "survey-hindi-source-search-en",
+    "run_id": "b6f8a5b2-2172-4a87-896a-1809f8d1f062",
+    "sequence": 6,
+    "type": "tool_validation_diagnostic",
+    "payload": {
+      "name": "search_documents",
+      "model_calls": 1,
+      "validation_errors": [
+        {
+          "type": "extra_forbidden",
+          "field": "source_id",
+          "message": "Extra inputs are not permitted"
+        }
+      ],
+      "error_message_characters": 165
+    }
+  }
+]

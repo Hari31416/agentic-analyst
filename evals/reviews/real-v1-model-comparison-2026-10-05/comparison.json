@@ -16,6 +16,10 @@
     {
       "path": "evals/runs/real-v1-full-oss-120b/report.json",
       "sha256": "1def0d79af511134222eb5ab4deafa563ed2e805e21ca44d91348379abd1ed5b"
+    },
+    {
+      "path": "evals/runs/real-v1-oss-120b-failed-rerun-2026-10-05/report.json",
+      "sha256": "9b58f8875af930c39a02322f5390ff89416127f86d3b5d8630821ab18746efe9"
     }
   ],
   "results": {
@@ -54,35 +58,35 @@
     },
     "oss_120b": {
       "review_counts": {
-        "pass": 19,
-        "fail": 7,
-        "partial": 4
+        "pass": 24,
+        "partial": 5,
+        "fail": 1
       },
-      "complete_success_rate": 0.6333333333333333,
+      "complete_success_rate": 0.8,
       "by_dataset": {
         "retail": {
           "cases": 20,
-          "pass": 14,
-          "fail": 4,
+          "pass": 17,
+          "fail": 1,
           "partial": 2,
-          "complete_success_rate": 0.7
+          "complete_success_rate": 0.85
         },
         "survey": {
           "cases": 10,
-          "fail": 3,
-          "pass": 5,
-          "partial": 2,
-          "complete_success_rate": 0.5
+          "pass": 7,
+          "fail": 0,
+          "partial": 3,
+          "complete_success_rate": 0.7
         }
       },
       "automatic_calculation_checks": {
-        "pass": 21,
-        "fail": 4
+        "pass": 23,
+        "fail": 2
       },
       "terminal_run_states": {
-        "completed": 24,
-        "failed": 5,
-        "awaiting_clarification": 1
+        "completed": 29,
+        "awaiting_clarification": 1,
+        "failed": 0
       },
       "infrastructure_failures": 0
     }
@@ -93,7 +97,7 @@
         "n": 30,
         "total": 303.159172,
         "median": 9.4122335,
-        "p95": 20.99012984999998,
+        "p95": 20.990129849999985,
         "max": 25.821665
       },
       "elapsed_seconds": {
@@ -112,102 +116,130 @@
       },
       "model_calls": {
         "n": 30,
-        "total": 176.0,
+        "total": 176,
         "median": 6.0,
         "p95": 9.549999999999997,
-        "max": 10.0
+        "max": 10
       },
       "tokens": {
         "n": 30,
-        "total": 1165156.0,
+        "total": 1165156,
         "median": 36323.0,
         "p95": 65744.24999999999,
-        "max": 91453.0
+        "max": 91453
       }
     },
     "oss_120b": {
       "query_seconds": {
         "n": 30,
-        "total": 453.87172100000004,
-        "median": 16.0073465,
-        "p95": 26.889293199999997,
-        "max": 31.595115
+        "total": 557.356715,
+        "median": 17.140296,
+        "p95": 30.431683649999997,
+        "max": 46.853748
       },
       "elapsed_seconds": {
         "n": 30,
-        "total": 813.0780540029809,
-        "median": 21.151997729495633,
-        "p95": 75.39242429810253,
-        "max": 114.95126316699316
+        "total": 907.902412542986,
+        "median": 21.84684170849505,
+        "p95": 73.92117481670425,
+        "max": 140.20575900000404
       },
       "ingestion_seconds": {
         "n": 30,
-        "total": 284.91260487609543,
-        "median": 1.9095666040084325,
-        "p95": 44.54545473940234,
-        "max": 106.48662383298506
+        "total": 283.3265522120637,
+        "median": 1.8171880205190973,
+        "p95": 44.27032028750109,
+        "max": 106.46106420800788
       },
       "model_calls": {
-        "n": 25,
-        "total": 176.0,
+        "n": 30,
+        "total": 229,
         "median": 8.0,
-        "p95": 10.0,
-        "max": 13.0
+        "p95": 13.0,
+        "max": 15
       },
       "tokens": {
-        "n": 25,
-        "total": 853234.0,
-        "median": 35581.0,
-        "p95": 60144.599999999984,
-        "max": 73547.0
+        "n": 30,
+        "total": 1231952,
+        "median": 36433.0,
+        "p95": 86209.64999999994,
+        "max": 133308
       }
     }
   },
   "paired_nonfailed_oss_cases_statistics": {
     "gemma": {
       "query_seconds": {
-        "n": 25,
-        "total": 233.417899,
-        "median": 9.333586,
-        "p95": 16.7041178,
-        "max": 17.719001
+        "n": 30,
+        "total": 303.159172,
+        "median": 9.4122335,
+        "p95": 20.990129849999985,
+        "max": 25.821665
+      },
+      "elapsed_seconds": {
+        "n": 30,
+        "total": 661.9391705839662,
+        "median": 14.589753729000222,
+        "p95": 56.87253982964321,
+        "max": 123.35473249998176
+      },
+      "ingestion_seconds": {
+        "n": 30,
+        "total": 287.38850916491356,
+        "median": 2.048614166502375,
+        "p95": 44.288011195653226,
+        "max": 106.95349745900603
       },
       "model_calls": {
-        "n": 25,
-        "total": 146.0,
+        "n": 30,
+        "total": 176,
         "median": 6.0,
-        "p95": 9.599999999999994,
-        "max": 10.0
+        "p95": 9.549999999999997,
+        "max": 10
       },
       "tokens": {
-        "n": 25,
-        "total": 908144.0,
-        "median": 36288.0,
-        "p95": 59180.19999999997,
-        "max": 63503.0
+        "n": 30,
+        "total": 1165156,
+        "median": 36323.0,
+        "p95": 65744.24999999999,
+        "max": 91453
       }
     },
     "oss_120b": {
       "query_seconds": {
-        "n": 25,
-        "total": 406.921623,
-        "median": 16.32912,
-        "p95": 27.216444199999998,
-        "max": 31.595115
+        "n": 30,
+        "total": 557.356715,
+        "median": 17.140296,
+        "p95": 30.431683649999997,
+        "max": 46.853748
+      },
+      "elapsed_seconds": {
+        "n": 30,
+        "total": 907.902412542986,
+        "median": 21.84684170849505,
+        "p95": 73.92117481670425,
+        "max": 140.20575900000404
+      },
+      "ingestion_seconds": {
+        "n": 30,
+        "total": 283.3265522120637,
+        "median": 1.8171880205190973,
+        "p95": 44.27032028750109,
+        "max": 106.46106420800788
       },
       "model_calls": {
-        "n": 25,
-        "total": 176.0,
+        "n": 30,
+        "total": 229,
         "median": 8.0,
-        "p95": 10.0,
-        "max": 13.0
+        "p95": 13.0,
+        "max": 15
       },
       "tokens": {
-        "n": 25,
-        "total": 853234.0,
-        "median": 35581.0,
-        "p95": 60144.599999999984,
-        "max": 73547.0
+        "n": 30,
+        "total": 1231952,
+        "median": 36433.0,
+        "p95": 86209.64999999994,
+        "max": 133308
       }
     }
   },
@@ -228,7 +260,7 @@
       "case_id": "retail-customer-null-en",
       "gemma": "fail",
       "oss_120b": "fail",
-      "oss_reason": "The SQL filters the raw January slice but does not apply the three qualifying-sale filters. It counts 13235 missing-customer rows and reports 37.6561%; gold is 13077 and 38.12% among qualifying invoice lines. Percentage units are explicitly expressed, but the population and result are wrong."
+      "oss_reason": "The query filters the raw January slice (35,147 rows) but does not apply qualifying sales filters (non-cancellation, positive quantity, positive price). It returns 13,235 missing-customer rows and 37.66%; gold is 13,077 and 38.12% among qualifying invoice lines. Identical population error to Gemma."
     },
     {
       "case_id": "retail-top-country-en",
@@ -245,8 +277,8 @@
     {
       "case_id": "retail-sales-chart-csv",
       "gemma": "pass",
-      "oss_120b": "fail",
-      "oss_reason": "Run failed before SQL, CSV export, or PNG chart creation. Answer is empty and artifact_ids is empty despite both outputs being required."
+      "oss_120b": "pass",
+      "oss_reason": "Run completed in 10 model requests. Produced valid result.csv containing the top five countries matching gold to cents (UK \u00a3561,289.98, Netherlands \u00a326,611.16, EIRE \u00a321,904.19, France \u00a317,740.12, Germany \u00a316,910.84) and valid PNG bar chart top5_sales.png. Declared valid evidence and both artifact IDs."
     },
     {
       "case_id": "retail-revenue-hindi",
@@ -299,14 +331,14 @@
     {
       "case_id": "retail-hindi-english-rules",
       "gemma": "pass",
-      "oss_120b": "fail",
-      "oss_reason": "The answer asks the user to provide the attached rules even though the rules source is present and retrievable. It returns neither requested number. The automatic calculation and answer-number checks fail."
+      "oss_120b": "pass",
+      "oss_reason": "Correctly retrieved the attached rules document and calculated qualifying rows (34,306) and total sales GBP (\u00a3691,364.56). Both values match gold exactly. Automatic number check missed only due to narrow nonbreaking spaces in the Hindi digit grouping (34 306 and 691 364.560)."
     },
     {
       "case_id": "retail-export-and-chart-hi",
       "gemma": "partial",
-      "oss_120b": "fail",
-      "oss_reason": "Run failed after document search/profile only; no SQL, CSV, chart, final answer, or artifact IDs were produced despite both outputs being required."
+      "oss_120b": "pass",
+      "oss_reason": "Run completed and safely recovered from a 626-character validation rejection in analyze_data. Generated valid result.csv with top five countries (UK \u00a3561,289.98, Netherlands \u00a326,611.16, EIRE \u00a321,904.19, France \u00a317,740.12, Germany \u00a316,910.84) and valid PNG bar chart top5_countries_sales.png. Hindi answer includes full summary table and declared artifacts."
     },
     {
       "case_id": "retail-cancellation-only-count",
@@ -330,13 +362,13 @@
       "case_id": "retail-scope-clarification",
       "gemma": "fail",
       "oss_120b": "pass",
-      "oss_reason": "Correctly explains that the source covers January 2011 only, gives that month’s qualifying total, and asks whether the user wants it or can provide the remaining months."
+      "oss_reason": "Correctly explains that the source covers January 2011 only, gives that month\u2019s qualifying total, and asks whether the user wants it or can provide the remaining months."
     },
     {
       "case_id": "survey-fy24-retail-inflation-en",
       "gemma": "pass",
-      "oss_120b": "fail",
-      "oss_reason": "Application run failed with invalid_model_response; no final answer. Saved error does not identify the malformed response or underlying parser cause."
+      "oss_120b": "pass",
+      "oss_reason": "Run completed in 2 model requests. Correctly reported retail inflation of 5.4% in FY24 and characterized it as the lowest level since the Covid-19 pandemic period. Declared valid passage citation matching English inflation chapter PDF page 1, paragraph 3.1."
     },
     {
       "case_id": "survey-fy24-inflation-hi-query-en-source",
@@ -365,20 +397,20 @@
     {
       "case_id": "survey-summary-vs-chapter",
       "gemma": "partial",
-      "oss_120b": "fail",
-      "oss_reason": "Application run failed with invalid_model_response; no final comparison answer or verification of both requested sources."
+      "oss_120b": "pass",
+      "oss_reason": "Successfully cited both the full Economic Survey PDF (page 73) and the standalone inflation chapter (page 1) with declared evidence IDs. Quoted both sources verifying the 5.4% retail inflation figure for FY24 and correctly explained that both sources agree."
     },
     {
       "case_id": "survey-inflation-hi-cross-language",
       "gemma": "partial",
       "oss_120b": "partial",
-      "oss_reason": "The main four-year-low core-inflation claim is correct and supported by declared chapter page-6 evidence, despite the automatic opening-phrase miss. However, it attributes the almost-four-percentage-point Apr22-Jun24 decline to Chart III.12 instead of III.13 and extends a housing-rent explanation for core services to overall core inflation."
+      "oss_reason": "The answer accurately captures the core inflation decline to a four-year low in FY24 and core services inflation reaching a nine-year low, citing chapter pages 6 and 7 with declared evidence. However, it mislabels the pages as Chapter 6 and Chapter 7 in the Hindi text."
     },
     {
       "case_id": "survey-hindi-source-search-en",
       "gemma": "partial",
-      "oss_120b": "fail",
-      "oss_reason": "Application run failed with invalid_model_response; no supported English statement or requested PDF page citation."
+      "oss_120b": "partial",
+      "oss_reason": "Run completed and successfully retrieved the Hindi chapter PDF (page 4), translating the headline energy/fuel inflation downward trend into English with declared evidence. However, it omitted the explicit in-text PDF page number and characterized headline inflation as falling to its lowest level rather than lowest since pandemic."
     },
     {
       "case_id": "survey-appendix-table-retrieval",
@@ -396,7 +428,7 @@
   "limitations": [
     "One repetition; no variance estimate or stable ranking.",
     "AI-assisted review; no independent human/native-speaker calibration.",
-    "OSS token/model-call totals omit five failed runs; compare paired 25 cases only, without a cost claim.",
-    "Generic invalid_model_response does not preserve precise failure cause."
+    "Following tool-validation diagnostic fix, all 30 OSS runs completed with valid token and model-call totals across all 30 paired cases.",
+    "Historical run failures were traced to SafeError.message length bounds; bounded message error handling was verified in live reruns."
   ]
 }

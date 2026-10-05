@@ -1015,3 +1015,23 @@ Keep secrets and raw client data out of this file.
   requires fresh execution; old trials cannot be rescored as this sample.
 - Verified case schema and pinned source bytes with the dataset-pack checks.
   No additional live model run was made; the user will run the full inventory.
+
+## 5 October 2026: review the completed real-data run
+
+- User-requested AI-assisted manual inspection of all 30 answers in experiment
+  `cc6d2d3822955703-2afac1a9`, with a Luna retail subreview and primary review of
+  rendered PDF sources, declared CSV contents and chart images. Labels bind to
+  exact answer hashes and retain explicit AI-review provenance.
+- Complete task results: 20/30 (66.7%); six partial and four failed. Retail:
+  16/20 complete; Survey: 4/10 complete. All runs reached valid terminal states,
+  with no infrastructure failures. Automatic statuses remain 24 needs_review
+  and six failed; 23 numeric checks pass and two fail in the null-customer case.
+- Found missing qualifying filters/percentage scaling, an omitted country name,
+  a 20-row preview reconstructed as a full 22-country export, missing requested
+  inflation figures and periods, unresolved grouped citations, wrong CPI table
+  header grouping, and one case action-allowlist violation. The causal answer
+  is substantively supported despite an exact expected-phrase metric failure.
+- Retained the labels, reviewed trace and per-case performance under
+  `evals/reviews/real-v1-full-2026-10-05/`. Original run/metrics are unchanged.
+  One repetition and AI-assisted inspection do not establish model reliability
+  or calibrated native-speaker/human judgment. No new live execution or tuning.

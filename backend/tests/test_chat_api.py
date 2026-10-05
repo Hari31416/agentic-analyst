@@ -354,3 +354,79 @@ async def test_policy_rejection_does_not_duplicate_provider_call(
             session.scalar(select(Event).where(Event.run_id == run_id)).type
             == "tool_rejected"
         )
+
+
+@pytest.mark.parametrize(
+    "failure, expected_state, expected_code",
+    [
+        ("budget", "budget_exhausted", "budget_exhausted"),
+        ("model", "failed", "model_invalid_response"),
+        ("value", "failed", "invalid_model_response"),
+        ("unexpected", "failed", "worker_failed"),
+    ],
+)
+async def test_runtime_preserves_failure_when_logging(
+    client_db, monkeypatch, caplog, failure, expected_state, expected_code
+):
+    import app.agent.runtime as runtime_module
+    from app.agent.loop import BudgetExhausted
+    from app.agent.model import ModelError
+    from app.db.models import Event, ToolCall
+    from app.workers.queue import Claim
+
+    client, sessions, (_, thread_id), _ = client_db
+    result = client.post(
+        f"/api/threads/{thread_id}/runs",
+        json={"text": "calculate", "request_id": str(uuid4())},
+    )
+    assert result.status_code == 201
+    run_id = result.json()["id"]
+    with sessions() as session, session.begin():
+        tool = ToolCall(
+            run_id=run_id,
+            provider_call_id="pending-call",
+            name="run_sql",
+            input_reference={},
+            decision="allowed",
+            status="running",
+        )
+        session.add(tool)
+        session.flush()
+        tool_id = tool.id
+
+    exceptions = {
+        "budget": BudgetExhausted("Tool call limit reached"),
+        "model": ModelError("model_invalid_response", "Invalid provider response"),
+        "value": ValueError("invalid answer"),
+        "unexpected": RuntimeError("private failure details"),
+    }
+
+    class BrokenLoop:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        async def run(self, *_args, **_kwargs):
+            raise exceptions[failure]
+
+    monkeypatch.setattr(runtime_module, "AgentLoop", BrokenLoop)
+    task = Claim(str(uuid4()), "agent_run", str(uuid4()), {}, run_id, 1)
+    runtime = runtime_module.RunRuntime(task, Settings(_env_file=None), sessions)
+    monkeypatch.setattr(
+        runtime,
+        "guard",
+        lambda session, allow_cancelled=False: session.get(Run, run_id),
+    )
+    await runtime.run()
+    with sessions() as session:
+        run = session.get(Run, run_id)
+        assert run.state == expected_state
+        assert run.outcome["error"]["code"] == expected_code
+        assert run.outcome["cleanup"] == "complete"
+        assert "private failure" not in str(run.outcome)
+        tool = session.get(ToolCall, tool_id)
+        assert tool.status == "failed"
+        assert tool.result["error"]["code"] == expected_code
+        assert session.scalar(
+            select(Event).where(Event.run_id == run_id, Event.type == "terminal")
+        )
+    assert any(record.run_id == run_id for record in caplog.records)

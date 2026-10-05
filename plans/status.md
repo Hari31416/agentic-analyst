@@ -826,3 +826,19 @@ Keep secrets and raw client data out of this file.
   idle-worker check, so live retry/worker activation could not be verified.
   Full browser QA remains deferred. Reload the frontend and load the updated
   worker code before retrying the failed follow-up.
+
+## 5 October 2026: preserve worker failure diagnostics
+
+- Investigated run `beb005cf-c98e-44a3-80e1-37f5c28c7f9d`. Retained SQL
+  stderr records four DuckDB type/conversion failures from numeric comparisons
+  against the VARCHAR `Buildings operational` column. Tool results, including
+  stderr, are sent to the next model request; the model repeated invalid SQL.
+- Fixed three runtime logging paths that referenced nonexistent `self.run_id`.
+  They now use the claimed task's run ID, allowing error finalization to retain
+  the actual failure code instead of crashing into `worker_interrupted`.
+  The original final exception for this historical run was not retained.
+- Validation: 27 focused agent/chat tests pass, including budget, model, invalid
+  response and unexpected exception finalization plus SQL stderr feedback before
+  a scripted corrected query. Runtime strict mypy and changed-file Black pass.
+  This verifies feedback delivery, not live model self-correction. No live model
+  call, migration or historical outcome rewrite was performed.

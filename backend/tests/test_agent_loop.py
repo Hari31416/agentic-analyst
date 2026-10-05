@@ -349,3 +349,54 @@ def test_answer_diagnostics_redact_before_truncation(monkeypatch):
     assert "private" not in errors[0]["message"]
     assert "[redacted]" in errors[0]["message"]
     assert len(errors[0]["message"]) == 300
+
+
+async def test_sql_stderr_reaches_model_before_corrected_query():
+    from app.contracts import SafeError
+    from app.tools.structured import SQLInput
+
+    stderr = (
+        "Binder Error: Cannot compare values of type VARCHAR and type DECIMAL(2,1) "
+        "- an explicit cast is required"
+    )
+    bad_sql = 'SELECT * FROM data_test WHERE "Buildings operational" < 1.0'
+    fixed_sql = (
+        "SELECT * FROM data_test WHERE "
+        'TRY_CAST("Buildings operational" AS DOUBLE) < 1.0'
+    )
+    model = ScriptedModel(
+        [
+            response("run_sql", {"sql": bad_sql}, "bad-sql"),
+            response("run_sql", {"sql": fixed_sql}, "fixed-sql"),
+            response("finish_answer", {"text": "Query completed"}),
+        ]
+    )
+    queries = []
+
+    async def execute(call, args):
+        queries.append(args.sql)
+        if call.id == "bad-sql":
+            return ToolResult(
+                status="failed",
+                summary="SQL execution failed",
+                error=SafeError(
+                    code="sandbox_output_collection_partial", message="Missing output"
+                ),
+                data={
+                    "stderr": stderr,
+                    "execution": {"status": "failed", "exit_code": 1},
+                },
+            )
+        return ToolResult(status="ok", summary="Query returned rows")
+
+    loop = AgentLoop(
+        model, settings(), [Tool("run_sql", "SQL", SQLInput, execute)], ignore, ignore
+    )
+    await loop.run([{"role": "user", "content": "Find planned buildings"}], "en-IN")
+    feedback = model.requests[1][-1]
+    assert feedback["role"] == "tool"
+    assert feedback["tool_call_id"] == "bad-sql"
+    result = json.loads(feedback["content"])
+    assert result["data"]["stderr"] == stderr
+    assert result["data"]["execution"]["exit_code"] == 1
+    assert queries == [bad_sql, fixed_sql]

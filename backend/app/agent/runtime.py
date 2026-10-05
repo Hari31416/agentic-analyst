@@ -437,7 +437,7 @@ class RunRuntime:
                 name,
                 code,
                 msg,
-                extra={"run_id": str(self.run_id)},
+                extra={"run_id": str(self.task.run_id)},
             )
             result = ToolResult(
                 status="failed",
@@ -999,11 +999,11 @@ class RunRuntime:
             )
             logger.error(
                 "Run %s failed with %s: code=%s message=%s",
-                self.run_id,
+                self.task.run_id,
                 type(exc).__name__,
                 code,
                 message,
-                extra={"run_id": str(self.run_id)},
+                extra={"run_id": str(self.task.run_id)},
             )
             with self.db() as session, session.begin():
                 run = self.guard(session, allow_cancelled=True)
@@ -1071,9 +1071,9 @@ class RunRuntime:
         except Exception as exc:
             logger.exception(
                 "Run %s failed unexpectedly with exception: %s",
-                self.run_id,
+                self.task.run_id,
                 exc,
-                extra={"run_id": str(self.run_id)},
+                extra={"run_id": str(self.task.run_id)},
             )
             with self.db() as session, session.begin():
                 run = self.guard(session, allow_cancelled=True)

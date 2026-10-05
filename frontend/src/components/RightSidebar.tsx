@@ -1,19 +1,35 @@
-import { FC, useState, useMemo, ChangeEvent, DragEvent } from 'react'
 import {
-  Activity,
+  ChangeEvent,
+  DragEvent,
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import {
+  ArrowLeft,
+  BarChart3,
   Database,
+  Download,
+  ExternalLink,
   Eye,
+  File,
+  FileCode2,
+  FileImage,
   FileSpreadsheet,
   FileText,
   FolderOpen,
   Layers,
+  PackageOpen,
   PanelRightClose,
   RefreshCw,
   Search,
-  Server,
   Upload,
 } from 'lucide-react'
 import { DatasetSummary, sourceKindLabel } from '../structuredApi'
+import { ArtifactManifest, phase06Api } from '../phase06Api'
+import { ArtifactDetail } from '../ArtifactBrowser'
 import { Button } from './ui/button'
 import { cn } from '../lib/utils'
 
@@ -49,15 +65,26 @@ type RightSidebarProps = {
   onSelectSource: (id: string) => void
   onOpenInWorkbench: (sourceId: string) => void
   onUploadFile: (file: File) => Promise<void>
-  readiness: SystemReadiness | null
-  health: 'checking' | 'online' | 'offline'
-  onRefreshStatus: () => Promise<void>
+  artifacts?: ArtifactManifest[]
+  onRefreshArtifacts?: () => Promise<void>
+  onSourcesChanged?: () => Promise<void>
+  onSelectView?: (view: 'chat' | 'workbench' | 'outputs') => void
+  workspaceId?: string
+  readiness?: SystemReadiness | null
+  health?: 'checking' | 'online' | 'offline'
+  onRefreshStatus?: () => Promise<void>
 }
 
 function identityLabel(identity: DatasetSummary['identity']): string {
   if (typeof identity === 'string') return identity
   const values = Object.values(identity)
   return values.length ? values.map(String).join(' · ') : 'Dataset'
+}
+
+function sizeLabel(size: number): string {
+  if (size < 1024) return `${size} B`
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
+  return `${(size / 1024 / 1024).toFixed(1)} MB`
 }
 
 function StateBadge({ state }: { state: string }) {
@@ -89,21 +116,43 @@ function StateBadge({ state }: { state: string }) {
   )
 }
 
-function StatusDot({ status }: { status: string }) {
-  const isOnline = status === 'ready' || status === 'online'
-  const isWarning =
-    status === 'configured' || status === 'degraded' || status === 'warning'
-  const isChecking = status === 'checking'
+function getArtifactIcon(artifact: ArtifactManifest) {
+  const mediaType = (artifact.media_type || '').toLowerCase()
+  const artifactType = (artifact.artifact_type || '').toLowerCase()
+  if (
+    mediaType.startsWith('image/') ||
+    /png|jpg|jpeg|gif/i.test(artifactType)
+  ) {
+    return <FileImage size={15} />
+  }
+  if (artifactType === 'chart' || /chart|plot|plotly/i.test(mediaType)) {
+    return <BarChart3 size={15} />
+  }
+  if (
+    artifactType === 'table' ||
+    /csv|spreadsheet|excel|parquet/i.test(mediaType)
+  ) {
+    return <FileSpreadsheet size={15} />
+  }
+  if (
+    /python|code|notebook|json/i.test(mediaType) ||
+    /code|notebook/i.test(artifactType)
+  ) {
+    return <FileCode2 size={15} />
+  }
+  if (
+    /report|markdown|text/i.test(artifactType) ||
+    mediaType.startsWith('text/')
+  ) {
+    return <FileText size={15} />
+  }
+  return <File size={15} />
+}
 
-  const colorClass = isOnline
-    ? 'bg-status-ready ring-2 ring-status-ready/20'
-    : isWarning
-      ? 'bg-status-warning ring-2 ring-status-warning/20'
-      : isChecking
-        ? 'bg-status-checking'
-        : 'bg-status-danger ring-2 ring-status-danger/20'
-
-  return <span className={cn('w-2 h-2 rounded-full shrink-0', colorClass)} />
+function getArtifactBadge(artifact: ArtifactManifest): string {
+  if (artifact.artifact_type) return artifact.artifact_type.toUpperCase()
+  const media = (artifact.media_type || '').split('/')[1] || 'FILE'
+  return media.toUpperCase()
 }
 
 export const RightSidebar: FC<RightSidebarProps> = ({
@@ -115,22 +164,27 @@ export const RightSidebar: FC<RightSidebarProps> = ({
   onSelectSource,
   onOpenInWorkbench,
   onUploadFile,
-  readiness,
-  health,
-  onRefreshStatus,
+  artifacts = [],
+  onRefreshArtifacts,
+  onSourcesChanged,
+  onSelectView,
 }) => {
-  const [activeTab, setActiveTab] = useState<'sources' | 'inspect' | 'health'>(
-    'sources',
+  const [activeTab, setActiveTab] = useState<'sources' | 'artifacts'>('sources')
+  const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(
+    null,
   )
   const [searchQuery, setSearchQuery] = useState('')
+  const [artifactSearchQuery, setArtifactSearchQuery] = useState('')
   const [isDragOver, setIsDragOver] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isRefreshingArtifacts, setIsRefreshingArtifacts] = useState(false)
+  const [width, setWidth] = useState(360)
+  const [isResizing, setIsResizing] = useState(false)
 
-  const selectedSource = useMemo(
-    () => sources.find((s) => s.id === selectedSourceId) ?? null,
-    [sources, selectedSourceId],
+  const selectedArtifact = useMemo(
+    () => artifacts.find((a) => a.id === selectedArtifactId) ?? null,
+    [artifacts, selectedArtifactId],
   )
 
   const sourceDatasets = useMemo(() => {
@@ -143,6 +197,52 @@ export const RightSidebar: FC<RightSidebarProps> = ({
     if (!q) return sources
     return sources.filter((s) => s.display_name.toLowerCase().includes(q))
   }, [sources, searchQuery])
+
+  const filteredArtifacts = useMemo(() => {
+    const q = artifactSearchQuery.trim().toLowerCase()
+    if (!q) return artifacts
+    return artifacts.filter(
+      (a) =>
+        a.display_name.toLowerCase().includes(q) ||
+        a.artifact_type.toLowerCase().includes(q) ||
+        a.media_type.toLowerCase().includes(q),
+    )
+  }, [artifacts, artifactSearchQuery])
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+  }, [])
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false)
+  }, [])
+
+  const resize = useCallback(
+    (mouseMoveEvent: MouseEvent) => {
+      if (isResizing) {
+        const newWidth = document.body.clientWidth - mouseMoveEvent.clientX
+        if (
+          newWidth >= 300 &&
+          newWidth <= Math.min(800, document.body.clientWidth * 0.8)
+        ) {
+          setWidth(newWidth)
+        }
+      }
+    },
+    [isResizing],
+  )
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener('mousemove', resize)
+      window.addEventListener('mouseup', stopResizing)
+    }
+    return () => {
+      window.removeEventListener('mousemove', resize)
+      window.removeEventListener('mouseup', stopResizing)
+    }
+  }, [isResizing, resize, stopResizing])
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -180,12 +280,13 @@ export const RightSidebar: FC<RightSidebarProps> = ({
     }
   }
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
+  const handleRefreshArtifacts = async () => {
+    if (!onRefreshArtifacts) return
+    setIsRefreshingArtifacts(true)
     try {
-      await onRefreshStatus()
+      await onRefreshArtifacts()
     } finally {
-      setIsRefreshing(false)
+      setIsRefreshingArtifacts(false)
     }
   }
 
@@ -210,42 +311,29 @@ export const RightSidebar: FC<RightSidebarProps> = ({
     return <FileText size={16} />
   }
 
-  const systemComponents = readiness
-    ? [
-        {
-          name: 'Database',
-          details: readiness.components.database,
-          icon: Database,
-        },
-        {
-          name: 'File Storage',
-          details: readiness.components.storage,
-          icon: Server,
-        },
-        {
-          name: 'Language Model',
-          details: readiness.components.model,
-          icon: Activity,
-        },
-        {
-          name: 'Code Sandbox',
-          details: readiness.components.sandbox,
-          icon: Layers,
-        },
-      ]
-    : []
-
   return (
     <aside
       className={cn(
-        'flex flex-col shrink-0 h-screen bg-sidebar border-l border-sidebar-border transition-all duration-200 relative z-20 overflow-hidden',
+        'flex flex-col shrink-0 h-screen bg-sidebar border-l border-sidebar-border relative z-20 overflow-hidden',
+        isResizing ? 'select-none' : 'transition-[width] duration-200',
         isOpen
-          ? 'w-[320px] lg:w-[340px] min-w-[320px] lg:min-w-[340px] max-w-[340px] opacity-100'
+          ? 'opacity-100'
           : 'w-0 min-w-0 max-w-0 border-l-transparent opacity-0 pointer-events-none',
       )}
+      style={{ width: isOpen ? width : 0 }}
       aria-label="Workspace Inspector"
     >
-      <div className="flex flex-col w-[320px] lg:w-[340px] h-full overflow-hidden">
+      {/* Drag resize handle */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-primary/40 active:bg-primary/60 z-50 transition-colors"
+        onMouseDown={startResizing}
+        title="Drag to resize inspector"
+      />
+
+      <div
+        className="flex flex-col h-full overflow-hidden"
+        style={{ width: `${width}px` }}
+      >
         <header className="flex items-center justify-between h-14 px-4 border-b border-sidebar-border shrink-0">
           <div className="flex items-center gap-2">
             <FolderOpen size={16} className="text-foreground" />
@@ -278,7 +366,10 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                 ? 'bg-card text-foreground font-semibold shadow-xs border border-border'
                 : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent',
             )}
-            onClick={() => setActiveTab('sources')}
+            onClick={() => {
+              setActiveTab('sources')
+              setSelectedArtifactId(null)
+            }}
           >
             <FileText size={13} />
             <span>Sources ({sources.length})</span>
@@ -287,27 +378,14 @@ export const RightSidebar: FC<RightSidebarProps> = ({
             type="button"
             className={cn(
               'flex items-center justify-center gap-1.5 flex-1 h-7.5 rounded-sm text-[11px] font-medium transition-colors',
-              activeTab === 'inspect'
+              activeTab === 'artifacts'
                 ? 'bg-card text-foreground font-semibold shadow-xs border border-border'
                 : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent',
             )}
-            onClick={() => setActiveTab('inspect')}
+            onClick={() => setActiveTab('artifacts')}
           >
-            <Eye size={13} />
-            <span>Inspect</span>
-          </button>
-          <button
-            type="button"
-            className={cn(
-              'flex items-center justify-center gap-1.5 flex-1 h-7.5 rounded-sm text-[11px] font-medium transition-colors',
-              activeTab === 'health'
-                ? 'bg-card text-foreground font-semibold shadow-xs border border-border'
-                : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent',
-            )}
-            onClick={() => setActiveTab('health')}
-          >
-            <Activity size={13} />
-            <span>Health</span>
+            <Layers size={13} />
+            <span>Artifacts ({artifacts.length})</span>
           </button>
         </nav>
 
@@ -383,38 +461,85 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                     <div
                       key={source.id}
                       className={cn(
-                        'flex items-center gap-2.5 p-2.5 rounded-md bg-card border border-border cursor-pointer transition-all hover:border-primary hover:shadow-xs',
+                        'flex flex-col gap-2 p-2.5 rounded-md bg-card border border-border cursor-pointer transition-all hover:border-primary hover:shadow-xs',
                         isSelected && 'border-primary ring-1 ring-primary',
                       )}
-                      onClick={() => {
-                        onSelectSource(source.id)
-                        setActiveTab('inspect')
-                      }}
+                      onClick={() =>
+                        onSelectSource(isSelected ? '' : source.id)
+                      }
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
-                          onSelectSource(source.id)
-                          setActiveTab('inspect')
+                          onSelectSource(isSelected ? '' : source.id)
                         }
                       }}
                     >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-muted text-muted-foreground shrink-0">
-                        {getSourceIcon(source.kind)}
-                      </div>
-                      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                        <span
-                          className="text-xs font-semibold text-foreground truncate"
-                          title={source.display_name}
-                        >
-                          {source.display_name}
-                        </span>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <span>{sourceKindLabel(source.kind)}</span>
-                          <span>v{source.version}</span>
-                          <StateBadge state={source.state} />
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-muted text-muted-foreground shrink-0">
+                          {getSourceIcon(source.kind)}
                         </div>
+                        <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                          <span
+                            className="text-xs font-semibold text-foreground truncate"
+                            title={source.display_name}
+                          >
+                            {source.display_name}
+                          </span>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <span>{sourceKindLabel(source.kind)}</span>
+                            <span>v{source.version}</span>
+                            <StateBadge state={source.state} />
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="flex items-center justify-center size-7 rounded text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onOpenInWorkbench(source.id)
+                          }}
+                          title="Open in Source Workbench"
+                        >
+                          <Layers size={14} />
+                        </button>
                       </div>
+
+                      {isSelected && (
+                        <div className="flex flex-col gap-2 pt-2 border-t border-border/60">
+                          {sourceDatasets.length > 0 && (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                Structured Datasets ({sourceDatasets.length})
+                              </span>
+                              {sourceDatasets.map((ds) => (
+                                <div
+                                  key={ds.id}
+                                  className="p-1.5 bg-muted rounded-sm text-[11px]"
+                                >
+                                  <strong className="text-foreground">
+                                    {identityLabel(ds.identity)}
+                                  </strong>
+                                  <div className="text-[10px] text-muted-foreground">
+                                    {ds.designation}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <Button
+                            size="sm"
+                            className="w-full justify-center gap-1.5 h-7 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onOpenInWorkbench(source.id)
+                            }}
+                          >
+                            <Layers size={13} />
+                            <span>Open in Source Workbench</span>
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )
                 })}
@@ -429,118 +554,175 @@ export const RightSidebar: FC<RightSidebarProps> = ({
             </>
           )}
 
-          {activeTab === 'inspect' && (
+          {activeTab === 'artifacts' && (
             <>
-              {selectedSource ? (
-                <div className="flex flex-col gap-3.5">
-                  <div className="flex flex-col gap-1.5 p-3 rounded-md bg-card border border-border">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-2 text-xs font-semibold text-foreground truncate">
-                        {getSourceIcon(selectedSource.kind)}
-                        {selectedSource.display_name}
-                      </span>
-                      <StateBadge state={selectedSource.state} />
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
-                      <span>Kind: {sourceKindLabel(selectedSource.kind)}</span>
-                      <span>Version: {selectedSource.version}</span>
+              {selectedArtifact ? (
+                <div className="flex flex-col h-full gap-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-sidebar-border shrink-0">
+                    <button
+                      type="button"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => setSelectedArtifactId(null)}
+                      title="Back to artifacts list"
+                    >
+                      <ArrowLeft size={14} />
+                      <span>Back to list</span>
+                    </button>
+                    <div className="flex items-center gap-1">
+                      <a
+                        href={phase06Api.downloadUrl(selectedArtifact.id)}
+                        download={selectedArtifact.display_name}
+                        className="flex items-center justify-center size-7 rounded-sm text-muted-foreground border border-border bg-background transition-colors hover:text-foreground hover:border-primary"
+                        title="Download artifact"
+                      >
+                        <Download size={13} />
+                      </a>
+                      {onSelectView && (
+                        <button
+                          type="button"
+                          className="flex items-center justify-center size-7 rounded-sm text-muted-foreground border border-border bg-background transition-colors hover:text-foreground hover:border-primary"
+                          onClick={() => onSelectView('outputs')}
+                          title="Open full view in Workspace Outputs"
+                        >
+                          <ExternalLink size={13} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {sourceDatasets.length > 0 && (
-                    <div className="flex flex-col gap-1.5 p-3 rounded-md bg-card border border-border">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-                        Structured Datasets ({sourceDatasets.length})
-                      </span>
-                      {sourceDatasets.map((ds) => (
-                        <div
-                          key={ds.id}
-                          className="p-2 bg-muted rounded-sm mb-1.5 text-xs"
-                        >
-                          <strong className="text-foreground">
-                            {identityLabel(ds.identity)}
-                          </strong>
-                          <div className="text-[11px] text-muted-foreground">
-                            {ds.designation}
-                          </div>
-                        </div>
-                      ))}
+                  <div className="flex-1 min-h-0 overflow-y-auto sidebar-artifact-detail-wrap">
+                    <ArtifactDetail
+                      key={selectedArtifact.id}
+                      artifact={selectedArtifact}
+                      onSourcesChanged={onSourcesChanged}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {artifacts.length > 2 && (
+                    <div className="relative flex items-center">
+                      <Search
+                        size={13}
+                        className="absolute left-2.5 text-muted-foreground pointer-events-none"
+                      />
+                      <input
+                        type="text"
+                        className="w-full h-8 pl-8 pr-3 text-xs bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                        placeholder="Search artifacts..."
+                        value={artifactSearchQuery}
+                        onChange={(e) => setArtifactSearchQuery(e.target.value)}
+                        aria-label="Search artifacts"
+                      />
                     </div>
                   )}
 
-                  <Button
-                    className="w-full justify-center gap-2"
-                    onClick={() => onOpenInWorkbench(selectedSource.id)}
-                  >
-                    <Layers size={14} />
-                    <span>Open in Source Workbench</span>
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-6 text-center text-xs text-muted-foreground leading-relaxed">
-                  <p>No source currently selected.</p>
-                  <p>
-                    Choose a source from the Sources tab to view its schema and
-                    chunk details.
-                  </p>
-                </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
+                    <span className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Generated Outputs ({filteredArtifacts.length})
+                    </span>
+                    {onRefreshArtifacts && (
+                      <button
+                        type="button"
+                        onClick={handleRefreshArtifacts}
+                        disabled={isRefreshingArtifacts}
+                        className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                        title="Refresh artifacts"
+                      >
+                        <RefreshCw
+                          size={12}
+                          className={
+                            isRefreshingArtifacts ? 'animate-spin' : ''
+                          }
+                        />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    {filteredArtifacts.map((artifact) => (
+                      <div
+                        key={artifact.id}
+                        className="flex flex-col gap-1.5 p-2.5 rounded-md bg-card border border-border cursor-pointer transition-all hover:border-primary hover:shadow-xs group"
+                        onClick={() => setSelectedArtifactId(artifact.id)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setSelectedArtifactId(artifact.id)
+                          }
+                        }}
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-muted text-muted-foreground shrink-0 mt-0.5 group-hover:text-primary transition-colors">
+                            {getArtifactIcon(artifact)}
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                            <div className="flex items-center justify-between gap-1.5">
+                              <span
+                                className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors"
+                                title={artifact.display_name}
+                              >
+                                {artifact.display_name}
+                              </span>
+                              <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity shrink-0">
+                                <a
+                                  href={phase06Api.downloadUrl(artifact.id)}
+                                  download={artifact.display_name}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex items-center justify-center size-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+                                  title="Download artifact"
+                                >
+                                  <Download size={13} />
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSelectedArtifactId(artifact.id)
+                                  }}
+                                  className="flex items-center justify-center size-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+                                  title="View details"
+                                >
+                                  <Eye size={13} />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                              <span className="inline-flex items-center px-1.5 py-0.2 rounded bg-muted/80 font-mono text-[9px] font-semibold text-muted-foreground uppercase">
+                                {getArtifactBadge(artifact)}
+                              </span>
+                              <span>{sizeLabel(artifact.byte_size)}</span>
+                              {artifact.sha256 && (
+                                <span className="font-mono text-[9px]">
+                                  • {artifact.sha256.slice(0, 8)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {filteredArtifacts.length === 0 && (
+                      <div className="flex flex-col items-center justify-center p-8 text-center text-xs text-muted-foreground leading-relaxed">
+                        <PackageOpen
+                          size={30}
+                          className="text-muted-foreground/40 mb-2.5"
+                        />
+                        <p className="font-semibold text-foreground">
+                          No generated artifacts
+                        </p>
+                        <p className="text-[11px] mt-1 text-muted-foreground">
+                          Reports, charts, CSVs, and tables generated in
+                          research threads will appear here.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </>
-          )}
-
-          {activeTab === 'health' && (
-            <div className="flex flex-col gap-2">
-              {systemComponents.length > 0 ? (
-                systemComponents.map((comp) => {
-                  const Icon = comp.icon
-                  return (
-                    <div
-                      key={comp.name}
-                      className="flex flex-col gap-1.5 p-3 rounded-md bg-card border border-border"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                          <Icon size={15} />
-                          {comp.name}
-                        </span>
-                        <StatusDot status={comp.details.status} />
-                      </div>
-                      <span className="text-[11px] text-muted-foreground leading-snug">
-                        {comp.details.message || comp.details.status}
-                      </span>
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="flex flex-col gap-1.5 p-3 rounded-md bg-card border border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                      <Activity size={15} />
-                      API Service
-                    </span>
-                    <StatusDot status={health} />
-                  </div>
-                  <span className="text-[11px] text-muted-foreground leading-snug">
-                    {health === 'online'
-                      ? 'Backend connected and responsive'
-                      : 'Backend offline or unreachable'}
-                  </span>
-                </div>
-              )}
-
-              <Button
-                variant="outline"
-                className="w-full justify-center gap-2 mt-2"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-              >
-                <RefreshCw
-                  size={13}
-                  className={isRefreshing ? 'animate-spin' : ''}
-                />
-                <span>Test connections now</span>
-              </Button>
-            </div>
           )}
         </div>
       </div>

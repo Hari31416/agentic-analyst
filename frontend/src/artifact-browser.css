@@ -641,3 +641,55 @@
   color: var(--muted-foreground);
   overflow-wrap: anywhere;
 }
+
+.sidebar-artifact-detail-wrap .artifact-detail {
+  padding: 12px 6px 20px;
+}
+
+.sidebar-artifact-detail-wrap .artifact-detail-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sidebar-artifact-detail-wrap .artifact-detail-header h2 {
+  font-size: 15px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.sidebar-artifact-detail-wrap .artifact-header-actions {
+  width: 100%;
+}
+
+.sidebar-artifact-detail-wrap .artifact-header-actions .outputs-download {
+  flex: 1;
+  min-height: 30px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.sidebar-artifact-detail-wrap .artifact-nav-tabs {
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+  gap: 4px;
+}
+
+.sidebar-artifact-detail-wrap .artifact-nav-tab {
+  padding: 4px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.sidebar-artifact-detail-wrap .chart-preview-wrap {
+  overflow-x: auto;
+}
+
+.sidebar-artifact-detail-wrap .chart-preview {
+  min-width: 290px;
+}
+
+.sidebar-artifact-detail-wrap .artifact-table-container {
+  overflow-x: auto;
+}

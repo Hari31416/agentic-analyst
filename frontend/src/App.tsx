@@ -17,7 +17,11 @@ import { useTheme } from './hooks/useTheme'
 import { useSystemStatus } from './hooks/useSystemStatus'
 import { DatasetSummary, structuredApi } from './structuredApi'
 import ArtifactBrowser from './ArtifactBrowser'
-import { WorkspaceImportResult } from './phase06Api'
+import {
+  ArtifactManifest,
+  WorkspaceImportResult,
+  phase06Api,
+} from './phase06Api'
 import { apiFetch } from './lib/apiFetch'
 import { formatPath, parsePath } from './lib/routing'
 
@@ -79,6 +83,7 @@ export function App() {
   const threadIdRef = useRef(threadId)
   threadIdRef.current = threadId
   const [sources, setSources] = useState<SourceRecord[]>([])
+  const [artifacts, setArtifacts] = useState<ArtifactManifest[]>([])
   const [datasets, setDatasets] = useState<DatasetSummary[]>([])
   const [datasetErrors, setDatasetErrors] = useState<Record<string, string>>({})
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null)
@@ -244,6 +249,23 @@ export function App() {
     }
   }, [workspaceId])
 
+  const refreshArtifacts = useCallback(async () => {
+    if (!workspaceId) {
+      setArtifacts([])
+      return
+    }
+    try {
+      const nextArtifacts = await phase06Api.artifacts(workspaceId)
+      if (workspaceIdRef.current === workspaceId) setArtifacts(nextArtifacts)
+    } catch {
+      // Ignored if network glitch
+    }
+  }, [workspaceId])
+
+  const refreshResources = useCallback(async () => {
+    await Promise.all([refreshSources(), refreshArtifacts()])
+  }, [refreshSources, refreshArtifacts])
+
   const handleSelectWorkspace = useCallback((id: string) => {
     setWorkspaceId(id)
     workspaceIdRef.current = id
@@ -351,11 +373,13 @@ export function App() {
     Promise.all([
       api<ThreadItem[]>(`/api/workspaces/${workspaceId}/threads`),
       api<SourceRecord[]>(`/api/workspaces/${workspaceId}/sources`),
+      phase06Api.artifacts(workspaceId).catch(() => []),
     ])
-      .then(([nextThreads, nextSources]) => {
+      .then(([nextThreads, nextSources, nextArtifacts]) => {
         if (!active) return
         setThreads(nextThreads)
         setSources(nextSources)
+        setArtifacts(nextArtifacts)
         const targetThread =
           threadIdRef.current || initialRouteRef.current.threadId || ''
         const chosenThread = nextThreads.some(
@@ -545,7 +569,7 @@ export function App() {
   const handleUploadFile = async (file: File) => {
     if (!workspaceId) return
     const added = await structuredApi.uploadFile(workspaceId, file)
-    await refreshSources()
+    await refreshResources()
     setSelectedSourceId(added.id)
   }
 
@@ -566,6 +590,7 @@ export function App() {
     ])
     setWorkspaceId(imported.id)
     workspaceIdRef.current = imported.id
+    void refreshResources()
     handleSelectView('workbench')
     setError('')
   }
@@ -645,9 +670,10 @@ export function App() {
           health={health}
           onRefresh={() => {
             void refreshStatus()
-            void refreshSources()
+            void refreshResources()
           }}
           sourcesCount={sources.length}
+          artifactsCount={artifacts.length}
         />
 
         {error && (
@@ -662,7 +688,7 @@ export function App() {
             <ArtifactBrowser
               workspaceId={workspaceId}
               onWorkspaceImported={handleWorkspaceImported}
-              onSourcesChanged={refreshSources}
+              onSourcesChanged={refreshResources}
             />
           ) : activeView === 'chat' ? (
             <ChatPanel
@@ -673,7 +699,7 @@ export function App() {
               modelAvailable={modelAvailable}
               modelMessage={modelMessage}
               onStartThread={handleStartThread}
-              onSourcesChanged={refreshSources}
+              onSourcesChanged={refreshResources}
             />
           ) : workspaceId ? (
             <SourceWorkbench
@@ -682,7 +708,7 @@ export function App() {
               sources={sources}
               datasets={datasets}
               datasetErrors={datasetErrors}
-              onSourcesChanged={refreshSources}
+              onSourcesChanged={refreshResources}
               onSourceDeleted={(sourceId) => {
                 setSelectedSourceId((current) =>
                   current === sourceId ? null : current,
@@ -726,9 +752,11 @@ export function App() {
         onSelectSource={handleSelectSource}
         onOpenInWorkbench={handleOpenInWorkbench}
         onUploadFile={handleUploadFile}
-        readiness={readiness}
-        health={health}
-        onRefreshStatus={refreshStatus}
+        artifacts={artifacts}
+        onRefreshArtifacts={refreshArtifacts}
+        onSourcesChanged={refreshResources}
+        onSelectView={handleSelectView}
+        workspaceId={workspaceId}
       />
 
       {/* Modals */}

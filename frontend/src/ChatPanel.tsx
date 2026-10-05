@@ -751,6 +751,7 @@ function ChatPanel({
               ])
               setActiveRun(null)
               activeRunIdRef.current = ''
+              void onSourcesChanged?.()
               return refreshHistory()
             })
             .catch((reason: unknown) => {

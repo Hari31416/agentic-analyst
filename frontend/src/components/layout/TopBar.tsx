@@ -1,12 +1,6 @@
 import { FC } from 'react'
-import {
-  ArrowLeft,
-  ChevronRight,
-  PanelRightClose,
-  PanelRightOpen,
-} from 'lucide-react'
+import { ArrowLeft, ChevronRight, PanelRightOpen } from 'lucide-react'
 import { SystemReadiness } from '../RightSidebar'
-import { cn } from '../../lib/utils'
 type TopBarProps = {
   isLeftSidebarCollapsed?: boolean
   onToggleLeftSidebar?: () => void
@@ -20,6 +14,7 @@ type TopBarProps = {
   health?: 'checking' | 'online' | 'offline'
   onRefresh?: () => void
   sourcesCount?: number
+  artifactsCount?: number
 }
 
 export const TopBar: FC<TopBarProps> = ({
@@ -30,7 +25,10 @@ export const TopBar: FC<TopBarProps> = ({
   activeView,
   onSelectView,
   sourcesCount = 0,
+  artifactsCount = 0,
 }) => {
+  const totalCount = sourcesCount + artifactsCount
+
   return (
     <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-card px-4 z-10">
       <div className="flex items-center gap-3 min-w-0">
@@ -60,32 +58,22 @@ export const TopBar: FC<TopBarProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className={cn(
-            'relative flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted hover:text-foreground',
-            isRightSidebarOpen &&
-              'bg-accent text-accent-foreground border-primary/30',
-          )}
-          onClick={onToggleRightSidebar}
-          title={
-            isRightSidebarOpen
-              ? 'Hide inspector (Cmd+J / Ctrl+J)'
-              : 'Open inspector (Cmd+J / Ctrl+J)'
-          }
-          aria-label={isRightSidebarOpen ? 'Hide inspector' : 'Open inspector'}
-        >
-          {isRightSidebarOpen ? (
-            <PanelRightClose size={15} />
-          ) : (
+        {!isRightSidebarOpen && (
+          <button
+            type="button"
+            className="relative flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted hover:text-foreground"
+            onClick={onToggleRightSidebar}
+            title="Open inspector (Cmd+J / Ctrl+J)"
+            aria-label="Open inspector"
+          >
             <PanelRightOpen size={15} />
-          )}
-          {sourcesCount > 0 && !isRightSidebarOpen && (
-            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shadow-sm">
-              {sourcesCount}
-            </span>
-          )}
-        </button>
+            {totalCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shadow-sm">
+                {totalCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
     </header>
   )

@@ -69,6 +69,7 @@ class Checkpoint:
                         "case_id": c.id,
                         "question": c.question,
                         "language": c.language,
+                        "answer_language": c.answer_language,
                         "tags": c.tags,
                         "review": c.review.model_dump(),
                         "rubric": c.expectations.rubric,
@@ -101,9 +102,10 @@ class Checkpoint:
         )
         if existing is not None:
             return existing
-        trial = {
+        trial: dict[str, Any] = {
             "case_id": case.id,
             "language": case.language,
+            "answer_language": case.answer_language,
             "repetition": repetition,
             "status": "pending",
             "review_status": case.review.provenance,
@@ -243,17 +245,34 @@ async def run_experiment(
 
     async def one(case: EvaluationCase, repetition: int) -> None:
         async with semaphore:
-            trial = checkpoint.trial(case, repetition)
+            trial: dict[str, Any] = checkpoint.trial(case, repetition)
             if trial["status"] not in {"pending", "running"}:
                 return  # Completed failures are reused too; resume never hides them.
             started = time.monotonic()
             trial["status"] = "running"
             checkpoint.save()
+
+            def progress(stage: str, status: str, **safe_fields: Any) -> None:
+                if not notify:
+                    return
+                notify(
+                    {
+                        "event": "progress",
+                        "case_id": case.id[:120],
+                        "repetition": repetition,
+                        "stage": stage[:40],
+                        "status": status[:40],
+                        **safe_fields,
+                    }
+                )
+
             try:
                 async with asyncio.timeout(timeout):
+                    progress("trial", "started")
                     if trial.get("ambiguous_creation"):
                         raise ApiFailure("ambiguous_resource_creation")
                     if not trial.get("workspace_id"):
+                        progress("workspace", "creating")
                         trial["ambiguous_creation"] = True
                         checkpoint.save()
                         workspace = await client.request(
@@ -268,12 +287,14 @@ async def run_experiment(
                         trial["workspace_id"] = workspace["id"]
                         trial.pop("ambiguous_creation")
                         checkpoint.save()
+                        progress("workspace", "ready")
                     workspace_id = trial["workspace_id"]
                     ingestion_started = time.monotonic()
                     sources = trial.setdefault("sources", [])
                     for source in case.sources:
                         if any(s["alias"] == source.alias for s in sources):
                             continue
+                        progress("upload", "started", source_alias=source.alias[:80])
                         trial["ambiguous_creation"] = True
                         checkpoint.save()
                         uploaded = await client.upload(
@@ -292,7 +313,14 @@ async def run_experiment(
                         sources.append(uploaded)
                         trial.pop("ambiguous_creation")
                         checkpoint.save()
-                    docs = await client.wait_sources(workspace_id, sources)
+                        progress("upload", "complete", source_alias=source.alias[:80])
+                    progress("ingestion", "waiting")
+                    docs = await client.wait_sources(
+                        workspace_id,
+                        sources,
+                        heartbeat=lambda: progress("ingestion", "heartbeat"),
+                    )
+                    progress("ingestion", "ready")
                     trial["ingestion_seconds"] = time.monotonic() - ingestion_started
                     trial["document_versions"] = [
                         {
@@ -309,6 +337,7 @@ async def run_experiment(
                         for d in docs
                     ]
                     if not trial.get("thread_id"):
+                        progress("thread", "creating")
                         trial["ambiguous_creation"] = True
                         checkpoint.save()
                         thread = await client.request(
@@ -319,18 +348,21 @@ async def run_experiment(
                         trial["thread_id"] = thread["id"]
                         trial.pop("ambiguous_creation")
                         checkpoint.save()
+                        progress("thread", "ready")
                     if not trial.get("run_id"):
                         # Persist the application idempotency identity before sending.
                         trial["run_id"] = str(uuid4())
                         trial["run_creation_pending"] = True
                         checkpoint.save()
+                        progress("run_submission", "submitting")
                         await client.request(
                             "POST",
                             f"/api/threads/{trial['thread_id']}/runs",
                             json={
                                 "request_id": trial["run_id"],
                                 "text": case.question,
-                                "answer_language": case.language,
+                                "answer_language": case.answer_language
+                                or case.language,
                                 "selected_source_ids": [
                                     source["id"] for source in sources
                                 ],
@@ -344,11 +376,23 @@ async def run_experiment(
                         )
                         trial.pop("run_creation_pending")
                         checkpoint.save()
-                    run = await client.wait_run(trial["run_id"])
+                    progress("run_submission", "submitted", run_id=trial["run_id"])
+                    progress("run", "waiting")
+                    run = await client.wait_run(
+                        trial["run_id"],
+                        heartbeat=lambda: progress("run", "heartbeat"),
+                    )
+                    progress(
+                        "run",
+                        "complete",
+                        run_state=str(run.get("state", "unknown"))[:40],
+                    )
+                    progress("audit", "loading")
                     audit = await client.request(
                         "GET", f"/api/runs/{trial['run_id']}/audit/export"
                     )
                     trial["actual_run_config"] = audit["run"]["config"]
+                    progress("audit", "complete")
                     if audit["run"].get("started_at") and audit["run"].get(
                         "finished_at"
                     ):
@@ -418,6 +462,7 @@ async def run_experiment(
                         }
                     # Redacted supporting traces retain tool/evidence IDs and payload bounds.
                     trial["observations"] = redact(observed)
+                    progress("scoring", trial["status"])
             except TimeoutError:
                 trial["status"], trial["error"] = "timeout", {"code": "runner_timeout"}
                 if trial.get("run_id"):
@@ -432,6 +477,7 @@ async def run_experiment(
                 trial["status"], trial["error"] = "infrastructure_failure", {
                     "code": error.code,
                     "http_status": error.status,
+                    **error.details,
                 }
             except asyncio.CancelledError:
                 # Leave the run identity resumable; no execution POST is repeated.
@@ -452,12 +498,7 @@ async def run_experiment(
                 ).ru_maxrss * (1 if sys.platform == "darwin" else 1024)
                 checkpoint.save()
                 if notify:
-                    notify(
-                        {
-                            k: trial.get(k)
-                            for k in ("case_id", "repetition", "status", "run_id")
-                        }
-                    )
+                    progress("trial", trial["status"], run_id=trial.get("run_id"))
 
     await asyncio.gather(*(one(case, rep) for case in cases for rep in range(repeats)))
     checkpoint.report["finished_at"] = datetime.now(timezone.utc).isoformat()

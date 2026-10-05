@@ -116,6 +116,65 @@ def test_model_failure_is_review_pending_not_a_pass():
     assert results[0].status == "needs_review"
 
 
+def test_prose_clarification_is_review_pending_but_formal_event_is_not():
+    unsupported = EvaluationCase(
+        id="missing-data",
+        question="What is profit?",
+        language="en-IN",
+        answerability="unsupported",
+    )
+    prose_only = score_case(
+        unsupported,
+        {
+            "run_state": "completed",
+            "answer_text": "I cannot calculate profit without costs.",
+            "clarification": False,
+        },
+    )
+    formal = score_case(
+        unsupported,
+        {"run_state": "awaiting_clarification", "clarification": True},
+    )
+    assert {item.name: item.status for item in prose_only}[
+        "unsupported_handling"
+    ] == "needs_review"
+    assert {item.name: item.status for item in formal}["unsupported_handling"] == "pass"
+
+
+def test_manual_review_note_prevents_false_pass():
+    case = EvaluationCase(
+        id="chart-review",
+        question="Check this chart",
+        language="en-IN",
+        answerability="answerable",
+        expectations={"rubric": {"manual_review": "Check labels visually."}},
+    )
+    statuses = {
+        item.name: item.status for item in score_case(case, {"run_state": "completed"})
+    }
+    assert statuses["manual_review"] == "needs_review"
+
+
+def test_rounded_percentage_tolerance_accepts_only_rounding_delta():
+    case = EvaluationCase(
+        id="rounded-percent",
+        question="What percent?",
+        language="en-IN",
+        answerability="answerable",
+        expectations={
+            "calculations": [{"key": "share", "value": "38.12", "tolerance": "0.01"}]
+        },
+    )
+    close = score_case(
+        case, {"run_state": "completed", "calculations": {"share": {"value": "38.124"}}}
+    )
+    outside = score_case(
+        case, {"run_state": "completed", "calculations": {"share": {"value": "38.131"}}}
+    )
+    assert {item.name: item.status for item in close}["calculation:share"] == "pass"
+    assert {item.name: item.status for item in outside}["calculation:share"] == "fail"
+
+
 def test_audit_tool_rows_and_evidence_source_versions_are_scored():
     case_data = _case().model_dump(by_alias=True)
     case_data["sources"].append(

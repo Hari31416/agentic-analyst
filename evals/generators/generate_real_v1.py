@@ -269,6 +269,7 @@ def case(
     passages: list[dict[str, str]] | None = None,
     artifacts: list[dict[str, Any]] | None = None,
     rubric: dict[str, Any] | None = None,
+    answer_language: str | None = None,
 ) -> dict[str, Any]:
     # The current scorer reads the last successful structured result and uses
     # column names to identify scalars. Make this execution contract explicit
@@ -280,7 +281,7 @@ def case(
                 " अंतिम संख्यात्मक परिणाम एक ही SQL/analysis परिणाम पंक्ति में दें। "
                 f"इन कॉलम नामों का उपयोग करें: {columns}।"
             )
-        elif language == "hi-Latn":
+        elif language.startswith("hi-Latn"):
             question += (
                 " Final numeric results ek hi SQL/analysis result row mein dein, "
                 f"in column names ke saath: {columns}."
@@ -290,7 +291,7 @@ def case(
                 " Return the final numeric results together in one SQL/analysis "
                 f"result row with these column names: {columns}."
             )
-    return {
+    result = {
         "schema_version": 1,
         "id": ident,
         "question": question,
@@ -307,6 +308,9 @@ def case(
         },
         "review": {"provenance": "unreviewed"},
     }
+    if answer_language is not None:
+        result["answer_language"] = answer_language
+    return result
 
 
 def calc(
@@ -419,6 +423,7 @@ def create_cases(
             calc(
                 "missing_customer_percent",
                 gold["missing_customer_percent"].quantize(Decimal("0.01")),
+                tolerance="0.01",
             ),
         ],
         rubric={
@@ -489,7 +494,7 @@ def create_cases(
     add(
         "retail-codeswitch-top-country",
         "Jan 2011 mein rules apply karke highest qualifying sales wala country batayein; us country ki sales GBP mein aur sabhi qualifying rows se overall distinct invoice count bhi dein.",
-        "hi-Latn",
+        "hi-Latn-IN",
         ["retail", "code-switch", "aggregation"],
         "answerable",
         [retail_src, rules_src],
@@ -501,6 +506,7 @@ def create_cases(
             "expected_category": gold["top_country"],
             "manual_review": "Transliterated Hindi/English code-switching needs human review.",
         },
+        answer_language="hi-IN",
     )
     add(
         "retail-mixed-rule-retrieval",

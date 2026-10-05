@@ -3,6 +3,7 @@ import io
 import json
 import zipfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -10,6 +11,7 @@ import pytest
 from app.audit.redaction import redact
 from evaluation.cli import load_cases
 from evaluation.client import ApplicationClient
+from evaluation.client import ApiFailure, _safe_api_error
 from evaluation.contracts import EvaluationCase
 from evaluation.identity import ROOT, digest, endpoint_identity, fixture_path
 from evaluation.runner import Checkpoint, run_experiment
@@ -266,5 +268,145 @@ async def test_evaluation_login_uses_bearer_without_retaining_cookie():
         await client.login("evaluator", "test-password")
         assert await client.request("GET", "/api/workspaces") == []
         assert len(seen) == 2
+    finally:
+        await client.close()
+
+
+def test_safe_422_diagnostics_drop_submitted_values_and_messages():
+    payload = json.dumps(
+        {
+            "detail": [
+                {
+                    "loc": ["body", "answer_language"],
+                    "type": "literal_error",
+                    "msg": "private question text",
+                    "input": "secret prompt",
+                }
+            ]
+        }
+    ).encode()
+    safe = _safe_api_error(payload, 422)
+    assert safe == {
+        "validation_fields": [
+            {"field": "body.answer_language", "type": "literal_error"}
+        ]
+    }
+    assert "secret" not in json.dumps(safe)
+    assert "private" not in json.dumps(safe)
+
+
+@pytest.mark.asyncio
+async def test_missing_credentials_fail_before_checkpoint_or_output_creation(
+    tmp_path, monkeypatch
+):
+    from evaluation import cli
+    from app.config import Settings
+
+    output = tmp_path / "must-not-exist"
+    args = SimpleNamespace(
+        live=True,
+        api_url="http://127.0.0.1:8000",
+        fixture_root=tmp_path,
+        repeats=1,
+        profile="basic",
+        timeout=60,
+        output=output,
+        resume=False,
+        fresh=False,
+    )
+    monkeypatch.setattr(
+        cli,
+        "get_settings",
+        lambda: Settings(_env_file=None, eval_username=None, eval_password=None),
+    )
+    with pytest.raises(ValueError, match="EVAL_USERNAME and EVAL_PASSWORD"):
+        await cli.execute(args, [case()])
+    assert not output.exists()
+
+
+@pytest.mark.asyncio
+async def test_source_processing_error_retains_safe_code_and_stage_only():
+    async def handle(request):
+        return httpx.Response(
+            200,
+            json=[
+                {
+                    "id": "doc1",
+                    "state": "failed",
+                    "stage": "failed",
+                    "details": {
+                        "error": {
+                            "code": "extractor_unavailable",
+                            "message": "private document excerpt",
+                        }
+                    },
+                }
+            ],
+        )
+
+    client = ApplicationClient("http://test", transport=httpx.MockTransport(handle))
+    try:
+        with pytest.raises(ApiFailure) as failure:
+            await client.wait_sources("workspace", [{"document_id": "doc1"}])
+        assert failure.value.code == "source_processing_failed"
+        assert failure.value.details == {
+            "processing_code": "extractor_unavailable",
+            "stage": "failed",
+            "state": "failed",
+        }
+        assert "private" not in json.dumps(failure.value.details)
+    finally:
+        await client.close()
+
+
+@pytest.mark.asyncio
+async def test_original_hashes_bound_selected_members_not_all_index_metadata(
+    monkeypatch,
+):
+    import hashlib
+    from evaluation import client as module
+
+    original = b"public original" * 10
+    metadata = {
+        "assets": [
+            {"owner_id": "source1", "purpose": "original", "path": "original.pdf"}
+        ],
+        "metadata": "x" * 700,
+    }
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("manifest.json", json.dumps(metadata))
+        archive.writestr("original.pdf", original)
+        archive.writestr("index.json", "x" * 2000)
+    monkeypatch.setattr(module, "MAX_RESPONSE_BYTES", 1024)
+
+    async def handle(request):
+        return httpx.Response(200, content=buffer.getvalue())
+
+    client = ApplicationClient(
+        "http://127.0.0.1", transport=httpx.MockTransport(handle)
+    )
+    try:
+        hashes = await client.original_hashes(
+            "workspace1",
+            [
+                {
+                    "id": "source1",
+                    "alias": "pdf",
+                    "content_hash": hashlib.sha256(original).hexdigest(),
+                }
+            ],
+        )
+        assert hashes["pdf"]["before"] == hashes["pdf"]["after"]
+        monkeypatch.setattr(module, "MAX_ORIGINAL_BYTES", 100)
+        with pytest.raises(ApiFailure, match="archive_original_limit"):
+            await client.original_hashes(
+                "workspace1", [{"id": "source1", "alias": "pdf"}]
+            )
+        monkeypatch.setattr(module, "MAX_ARCHIVE_EXPANDED_BYTES", 100)
+        with pytest.raises(ApiFailure, match="archive_expansion_limit"):
+            await client.original_hashes(
+                "workspace1", [{"id": "source1", "alias": "pdf"}]
+            )
     finally:
         await client.close()

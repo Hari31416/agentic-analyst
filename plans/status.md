@@ -958,3 +958,49 @@ Keep secrets and raw client data out of this file.
 - Validation: 37 focused API/evaluation/real-inventory tests passed, including
   rejection of undeclared, foreign-source and stale-version excerpt citations.
   Black, focused mypy and diff checks passed. No migration or phase-10 work.
+
+## 5 October 2026: repair real-data evaluation defects
+
+- Versioned PDF extraction as `document-extract-v3`. Ordinary text uses bounded
+  plain extraction rather than fixed-width layout padding. Known legacy Indic
+  font pages require local OCR; failed legacy OCR rejects the document instead
+  of publishing garbled or partial text. More than 100 required legacy OCR pages
+  fails before rendering with `ocr_page_limit` and chapter-splitting guidance.
+- Added bounded `DOCUMENT_MAX_CHUNKS` (default 4096, maximum 16384), recorded on
+  documents and evaluation identity. Chunk overflow still fails without silent
+  truncation. Embedding batches check the job lease between inference calls.
+  The full English Survey indexed 2,421 chunks with the configured tokenizer;
+  the conservative fallback measurement yielded 4,001. Hindi inflation chapter
+  OCR covered all 18 pages; the full Hindi Survey has 488 legacy-font pages and
+  remains outside the per-document OCR budget.
+- Corrected rounded-percentage tolerance to 0.01. Separated input language from
+  answer language; Romanized Hindi uses `hi-Latn-IN` with supported `hi-IN`
+  output. Missing formal clarification remains a review item rather than a
+  false failure. Manual-review cases cannot pass solely because a run completed.
+- CLI emits stage events and waiting heartbeats with safe API validation and
+  document-processing codes. Successful authentication precedes checkpoint
+  creation. Original-file hashing bounds selected assets separately from whole
+  workspace metadata and streams hashes, retaining archive expansion limits.
+- Updated prompt `analyst-v10` to distinguish requested measures and periods,
+  use explicit computed values, and flag requests for missing inputs formally.
+  These instructions are not a deterministic semantic-correctness guarantee.
+- Preserved the user's full run and rescored its retained observations: 26
+  review items, one failed
+  passage check and three original infrastructure failures. Changed execution
+  inputs are never relabeled as if the old run used them.
+- Ran six fresh affected cases once. Three need review, two fail retrieval
+  expectations, and one hits the explicit OCR-page bound. The comparison now
+  ingests both sources but misses the requested 5.4% passages; core inflation
+  still misses the four-year-low passage. Recollected the completed comparison
+  after fixing archive hashing without another model submission. Known factual
+  omissions remain review items: the code-switch answer omits the country name,
+  and the Hindi chapter answer omits the requested food-inflation trend. The
+  original collection failure remains in the ignored initial run directory.
+- At the user's request, removed the temporary repair and full-rescore report
+  folders; the user will rerun the full system. No new full run was started.
+- Validation: 399 deterministic backend tests passed (13 opt-in live tests
+  skipped, 66 integration tests deselected), plus the final 13 focused runner
+  tests covering archive limits, 12 dataset-pack tests and seven PostgreSQL
+  retrieval tests. Black, mypy and diff checks passed. Originals verify against
+  all seven pinned hashes. No schema change; phase 10 remains unstarted and
+  ranking/model-quality tuning remains deferred under the baseline policy.

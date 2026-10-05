@@ -82,21 +82,22 @@ the report's per-case metrics, evidence, artifacts, latency, and missing usage
 data. The standard runner accepts only loopback API URLs and requires the
 configured evaluation account.
 
-If an attempt fails during login, it may already have created an empty
-checkpoint. Retry the same command with `--resume` to use that checkpoint.
-Use `--fresh` or a different output directory when experiment inputs change.
+Credentials and supported answer languages are checked before the runner writes
+a checkpoint. Use `--fresh` or a different output directory when experiment
+inputs change.
 
-The unsupported-data cases exercise the current clarification contract. The
-runner checks for a clarification event, so a reasonable prose refusal alone
-can fail that automatic check. Review the response and trace before classifying
-it as a factual failure.
+The unsupported-data cases distinguish formal clarification events from prose.
+An explicit clarification event passes the contract. A refusal or clarification
+written only in prose remains `needs_review`; the runner does not use language
+patterns to certify abstention. Incorrect calculations, citations, source
+integrity, and prohibited actions remain deterministic failures.
 
 ## How to evaluate
 
 The structured retail checks compare calculation results returned by `run_sql`
 or `analyze_data` with independent Decimal gold values. Questions name the
 expected output column so the existing scorer can find it. Exact counts use zero
-tolerance; currency amounts use GBP 0.01. Inspect the question rubric for the
+tolerance; currency amounts and rounded percentages use 0.01. Inspect the question rubric for the
 checks that need a human: top-country names and ordering, the top-five values,
 null denominator, chart contents, CSV row correctness, and the quality of an
 answer to an ambiguous or unsupported request.
@@ -125,8 +126,15 @@ are visually legible, but embedded text extraction contains legacy-glyph
 garbling. Their retrieval cases are descriptive and require a visual check of
 the rendered page and citation.
 
-The current case schema cannot represent multi-turn conversations. It cannot
-automatically compare grouped per-country top-k values, chart semantics,
+The current case schema cannot represent multi-turn conversations. Prompt
+language and requested answer language are separate fields when they differ;
+live requests must use a configured canonical answer language. A prompt written
+in Romanized Hindi can therefore retain its `hi-Latn-IN` input label while
+requesting a `hi-IN` answer. Cases with a rubric `manual_review` note remain
+`needs_review` even when deterministic checks pass. The CLI emits bounded JSON
+stage/status progress events and periodic heartbeats; HTTP diagnostics retain
+safe error codes and validation field names, never submitted values or response
+bodies. The scorer cannot automatically compare grouped per-country top-k values,
 clarification wording, table cell accuracy, citation page numbers, or complete
 prose factuality. OCR measurements are descriptive. There is no calibrated
 judge, broad ablation, or claim of a complete quality benchmark. The Economic

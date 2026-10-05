@@ -107,6 +107,13 @@ for new trials. A fresh run archives the previous checkpoint before replacing it
 Timeout requests cancellation and remains a timeout trial even if cleanup later
 succeeds. Application run/audit links preserve the server-side trace.
 
+CLI progress events report uploads, ingestion, run submission, audit collection
+and scoring, with 15-second waiting heartbeats. Diagnostics retain API validation
+field names and document error codes, excluding submitted values and document
+excerpts. Authentication succeeds before an output checkpoint is created.
+Cases may specify `answer_language` separately from their input `language`;
+the requested output language must be configured on the application.
+
 Identity includes case and fixture hashes, configured model/endpoint fingerprints,
 API identity, application/evaluation code hash, dependency lock, prompt/policy,
 extractor/chunker and retrieval versions/settings, embedding/reranker settings,
@@ -130,11 +137,18 @@ uv run python -m evaluation.cli rescore ../evals/runs/baseline/report.json \
 
 Rescoring retains the original execution identity, adds a separate scoring code/
 case identity, and refuses changes to questions, languages, sources or
-answerability. Use a fresh trial when execution inputs change. Original trial
+answerability on trials with observations. Changed inputs on trials without
+observations are skipped, preserving their original execution metadata and
+failure. Use a fresh trial when execution inputs change. Original trial
 reports remain available for comparing old scoring with corrected scoring.
 
 
 ## Human review
+
+Cases marked for human review or carrying a `manual_review` rubric remain
+`needs_review` after successful execution. Numeric literal presence and passage
+matching do not prove semantic correctness. Missing formal clarification is a
+review item; prose is not automatically certified as abstention or clarification.
 
 From `backend`, create a template bound to the experiment, case, repetition and
 answer hash:

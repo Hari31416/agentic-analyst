@@ -200,7 +200,7 @@
             "key": "missing_customer_percent",
             "value": "38.12",
             "unit": null,
-            "tolerance": "0"
+            "tolerance": "0.01"
           }
         ],
         "passages": [],
@@ -511,7 +511,7 @@
       "schema_version": 1,
       "id": "retail-codeswitch-top-country",
       "question": "Jan 2011 mein rules apply karke highest qualifying sales wala country batayein; us country ki sales GBP mein aur sabhi qualifying rows se overall distinct invoice count bhi dein. Final numeric results ek hi SQL/analysis result row mein dein, in column names ke saath: top_country_sales_gbp, invoice_count.",
-      "language": "hi-Latn",
+      "language": "hi-Latn-IN",
       "tags": [
         "retail",
         "code-switch",
@@ -575,7 +575,8 @@
       },
       "review": {
         "provenance": "unreviewed"
-      }
+      },
+      "answer_language": "hi-IN"
     },
     {
       "schema_version": 1,

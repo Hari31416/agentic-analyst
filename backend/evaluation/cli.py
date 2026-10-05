@@ -75,6 +75,16 @@ async def execute(
     if urlsplit(args.api_url).hostname not in {"localhost", "127.0.0.1", "::1"}:
         raise ValueError("The first runner requires a loopback application API")
     settings = get_settings()
+    if not settings.eval_username or not settings.eval_password:
+        raise ValueError(
+            "Set EVAL_USERNAME and EVAL_PASSWORD for authenticated evaluation"
+        )
+    for case in cases:
+        requested_language = case.answer_language or case.language
+        if requested_language not in settings.supported_languages:
+            raise ValueError(
+                f"Case {case.id} requests unsupported answer language; set answer_language to a configured canonical language"
+            )
     identity = build_identity(
         cases,
         settings,
@@ -84,28 +94,26 @@ async def execute(
         args.profile,
         args.timeout,
     )
-    args.output.mkdir(parents=True, exist_ok=True)
-    # One process owns a checkpoint; concurrency is controlled within that process.
-    with (args.output / ".runner.lock").open("a") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
-            raise ValueError("Another runner owns this output directory") from error
-        checkpoint = Checkpoint(
-            args.output / "checkpoint.json",
-            identity,
-            cases,
-            resume=args.resume,
-            fresh=args.fresh,
+    client = ApplicationClient(args.api_url)
+    try:
+        # Authenticate before creating output state, so rejected credentials do
+        # not leave a misleading empty checkpoint behind.
+        await client.login(
+            settings.eval_username, settings.eval_password.get_secret_value()
         )
-        client = ApplicationClient(args.api_url)
-        try:
-            if not settings.eval_username or not settings.eval_password:
-                raise ValueError(
-                    "Set EVAL_USERNAME and EVAL_PASSWORD for authenticated evaluation"
-                )
-            await client.login(
-                settings.eval_username, settings.eval_password.get_secret_value()
+        args.output.mkdir(parents=True, exist_ok=True)
+        # One process owns a checkpoint; concurrency is controlled within it.
+        with (args.output / ".runner.lock").open("a") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as error:
+                raise ValueError("Another runner owns this output directory") from error
+            checkpoint = Checkpoint(
+                args.output / "checkpoint.json",
+                identity,
+                cases,
+                resume=args.resume,
+                fresh=args.fresh,
             )
             report = await run_experiment(
                 cases,
@@ -121,14 +129,14 @@ async def execute(
             report["api_base_url"] = args.api_url
             report["gate"] = {
                 "passed": all(t["status"] == "passed" for t in report["trials"]),
-                "scope": "Synthetic deterministic expectations only; human language/grounding review and optional judges are uncalibrated.",
+                "scope": "Deterministic case expectations only; human language, grounding and manual rubrics require review; optional judges are uncalibrated.",
                 "minimum_trials_for_release_comparison": 3,
                 "trial_count_requirement_met": args.repeats >= 3,
             }
             checkpoint.save()
             return write_reports(report, args.output)
-        finally:
-            await client.close()
+    finally:
+        await client.close()
 
 
 def rescore(report: dict[str, Any], cases: list[EvaluationCase]) -> dict[str, Any]:
@@ -136,25 +144,60 @@ def rescore(report: dict[str, Any], cases: list[EvaluationCase]) -> dict[str, An
     current = {case.id: case for case in cases}
     original = {case["id"]: case for case in report["identity"]["cases"]}
     revised = deepcopy(report)
-    revised["cases"] = [
-        {
-            "case_id": case.id,
-            "question": case.question,
-            "language": case.language,
-            "tags": case.tags,
-            "review": case.review.model_dump(),
-            "rubric": case.expectations.rubric,
-        }
-        for case in cases
-    ]
+    revised["cases"] = []
+    for case in cases:
+        old_case = original.get(case.id, {})
+        changed_execution_metadata = any(
+            old_case.get(field) != case.model_dump(mode="json").get(field)
+            for field in (
+                "question",
+                "language",
+                "answer_language",
+                "sources",
+                "answerability",
+            )
+        )
+        revised["cases"].append(
+            {
+                "case_id": case.id,
+                "question": old_case.get("question", case.question),
+                "language": old_case.get("language", case.language),
+                "answer_language": old_case.get("answer_language"),
+                "tags": old_case.get("tags", case.tags),
+                "review": case.review.model_dump(),
+                "rubric": case.expectations.rubric,
+                **(
+                    {
+                        "scoring_skipped_reason": "execution metadata retained from original trial"
+                    }
+                    if changed_execution_metadata
+                    else {}
+                ),
+            }
+        )
     for trial in revised["trials"]:
         case = current[trial["case_id"]]
         old_case = original[case.id]
-        for field in ("question", "language", "sources", "answerability"):
-            if old_case.get(field) != case.model_dump(mode="json").get(field):
+        changed_inputs = [
+            field
+            for field in (
+                "question",
+                "language",
+                "answer_language",
+                "sources",
+                "answerability",
+            )
+            if old_case.get(field) != case.model_dump(mode="json").get(field)
+        ]
+        if changed_inputs:
+            if trial.get("observations"):
                 raise ValueError(
                     "Rescore cannot change execution inputs; use a fresh experiment"
                 )
+            trial["scoring_skipped_reason"] = (
+                "execution inputs changed; retained original trial without rescoring"
+            )
+            continue
         observed = trial.get("observations")
         if (
             not isinstance(observed, dict)
@@ -197,6 +240,7 @@ def rescore(report: dict[str, Any], cases: list[EvaluationCase]) -> dict[str, An
     revised["gate"] = {
         **report.get("gate", {}),
         "passed": all(trial["status"] == "passed" for trial in revised["trials"]),
+        "scope": "Deterministic case expectations only; human language, grounding and manual rubrics require review; optional judges are uncalibrated.",
     }
     return revised
 
@@ -252,6 +296,7 @@ def main() -> int:
                             {
                                 "id": c.id,
                                 "language": c.language,
+                                "answer_language": c.answer_language,
                                 "tags": c.tags,
                                 "review": c.review.provenance,
                             }

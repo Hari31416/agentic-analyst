@@ -198,12 +198,30 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
     if case.answerability == "unsupported":
         clarified = bool(outcome.get("clarification"))
         metrics.append(
-            _result("unsupported_handling", clarified, clarification_provided=clarified)
+            _result("unsupported_handling", True, clarification_provided=True)
+            if clarified
+            else MetricResult(
+                name="unsupported_handling",
+                status="needs_review",
+                details={
+                    "clarification_provided": False,
+                    "reason": "No formal clarification event was recorded; prose is not automatically certified as abstention.",
+                },
+            )
         )
     elif case.answerability == "ambiguous":
         clarified = bool(outcome.get("clarification"))
         metrics.append(
-            _result("ambiguous_handling", clarified, clarification_provided=clarified)
+            _result("ambiguous_handling", True, clarification_provided=True)
+            if clarified
+            else MetricResult(
+                name="ambiguous_handling",
+                status="needs_review",
+                details={
+                    "clarification_provided": False,
+                    "reason": "No formal clarification event was recorded; prose is not automatically certified as clarification.",
+                },
+            )
         )
 
     for calculation in case.expectations.calculations:
@@ -471,6 +489,21 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                 name="label_provenance",
                 status="needs_review",
                 details={"provenance": case.review.provenance},
+            )
+        )
+    if case.review.requires_human_review or case.expectations.rubric.get(
+        "manual_review"
+    ):
+        metrics.append(
+            MetricResult(
+                name="manual_review",
+                status="needs_review",
+                details={
+                    "reason": str(
+                        case.expectations.rubric.get("manual_review")
+                        or "This case requires human review."
+                    )[:500]
+                },
             )
         )
     return metrics

@@ -57,6 +57,7 @@ class EvaluationReview(BaseModel):
     provenance: Literal["synthetic", "unreviewed", "human_reviewed"] = "unreviewed"
     reviewer: str | None = None
     reviewed_at: str | None = None
+    requires_human_review: bool = False
 
 
 class EvaluationCase(BaseModel):
@@ -68,6 +69,9 @@ class EvaluationCase(BaseModel):
     id: str = Field(min_length=1, max_length=120)
     question: str = Field(min_length=1, max_length=10000)
     language: str = Field(min_length=2, max_length=40)
+    # The language of the prompt and the requested answer language can differ,
+    # especially for Romanized Hindi prompts. None preserves legacy behavior.
+    answer_language: str | None = Field(default=None, min_length=2, max_length=40)
     tags: list[str] = Field(default_factory=list)
     answerability: Literal["answerable", "ambiguous", "unsupported"]
     sources: list[EvaluationSource] = Field(default_factory=list)

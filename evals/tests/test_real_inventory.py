@@ -39,6 +39,20 @@ def test_real_inventory_is_valid_and_has_unreviewed_labels():
         for passage in case.expectations.passages:
             assert passage.source_alias in {source.alias for source in case.sources}
             assert passage.contains.strip()
+    code_switch = next(
+        case for case in cases if case.id == "retail-codeswitch-top-country"
+    )
+    assert code_switch.language == "hi-Latn-IN"
+    assert code_switch.answer_language == "hi-IN"
+    rounded_share = next(
+        calculation
+        for case in cases
+        if case.id == "retail-customer-null-en"
+        for calculation in case.expectations.calculations
+        if calculation.key == "missing_customer_percent"
+    )
+    assert rounded_share.value == Decimal("38.12")
+    assert rounded_share.tolerance == Decimal("0.01")
 
 
 def test_available_source_bytes_match_inventory():

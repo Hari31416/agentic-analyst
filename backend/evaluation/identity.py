@@ -111,6 +111,7 @@ def build_identity(
         },
         "retrieval_aliases": settings.retrieval_aliases,
         "ingestion_profile": settings.ingestion_profile,
+        "document_max_chunks": settings.document_max_chunks,
         "ocr": {"enabled": settings.ocr_enabled, "languages": settings.ocr_languages},
         "budgets": {
             "model_calls": settings.max_model_calls,

@@ -233,7 +233,7 @@
       "audit_export_count": 30
     }
   ],
-  "scope": "One repetition per case, automatic checks only; manual quality review pending. Models sequential, four queries in flight per model. Latency includes shared load. Missing/partial usage remains explicit in detailed reports.",
+  "scope": "One repetition per case. Original automatic checks preserved; a separate AI-assisted Luna first-pass review covers four models. Models sequential, four queries in flight per model. Latency includes shared load. Missing/partial usage remains explicit in detailed reports.",
   "usage_scope": "Known response token counters, not provider billing totals; failed/interrupted request usage can be unavailable.",
   "usage_coverage_corrections": [
     {
@@ -261,5 +261,36 @@
   "retained_audit_exports": 150,
   "retained_comparison_artifacts": 428,
   "services_stopped": true,
-  "comparison_review": "AI-assisted Luna review in progress; Qwen3.5-9B excluded from requested interactive comparison."
+  "comparison_review": {
+    "status": "complete",
+    "provenance": "GPT-6 Luna, AI-assisted, first-pass, uncalibrated; no independent human or native-speaker certification",
+    "excluded_models": [
+      "Qwen3.5-9B"
+    ],
+    "reviewed_trials": 120,
+    "counts_by_model": {
+      "gpt-oss-120b": {
+        "complete": 18,
+        "partial": 7,
+        "failed": 5
+      },
+      "gemma-4-31b-it": {
+        "complete": 19,
+        "partial": 6,
+        "failed": 5
+      },
+      "gemma-4-26B-A4B-it": {
+        "complete": 22,
+        "partial": 5,
+        "failed": 3
+      },
+      "Qwen3.6-35B-A3B": {
+        "complete": 24,
+        "partial": 4,
+        "failed": 2
+      }
+    },
+    "page": "evals/reviews/real-v1-krutrim-matrix-2026-10-05/index.html",
+    "browser_visual_verification": "unperformed; browser policy blocked local file URLs"
+  }
 }

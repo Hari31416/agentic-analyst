@@ -119,7 +119,10 @@ model attempts/responses, provider failures and retryability, response durations
 usage counters and their coverage, queue/query/ingestion timing, and bounded
 response/validation diagnostics. Existing observations retain redacted tool inputs,
 results and evidence. Operational telemetry excludes prompt text, submitted
-argument values and private reasoning. Provider failures without usage remain
+argument values and private reasoning. Reported tool attempts include finalization
+and attempts rejected before runtime dispatch; retained tool execution rows can
+therefore be fewer than attempted calls. Aggregate outcome usage does not prove
+per-attempt coverage. Provider failures without usage remain
 unavailable; audit truncation and missing counters must be considered when
 interpreting totals. Timing at concurrency four measures throughput under shared
 host/provider load and is not directly comparable to single-query latency.

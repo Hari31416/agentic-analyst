@@ -1159,5 +1159,26 @@ Keep secrets and raw client data out of this file.
   reports and execution identities. Only OSS retail-top-country-en has partial
   attempt coverage, with eight measured responses across nine attempts.
 - User requested an interactive Luna comparison and AI labels for needs_review
-  cases, excluding Qwen 9B. Offline review is in progress; original automatic
+  cases, excluding Qwen 9B. Completed the offline review; original automatic
   reports remain unchanged. No additional live calls, reruns or phase-10 work.
+
+## 5 October 2026: reviewed four-model comparison
+
+- Luna assigned exact-answer-bound task labels to all 120 included trials,
+  including every needs_review case. AI complete/partial/failed counts: OSS
+  18/7/5, Gemma 31B 19/6/5, Gemma 26B 22/5/3, Qwen 35B 24/4/2.
+  Labels are a first-pass, uncalibrated AI review, not independent human or
+  native-speaker certification. Original automatic checks remain separately visible.
+- Artifact review caught two 20-country CSV exports where 22 were required:
+  Qwen 35B retail-sales-chart-csv and Gemma 26B retail-export-and-chart-hi
+  omit Iceland and Israel. Both requested top-five charts are correct; their
+  task labels are partial. Downloaded artifact hashes and review notes are retained.
+- Saved the offline interactive page, comparison JSON/CSV, exact review imports,
+  reviewed reports and rebuild scripts under
+  evals/reviews/real-v1-krutrim-matrix-2026-10-05/. Qwen 9B is excluded from
+  every comparison aggregate. Answers render as safe Markdown; charts compare
+  task labels, latency and known response usage. Raw answer hashes are preserved.
+- Validated review imports, answer bindings, unchanged automatic metrics,
+  120-row coverage and generated JavaScript offline. Browser visual verification
+  remains unperformed because browser policy blocked local file URLs.
+  Apps, sandbox and Compose infrastructure remain stopped, with volumes preserved.

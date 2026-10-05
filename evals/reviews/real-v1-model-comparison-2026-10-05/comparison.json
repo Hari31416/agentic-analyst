@@ -1,0 +1,402 @@
+{
+  "schema_version": 1,
+  "method": "Offline AI-assisted manual review; same criteria, one trial per case",
+  "identity_differences": [
+    "model"
+  ],
+  "models": {
+    "gemma": "gemma-4-26B-A4B-it",
+    "oss_120b": "gpt-oss-120b"
+  },
+  "source_reports": [
+    {
+      "path": "evals/runs/real-v1-full/report.json",
+      "sha256": "8e706f6bff0022aa2ff35b7fdab73c23dab72d04b5f20525f25873d1b8eee16b"
+    },
+    {
+      "path": "evals/runs/real-v1-full-oss-120b/report.json",
+      "sha256": "1def0d79af511134222eb5ab4deafa563ed2e805e21ca44d91348379abd1ed5b"
+    }
+  ],
+  "results": {
+    "gemma": {
+      "review_counts": {
+        "pass": 20,
+        "fail": 4,
+        "partial": 6
+      },
+      "complete_success_rate": 0.6666666666666666,
+      "by_dataset": {
+        "retail": {
+          "cases": 20,
+          "pass": 16,
+          "fail": 2,
+          "partial": 2,
+          "complete_success_rate": 0.8
+        },
+        "survey": {
+          "cases": 10,
+          "pass": 4,
+          "fail": 2,
+          "partial": 4,
+          "complete_success_rate": 0.4
+        }
+      },
+      "automatic_calculation_checks": {
+        "pass": 23,
+        "fail": 2
+      },
+      "terminal_run_states": {
+        "completed": 29,
+        "awaiting_clarification": 1
+      },
+      "infrastructure_failures": 0
+    },
+    "oss_120b": {
+      "review_counts": {
+        "pass": 19,
+        "fail": 7,
+        "partial": 4
+      },
+      "complete_success_rate": 0.6333333333333333,
+      "by_dataset": {
+        "retail": {
+          "cases": 20,
+          "pass": 14,
+          "fail": 4,
+          "partial": 2,
+          "complete_success_rate": 0.7
+        },
+        "survey": {
+          "cases": 10,
+          "fail": 3,
+          "pass": 5,
+          "partial": 2,
+          "complete_success_rate": 0.5
+        }
+      },
+      "automatic_calculation_checks": {
+        "pass": 21,
+        "fail": 4
+      },
+      "terminal_run_states": {
+        "completed": 24,
+        "failed": 5,
+        "awaiting_clarification": 1
+      },
+      "infrastructure_failures": 0
+    }
+  },
+  "all_trial_statistics": {
+    "gemma": {
+      "query_seconds": {
+        "n": 30,
+        "total": 303.159172,
+        "median": 9.4122335,
+        "p95": 20.99012984999998,
+        "max": 25.821665
+      },
+      "elapsed_seconds": {
+        "n": 30,
+        "total": 661.9391705839662,
+        "median": 14.589753729000222,
+        "p95": 56.87253982964321,
+        "max": 123.35473249998176
+      },
+      "ingestion_seconds": {
+        "n": 30,
+        "total": 287.38850916491356,
+        "median": 2.048614166502375,
+        "p95": 44.288011195653226,
+        "max": 106.95349745900603
+      },
+      "model_calls": {
+        "n": 30,
+        "total": 176.0,
+        "median": 6.0,
+        "p95": 9.549999999999997,
+        "max": 10.0
+      },
+      "tokens": {
+        "n": 30,
+        "total": 1165156.0,
+        "median": 36323.0,
+        "p95": 65744.24999999999,
+        "max": 91453.0
+      }
+    },
+    "oss_120b": {
+      "query_seconds": {
+        "n": 30,
+        "total": 453.87172100000004,
+        "median": 16.0073465,
+        "p95": 26.889293199999997,
+        "max": 31.595115
+      },
+      "elapsed_seconds": {
+        "n": 30,
+        "total": 813.0780540029809,
+        "median": 21.151997729495633,
+        "p95": 75.39242429810253,
+        "max": 114.95126316699316
+      },
+      "ingestion_seconds": {
+        "n": 30,
+        "total": 284.91260487609543,
+        "median": 1.9095666040084325,
+        "p95": 44.54545473940234,
+        "max": 106.48662383298506
+      },
+      "model_calls": {
+        "n": 25,
+        "total": 176.0,
+        "median": 8.0,
+        "p95": 10.0,
+        "max": 13.0
+      },
+      "tokens": {
+        "n": 25,
+        "total": 853234.0,
+        "median": 35581.0,
+        "p95": 60144.599999999984,
+        "max": 73547.0
+      }
+    }
+  },
+  "paired_nonfailed_oss_cases_statistics": {
+    "gemma": {
+      "query_seconds": {
+        "n": 25,
+        "total": 233.417899,
+        "median": 9.333586,
+        "p95": 16.7041178,
+        "max": 17.719001
+      },
+      "model_calls": {
+        "n": 25,
+        "total": 146.0,
+        "median": 6.0,
+        "p95": 9.599999999999994,
+        "max": 10.0
+      },
+      "tokens": {
+        "n": 25,
+        "total": 908144.0,
+        "median": 36288.0,
+        "p95": 59180.19999999997,
+        "max": 63503.0
+      }
+    },
+    "oss_120b": {
+      "query_seconds": {
+        "n": 25,
+        "total": 406.921623,
+        "median": 16.32912,
+        "p95": 27.216444199999998,
+        "max": 31.595115
+      },
+      "model_calls": {
+        "n": 25,
+        "total": 176.0,
+        "median": 8.0,
+        "p95": 10.0,
+        "max": 13.0
+      },
+      "tokens": {
+        "n": 25,
+        "total": 853234.0,
+        "median": 35581.0,
+        "p95": 60144.599999999984,
+        "max": 73547.0
+      }
+    }
+  },
+  "pairs": [
+    {
+      "case_id": "retail-jan-sales-en",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "Correct qualifying filters and requested numeric results within tolerance. The SQL returns one aggregate row and valid calculation evidence IDs are declared in the answer payload. Sparse inline citation/answer formatting is a presentation issue; the same declared-evidence criterion is applied to both models."
+    },
+    {
+      "case_id": "retail-distinct-countries",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "22 distinct countries after all three qualifying filters, matching gold."
+    },
+    {
+      "case_id": "retail-customer-null-en",
+      "gemma": "fail",
+      "oss_120b": "fail",
+      "oss_reason": "The SQL filters the raw January slice but does not apply the three qualifying-sale filters. It counts 13235 missing-customer rows and reports 37.6561%; gold is 13077 and 38.12% among qualifying invoice lines. Percentage units are explicitly expressed, but the population and result are wrong."
+    },
+    {
+      "case_id": "retail-top-country-en",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "United Kingdom is correctly named and ranked first; 561289.98 GBP matches gold within the 0.01 tolerance. SQL uses all qualifying filters and descending country sales."
+    },
+    {
+      "case_id": "retail-cancellations",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "701 raw cancellation rows and 691364.560 qualifying sales match gold. SQL correctly separates cancellation count from sales filters."
+    },
+    {
+      "case_id": "retail-sales-chart-csv",
+      "gemma": "pass",
+      "oss_120b": "fail",
+      "oss_reason": "Run failed before SQL, CSV export, or PNG chart creation. Answer is empty and artifact_ids is empty despite both outputs being required."
+    },
+    {
+      "case_id": "retail-revenue-hindi",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "All requested totals match gold and SQL applies the qualifying filters. First-pass Hinglish/Hindi output is understandable; a native-speaker quality certification is outside this review."
+    },
+    {
+      "case_id": "retail-codeswitch-top-country",
+      "gemma": "partial",
+      "oss_120b": "partial",
+      "oss_reason": "The top sales amount 561289.98 and distinct invoice count 1086 match. However, neither the SQL projection nor answer identifies the country; gold category is United Kingdom, so the main categorical answer is incomplete."
+    },
+    {
+      "case_id": "retail-mixed-rule-retrieval",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "Correct qualifying filters and requested numeric results within tolerance. The SQL returns one aggregate row and valid calculation evidence IDs are declared in the answer payload. Sparse inline citation/answer formatting is a presentation issue; the same declared-evidence criterion is applied to both models."
+    },
+    {
+      "case_id": "retail-missing-cost-unsupported",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "Correctly refuses to invent profit or margin without cost data and asks for the needed cost information."
+    },
+    {
+      "case_id": "retail-lines-vs-invoices",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "Correct 1086 distinct invoices and 34306 invoice-line rows, with a clear explanation of the different grains."
+    },
+    {
+      "case_id": "retail-units-sold",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "387785 qualifying units matches gold. SQL sums quantity only for non-cancelled lines with positive quantity and price."
+    },
+    {
+      "case_id": "retail-missing-customer-sales",
+      "gemma": "pass",
+      "oss_120b": "partial",
+      "oss_reason": "The numerator 121919.52 and denominator 691364.56 match gold, and SQL applies the correct qualifying filters without imputing identity. The answer omits the explicitly requested share (about 17.63%), although it gives both values from which to calculate it."
+    },
+    {
+      "case_id": "retail-top-five",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "Names, order and rounded amounts match the gold top five. SQL applies the qualifying filters and sorts descending."
+    },
+    {
+      "case_id": "retail-hindi-english-rules",
+      "gemma": "pass",
+      "oss_120b": "fail",
+      "oss_reason": "The answer asks the user to provide the attached rules even though the rules source is present and retrievable. It returns neither requested number. The automatic calculation and answer-number checks fail."
+    },
+    {
+      "case_id": "retail-export-and-chart-hi",
+      "gemma": "partial",
+      "oss_120b": "fail",
+      "oss_reason": "Run failed after document search/profile only; no SQL, CSV, chart, final answer, or artifact IDs were produced despite both outputs being required."
+    },
+    {
+      "case_id": "retail-cancellation-only-count",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "701 raw January rows whose InvoiceNo begins with C matches gold. No other filters are applied."
+    },
+    {
+      "case_id": "retail-distinct-customer-count",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "741 distinct non-missing customers under all qualifying filters matches gold."
+    },
+    {
+      "case_id": "retail-netherlands-sales",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "Netherlands qualifying sales 26611.16 GBP matches gold. SQL contains country predicate and all three qualifying rules."
+    },
+    {
+      "case_id": "retail-scope-clarification",
+      "gemma": "fail",
+      "oss_120b": "pass",
+      "oss_reason": "Correctly explains that the source covers January 2011 only, gives that month’s qualifying total, and asks whether the user wants it or can provide the remaining months."
+    },
+    {
+      "case_id": "survey-fy24-retail-inflation-en",
+      "gemma": "pass",
+      "oss_120b": "fail",
+      "oss_reason": "Application run failed with invalid_model_response; no final answer. Saved error does not identify the malformed response or underlying parser cause."
+    },
+    {
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "gemma": "fail",
+      "oss_120b": "pass",
+      "oss_reason": "Hindi answer supplies FY24 retail inflation of 5.4 per cent. Declared original English chapter page-1 evidence supports the figure; percentage units and requested language are correct."
+    },
+    {
+      "case_id": "survey-inflation-drivers-en",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "Correctly distinguishes pandemic supply disruption and conflict-related commodity conditions from adverse-weather food-price pressure. Declared opening-summary evidence supports the requested FY22/FY23 explanation."
+    },
+    {
+      "case_id": "survey-inflation-policy-measures-en",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "All four measures match the original opening summary: stock management, open market operations, subsidised essential foods and trade measures. Original evidence is declared."
+    },
+    {
+      "case_id": "survey-inflation-hi-source",
+      "gemma": "partial",
+      "oss_120b": "partial",
+      "oss_reason": "Useful Hindi retail/state and policy discussion, but the FY24 food subsection describes mitigation without establishing the actual food-inflation trend. Hindi chapter page 9 paragraph 3.18 shows CFPI rising from 6.6 per cent in FY23 to 7.5 per cent in FY24. Its evidence does not include that passage; mitigation versus an observed decline remains ambiguous."
+    },
+    {
+      "case_id": "survey-summary-vs-chapter",
+      "gemma": "partial",
+      "oss_120b": "fail",
+      "oss_reason": "Application run failed with invalid_model_response; no final comparison answer or verification of both requested sources."
+    },
+    {
+      "case_id": "survey-inflation-hi-cross-language",
+      "gemma": "partial",
+      "oss_120b": "partial",
+      "oss_reason": "The main four-year-low core-inflation claim is correct and supported by declared chapter page-6 evidence, despite the automatic opening-phrase miss. However, it attributes the almost-four-percentage-point Apr22-Jun24 decline to Chart III.12 instead of III.13 and extends a housing-rent explanation for core services to overall core inflation."
+    },
+    {
+      "case_id": "survey-hindi-source-search-en",
+      "gemma": "partial",
+      "oss_120b": "fail",
+      "oss_reason": "Application run failed with invalid_model_response; no supported English statement or requested PDF page citation."
+    },
+    {
+      "case_id": "survey-appendix-table-retrieval",
+      "gemma": "fail",
+      "oss_120b": "pass",
+      "oss_reason": "Identifies Table 4.3 and all four CPI series and categories, with PDF pages 92 and 93 and declared evidence from both. Rendered headers establish IW General, NS Rural/Urban/Combined, AL General and RL General. The flat header list does not make the incorrect grouped assignment seen in Gemma."
+    },
+    {
+      "case_id": "survey-causal-overclaim",
+      "gemma": "pass",
+      "oss_120b": "pass",
+      "oss_reason": "Correctly declines to treat adverse weather alone as proven cause. Declared original passages support contributing weather and other conditions without establishing exclusive causation."
+    }
+  ],
+  "limitations": [
+    "One repetition; no variance estimate or stable ranking.",
+    "AI-assisted review; no independent human/native-speaker calibration.",
+    "OSS token/model-call totals omit five failed runs; compare paired 25 cases only, without a cost claim.",
+    "Generic invalid_model_response does not preserve precise failure cause."
+  ]
+}

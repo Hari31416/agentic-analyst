@@ -1,0 +1,586 @@
+{
+  "schema_version": 1,
+  "experiment_id": "0f215aabaa7dfa58-05d9deb8",
+  "reviews": [
+    {
+      "case_id": "retail-cancellation-only-count",
+      "repetition": 0,
+      "answer_hash": "3efe69d5c51fab3de511cc1536484308069fd36432cfd6f240c12e01c2f05388",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Count raw rows; no other filters apply."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "701 raw January rows whose InvoiceNo begins with C matches gold. No other filters are applied."
+    },
+    {
+      "case_id": "retail-cancellations",
+      "repetition": 0,
+      "answer_hash": "3592e09c7e518bc865c9abf23d8d57ee202b3306004fcae928d77c08d3675ecb",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Cancellation count uses raw month rows; sales applies all three rules."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "701 raw cancellation rows and 691364.560 qualifying sales match gold. SQL correctly separates cancellation count from sales filters."
+    },
+    {
+      "case_id": "retail-codeswitch-top-country",
+      "repetition": 0,
+      "answer_hash": "8f57f05e2088a046ae54f17cc219d74a48b893cd55ae10c5ac389fbb393663ee",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "expected_category": "United Kingdom",
+        "manual_review": "Transliterated Hindi/English code-switching needs human review."
+      },
+      "rating": {
+        "verdict": "partial",
+        "score": 0.5
+      },
+      "comment": "The top sales amount 561289.98 and distinct invoice count 1086 match. However, neither the SQL projection nor answer identifies the country; gold category is United Kingdom, so the main categorical answer is incomplete."
+    },
+    {
+      "case_id": "retail-customer-null-en",
+      "repetition": 0,
+      "answer_hash": "dec94d64e8455ef3d37564601ff36ec297f25c6d9bba182612e4aae62e5a013a",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Denominator is qualifying invoice lines, not distinct invoices or all raw rows. State percentage units."
+      },
+      "rating": {
+        "verdict": "fail",
+        "score": 0
+      },
+      "comment": "The SQL filters the raw January slice but does not apply the three qualifying-sale filters. It counts 13235 missing-customer rows and reports 37.6561%; gold is 13077 and 38.12% among qualifying invoice lines. Percentage units are explicitly expressed, but the population and result are wrong."
+    },
+    {
+      "case_id": "retail-distinct-countries",
+      "repetition": 0,
+      "answer_hash": "b63addfaa89243b1ba000f5178ca9ff2a14ef47c65a0aea49a0bc0b82dded4d0",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Distinct country count after row filters."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "22 distinct countries after all three qualifying filters, matching gold."
+    },
+    {
+      "case_id": "retail-distinct-customer-count",
+      "repetition": 0,
+      "answer_hash": "9dd4fa6714faebd3129160e1edc8bd63cbb29b45bf10a79e0074cd783db7d364",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Distinct count excludes missing CustomerID."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "741 distinct non-missing customers under all qualifying filters matches gold."
+    },
+    {
+      "case_id": "retail-export-and-chart-hi",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Inspect exported values and chart labels; language quality needs a native speaker."
+      },
+      "rating": {
+        "verdict": "fail",
+        "score": 0
+      },
+      "comment": "Run failed after document search/profile only; no SQL, CSV, chart, final answer, or artifact IDs were produced despite both outputs being required."
+    },
+    {
+      "case_id": "retail-hindi-english-rules",
+      "repetition": 0,
+      "answer_hash": "d03814c153924fe1a64cff41da9f6b3e46154d6ba2f054e2d3e5928e70df6403",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Review transliterated/code-switched language and missing-value treatment."
+      },
+      "rating": {
+        "verdict": "fail",
+        "score": 0
+      },
+      "comment": "The answer asks the user to provide the attached rules even though the rules source is present and retrievable. It returns neither requested number. The automatic calculation and answer-number checks fail."
+    },
+    {
+      "case_id": "retail-jan-sales-en",
+      "repetition": 0,
+      "answer_hash": "289ff8cb581efbb4670919586c02244bcfd12a46d48aa73b09f8d2c4347a2e7f",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Correct qualifying filters and requested numeric results within tolerance. The SQL returns one aggregate row and valid calculation evidence IDs are declared in the answer payload. Sparse inline citation/answer formatting is a presentation issue; the same declared-evidence criterion is applied to both models."
+    },
+    {
+      "case_id": "retail-lines-vs-invoices",
+      "repetition": 0,
+      "answer_hash": "cf7b8759e737c1c3e223583581992ae431ae56d39b4eb50d92a940a48cd1e36d",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Check distinction between row grain and invoice grain."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Correct 1086 distinct invoices and 34306 invoice-line rows, with a clear explanation of the different grains."
+    },
+    {
+      "case_id": "retail-missing-cost-unsupported",
+      "repetition": 0,
+      "answer_hash": "1d729c3abcce4a487c658dc4a8a9a62bea9f3650849a27d8cdc5ef02d59c7b91",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "The runner checks clarification status; manually verify no invented profit/margin is given."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Correctly refuses to invent profit or margin without cost data and asks for the needed cost information."
+    },
+    {
+      "case_id": "retail-missing-customer-sales",
+      "repetition": 0,
+      "answer_hash": "d295a9b9337c554c94ca71d2b4e83758c4c8ba114822d6d571a2d070ad245f14",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Do not impute customer identity. Check the ratio uses qualifying sales value."
+      },
+      "rating": {
+        "verdict": "partial",
+        "score": 0.5
+      },
+      "comment": "The numerator 121919.52 and denominator 691364.56 match gold, and SQL applies the correct qualifying filters without imputing identity. The answer omits the explicitly requested share (about 17.63%), although it gives both values from which to calculate it."
+    },
+    {
+      "case_id": "retail-mixed-rule-retrieval",
+      "repetition": 0,
+      "answer_hash": "3d1fcd58a28a50f93a31514bd4322c8d8de07c9567869cfac8253c40cc53773a",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify the retrieved rule is applied to the data."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Correct qualifying filters and requested numeric results within tolerance. The SQL returns one aggregate row and valid calculation evidence IDs are declared in the answer payload. Sparse inline citation/answer formatting is a presentation issue; the same declared-evidence criterion is applied to both models."
+    },
+    {
+      "case_id": "retail-netherlands-sales",
+      "repetition": 0,
+      "answer_hash": "446414943d06aeb050460eee81c8e4941d844b7c5388099ad3017e5e440983e9",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify country filter and the three inclusion rules."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Netherlands qualifying sales 26611.16 GBP matches gold. SQL contains country predicate and all three qualifying rules."
+    },
+    {
+      "case_id": "retail-revenue-hindi",
+      "repetition": 0,
+      "answer_hash": "7a166b9195dbeaa063c8c464c20074337253eb3e193e7ead4e52f1bb7ec13a2b",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Native-speaker review is required for Hindi correctness and terminology."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "All requested totals match gold and SQL applies the qualifying filters. First-pass Hinglish/Hindi output is understandable; a native-speaker quality certification is outside this review."
+    },
+    {
+      "case_id": "retail-sales-chart-csv",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "expected_ordered_country_sales": [
+          [
+            "United Kingdom",
+            "561289.98"
+          ],
+          [
+            "Netherlands",
+            "26611.16"
+          ],
+          [
+            "EIRE",
+            "21904.19"
+          ],
+          [
+            "France",
+            "17740.12"
+          ],
+          [
+            "Germany",
+            "16910.84"
+          ]
+        ],
+        "manual_review": "Artifact type/presence is checked by the runner; inspect CSV values, top-five order, and chart labels manually."
+      },
+      "rating": {
+        "verdict": "fail",
+        "score": 0
+      },
+      "comment": "Run failed before SQL, CSV export, or PNG chart creation. Answer is empty and artifact_ids is empty despite both outputs being required."
+    },
+    {
+      "case_id": "retail-scope-clarification",
+      "repetition": 0,
+      "answer_hash": "1ce886425f739379dc6bd16d198b008405587a133c85bc1f6c12b1f4736ad576",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify temporal coverage is clarified; scorer only checks clarification status."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Correctly explains that the source covers January 2011 only, gives that month’s qualifying total, and asks whether the user wants it or can provide the remaining months."
+    },
+    {
+      "case_id": "retail-top-country-en",
+      "repetition": 0,
+      "answer_hash": "2f459c7d4c1dcdebed0dd31db94a3bc589a5d8655c673de6e5ae3b8c0f9bf2bd",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "expected_category": "United Kingdom",
+        "manual_review": "The runner checks the sales amount; manually check the country category and its ordering."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "United Kingdom is correctly named and ranked first; 561289.98 GBP matches gold within the 0.01 tolerance. SQL uses all qualifying filters and descending country sales."
+    },
+    {
+      "case_id": "retail-top-five",
+      "repetition": 0,
+      "answer_hash": "7dd8d0693f8bab03a08d648fbb8152cfb94b05a2832817a737b15c8b61a366eb",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "expected_ordered_country_sales": [
+          [
+            "United Kingdom",
+            "561289.98"
+          ],
+          [
+            "Netherlands",
+            "26611.16"
+          ],
+          [
+            "EIRE",
+            "21904.19"
+          ],
+          [
+            "France",
+            "17740.12"
+          ],
+          [
+            "Germany",
+            "16910.84"
+          ]
+        ],
+        "manual_review": "The case schema cannot score per-category grouped values; compare names, order, and amounts with manifest."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Names, order and rounded amounts match the gold top five. SQL applies the qualifying filters and sorts descending."
+    },
+    {
+      "case_id": "retail-units-sold",
+      "repetition": 0,
+      "answer_hash": "4deadca1fdc6397cf74b307ceb52d1f85ffc8cb3a104ecd4b46545e863cc09e5",
+      "reviewers": [
+        "Codex primary",
+        "Luna 6 retail review"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Check filters and describe the result as items/units."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "387785 qualifying units matches gold. SQL sums quantity only for non-cancelled lines with positive quantity and price."
+    },
+    {
+      "case_id": "survey-appendix-table-retrieval",
+      "repetition": 0,
+      "answer_hash": "96c3b4f6193898e575e3495f42e0d3a8dcff8fac1dcae6aa8a7dc04092a3e32a",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "PDF page 92 starts printed Statistical Appendix page 85; inspect continuation pages and column headers visually."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Identifies Table 4.3 and all four CPI series and categories, with PDF pages 92 and 93 and declared evidence from both. Rendered headers establish IW General, NS Rural/Urban/Combined, AL General and RL General. The flat header list does not make the incorrect grouped assignment seen in Gemma."
+    },
+    {
+      "case_id": "survey-causal-overclaim",
+      "repetition": 0,
+      "answer_hash": "444820e7447098adc7968a8694177f54a3f6a6889a0f79acdbfda83e04e8fcc0",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Check the answer says 'alone' is not established by this sentence and separates attribution from causal proof."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Correctly declines to treat adverse weather alone as proven cause. Declared original passages support contributing weather and other conditions without establishing exclusive causation."
+    },
+    {
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "repetition": 0,
+      "answer_hash": "d9a873108921c0306ecc0ea581829c6d15c0141a87698bbe62a2ad4c854ee692",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify Hindi meaning, 5.4 per cent, FY24 scope, and citation against English source."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Hindi answer supplies FY24 retail inflation of 5.4 per cent. Declared original English chapter page-1 evidence supports the figure; percentage units and requested language are correct."
+    },
+    {
+      "case_id": "survey-fy24-retail-inflation-en",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "The 5.4 per cent claim is supported by this phrase; manually verify page/paragraph and context."
+      },
+      "rating": {
+        "verdict": "fail",
+        "score": 0
+      },
+      "comment": "Application run failed with invalid_model_response; no final answer. Saved error does not identify the malformed response or underlying parser cause."
+    },
+    {
+      "case_id": "survey-hindi-source-search-en",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "The 18-page Hindi chapter requires OCR for legacy fonts. Verify the FY24 claim, English translation and chapter PDF page citation against the rendered original."
+      },
+      "rating": {
+        "verdict": "fail",
+        "score": 0
+      },
+      "comment": "Application run failed with invalid_model_response; no supported English statement or requested PDF page citation."
+    },
+    {
+      "case_id": "survey-inflation-drivers-en",
+      "repetition": 0,
+      "answer_hash": "21668347ea0b5c14bd9db75f22eb0c662a6525c6e6fcebbc76ae0945352d8122",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "Review all opening-page factors without overclaiming causation."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "Correctly distinguishes pandemic supply disruption and conflict-related commodity conditions from adverse-weather food-price pressure. Declared opening-summary evidence supports the requested FY22/FY23 explanation."
+    },
+    {
+      "case_id": "survey-inflation-hi-cross-language",
+      "repetition": 0,
+      "answer_hash": "f72f156eacd52725fdbc62b94630b29083692be20a9df07eae5fce8d58626851",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Human review required for code-switched Hindi and exact core-inflation claim."
+      },
+      "rating": {
+        "verdict": "partial",
+        "score": 0.5
+      },
+      "comment": "The main four-year-low core-inflation claim is correct and supported by declared chapter page-6 evidence, despite the automatic opening-phrase miss. However, it attributes the almost-four-percentage-point Apr22-Jun24 decline to Chart III.12 instead of III.13 and extends a housing-rent explanation for core services to overall core inflation."
+    },
+    {
+      "case_id": "survey-inflation-hi-source",
+      "repetition": 0,
+      "answer_hash": "4d3147c6344c60329b46fe8e89121178736e87e1d2ebfa8da65dee563717c1d6",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Hindi PDF is visually legible, but embedded extraction uses legacy glyphs. Review rendered page and cited evidence manually; no garbled-text gold label."
+      },
+      "rating": {
+        "verdict": "partial",
+        "score": 0.5
+      },
+      "comment": "Useful Hindi retail/state and policy discussion, but the FY24 food subsection describes mitigation without establishing the actual food-inflation trend. Hindi chapter page 9 paragraph 3.18 shows CFPI rising from 6.6 per cent in FY23 to 7.5 per cent in FY24. Its evidence does not include that passage; mitigation versus an observed decline remains ambiguous."
+    },
+    {
+      "case_id": "survey-inflation-policy-measures-en",
+      "repetition": 0,
+      "answer_hash": "0ee3236c9b8f38c4db30276b7f6019274327b0bccbf1fdb41a378623cedbaa0f",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "Verify the entire list against the full sentence."
+      },
+      "rating": {
+        "verdict": "pass",
+        "score": 1
+      },
+      "comment": "All four measures match the original opening summary: stock management, open market operations, subsidised essential foods and trade measures. Original evidence is declared."
+    },
+    {
+      "case_id": "survey-summary-vs-chapter",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "Codex primary"
+      ],
+      "provenance": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify both documents are cited for the same FY24 measure and period."
+      },
+      "rating": {
+        "verdict": "fail",
+        "score": 0
+      },
+      "comment": "Application run failed with invalid_model_response; no final comparison answer or verification of both requested sources."
+    }
+  ]
+}

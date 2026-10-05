@@ -1035,3 +1035,26 @@ Keep secrets and raw client data out of this file.
   `evals/reviews/real-v1-full-2026-10-05/`. Original run/metrics are unchanged.
   One repetition and AI-assisted inspection do not establish model reliability
   or calibrated native-speaker/human judgment. No new live execution or tuning.
+
+## 5 October 2026: review OSS 120B and compare models
+
+- Reviewed all 30 retained OSS 120B trials with a Luna retail subreview and
+  primary adjudication against the same criteria as Gemma. Verified 13 declared
+  CSV downloads and hashes; reused the original PDF/source review and retail
+  gold. No additional live execution or question/model tuning was performed.
+- OSS results: 19 complete (63.3%), four partial, seven failed; retail 14/20,
+  Survey 5/10. Five runs failed with generic invalid_model_response and no final
+  answer, including both required chart/export tasks. Saved errors do not reveal
+  the precise parser/response cause. No infrastructure failures were recorded.
+- Gemma comparison: 20 complete (66.7%), six partial, four failed. Recorded run
+  identities differ only in model. OSS improves Hindi FY24 inflation, CPI table
+  retrieval and action-compliant scope clarification, while shared qualifying
+  filter, missing-country and food-trend issues remain.
+- Median query time: OSS 16.01s versus Gemma 9.41s. Token/model-call comparisons
+  use the same 25 nonfailed OSS cases because failed runs omit usage totals.
+  Single repetitions and AI-assisted review do not establish a stable ranking,
+  independent human/native-speaker calibration or overall cost advantage.
+- Saved bound labels and reviewed traces under
+  evals/reviews/real-v1-full-oss-120b-2026-10-05/, and paired comparison artifacts
+  under evals/reviews/real-v1-model-comparison-2026-10-05/. Original reports,
+  automatic metrics and trial statuses remain unchanged. Phase 10 unstarted.

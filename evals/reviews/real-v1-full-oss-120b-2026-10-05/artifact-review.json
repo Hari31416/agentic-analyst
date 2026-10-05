@@ -1,0 +1,167 @@
+[
+  {
+    "case_id": "retail-distinct-countries",
+    "id": "8db7b2e0-9985-552a-ab68-e0838793e0c3",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "4ae93d04e7e17e327a2be79b721ea2f42c79f4d539edfb02155890eb405e10ff",
+    "rows": 1,
+    "columns": [
+      "country_count"
+    ]
+  },
+  {
+    "case_id": "retail-customer-null-en",
+    "id": "5220f5fc-2dd7-5aae-b294-e13df4c8776d",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "3b3c5eb582d886b6dab0fdafd772f6e08ab0ba2a8f063dc4c8826d6b30210344",
+    "rows": 1,
+    "columns": [
+      "missing_customer_lines",
+      "missing_customer_percent"
+    ]
+  },
+  {
+    "case_id": "retail-top-country-en",
+    "id": "1a7e5d55-4ea6-5c1a-8404-66f65ad0258a",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "f179b8f9a0fb6235c5b332cc0d523bea727f60a1dcd2241555f601ce27ca4127",
+    "rows": 1,
+    "columns": [
+      "top_country",
+      "top_country_sales_gbp"
+    ]
+  },
+  {
+    "case_id": "retail-cancellations",
+    "id": "e28d07b7-3a10-507f-a1ff-5aeb86c26c09",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "a4e2fb3f62a120c7d01dbb756a0da6423dc9969406089a9ffce94eb6f6a71aa5",
+    "rows": 1,
+    "columns": [
+      "cancelled_rows",
+      "sales_gbp"
+    ]
+  },
+  {
+    "case_id": "retail-revenue-hindi",
+    "id": "6849faca-5629-5f92-aeca-72e63838d4d4",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "5e8094592aef36db82ee8d6ca3c443f0167d2591df17aef5a8ac8098886004c5",
+    "rows": 1,
+    "columns": [
+      "sales_gbp",
+      "qualifying_rows",
+      "invoice_count"
+    ]
+  },
+  {
+    "case_id": "retail-codeswitch-top-country",
+    "id": "86c8eb65-233e-5e25-b53a-de8a5090bf80",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "888d9cfa9fe4ddaa3d719507b66ca350d981b79654a3c219eb9f2d374bab61af",
+    "rows": 1,
+    "columns": [
+      "top_country_sales_gbp",
+      "invoice_count"
+    ]
+  },
+  {
+    "case_id": "retail-mixed-rule-retrieval",
+    "id": "6b8849ca-4e87-52b1-9e61-5640fa95cf18",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "925410f02f768f2d2eb4f447240d4bdb478eaad5b96ed62335a0e9d2137d02b4",
+    "rows": 1,
+    "columns": [
+      "sales_gbp"
+    ]
+  },
+  {
+    "case_id": "retail-lines-vs-invoices",
+    "id": "d75716dc-6b92-5605-9631-9311128b2fb7",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "857c71541ac94c79fa510879b872088c18f69ac41964649c9d5561114e59a76a",
+    "rows": 1,
+    "columns": [
+      "invoice_count",
+      "qualifying_rows"
+    ]
+  },
+  {
+    "case_id": "retail-units-sold",
+    "id": "7f7d5de2-f179-5e88-b32c-4ef1927f1cc3",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "9e7a22c5edf340997c2257ee092f468a2159ef585260fcdc5de566b088979709",
+    "rows": 1,
+    "columns": [
+      "qualifying_units"
+    ]
+  },
+  {
+    "case_id": "retail-missing-customer-sales",
+    "id": "f1199ba5-af51-50bd-8d01-31f3d72800f2",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "7f9a67ac2b939138fa90be449ebc6b11c4c22f93bd2bbe4e4e8b3f1427cf80ec",
+    "rows": 1,
+    "columns": [
+      "missing_customer_sales_gbp",
+      "sales_gbp"
+    ]
+  },
+  {
+    "case_id": "retail-top-five",
+    "id": "be4abd2c-550e-59eb-ac30-f9c7004e324b",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "98e6266d7515db22c6ea87995a540b2dc81c29eb6e2993aaabcc04e53dd86716",
+    "rows": 5,
+    "columns": [
+      "Country",
+      "total_sales_gbp"
+    ]
+  },
+  {
+    "case_id": "retail-cancellation-only-count",
+    "id": "fa8b689a-7f77-5d2c-8b2d-3e5c14635bad",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "acb04427414e0665c6f7f5df51b01fe27b54b852e546f756237aba351f562113",
+    "rows": 1,
+    "columns": [
+      "cancelled_rows"
+    ]
+  },
+  {
+    "case_id": "retail-netherlands-sales",
+    "id": "76f37998-fc19-52e0-a74b-ee5230164dc8",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "hash_matches": true,
+    "download_sha256": "dac8ebb49035f05245559206f8ecb411ea1d1a15ab8ffc088393e286df0fdb44",
+    "rows": 1,
+    "columns": [
+      "sales_gbp"
+    ]
+  }
+]

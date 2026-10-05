@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "experiment_id": "0f215aabaa7dfa58-05d9deb8",
+  "source_report_sha256": "1def0d79af511134222eb5ab4deafa563ed2e805e21ca44d91348379abd1ed5b",
+  "method": "AI-assisted inspection of exact retained answers, SQL/tool results, declared evidence, independent retail gold, relevant original PDF pages and downloaded CSVs. Primary adjudication applies the previous run criteria. Not independent human or calibrated native-speaker certification.",
+  "definitions": {
+    "pass": "Required answer and deliverables correct within declared tolerance; no failed action contract. Descriptive unit-metadata gaps can be reviewed through content.",
+    "partial": "Useful and partly correct, but omits a requested claim, entity, citation, or complete artifact.",
+    "fail": "Main requested value/header mapping wrong, required answer or outputs unavailable, or action contract violated.",
+    "automatic_metrics": "Remain unchanged. Exact expected-phrase misses are distinguished from semantic correctness.",
+    "score": "Optional 1/0.5/0 convention is descriptive, not a calibrated performance scale.",
+    "citations": "Valid declared evidence IDs count as API citations in both reviews; a requested explicit PDF page must still be given. One-row requirements apply to the actual SQL/analysis result."
+  },
+  "cases": 30,
+  "review_counts": {
+    "pass": 19,
+    "fail": 7,
+    "partial": 4
+  },
+  "complete_success_rate": 0.6333333333333333,
+  "by_dataset": {
+    "retail": {
+      "cases": 20,
+      "pass": 14,
+      "fail": 4,
+      "partial": 2,
+      "complete_success_rate": 0.7
+    },
+    "survey": {
+      "cases": 10,
+      "fail": 3,
+      "pass": 5,
+      "partial": 2,
+      "complete_success_rate": 0.5
+    }
+  },
+  "automatic_status_counts": {
+    "needs_review": 22,
+    "failed": 8
+  },
+  "automatic_calculation_checks": {
+    "pass": 21,
+    "fail": 4
+  },
+  "terminal_run_states": {
+    "completed": 24,
+    "failed": 5,
+    "awaiting_clarification": 1
+  },
+  "infrastructure_failures": 0,
+  "reviews": [
+    {
+      "case_id": "retail-jan-sales-en",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Correct qualifying filters and requested numeric results within tolerance. The SQL returns one aggregate row and valid calculation evidence IDs are declared in the answer payload. Sparse inline citation/answer formatting is a presentation issue; the same declared-evidence criterion is applied to both models.",
+      "answer_sha256": "289ff8cb581efbb4670919586c02244bcfd12a46d48aa73b09f8d2c4347a2e7f",
+      "run_id": "dc69ff5a-a6f4-44ea-8d74-cb20c1a5770e"
+    },
+    {
+      "case_id": "retail-distinct-countries",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "22 distinct countries after all three qualifying filters, matching gold.",
+      "answer_sha256": "b63addfaa89243b1ba000f5178ca9ff2a14ef47c65a0aea49a0bc0b82dded4d0",
+      "run_id": "b5c4812f-e01e-42ec-ae39-46d43b0b1356"
+    },
+    {
+      "case_id": "retail-customer-null-en",
+      "automatic_status": "failed",
+      "verdict": "fail",
+      "rationale": "The SQL filters the raw January slice but does not apply the three qualifying-sale filters. It counts 13235 missing-customer rows and reports 37.6561%; gold is 13077 and 38.12% among qualifying invoice lines. Percentage units are explicitly expressed, but the population and result are wrong.",
+      "answer_sha256": "dec94d64e8455ef3d37564601ff36ec297f25c6d9bba182612e4aae62e5a013a",
+      "run_id": "9a4b1530-a93b-4061-b0af-56d5e9f73a1a"
+    },
+    {
+      "case_id": "retail-top-country-en",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "United Kingdom is correctly named and ranked first; 561289.98 GBP matches gold within the 0.01 tolerance. SQL uses all qualifying filters and descending country sales.",
+      "answer_sha256": "2f459c7d4c1dcdebed0dd31db94a3bc589a5d8655c673de6e5ae3b8c0f9bf2bd",
+      "run_id": "49a5508e-302a-4603-9ba7-79fc268919b9"
+    },
+    {
+      "case_id": "retail-cancellations",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "701 raw cancellation rows and 691364.560 qualifying sales match gold. SQL correctly separates cancellation count from sales filters.",
+      "answer_sha256": "3592e09c7e518bc865c9abf23d8d57ee202b3306004fcae928d77c08d3675ecb",
+      "run_id": "288a95bc-6521-4a9e-b5f7-fd7962daa671"
+    },
+    {
+      "case_id": "retail-sales-chart-csv",
+      "automatic_status": "failed",
+      "verdict": "fail",
+      "rationale": "Run failed before SQL, CSV export, or PNG chart creation. Answer is empty and artifact_ids is empty despite both outputs being required.",
+      "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "run_id": "df6c0123-06ca-409d-9441-c84b87320c3f"
+    },
+    {
+      "case_id": "retail-revenue-hindi",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "All requested totals match gold and SQL applies the qualifying filters. First-pass Hinglish/Hindi output is understandable; a native-speaker quality certification is outside this review.",
+      "answer_sha256": "7a166b9195dbeaa063c8c464c20074337253eb3e193e7ead4e52f1bb7ec13a2b",
+      "run_id": "99f485fa-6ab3-49ec-bbb0-151e18de3f97"
+    },
+    {
+      "case_id": "retail-codeswitch-top-country",
+      "automatic_status": "needs_review",
+      "verdict": "partial",
+      "rationale": "The top sales amount 561289.98 and distinct invoice count 1086 match. However, neither the SQL projection nor answer identifies the country; gold category is United Kingdom, so the main categorical answer is incomplete.",
+      "answer_sha256": "8f57f05e2088a046ae54f17cc219d74a48b893cd55ae10c5ac389fbb393663ee",
+      "run_id": "8dd2cec9-7816-41a3-9037-5709b955c47f"
+    },
+    {
+      "case_id": "retail-mixed-rule-retrieval",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Correct qualifying filters and requested numeric results within tolerance. The SQL returns one aggregate row and valid calculation evidence IDs are declared in the answer payload. Sparse inline citation/answer formatting is a presentation issue; the same declared-evidence criterion is applied to both models.",
+      "answer_sha256": "3d1fcd58a28a50f93a31514bd4322c8d8de07c9567869cfac8253c40cc53773a",
+      "run_id": "96c19916-e606-46f5-97f5-f5fc785b343e"
+    },
+    {
+      "case_id": "retail-missing-cost-unsupported",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Correctly refuses to invent profit or margin without cost data and asks for the needed cost information.",
+      "answer_sha256": "1d729c3abcce4a487c658dc4a8a9a62bea9f3650849a27d8cdc5ef02d59c7b91",
+      "run_id": "91eaa791-247c-4314-b596-67e130616d7c"
+    },
+    {
+      "case_id": "retail-lines-vs-invoices",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Correct 1086 distinct invoices and 34306 invoice-line rows, with a clear explanation of the different grains.",
+      "answer_sha256": "cf7b8759e737c1c3e223583581992ae431ae56d39b4eb50d92a940a48cd1e36d",
+      "run_id": "d5e9bc94-1a71-4ec9-bcc8-e50f6dcd049e"
+    },
+    {
+      "case_id": "retail-units-sold",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "387785 qualifying units matches gold. SQL sums quantity only for non-cancelled lines with positive quantity and price.",
+      "answer_sha256": "4deadca1fdc6397cf74b307ceb52d1f85ffc8cb3a104ecd4b46545e863cc09e5",
+      "run_id": "6a54efea-148f-4a62-8874-e9ab04520154"
+    },
+    {
+      "case_id": "retail-missing-customer-sales",
+      "automatic_status": "needs_review",
+      "verdict": "partial",
+      "rationale": "The numerator 121919.52 and denominator 691364.56 match gold, and SQL applies the correct qualifying filters without imputing identity. The answer omits the explicitly requested share (about 17.63%), although it gives both values from which to calculate it.",
+      "answer_sha256": "d295a9b9337c554c94ca71d2b4e83758c4c8ba114822d6d571a2d070ad245f14",
+      "run_id": "69b74244-6f0d-4889-a41b-83ca3618e018"
+    },
+    {
+      "case_id": "retail-top-five",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Names, order and rounded amounts match the gold top five. SQL applies the qualifying filters and sorts descending.",
+      "answer_sha256": "7dd8d0693f8bab03a08d648fbb8152cfb94b05a2832817a737b15c8b61a366eb",
+      "run_id": "602ea7dd-105a-4f6a-8a1a-e39402d6092d"
+    },
+    {
+      "case_id": "retail-hindi-english-rules",
+      "automatic_status": "failed",
+      "verdict": "fail",
+      "rationale": "The answer asks the user to provide the attached rules even though the rules source is present and retrievable. It returns neither requested number. The automatic calculation and answer-number checks fail.",
+      "answer_sha256": "d03814c153924fe1a64cff41da9f6b3e46154d6ba2f054e2d3e5928e70df6403",
+      "run_id": "38376a8c-fe0d-4c20-a215-d7e5cd586f74"
+    },
+    {
+      "case_id": "retail-export-and-chart-hi",
+      "automatic_status": "failed",
+      "verdict": "fail",
+      "rationale": "Run failed after document search/profile only; no SQL, CSV, chart, final answer, or artifact IDs were produced despite both outputs being required.",
+      "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "run_id": "ee7d41f8-80d3-4dcd-b034-423bdb19c36d"
+    },
+    {
+      "case_id": "retail-cancellation-only-count",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "701 raw January rows whose InvoiceNo begins with C matches gold. No other filters are applied.",
+      "answer_sha256": "3efe69d5c51fab3de511cc1536484308069fd36432cfd6f240c12e01c2f05388",
+      "run_id": "09563025-28fc-4bca-a392-6f3fad606f16"
+    },
+    {
+      "case_id": "retail-distinct-customer-count",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "741 distinct non-missing customers under all qualifying filters matches gold.",
+      "answer_sha256": "9dd4fa6714faebd3129160e1edc8bd63cbb29b45bf10a79e0074cd783db7d364",
+      "run_id": "ac602720-7c20-4820-9283-5915a079194f"
+    },
+    {
+      "case_id": "retail-netherlands-sales",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Netherlands qualifying sales 26611.16 GBP matches gold. SQL contains country predicate and all three qualifying rules.",
+      "answer_sha256": "446414943d06aeb050460eee81c8e4941d844b7c5388099ad3017e5e440983e9",
+      "run_id": "338b8797-7664-4f73-ae4d-6d1d1ceabe44"
+    },
+    {
+      "case_id": "retail-scope-clarification",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Correctly explains that the source covers January 2011 only, gives that month’s qualifying total, and asks whether the user wants it or can provide the remaining months.",
+      "answer_sha256": "1ce886425f739379dc6bd16d198b008405587a133c85bc1f6c12b1f4736ad576",
+      "run_id": "65316761-7097-4b6f-af02-598bbd54d6fd"
+    },
+    {
+      "case_id": "survey-fy24-retail-inflation-en",
+      "automatic_status": "failed",
+      "verdict": "fail",
+      "rationale": "Application run failed with invalid_model_response; no final answer. Saved error does not identify the malformed response or underlying parser cause.",
+      "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "run_id": "bc0dd6d0-94e9-4110-9696-72c4fd471b5e"
+    },
+    {
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Hindi answer supplies FY24 retail inflation of 5.4 per cent. Declared original English chapter page-1 evidence supports the figure; percentage units and requested language are correct.",
+      "answer_sha256": "d9a873108921c0306ecc0ea581829c6d15c0141a87698bbe62a2ad4c854ee692",
+      "run_id": "0017d589-d05b-41e8-ba0c-668ee50eca9d"
+    },
+    {
+      "case_id": "survey-inflation-drivers-en",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Correctly distinguishes pandemic supply disruption and conflict-related commodity conditions from adverse-weather food-price pressure. Declared opening-summary evidence supports the requested FY22/FY23 explanation.",
+      "answer_sha256": "21668347ea0b5c14bd9db75f22eb0c662a6525c6e6fcebbc76ae0945352d8122",
+      "run_id": "972d93e5-38e6-44fe-abc6-9a63929d4d2b"
+    },
+    {
+      "case_id": "survey-inflation-policy-measures-en",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "All four measures match the original opening summary: stock management, open market operations, subsidised essential foods and trade measures. Original evidence is declared.",
+      "answer_sha256": "0ee3236c9b8f38c4db30276b7f6019274327b0bccbf1fdb41a378623cedbaa0f",
+      "run_id": "afc1ccaf-08ce-4a7a-bb9e-ecc79ea8856f"
+    },
+    {
+      "case_id": "survey-inflation-hi-source",
+      "automatic_status": "needs_review",
+      "verdict": "partial",
+      "rationale": "Useful Hindi retail/state and policy discussion, but the FY24 food subsection describes mitigation without establishing the actual food-inflation trend. Hindi chapter page 9 paragraph 3.18 shows CFPI rising from 6.6 per cent in FY23 to 7.5 per cent in FY24. Its evidence does not include that passage; mitigation versus an observed decline remains ambiguous.",
+      "answer_sha256": "4d3147c6344c60329b46fe8e89121178736e87e1d2ebfa8da65dee563717c1d6",
+      "run_id": "33c833a9-a926-4025-b514-b9b1992af3b3"
+    },
+    {
+      "case_id": "survey-summary-vs-chapter",
+      "automatic_status": "failed",
+      "verdict": "fail",
+      "rationale": "Application run failed with invalid_model_response; no final comparison answer or verification of both requested sources.",
+      "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "run_id": "38443739-d10f-479b-8789-c04d94a1ab6c"
+    },
+    {
+      "case_id": "survey-inflation-hi-cross-language",
+      "automatic_status": "failed",
+      "verdict": "partial",
+      "rationale": "The main four-year-low core-inflation claim is correct and supported by declared chapter page-6 evidence, despite the automatic opening-phrase miss. However, it attributes the almost-four-percentage-point Apr22-Jun24 decline to Chart III.12 instead of III.13 and extends a housing-rent explanation for core services to overall core inflation.",
+      "answer_sha256": "f72f156eacd52725fdbc62b94630b29083692be20a9df07eae5fce8d58626851",
+      "run_id": "4c004cc6-32c1-4af3-bfc4-f582bcc86593"
+    },
+    {
+      "case_id": "survey-hindi-source-search-en",
+      "automatic_status": "failed",
+      "verdict": "fail",
+      "rationale": "Application run failed with invalid_model_response; no supported English statement or requested PDF page citation.",
+      "answer_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "run_id": "41ddd1eb-3073-4b79-a21c-6beb601be6ab"
+    },
+    {
+      "case_id": "survey-appendix-table-retrieval",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Identifies Table 4.3 and all four CPI series and categories, with PDF pages 92 and 93 and declared evidence from both. Rendered headers establish IW General, NS Rural/Urban/Combined, AL General and RL General. The flat header list does not make the incorrect grouped assignment seen in Gemma.",
+      "answer_sha256": "96c3b4f6193898e575e3495f42e0d3a8dcff8fac1dcae6aa8a7dc04092a3e32a",
+      "run_id": "1f08feb8-387a-401e-9e66-04e47a49f97c"
+    },
+    {
+      "case_id": "survey-causal-overclaim",
+      "automatic_status": "needs_review",
+      "verdict": "pass",
+      "rationale": "Correctly declines to treat adverse weather alone as proven cause. Declared original passages support contributing weather and other conditions without establishing exclusive causation.",
+      "answer_sha256": "444820e7447098adc7968a8694177f54a3f6a6889a0f79acdbfda83e04e8fcc0",
+      "run_id": "1b6005a5-3dd8-4f56-b252-6b845d293111"
+    }
+  ]
+}

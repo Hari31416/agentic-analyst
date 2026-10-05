@@ -1,0 +1,246 @@
+[
+  {
+    "case_id": "retail-customer-null-en",
+    "id": "0768161c-8138-5460-9de1-0e8a28fddb0c",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "status": "saved",
+    "expected_sha256": "3b3c5eb582d886b6dab0fdafd772f6e08ab0ba2a8f063dc4c8826d6b30210344",
+    "download_sha256": "3b3c5eb582d886b6dab0fdafd772f6e08ab0ba2a8f063dc4c8826d6b30210344",
+    "actual_sha256": "3b3c5eb582d886b6dab0fdafd772f6e08ab0ba2a8f063dc4c8826d6b30210344",
+    "hash_matches": true,
+    "bytes_expected": 75,
+    "bytes_actual": 75,
+    "rows": 1,
+    "columns": [
+      "missing_customer_lines",
+      "missing_customer_percent"
+    ],
+    "contents": [
+      {
+        "missing_customer_lines": "13235",
+        "missing_customer_percent": "37.656129968418355"
+      }
+    ],
+    "supports": "Verified CSV content has 1 data row(s) with columns missing_customer_lines, missing_customer_percent; values are retained for direct case-level comparison."
+  },
+  {
+    "case_id": "retail-cancellations",
+    "id": "0e262a05-530f-54fa-a4eb-10556b8d8cd9",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "status": "saved",
+    "expected_sha256": "a4e2fb3f62a120c7d01dbb756a0da6423dc9969406089a9ffce94eb6f6a71aa5",
+    "download_sha256": "a4e2fb3f62a120c7d01dbb756a0da6423dc9969406089a9ffce94eb6f6a71aa5",
+    "actual_sha256": "a4e2fb3f62a120c7d01dbb756a0da6423dc9969406089a9ffce94eb6f6a71aa5",
+    "hash_matches": true,
+    "bytes_expected": 42,
+    "bytes_actual": 42,
+    "rows": 1,
+    "columns": [
+      "cancelled_rows",
+      "sales_gbp"
+    ],
+    "contents": [
+      {
+        "cancelled_rows": "701",
+        "sales_gbp": "691364.560"
+      }
+    ],
+    "supports": "Verified CSV content has 1 data row(s) with columns cancelled_rows, sales_gbp; values are retained for direct case-level comparison."
+  },
+  {
+    "case_id": "retail-revenue-hindi",
+    "id": "ce2f0c46-208e-52f9-906d-a4326e789551",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "status": "saved",
+    "expected_sha256": "5e8094592aef36db82ee8d6ca3c443f0167d2591df17aef5a8ac8098886004c5",
+    "download_sha256": "5e8094592aef36db82ee8d6ca3c443f0167d2591df17aef5a8ac8098886004c5",
+    "actual_sha256": "5e8094592aef36db82ee8d6ca3c443f0167d2591df17aef5a8ac8098886004c5",
+    "hash_matches": true,
+    "bytes_expected": 71,
+    "bytes_actual": 71,
+    "rows": 1,
+    "columns": [
+      "sales_gbp",
+      "qualifying_rows",
+      "invoice_count"
+    ],
+    "contents": [
+      {
+        "sales_gbp": "691364.5600000000",
+        "qualifying_rows": "34306",
+        "invoice_count": "1086"
+      }
+    ],
+    "supports": "Verified CSV content has 1 data row(s) with columns sales_gbp, qualifying_rows, invoice_count; values are retained for direct case-level comparison."
+  },
+  {
+    "case_id": "retail-codeswitch-top-country",
+    "id": "6669efc3-88df-50d5-911c-092a0bc449a9",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "status": "saved",
+    "expected_sha256": "888d9cfa9fe4ddaa3d719507b66ca350d981b79654a3c219eb9f2d374bab61af",
+    "download_sha256": "888d9cfa9fe4ddaa3d719507b66ca350d981b79654a3c219eb9f2d374bab61af",
+    "actual_sha256": "888d9cfa9fe4ddaa3d719507b66ca350d981b79654a3c219eb9f2d374bab61af",
+    "hash_matches": true,
+    "bytes_expected": 54,
+    "bytes_actual": 54,
+    "rows": 1,
+    "columns": [
+      "top_country_sales_gbp",
+      "invoice_count"
+    ],
+    "contents": [
+      {
+        "top_country_sales_gbp": "561289.980",
+        "invoice_count": "1086"
+      }
+    ],
+    "supports": "Verified CSV content has 1 data row(s) with columns top_country_sales_gbp, invoice_count; values are retained for direct case-level comparison."
+  },
+  {
+    "case_id": "retail-mixed-rule-retrieval",
+    "id": "54035187-af03-54ab-9e48-f5bf44b58621",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "status": "saved",
+    "expected_sha256": "e54d64075592676f6a218e487e336a3fa70906df9096cd80d68d4c21a51c5214",
+    "download_sha256": "e54d64075592676f6a218e487e336a3fa70906df9096cd80d68d4c21a51c5214",
+    "actual_sha256": "e54d64075592676f6a218e487e336a3fa70906df9096cd80d68d4c21a51c5214",
+    "hash_matches": true,
+    "bytes_expected": 23,
+    "bytes_actual": 23,
+    "rows": 1,
+    "columns": [
+      "sales_gbp"
+    ],
+    "contents": [
+      {
+        "sales_gbp": "691364.560"
+      }
+    ],
+    "supports": "Verified CSV content has 1 data row(s) with columns sales_gbp; values are retained for direct case-level comparison."
+  },
+  {
+    "case_id": "retail-top-five",
+    "id": "85d9d6a9-656f-5986-9fd0-d86dfebda274",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "status": "saved",
+    "expected_sha256": "293b2467590a2629d81ee3a941143932957e44357cc3840aae0df5e964d598bf",
+    "download_sha256": "293b2467590a2629d81ee3a941143932957e44357cc3840aae0df5e964d598bf",
+    "actual_sha256": "293b2467590a2629d81ee3a941143932957e44357cc3840aae0df5e964d598bf",
+    "hash_matches": true,
+    "bytes_expected": 128,
+    "bytes_actual": 128,
+    "rows": 5,
+    "columns": [
+      "Country",
+      "total_sales_gbp"
+    ],
+    "contents": [
+      {
+        "Country": "United Kingdom",
+        "total_sales_gbp": "561289.980"
+      },
+      {
+        "Country": "Netherlands",
+        "total_sales_gbp": "26611.160"
+      },
+      {
+        "Country": "EIRE",
+        "total_sales_gbp": "21904.190"
+      },
+      {
+        "Country": "France",
+        "total_sales_gbp": "17740.120"
+      },
+      {
+        "Country": "Germany",
+        "total_sales_gbp": "16910.840"
+      }
+    ],
+    "supports": "Verified CSV content has 5 data row(s) with columns Country, total_sales_gbp; values are retained for direct case-level comparison."
+  },
+  {
+    "case_id": "retail-export-and-chart-hi",
+    "id": "aea4ff7d-163e-5e32-8817-034a0cf13952",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "status": "saved",
+    "expected_sha256": "6a15e34d8bdd4669bed5403a69d8d320ae49ad96314eaadd079bdba1a9bfe06e",
+    "download_sha256": "6a15e34d8bdd4669bed5403a69d8d320ae49ad96314eaadd079bdba1a9bfe06e",
+    "actual_sha256": "6a15e34d8bdd4669bed5403a69d8d320ae49ad96314eaadd079bdba1a9bfe06e",
+    "hash_matches": true,
+    "bytes_expected": 161,
+    "bytes_actual": 161,
+    "rows": 5,
+    "columns": [
+      "Country",
+      "TotalSalesGBP"
+    ],
+    "contents": [
+      {
+        "Country": "United Kingdom",
+        "TotalSalesGBP": "561289.9800000000"
+      },
+      {
+        "Country": "Netherlands",
+        "TotalSalesGBP": "26611.1600000000"
+      },
+      {
+        "Country": "EIRE",
+        "TotalSalesGBP": "21904.1900000000"
+      },
+      {
+        "Country": "France",
+        "TotalSalesGBP": "17740.1200000000"
+      },
+      {
+        "Country": "Germany",
+        "TotalSalesGBP": "16910.8400000000"
+      }
+    ],
+    "supports": "Verified CSV content has 5 data row(s) with columns Country, TotalSalesGBP; values are retained for direct case-level comparison."
+  },
+  {
+    "case_id": "retail-export-and-chart-hi",
+    "id": "2f3ebe88-a406-5cd8-9005-3798853f520d",
+    "name": "chart.png",
+    "media_type": "image/png",
+    "status": "saved",
+    "expected_sha256": "da5630d11bfd217e02da8d1a0cd32c0c6574527f2eb294e7331e82ad6ab6b425",
+    "download_sha256": "da5630d11bfd217e02da8d1a0cd32c0c6574527f2eb294e7331e82ad6ab6b425",
+    "actual_sha256": "da5630d11bfd217e02da8d1a0cd32c0c6574527f2eb294e7331e82ad6ab6b425",
+    "hash_matches": true,
+    "bytes_expected": 33746,
+    "bytes_actual": 33746,
+    "visual_review": "Inspected PNG: title identifies the top five countries and January 2011; x-axis names Country, y-axis specifies Total Sales (GBP), and all five country labels are readable in descending order. Bars have no exact value annotations, but the matching retained CSV and answer provide the amounts."
+  },
+  {
+    "case_id": "retail-cancellation-only-count",
+    "id": "3ab9eb60-3513-5047-9b5a-881076314a78",
+    "name": "result.csv",
+    "media_type": "text/csv",
+    "status": "saved",
+    "expected_sha256": "acb04427414e0665c6f7f5df51b01fe27b54b852e546f756237aba351f562113",
+    "download_sha256": "acb04427414e0665c6f7f5df51b01fe27b54b852e546f756237aba351f562113",
+    "actual_sha256": "acb04427414e0665c6f7f5df51b01fe27b54b852e546f756237aba351f562113",
+    "hash_matches": true,
+    "bytes_expected": 21,
+    "bytes_actual": 21,
+    "rows": 1,
+    "columns": [
+      "cancelled_rows"
+    ],
+    "contents": [
+      {
+        "cancelled_rows": "701"
+      }
+    ],
+    "supports": "Verified CSV content has 1 data row(s) with columns cancelled_rows; values are retained for direct case-level comparison."
+  }
+]

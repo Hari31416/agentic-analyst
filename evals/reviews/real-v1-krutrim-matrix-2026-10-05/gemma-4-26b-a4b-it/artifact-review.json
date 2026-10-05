@@ -1,0 +1,119 @@
+[
+  {
+    "case_id": "retail-sales-chart-csv",
+    "id": "5baf02ca-e931-538d-8eb7-2de0c68dfcac",
+    "name": "qualifying_sales_by_country_jan_2011.csv",
+    "media_type": "text/csv",
+    "expected_sha256": "8a7d98e177d01337ee31f564c7cab7919e2b8c2db6f1465ffc2aef5abbbabc09",
+    "download_sha256": "8a7d98e177d01337ee31f564c7cab7919e2b8c2db6f1465ffc2aef5abbbabc09",
+    "hash_matches": true,
+    "status": "saved",
+    "bytes": 395,
+    "relative_path": "artifacts/5baf02ca-e931-538d-8eb7-2de0c68dfcac.csv",
+    "rows": 22,
+    "columns": [
+      "Country",
+      "QualifyingSalesGBP"
+    ],
+    "top_five": [
+      [
+        "United Kingdom",
+        "561289.98"
+      ],
+      [
+        "Netherlands",
+        "26611.16"
+      ],
+      [
+        "EIRE",
+        "21904.19"
+      ],
+      [
+        "France",
+        "17740.12"
+      ],
+      [
+        "Germany",
+        "16910.84"
+      ]
+    ],
+    "supports": "The grouped CSV contains 22 countries in descending qualifying sales; the top five and amounts match the case gold. The PNG was visually inspected: it labels all five countries and identifies qualifying sales in GBP. The chart is complete for the requested top-five visualization."
+  },
+  {
+    "case_id": "retail-sales-chart-csv",
+    "id": "cf5ed118-1894-5dcb-a97b-446a6eaa40a4",
+    "name": "top_5_countries_sales.png",
+    "media_type": "image/png",
+    "expected_sha256": "a6f3816893e5082d73a09d00cf06ed6ab5501626ae4cbec39225b992299c7d11",
+    "download_sha256": "a6f3816893e5082d73a09d00cf06ed6ab5501626ae4cbec39225b992299c7d11",
+    "hash_matches": true,
+    "status": "saved",
+    "bytes": 34503,
+    "relative_path": "artifacts/cf5ed118-1894-5dcb-a97b-446a6eaa40a4.png",
+    "visual_inspection": "The grouped CSV contains 22 countries in descending qualifying sales; the top five and amounts match the case gold. The PNG was visually inspected: it labels all five countries and identifies qualifying sales in GBP. The chart is complete for the requested top-five visualization."
+  },
+  {
+    "case_id": "retail-export-and-chart-hi",
+    "id": "63080dbc-4b6e-5bcc-a399-c74966ce4abb",
+    "name": "qualifying_sales_jan_2011.csv",
+    "media_type": "text/csv",
+    "expected_sha256": "2fa2ba4e8a15a1ed6509681c51d6908cb1fa343cf7e4ad58f510cd1967553f7f",
+    "download_sha256": "2fa2ba4e8a15a1ed6509681c51d6908cb1fa343cf7e4ad58f510cd1967553f7f",
+    "hash_matches": true,
+    "status": "saved",
+    "bytes": 367,
+    "relative_path": "artifacts/63080dbc-4b6e-5bcc-a399-c74966ce4abb.csv",
+    "rows": 20,
+    "columns": [
+      "Country",
+      "QualifyingSales_GBP"
+    ],
+    "top_five": [
+      [
+        "United Kingdom",
+        "561289.98"
+      ],
+      [
+        "Netherlands",
+        "26611.16"
+      ],
+      [
+        "EIRE",
+        "21904.19"
+      ],
+      [
+        "France",
+        "17740.12"
+      ],
+      [
+        "Germany",
+        "16910.84"
+      ]
+    ],
+    "supports": "The CSV has 20 country rows and omits Iceland (GBP 475.39) and Israel (GBP 379.84); all top five entries and amounts match the case gold. The separate PNG chart labels the requested top five and uses GBP, so the visual task is complete but the full CSV ranking is partial.",
+    "omitted_countries": [
+      {
+        "country": "Iceland",
+        "qualifying_sales_gbp": "475.39"
+      },
+      {
+        "country": "Israel",
+        "qualifying_sales_gbp": "379.84"
+      }
+    ],
+    "expected_rows": 22
+  },
+  {
+    "case_id": "retail-export-and-chart-hi",
+    "id": "9279fb0b-5fe5-5b7e-9454-03bf2fff445f",
+    "name": "top_5_countries_sales.png",
+    "media_type": "image/png",
+    "expected_sha256": "175482adb9ab2898428ac32c97e34670c76b1fc35e58e88e24ff7f059e117470",
+    "download_sha256": "175482adb9ab2898428ac32c97e34670c76b1fc35e58e88e24ff7f059e117470",
+    "hash_matches": true,
+    "status": "saved",
+    "bytes": 34977,
+    "relative_path": "artifacts/9279fb0b-5fe5-5b7e-9454-03bf2fff445f.png",
+    "visual_inspection": "The associated CSV has only 20 rows and omits Iceland and Israel; this PNG itself labels the requested top five and uses a GBP sales axis. The PNG was visually inspected: it labels all five countries and uses a GBP sales axis. The chart is complete for the requested labelled visualization."
+  }
+]

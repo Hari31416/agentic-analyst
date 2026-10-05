@@ -1,0 +1,536 @@
+{
+  "schema_version": 1,
+  "experiment_id": "30e222dd0fe7f47c-d36c1e55",
+  "reviews": [
+    {
+      "case_id": "retail-jan-sales-en",
+      "repetition": 0,
+      "answer_hash": "7fae73e0f2a8083617c40068afb2882928275c6617241f355b8a7807922f261f",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All three requested values match the qualifying January convention: £691,364.56, 34,306 invoice lines and 1,086 distinct invoices. The saved rule evidence supports the filters; the auto unit-review proxy is resolved by GBP in the answer."
+    },
+    {
+      "case_id": "retail-distinct-countries",
+      "repetition": 0,
+      "answer_hash": "fb3474c4d13113e751d20a4828e4f9cd84b1db5e2cef0b618fcec369e0d28531",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Distinct country count after row filters."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "The answer reports 22 countries and states all three qualifying filters. The saved query result and case gold agree; the numeric-support warning does not establish a discrepancy."
+    },
+    {
+      "case_id": "retail-customer-null-en",
+      "repetition": 0,
+      "answer_hash": "f582fc402c4b763d6b9cbc84446671d36d93fc2558b7bea816a82fcbd6cf71ff",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Denominator is qualifying invoice lines, not distinct invoices or all raw rows. State percentage units."
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "The answer returns 13,235 and 37.6561 instead of 13,077 qualifying missing-customer lines and 38.12 percent. The saved SQL counts outside the required qualifying population, so both requested values are wrong."
+    },
+    {
+      "case_id": "retail-top-country-en",
+      "repetition": 0,
+      "answer_hash": "6bf1b9764ae06a302736d375d05830d910e460df327b617bd9838a9eb4a0aafc",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "expected_category": "United Kingdom",
+        "manual_review": "The runner checks the sales amount; manually check the country category and its ordering."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Names United Kingdom and reports £561,289.98, matching the expected top category and amount. The retained answer resolves the automatic numeric-support warning."
+    },
+    {
+      "case_id": "retail-cancellations",
+      "repetition": 0,
+      "answer_hash": "356712577ed58b5b98252c87680278a30c6ec84ec0b4755054206aa580c02af2",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Cancellation count uses raw month rows; sales applies all three rules."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Reports 701 raw cancellation rows and £691,364.56 qualifying sales. These are separate populations and both match the case expectations."
+    },
+    {
+      "case_id": "retail-sales-chart-csv",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "expected_ordered_country_sales": [
+          [
+            "United Kingdom",
+            "561289.98"
+          ],
+          [
+            "Netherlands",
+            "26611.16"
+          ],
+          [
+            "EIRE",
+            "21904.19"
+          ],
+          [
+            "France",
+            "17740.12"
+          ],
+          [
+            "Germany",
+            "16910.84"
+          ]
+        ],
+        "manual_review": "Artifact type/presence is checked by the runner; inspect CSV values, top-five order, and chart labels manually."
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "The run ended with invalid_model_response, an empty answer and no output artifacts. Neither requested CSV nor chart was produced."
+    },
+    {
+      "case_id": "retail-revenue-hindi",
+      "repetition": 0,
+      "answer_hash": "1a1fbc27cf10b62ed52d673123fe1d1bc474b3c8bacb6fe9c28c5e844388f4de",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Native-speaker review is required for Hindi correctness and terminology."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "The answer gives £691,364.56, 34,306 qualifying rows and 1,086 invoices and states GBP and the filters. Saved calculation checks match; Hindi quality remains a first-pass baseline."
+    },
+    {
+      "case_id": "retail-codeswitch-top-country",
+      "repetition": 0,
+      "answer_hash": "1157047cc63e9ec0072921f7cab769bd00a79ffcca680f3abbd2fdb7aab757b7",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "expected_category": "United Kingdom",
+        "manual_review": "Transliterated Hindi/English code-switching needs human review."
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "The top-country amount (£561,289.98) and distinct invoice count (1,086) are correct, but the answer never names the required country, United Kingdom. The central categorical result is missing."
+    },
+    {
+      "case_id": "retail-mixed-rule-retrieval",
+      "repetition": 0,
+      "answer_hash": "acd5d2959cf1d171911f9a741ea85e939f4bcabc3a3dac168b0bc71b931790ce",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify the retrieved rule is applied to the data."
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "The answer gives the correct £691,364.56 after the retained audit shows the qualifying note was retrieved and applied. It omits the requested citation to both the rules and calculation evidence, so the response is incomplete."
+    },
+    {
+      "case_id": "retail-missing-cost-unsupported",
+      "repetition": 0,
+      "answer_hash": "462aee075255503ef0ea4db3381af85d9eede058b93b78c6fd0b73a80f1f8112",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "The runner checks clarification status; manually verify no invented profit/margin is given."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Correctly explains that sales-only data cannot establish profit or margin, asks for cost data and invents no values. Clarification is appropriate even though the run did not formally enter awaiting_clarification."
+    },
+    {
+      "case_id": "retail-lines-vs-invoices",
+      "repetition": 0,
+      "answer_hash": "b58e7fee5463c70a356cfc98ba84293d742ef2552fdf86ea7281f8a345f6b8fe",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Check distinction between row grain and invoice grain."
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "The answer correctly explains line versus invoice grain and gives 34,306 rows, but reports 1,476 invoices rather than the 1,086 qualifying distinct invoices. The requested aggregate is wrong."
+    },
+    {
+      "case_id": "retail-units-sold",
+      "repetition": 0,
+      "answer_hash": "f4622704825ce1702def5401e56d21847822ef896d898f81dc293996b6d34bad",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Check filters and describe the result as items/units."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Reports 387,785 qualifying units, matching the saved calculation; the answer describes the result as total quantity from qualifying January invoice lines."
+    },
+    {
+      "case_id": "retail-missing-customer-sales",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Do not impute customer identity. Check the ratio uses qualifying sales value."
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "The run ended with invalid_model_response and no final answer or output artifacts. The two values and requested share cannot be delivered."
+    },
+    {
+      "case_id": "retail-top-five",
+      "repetition": 0,
+      "answer_hash": "e4e901e09078fa9e52b09bee59c34e0326152a7f562c65efdf1e8c94f662fb0e",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "expected_ordered_country_sales": [
+          [
+            "United Kingdom",
+            "561289.98"
+          ],
+          [
+            "Netherlands",
+            "26611.16"
+          ],
+          [
+            "EIRE",
+            "21904.19"
+          ],
+          [
+            "France",
+            "17740.12"
+          ],
+          [
+            "Germany",
+            "16910.84"
+          ]
+        ],
+        "manual_review": "The case schema cannot score per-category grouped values; compare names, order, and amounts with manifest."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All five countries, order and GBP amounts match the expected top-five values in the case rubric."
+    },
+    {
+      "case_id": "retail-hindi-english-rules",
+      "repetition": 0,
+      "answer_hash": "decf100e5da5e49a51bfacbb09afa66ddba3101f4d853e8b41c98169322298ee",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Review transliterated/code-switched language and missing-value treatment."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Returns the requested 34,306 qualifying rows and £691,364.56 sales. Saved deterministic checks pass, and the answer does not claim to impute missing customer identities; code-switched language quality is not certified."
+    },
+    {
+      "case_id": "retail-export-and-chart-hi",
+      "repetition": 0,
+      "answer_hash": "3fc19aeb8dbe9845088bd81c4e62af13f5ef0109d350d6f86226ccf72252ef53",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Inspect exported values and chart labels; language quality needs a native speaker."
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "The inspected chart has the five expected country labels in descending order and labels its y-axis Total Sales (GBP). The verified CSV contains only those five rows rather than the full 22-country grouped export requested, so the export task is incomplete."
+    },
+    {
+      "case_id": "retail-cancellation-only-count",
+      "repetition": 0,
+      "answer_hash": "b9e0d15390a45669a02d255f1a48bf336856ebbe7f5b477859165ee8ea9adb89",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Count raw rows; no other filters apply."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Reports 701 raw January rows with InvoiceNo beginning C and applies no sales filters, as requested."
+    },
+    {
+      "case_id": "retail-distinct-customer-count",
+      "repetition": 0,
+      "answer_hash": "1e83fa0c742a1c615620021395a868becd4039c330e2d6c2a2ebc88ed545fa4f",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Distinct count excludes missing CustomerID."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Reports 741 distinct non-missing customers after the qualifying filters, matching the saved deterministic result."
+    },
+    {
+      "case_id": "retail-netherlands-sales",
+      "repetition": 0,
+      "answer_hash": "51a56e30abf0e80db3bc08ba7556fd9baa622be954a4c770e20583896848b78f",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify country filter and the three inclusion rules."
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "The response asks the user to provide the attached rules even though the rules source is present. It never returns Netherlands sales, so the requested task is not completed."
+    },
+    {
+      "case_id": "retail-scope-clarification",
+      "repetition": 0,
+      "answer_hash": "200b8ba3e6f39b9d1144b8930cf878f76edb51922fdf5c13596c4a753a5f5498",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify temporal coverage is clarified; scorer only checks clarification status."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Correctly identifies that the available source covers January only and asks whether the user wants January or can provide the remaining months, matching the requested clarification."
+    },
+    {
+      "case_id": "survey-fy24-retail-inflation-en",
+      "repetition": 0,
+      "answer_hash": "4f489adf0335bec7f8d2de53f6782223309ad3d991b8c929ba9ad937d197662d",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "The 5.4 per cent claim is supported by this phrase; manually verify page/paragraph and context."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "States 5.4 per cent in FY24 and the Survey’s lowest-since-Covid-19-pandemic characterization. Retained source evidence supports the claim and preserves the unit."
+    },
+    {
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "repetition": 0,
+      "answer_hash": "312c5d96467a31b98be03cf30b7489e4a38471b243a1573e4f7a4c43c92bdc31",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify Hindi meaning, 5.4 per cent, FY24 scope, and citation against English source."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Answers in Hindi with FY24 retail inflation of 5.4 percent. The audit retains evidence from the English chapter and the percentage unit is explicit."
+    },
+    {
+      "case_id": "survey-inflation-drivers-en",
+      "repetition": 0,
+      "answer_hash": "57b81ae0d89ca9f9d2d652703cdaab7fc04bb2fbfee73b825d516db7323f0398",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "Review all opening-page factors without overclaiming causation."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Correctly separates pandemic supply disruptions and conflict-related commodity prices from adverse-weather food-price conditions for FY22/FY23; the opening-summary evidence supports both groups."
+    },
+    {
+      "case_id": "survey-inflation-policy-measures-en",
+      "repetition": 0,
+      "answer_hash": "8760521a7b6687eda7f4ee6ace28f67afe278f42491f6c3bc663e10ee1d5bf59",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "Verify the entire list against the full sentence."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Lists all four named measures—dynamic stock management, open market operations, subsidised essential food and trade measures—and cites the matching passage."
+    },
+    {
+      "case_id": "survey-inflation-hi-source",
+      "repetition": 0,
+      "answer_hash": "25221b3685318a4033bc9cb6d55d9a5204cbd1da70d9a410bb55482fe5999928",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Hindi PDF is visually legible, but embedded extraction uses legacy glyphs. Review rendered page and cited evidence manually; no garbled-text gold label."
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "The answer gives relevant FY24 retail and food-policy context, but it does not report the key FY24 food inflation trend (CFPI rose from 6.6 percent in FY23 to 7.5 percent in FY24). The retained source evidence does not establish that requested food result."
+    },
+    {
+      "case_id": "survey-summary-vs-chapter",
+      "repetition": 0,
+      "answer_hash": "515f0d8ea9f163e0b60c9a9e811f66490b77744ffe0edf931b305cddb6d58080",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Verify both documents are cited for the same FY24 measure and period."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "The answer compares both requested documents and gives the same FY24 retail-inflation value, 5.4 percent. The retained evidence supports the full-Survey figure and standalone chapter agreement; passage matcher misses do not negate the substantive comparison."
+    },
+    {
+      "case_id": "survey-inflation-hi-cross-language",
+      "repetition": 0,
+      "answer_hash": "5c7477a3c1e096b88594c890eb4f61cd8c0206d6750b784d6212864cbf52027c",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Human review required for code-switched Hindi and exact core-inflation claim."
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "The answer includes the four-year-low conclusion and cites chapter pages, but adds questionable attribution of the nearly four-percentage-point decline and extends the housing-rent explanation beyond core-services inflation. The requested core finding is present, with overclaiming in supporting detail."
+    },
+    {
+      "case_id": "survey-hindi-source-search-en",
+      "repetition": 0,
+      "answer_hash": "60efc7e308dd6aef8505aa1107d6be0777107fe17d13a232db8fc188e71ede01",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "The 18-page Hindi chapter requires OCR for legacy fonts. Verify the FY24 claim, English translation and chapter PDF page citation against the rendered original."
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "The 5.4 percent FY24 retail-inflation statement is plausible, but the answer gives no chapter PDF page citation, which the case explicitly requests. The retained audit does not provide a verifiable page reference in the answer."
+    },
+    {
+      "case_id": "survey-appendix-table-retrieval",
+      "repetition": 0,
+      "answer_hash": "f10c7349de13b08d1c0e0f7750cdc417f9af206d66dec4986b5e748f75da7d7e",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "PDF page 92 starts printed Statistical Appendix page 85; inspect continuation pages and column headers visually."
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "Correctly locates Table 4.3 and pages 92–93 and names the series, but groups Rural/Urban/Combined under CPI-IW. Rendered source verification places those subcategories under CPI-NS; the central coverage mapping is materially wrong."
+    },
+    {
+      "case_id": "survey-causal-overclaim",
+      "repetition": 0,
+      "answer_hash": "12c68047c93256c10bdd562ec08d5112123cf98e93084e7960dc03fd3f9475c8",
+      "reviewers": [
+        "GPT-6 Luna (AI-assisted, uncalibrated)"
+      ],
+      "provenance": "AI-assisted case review by GPT-6 Luna, uncalibrated. Adjudicated from the exact retained answer, case rubric, report metrics, checkpoint and audit evidence, using previously verified source facts where relevant. This is not independent human or native-speaker certification.",
+      "rubric": {
+        "manual_review": "Check the answer says 'alone' is not established by this sentence and separates attribution from causal proof."
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Explicitly says the source does not establish weather as the sole cause and distinguishes weather-related pressure from structural and external factors. Original passage evidence supports the reasoning; the exact-phrase proxy failure is not a task failure."
+    }
+  ]
+}

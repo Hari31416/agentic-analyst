@@ -31,7 +31,7 @@ from app.db.models import (
 )
 from app.storage.filesystem import Storage
 
-EXTRACTOR_VERSION = "document-extract-v2"
+EXTRACTOR_VERSION = "document-extract-v3"
 CHUNKER_VERSION = "structure-token-v3"
 BLOCK_SCHEMA_VERSION = "document-block-v1"
 MAX_ARCHIVE_MEMBERS = 4_096
@@ -777,6 +777,7 @@ def _make_chunks(
     blocks: Sequence[ExtractedBlock],
     profile: TokenizerProfile | None = None,
     strategy: str = "structure",
+    max_chunks: int = MAX_CHUNKS,
 ) -> list[ChunkData]:
     if strategy == "semantic":
         raise DocumentIngestionError(
@@ -865,10 +866,10 @@ def _make_chunks(
                     token_count=token_count,
                 )
             )
-            if len(chunks) > MAX_CHUNKS:
+            if len(chunks) > max_chunks:
                 raise DocumentIngestionError(
                     "document_chunk_limit",
-                    f"Document exceeds the {MAX_CHUNKS}-chunk indexing limit.",
+                    f"Document exceeds the {max_chunks}-chunk indexing limit.",
                 )
     return chunks
 
@@ -998,6 +999,7 @@ def process_document(
                 blocks,
                 profile,
                 strategy=document.details.get("chunk_strategy", "structure"),
+                max_chunks=settings.document_max_chunks,
             )
         except DocumentIngestionError as error:
             return _fail_document(session, document, source, error, lease_guard)
@@ -1073,6 +1075,7 @@ def process_document(
             "warnings": list(dict.fromkeys(warnings)),
             "block_count": len(blocks),
             "chunk_count": len(chunks),
+            "document_chunk_limit": settings.document_max_chunks,
             "tokenization_method": profile.method,
             "tokenizer_sha256": profile.sha256,
             "chunk_body_token_limit": (

@@ -17,6 +17,13 @@ from typing import Any
 
 from pypdf import PdfReader
 
+from app.ingestion.pdf_text import (
+    PdfTextLimitExceeded,
+    bounded_plain_text,
+    legacy_font_names,
+    normalize_pdf_whitespace,
+)
+
 from app.sources.documents import (
     DocumentIngestionError,
     ExtractedBlock,
@@ -302,12 +309,34 @@ def extract_pdf(
             raise DocumentIngestionError(
                 "pdf_page_limit", "PDF has too many pages to process."
             )
+        legacy_fonts_by_page = {
+            page_number: fonts
+            for page_number, page in enumerate(reader.pages, start=1)
+            if (fonts := legacy_font_names(page))
+        }
+        legacy_page_numbers = sorted(legacy_fonts_by_page)
+        if legacy_page_numbers and not ocr_enabled:
+            raise DocumentIngestionError(
+                "legacy_font_ocr_required",
+                "PDF pages use non-Unicode legacy fonts and require OCR. Enable OCR or upload an OCR-ready copy.",
+            )
+        if len(legacy_page_numbers) > MAX_OCR_PAGES:
+            page_sample = ",".join(str(page) for page in legacy_page_numbers[:20])
+            raise DocumentIngestionError(
+                "ocr_page_limit",
+                f"PDF has {len(legacy_page_numbers)} pages using non-Unicode legacy fonts; local OCR is limited to {MAX_OCR_PAGES} pages per document. Split the PDF into smaller parts or upload the relevant chapters. First affected pages: {page_sample}.",
+            )
         blocks: list[ExtractedBlock] = []
         warnings: list[str] = []
         empty_pages: list[int] = []
+        legacy_pages: list[int] = []
+        legacy_ocr_failures: list[tuple[int, str]] = []
         total = 0
         ocr_attempts = 0
         toc_entries: dict[int, list[tuple[int, str]]] = {}
+
+        def future_legacy_pages(current_page: int) -> int:
+            return sum(page > current_page for page in legacy_page_numbers)
 
         def visit_outlines(items: list[Any], level: int = 1) -> None:
             for item in items:
@@ -331,22 +360,43 @@ def extract_pdf(
         except Exception:
             pass
         for page_number, page in enumerate(reader.pages, start=1):
-            try:
-                text = (page.extract_text(extraction_mode="layout") or "").replace(
-                    "\x00", ""
-                )
-            except Exception as error:
-                raise DocumentIngestionError(
-                    "pdf_extraction_failed", "PDF text extraction failed."
-                ) from error
-            weak = len(text.strip()) < 24 or text.count("\ufffd") > max(
-                2, len(text) // 20
+            legacy_fonts = legacy_fonts_by_page.get(page_number, [])
+            is_legacy = bool(legacy_fonts)
+            if is_legacy:
+                legacy_pages.append(page_number)
+                # Legacy font character codes are not Unicode. Never publish
+                # pypdf's visually plausible but semantically unrelated text.
+                text = ""
+            else:
+                try:
+                    remaining = MAX_EXTRACTED_BYTES - total
+                    text = normalize_pdf_whitespace(bounded_plain_text(page, remaining))
+                except PdfTextLimitExceeded as error:
+                    raise DocumentIngestionError(
+                        "extracted_text_too_large",
+                        "Extracted document text exceeds the processing limit.",
+                    ) from error
+                except Exception as error:
+                    raise DocumentIngestionError(
+                        "pdf_extraction_failed", "PDF text extraction failed."
+                    ) from error
+            weak = not is_legacy and (
+                len(text.strip()) < 24 or text.count("\ufffd") > max(2, len(text) // 20)
             )
             source = "digital"
             confidence = None
-            if (not text.strip() or weak) and ocr_enabled:
-                if ocr_attempts >= MAX_OCR_PAGES:
+            if (is_legacy or not text.strip() or weak) and ocr_enabled:
+                ordinary_page_limit = (
+                    MAX_OCR_PAGES
+                    if is_legacy
+                    else MAX_OCR_PAGES - future_legacy_pages(page_number)
+                )
+                if ocr_attempts >= ordinary_page_limit:
                     warnings.append(f"ocr_page_limit_reached:{page_number}")
+                    if is_legacy:
+                        legacy_ocr_failures.append(
+                            (page_number, "ocr_page_limit_reached")
+                        )
                 else:
                     ocr_attempts += 1
                     recognized, issue, ocr_metadata = _ocr_page(
@@ -354,11 +404,19 @@ def extract_pdf(
                     )
                     if issue:
                         warnings.append(f"page_{page_number}:{issue}")
-                    if recognized and (not text.strip() or len(recognized) > len(text)):
+                        if is_legacy:
+                            legacy_ocr_failures.append((page_number, issue))
+                    if recognized.strip() and (
+                        not text.strip() or len(recognized) > len(text)
+                    ):
                         text = recognized
                         source = "ocr"
                         # This is a recognizer signal only; it is not verified accuracy.
                         confidence = ocr_metadata
+                    elif is_legacy and not issue:
+                        legacy_ocr_failures.append((page_number, "empty_ocr_result"))
+            elif is_legacy:
+                legacy_ocr_failures.append((page_number, "ocr_disabled"))
             if not text.strip():
                 empty_pages.append(page_number)
                 continue
@@ -374,6 +432,10 @@ def extract_pdf(
                 "char_end": len(text),
                 "extractor": source,
             }
+            if source == "digital":
+                location["text_mode"] = "plain"
+            if legacy_fonts:
+                location["legacy_fonts"] = legacy_fonts
             if confidence:
                 location.update(confidence)
                 if "ocr_confidence" not in location:
@@ -425,12 +487,27 @@ def extract_pdf(
                     cursor += len(line) + 1
             else:
                 blocks.append(_block("page_text", text, parent, location))
+        if legacy_ocr_failures:
+            failures = sorted(set(legacy_ocr_failures))
+            page_sample = ", ".join(
+                f"{page} ({reason})" for page, reason in failures[:20]
+            )
+            suffix = "" if len(failures) <= 20 else ", ..."
+            raise DocumentIngestionError(
+                "legacy_font_ocr_failed",
+                f"OCR failed for {len(failures)} legacy-font page(s). Check local OCR availability and retry with working Hindi language assets. Failed pages: {page_sample}{suffix}.",
+            )
         if empty_pages:
             warnings.append(
                 "ocr_needed_pages:" + ",".join(str(page) for page in empty_pages[:100])
             )
             warnings.append(
                 "Some PDF pages contain no extractable text and may require OCR."
+            )
+        if legacy_pages:
+            warnings.append(
+                "legacy_font_pages_detected:"
+                + ",".join(str(page) for page in legacy_pages[:100])
             )
         if not blocks:
             warnings.append("ocr_needed")

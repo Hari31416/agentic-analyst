@@ -110,7 +110,12 @@ async def test_agent_loop_sends_compacted_history_to_model():
         return None
 
     model = Model()
-    settings = Settings(_env_file=None, max_context_characters=5000)
+    # Leave a fixed history budget independent of prompt-version growth.
+    from app.agent.loop import SYSTEM_PROMPT
+
+    settings = Settings(
+        _env_file=None, max_context_characters=len(SYSTEM_PROMPT) + 1000
+    )
     history = [
         {
             "role": "assistant",

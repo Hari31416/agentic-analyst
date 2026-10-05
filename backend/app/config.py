@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     embedding_dimension: int = 384
     embedding_revision: str | None = None
     embedding_batch_size: int = 16
+    document_max_chunks: int = 4096
     embedding_threads: int = 2
     crawl_enabled: bool = False
     crawl_approved_hosts: list[str] = []
@@ -192,6 +193,7 @@ class Settings(BaseSettings):
             "job_max_attempts",
             "embedding_dimension",
             "embedding_batch_size",
+            "document_max_chunks",
             "embedding_threads",
             "speech_max_upload_bytes",
             "speech_max_duration_seconds",
@@ -202,6 +204,8 @@ class Settings(BaseSettings):
                 raise ValueError(f"{name} must be positive")
         if self.ocr_timeout_seconds > 60:
             raise ValueError("OCR timeout cannot exceed 60 seconds per page")
+        if self.document_max_chunks > 16384:
+            raise ValueError("Document chunk limit cannot exceed 16384")
         if self.speech_max_upload_bytes > 25 * 1024 * 1024:
             raise ValueError("Speech upload limit cannot exceed 25 MiB")
         if self.speech_max_duration_seconds > 120:

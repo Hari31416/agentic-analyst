@@ -22,7 +22,18 @@ have separate limits. Oversized tables fail explicitly instead of silently
 publishing truncated cells. Extraction inspection counts serialized metadata
 against its response limit as well as text.
 
+`DOCUMENT_MAX_CHUNKS` defaults to 4096 and accepts at most 16384. Documents
+exceeding the configured limit fail rather than publishing a truncated index.
+Embedding inference uses `EMBEDDING_BATCH_SIZE` batches and checks the job lease
+between batches before publishing a generation.
+
 `OCR_ENABLED`, `OCR_LANGUAGES`, and `OCR_TIMEOUT_SECONDS` configure local OCR.
+PDF extraction uses ordinary text rather than fixed-width layout padding. Known
+legacy Indic font families, including Chanakya, require OCR even when PDF text
+extraction returns printable Latin characters. More than 100 required OCR pages
+fails with an explicit page-budget error; split those reports into chapters.
+Unavailable or failed legacy-font OCR fails ingestion instead of indexing the
+encoded character stream as evidence. OCR confidence still requires review.
 Install Tesseract and its `eng`, `hin`, and `osd` assets separately. The baseline
 requires both English and Hindi assets; it never substitutes a hosted provider.
 The renderer is pinned by `backend/uv.lock`. OCR subprocesses have a deadline,

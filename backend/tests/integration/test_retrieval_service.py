@@ -261,15 +261,15 @@ def test_existing_degraded_generation_is_retried_when_assets_return(
         )
 
 
-def test_lease_guard_runs_after_inference_before_generation_publication(
+def test_lease_loss_stops_between_batches_before_generation_publication(
     session_factory: sessionmaker[Session], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    embedded = False
+    embedded_batches = 0
 
     class TrackingAdapter(FakeAdapter):
         def embed_passages(self, texts: list[str]) -> list[list[float]]:
-            nonlocal embedded
-            embedded = True
+            nonlocal embedded_batches
+            embedded_batches += 1
             return super().embed_passages(texts)
 
     monkeypatch.setattr(
@@ -281,13 +281,17 @@ def test_lease_guard_runs_after_inference_before_generation_publication(
         session.commit()
 
         def reject_lease(_session: Session) -> None:
-            assert embedded
-            raise RuntimeError("lease lost")
+            if embedded_batches:
+                raise RuntimeError("lease lost")
 
         with pytest.raises(RuntimeError, match="lease lost"):
             build_index_generation(
-                session, document.id, _settings(), lease_guard=reject_lease
+                session,
+                document.id,
+                _settings().model_copy(update={"embedding_batch_size": 1}),
+                lease_guard=reject_lease,
             )
+        assert embedded_batches == 1
         session.rollback()
 
     with session_factory() as session:

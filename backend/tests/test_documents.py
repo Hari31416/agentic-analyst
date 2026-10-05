@@ -534,7 +534,11 @@ def test_chunk_limit_is_persisted_as_terminal_document_failure(
         lambda filename, content, **options: (blocks, [], ["en-IN"]),
     )
 
-    result = process_document(document_id, _settings(tmp_path), sessions)
+    result = process_document(
+        document_id,
+        _settings(tmp_path).model_copy(update={"document_max_chunks": 512}),
+        sessions,
+    )
     assert result["state"] == "failed"
     assert result["error"] == "document_chunk_limit"
     with sessions() as check:

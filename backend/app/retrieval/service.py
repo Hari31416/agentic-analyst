@@ -58,8 +58,8 @@ def build_index_generation(
     never commits, so ingestion can retain job-lease checks around publication.
     Missing model assets create a degraded lexical generation without fake
     vectors; inference failures create a degraded lexical generation. Embedding
-    inference runs before any database writes, and an optional lease guard runs
-    immediately before publication.
+    inference runs before any database writes. An optional lease guard runs
+    between batches and immediately before publication.
     """
     document = session.get(Document, document_id)
     if document is None:
@@ -161,6 +161,8 @@ def build_index_generation(
         passage_texts = [_passage_text(chunk) for chunk in chunks]
         batch_size = settings.embedding_batch_size
         for offset in range(0, len(passage_texts), batch_size):
+            if lease_guard is not None:
+                lease_guard(session)
             chunk_batch = chunks[offset : offset + batch_size]
             text_batch = passage_texts[offset : offset + batch_size]
             try:

@@ -1138,6 +1138,16 @@ def _safe_run_config(value: Any) -> dict[str, Any]:
             except PortabilityError:
                 continue
         safe["selected_dataset_ids"] = safe_ids
+    aliases = value.get("reference_aliases")
+    if isinstance(aliases, dict):
+        from app.agent.references import ModelReferences
+
+        try:
+            safe["reference_aliases"] = ModelReferences(aliases).aliases
+        except (ValueError, TypeError):
+            raise PortabilityError(
+                "invalid_reference_aliases", "Invalid retained reference mapping"
+            ) from None
     versions = value.get("source_versions")
     if isinstance(versions, dict) and len(versions) <= 100:
         safe_versions = {}

@@ -9,11 +9,20 @@ def table_alias(dataset_id: str) -> str:
     return "data_" + UUID(dataset_id).hex
 
 
-def query_program(sql: str, dataset_ids: list[str], max_rows: int, timeout: int) -> str:
+def query_program(
+    sql: str,
+    dataset_ids: list[str],
+    max_rows: int,
+    timeout: int,
+    table_names: dict[str, str] | None = None,
+) -> str:
     config: dict[str, Any] = {
         "sql": sql,
         "tables": [
-            {"name": table_alias(identity), "path": f"/workspace/inputs/{identity}.csv"}
+            {
+                "name": (table_names or {}).get(identity, table_alias(identity)),
+                "path": f"/workspace/inputs/{identity}.csv",
+            }
             for identity in dataset_ids
         ],
         "max_rows": max_rows,

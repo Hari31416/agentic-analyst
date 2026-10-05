@@ -380,6 +380,7 @@ def test_report_tool_replays_retained_sources_and_persists_lineage(
                     {
                         "id": input_artifact.id,
                         "guest_path": "/workspace/inputs/source.csv",
+                        "guest_aliases": ["/workspace/inputs/dataset_1.csv"],
                     }
                 ],
             }
@@ -431,6 +432,9 @@ def test_report_tool_replays_retained_sources_and_persists_lineage(
         assert code_cells[0]["source"] == [code_bytes.decode()]
         snapshots = notebook["metadata"]["agentic_rag"]["input_snapshots"]
         assert snapshots[0]["sandbox_guest_path"] == "/workspace/inputs/source.csv"
+        assert snapshots[0]["sandbox_guest_aliases"] == [
+            "/workspace/inputs/dataset_1.csv"
+        ]
         assert base64.b64decode(snapshots[0]["embedded_base64"]) == input_bytes
         assert all(len(item["lineage"]) == 4 for item in descriptors)
         assert f"evidence:{evidence_id}" in descriptors[0]["lineage"]

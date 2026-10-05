@@ -56,6 +56,14 @@ class StructuredTools:
     def __init__(self, runtime: "RunRuntime"):
         self.runtime = runtime
 
+    def table_name(self, dataset_id: str) -> str:
+        references = getattr(self.runtime, "references", None)
+        return (
+            references.reference("dataset", dataset_id)
+            if references
+            else table_alias(dataset_id)
+        )
+
     def selection(self) -> tuple[Any, list[Source], list[Dataset], str]:
         runtime = self.runtime
         with runtime.db() as session:
@@ -102,7 +110,7 @@ class StructuredTools:
                                     "id": row.id,
                                     "identity": row.identity,
                                     "sql_table": (
-                                        table_alias(row.id)
+                                        self.table_name(row.id)
                                         if item.kind
                                         in {"csv", "xlsx", "xls", "json", "parquet"}
                                         else row.identity
@@ -357,7 +365,7 @@ class StructuredTools:
                 raise ToolInputError(
                     "choose a database source_id or file datasets; databases cannot share a guest connection"
                 )
-            allowed = {table_alias(row.id) for row in chosen}
+            allowed = {self.table_name(row.id) for row in chosen}
             sql = validate_sql(args.sql, dialect="duckdb", allowed_tables=allowed)
             from app.agent.runtime import PythonInput
 
@@ -371,6 +379,7 @@ class StructuredTools:
                         [row.id for row in chosen],
                         args.max_rows,
                         args.timeout_seconds,
+                        table_names={row.id: self.table_name(row.id) for row in chosen},
                     ),
                     input_dataset_ids=[UUID(row.id) for row in chosen],
                     output_paths=["result.csv", "query-result.json"],

@@ -867,3 +867,31 @@ Keep secrets and raw client data out of this file.
   clarification-event check; the guide records this scoring limitation.
   See `evals/real-v1.md` for download/generation and bounded live-run commands.
   Phase 09 retains its existing status; phase 10 remains unstarted.
+
+## 5 October 2026: short model references and citations
+
+- Added conversation-stable `source_1`, `dataset_1`, `artifact_1`, `chunk_1` and
+  `e1` model references while preserving canonical UUID contracts, provenance
+  and all existing selection/thread/source-version checks.
+- File SQL registers short table aliases directly. Python stages identical
+  working copies at short paths alongside canonical paths; retained programs
+  are unchanged. Replay notebook metadata records both input locations.
+- The model emits `[e1]` citations and short artifact destinations. The boundary
+  resolves these before answer validation/storage, preserving existing numbered
+  citation rendering, declaration checks and legacy UUID compatibility.
+- Run checkpoints and message metadata retain mappings. Follow-up runs reuse
+  prior mappings, including failed-run allocations. Archive import/export
+  preserves aliases while remapping UUIDs. No reference migration is required.
+- Validation: 365 deterministic backend tests passed against isolated staged
+  source; two local real-source byte checks skipped because ignored originals
+  were not copied. The combined workspace also passed 367 tests before further
+  concurrent edits. The final 11-test reference suite passes, including report
+  code/input references and dependent document hops. Changed modules pass mypy. Frontend type/build and 14 artifact
+  rendering checks, four selection checks and lifecycle regression pass.
+  Focused coverage includes unknown/wrong-type aliases, source-version rejection,
+  inline declarations, two-turn persistence, SQL registration, exact source values,
+  Python staging, retained code, archive remapping and replay input aliases.
+- No live model or microVM run was made. Full browser QA remains deferred;
+  reference validity does not establish claim support or correct dataset choice.
+  Restart the worker to load the new model boundary. See
+  [reference guide](../docs/model-references.md). Phase 10 remains unstarted.

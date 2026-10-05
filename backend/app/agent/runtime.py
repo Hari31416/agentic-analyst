@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.agent.references import ModelReferences
 from app.agent.loop import AgentLoop, BudgetExhausted, PROMPT_VERSION, Tool
 from app.agent.model import ModelError, OpenAICompatibleModel
 from app.agent.protocol import ModelToolCall
@@ -78,6 +79,7 @@ class RunRuntime:
         self.python: PythonExecution | None = None
         self.sandbox: SandboxHTTPClient | None = None
         self.active_tool_call_id: str | None = None
+        self.references: ModelReferences | None = None
 
     def guard(self, session: Session, allow_cancelled: bool = False) -> Run:
         # Lock ownership before every durable action, including events/artifact metadata.
@@ -148,6 +150,16 @@ class RunRuntime:
                     reason_code=payload["code"],
                     details=payload,
                 )
+
+    async def save_references(self) -> None:
+        if self.references is None:
+            return
+        with self.db() as session, session.begin():
+            run = self.guard(session)
+            run.config = {
+                **run.config,
+                "reference_aliases": dict(self.references.aliases),
+            }
 
     async def answer_valid(self, answer: FinalAnswer) -> None:
         with self.db() as session:
@@ -638,6 +650,11 @@ class RunRuntime:
                 await self.sandbox.write(
                     sandbox_session.id, f"inputs/{dataset.id}.csv", content
                 )
+                if self.references:
+                    alias = self.references.reference("dataset", dataset.id)
+                    await self.sandbox.write(
+                        sandbox_session.id, f"inputs/{alias}.csv", content
+                    )
                 if str(raw_id) != dataset.id:
                     await self.sandbox.write(
                         sandbox_session.id, f"inputs/{raw_id}.csv", content
@@ -679,6 +696,13 @@ class RunRuntime:
                             "id": retained.id,
                             "dataset_id": str(dataset_id),
                             "guest_path": f"/workspace/inputs/{dataset_id}.csv",
+                            "guest_aliases": (
+                                [
+                                    f"/workspace/inputs/{self.references.reference('dataset', dataset.id)}.csv"
+                                ]
+                                if self.references
+                                else []
+                            ),
                             "sha256": snapshot.sha256,
                         }
                     )
@@ -711,6 +735,11 @@ class RunRuntime:
                 await self.sandbox.write(
                     sandbox_session.id, f"inputs/{artifact_id}", content
                 )
+                if self.references:
+                    alias = self.references.reference("artifact", str(artifact_id))
+                    await self.sandbox.write(
+                        sandbox_session.id, f"inputs/{alias}", content
+                    )
         with self.db() as session:
             self.guard(session)
         result = await self.python.execute(
@@ -764,6 +793,20 @@ class RunRuntime:
                         },
                     )
                     return
+                retained_aliases: dict[str, str] = {}
+                for config in session.scalars(
+                    select(Run.config)
+                    .where(Run.thread_id == run.thread_id)
+                    .order_by(Run.created_at, Run.id)
+                ):
+                    for alias, identity in config.get("reference_aliases", {}).items():
+                        if (
+                            alias in retained_aliases
+                            and retained_aliases[alias] != identity
+                        ):
+                            raise ValueError("conflicting retained reference mapping")
+                        retained_aliases[alias] = identity
+                self.references = ModelReferences(retained_aliases)
                 run.state = "running"
                 run.started_at = now()
                 history = [
@@ -897,7 +940,7 @@ class RunRuntime:
                 ),
                 structured_tool(
                     "run_sql",
-                    "Execute one read-only query. For file SQL use selected dataset_ids and listed data_UUID aliases; all file columns are VARCHAR, so explicitly cast numeric/date columns. For database SQL supply source_id and exact schema.table identifiers. Output limits apply after full aggregation. SQL, CSV, and evidence are retained.",
+                    "Execute one read-only query. For file SQL use selected dataset references and listed dataset_1 table aliases; all file columns are VARCHAR, so explicitly cast numeric/date columns. For database SQL supply source_id and exact schema.table identifiers. Output limits apply after full aggregation. SQL, CSV, and evidence are retained.",
                     SQLInput,
                 ),
                 structured_tool(
@@ -932,6 +975,8 @@ class RunRuntime:
                 ],
                 self.event,
                 self.answer_valid,
+                self.references,
+                self.save_references,
             )
             answer = await loop.run(history, language)
             with self.db() as session, session.begin():
@@ -965,6 +1010,9 @@ class RunRuntime:
                             "evidence_ids": [str(i) for i in answer.evidence_ids],
                             "artifact_ids": [str(i) for i in answer.artifact_ids],
                             "warnings": checks,
+                            "reference_aliases": (
+                                dict(self.references.aliases) if self.references else {}
+                            ),
                         },
                     )
                 )

@@ -430,3 +430,268 @@ async def test_runtime_preserves_failure_when_logging(
             select(Event).where(Event.run_id == run_id, Event.type == "terminal")
         )
     assert any(record.run_id == run_id for record in caplog.records)
+
+
+async def test_runtime_retains_short_citation_mapping_across_runs(
+    client_db, monkeypatch
+):
+    import json
+    import app.agent.runtime as runtime_module
+    from app.agent.protocol import ModelResponse, ModelToolCall
+    from app.contracts import ToolResult
+    from app.db.models import Evidence
+    from app.workers.queue import Claim
+
+    client, sessions, (_, thread_id), _ = client_db
+    evidence_id = str(uuid4())
+    prior_refs = None
+    for turn in range(2):
+        created = client.post(
+            f"/api/threads/{thread_id}/runs", json={"text": "cite result"}
+        )
+        assert created.status_code == 201
+        run_id = created.json()["id"]
+        if turn == 0:
+            with sessions() as session, session.begin():
+                session.add(
+                    Evidence(
+                        id=evidence_id,
+                        run_id=run_id,
+                        kind="document",
+                        source_ids=[],
+                        details={"excerpt": "Saved passage", "location": {"page": 4}},
+                    )
+                )
+        responses = iter(
+            [
+                ModelResponse(
+                    finish_reason="tool_calls",
+                    tool_calls=[
+                        ModelToolCall(
+                            id=f"search-{turn}",
+                            name="search_documents",
+                            arguments='{"query":"result"}',
+                        )
+                    ],
+                ),
+                ModelResponse(
+                    finish_reason="tool_calls",
+                    tool_calls=[
+                        ModelToolCall(
+                            id=f"finish-{turn}",
+                            name="finish_answer",
+                            arguments=json.dumps(
+                                {"text": "Result [e1]", "evidence_ids": ["e1"]}
+                            ),
+                        )
+                    ],
+                ),
+            ]
+        )
+
+        class Model:
+            async def complete(self, messages, schemas):
+                if turn:
+                    context = json.dumps(messages)
+                    assert "Result [e1]" in context
+                    assert evidence_id not in context
+                return next(responses)
+
+        monkeypatch.setattr(
+            runtime_module, "OpenAICompatibleModel", lambda settings: Model()
+        )
+        runtime = runtime_module.RunRuntime(
+            Claim(str(uuid4()), "agent_run", str(uuid4()), {}, run_id, 1),
+            Settings(_env_file=None),
+            sessions,
+        )
+        monkeypatch.setattr(
+            runtime,
+            "guard",
+            lambda session, allow_cancelled=False: session.get(Run, run_id),
+        )
+
+        async def dispatch(name, call, args):
+            return ToolResult(
+                status="ok",
+                summary="Retrieved saved passage",
+                evidence_ids=[evidence_id],
+                data={
+                    "passages": [
+                        {"evidence_id": evidence_id, "excerpt": "Saved passage"}
+                    ]
+                },
+            )
+
+        monkeypatch.setattr(runtime, "dispatch", dispatch)
+        await runtime.run()
+        with sessions() as session:
+            run = session.get(Run, run_id)
+            assert run.state == "completed", run.outcome
+            assert run.config["reference_aliases"]["e1"] == evidence_id
+            message = session.scalar(
+                select(Message).where(
+                    Message.run_id == run_id, Message.role == "assistant"
+                )
+            )
+            assert message.content == f"Result [evidence:{evidence_id}]"
+            assert message.references["evidence_ids"] == [evidence_id]
+            assert message.references["reference_aliases"]["e1"] == evidence_id
+            if prior_refs:
+                assert message.references["reference_aliases"] == prior_refs
+            prior_refs = message.references["reference_aliases"]
+
+
+def test_short_citations_require_declaration_and_current_provenance(client_db):
+    import json
+    from app.agent.references import ModelReferences
+    from app.db.models import Evidence
+
+    _, sessions, (_, thread_id), _ = client_db
+    source_id, evidence_id, run_id = [str(uuid4()) for _ in range(3)]
+    refs = ModelReferences({"e1": evidence_id})
+    with sessions() as session, session.begin():
+        run = Run(
+            id=run_id,
+            thread_id=thread_id,
+            selected_source_ids=[source_id],
+            config={"source_versions": {source_id: 1}},
+        )
+        session.add(run)
+        session.flush()
+        session.add(
+            Evidence(
+                id=evidence_id,
+                run_id=run_id,
+                kind="document",
+                source_ids=[source_id],
+                details={"source_versions": {source_id: 1}, "excerpt": "Original"},
+            )
+        )
+    with sessions() as session:
+        run = session.get(Run, run_id)
+        undeclared = refs.answer(json.dumps({"text": "Claim [e1]"}))
+        with pytest.raises(ValueError, match="no declared evidence"):
+            validate_answer(session, run, undeclared)
+        answer = refs.answer(json.dumps({"text": "Claim [e1]", "evidence_ids": ["e1"]}))
+        validate_answer(session, run, answer)
+        run.config = {"source_versions": {source_id: 2}}
+        with pytest.raises(ValueError, match="another selected source version"):
+            validate_answer(session, run, answer)
+        run.selected_source_ids = []
+        with pytest.raises(ValueError, match="unselected source"):
+            validate_answer(session, run, answer)
+
+
+async def test_python_stages_short_paths_and_retains_original_code(
+    client_db, monkeypatch
+):
+    from types import SimpleNamespace
+    import app.agent.runtime as runtime_module
+    from app.agent.references import ModelReferences
+    from app.contracts import ToolResult
+    from app.db.models import Dataset, ToolCall
+    from app.workers.queue import Claim
+
+    _, sessions, (workspace_id, thread_id), root = client_db
+    storage = FileStorage(root)
+    with sessions() as session, session.begin():
+        source = Source(
+            workspace_id=workspace_id,
+            kind="csv",
+            display_name="sales.csv",
+            state="ready",
+        )
+        session.add(source)
+        session.flush()
+        dataset = Dataset(
+            source_id=source.id,
+            source_version=1,
+            identity="sales",
+            schema_version="v1",
+            details={},
+        )
+        run = Run(
+            thread_id=thread_id,
+            state="running",
+            selected_source_ids=[source.id],
+            config={"source_versions": {source.id: 1}},
+        )
+        session.add_all([dataset, run])
+        session.flush()
+        call = ToolCall(
+            run_id=run.id,
+            provider_call_id="python",
+            name="run_python",
+            input_reference={},
+            decision="allowed",
+            status="running",
+        )
+        stored = storage.put("derived/snapshot.csv", b"value\n42\n")
+        artifact = Artifact(
+            run_id=run.id,
+            storage_key=stored.key,
+            display_name="snapshot.csv",
+            media_type="text/csv",
+            byte_size=stored.byte_size,
+            sha256=stored.sha256,
+            lineage=[source.id],
+        )
+        session.add_all([call, artifact])
+        session.flush()
+        run_id, dataset_id, artifact_id, tool_id = (
+            run.id,
+            dataset.id,
+            artifact.id,
+            call.id,
+        )
+    writes, programs = {}, []
+
+    class Sandbox:
+        async def write(self, guest_id, path, content):
+            writes[path] = content
+
+    class Python:
+        async def _ensure_session(self):
+            return SimpleNamespace(id="guest")
+
+        async def execute(self, code, tool_id, output_paths, timeout_seconds):
+            assert (
+                writes["inputs/dataset_1.csv"]
+                == writes["inputs/artifact_1"]
+                == b"value\n42\n"
+            )
+            programs.append(code)
+            return ToolResult(status="ok", summary="42")
+
+    runtime = runtime_module.RunRuntime(
+        Claim(str(uuid4()), "agent_run", str(uuid4()), {}, run_id, 1),
+        Settings(
+            _env_file=None, sandbox_base_url="http://sandbox", sandbox_image="test"
+        ),
+        sessions,
+    )
+    runtime.references = ModelReferences(
+        {"dataset_1": dataset_id, "artifact_1": artifact_id}
+    )
+    runtime.python, runtime.sandbox = Python(), Sandbox()
+    monkeypatch.setattr(
+        runtime,
+        "guard",
+        lambda session, allow_cancelled=False: session.get(Run, run_id),
+    )
+    monkeypatch.setattr(runtime_module, "get_storage", lambda settings: storage)
+    monkeypatch.setattr("app.sources.files.working_csv", lambda *args: b"value\n42\n")
+    code = "print(open('/workspace/inputs/dataset_1.csv').read())\nprint(open('/workspace/inputs/artifact_1').read())"
+    args = runtime_module.PythonInput(
+        code=code, input_dataset_ids=[dataset_id], input_artifact_ids=[artifact_id]
+    )
+    result = await runtime.run_python(workspace_id, run_id, tool_id, args)
+    assert programs == [code]
+    assert writes[f"inputs/{dataset_id}.csv"] == writes["inputs/dataset_1.csv"]
+    assert result.data["staged_input_artifacts"][0]["guest_aliases"] == [
+        "/workspace/inputs/dataset_1.csv"
+    ]
+    with sessions() as session:
+        retained = session.get(Artifact, result.data["code_artifact_id"])
+        assert storage.read(retained.storage_key).decode() == code

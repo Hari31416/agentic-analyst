@@ -41,6 +41,7 @@ class _InputSnapshot:
     artifact: Artifact
     content: bytes
     guest_path: str | None = None
+    guest_aliases: list[str] | None = None
 
 
 def _plain(value: str, limit: int = 4000) -> str:
@@ -393,6 +394,7 @@ def _notebook_bytes(
             "byte_size": item.artifact.byte_size,
             "lineage": list(item.artifact.lineage or []),
             "sandbox_guest_path": item.guest_path,
+            "sandbox_guest_aliases": item.guest_aliases or [],
             "embedded_base64": (
                 base64.b64encode(item.content).decode("ascii") if embedded else None
             ),
@@ -525,6 +527,7 @@ class ReportsTool:
             code_artifacts = [allowed[str(item)] for item in args.code_artifact_ids]
             input_artifacts = [allowed[str(item)] for item in args.input_artifact_ids]
             staged_guest_paths: dict[str, str] = {}
+            staged_guest_aliases: dict[str, list[str]] = {}
             producer_tool_ids = {
                 item.tool_call_id for item in report_artifacts if item.tool_call_id
             }
@@ -539,10 +542,23 @@ class ReportsTool:
                     if input_id in allowed:
                         input_artifacts.append(allowed[input_id])
                         staged_guest_paths[input_id] = f"/workspace/inputs/{input_id}"
+                        producer = session.get(Run, call.run_id)
+                        staged_guest_aliases[input_id] = [
+                            f"/workspace/inputs/{alias}"
+                            for alias, identity in (
+                                producer.config.get("reference_aliases", {})
+                                if producer
+                                else {}
+                            ).items()
+                            if identity == input_id and alias.startswith("artifact_")
+                        ]
                 for staged in call_data.get("staged_input_artifacts", []):
                     staged_id = staged.get("id")
                     if staged_id in allowed:
                         input_artifacts.append(allowed[staged_id])
+                        staged_guest_aliases[staged_id] = staged.get(
+                            "guest_aliases", []
+                        )
                         staged_guest_paths[staged_id] = str(
                             staged.get("guest_path", "")
                         )
@@ -593,7 +609,10 @@ class ReportsTool:
                 if artifact in input_artifacts:
                     snapshots.append(
                         _InputSnapshot(
-                            artifact, content, staged_guest_paths.get(artifact.id)
+                            artifact,
+                            content,
+                            staged_guest_paths.get(artifact.id),
+                            staged_guest_aliases.get(artifact.id),
                         )
                     )
             tables = []

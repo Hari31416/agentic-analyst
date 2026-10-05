@@ -674,12 +674,10 @@ def create_cases(
     inflation_en = RAW_SURVEYS["inflation-en"]
     inflation_hi = RAW_SURVEYS["inflation-hi"]
     survey_en = RAW_SURVEYS["survey-en"]
-    survey_hi = RAW_SURVEYS["survey-hi"]
     appendix_en = RAW_SURVEYS["appendix-en"]
     en_chapter = source("inflation", inflation_en.name, inflation_en, "pdf")
     hi_chapter = source("inflation-hi", inflation_hi.name, inflation_hi, "pdf")
     en_survey = source("survey", survey_en.name, survey_en, "pdf")
-    hi_survey = source("survey-hi", survey_hi.name, survey_hi, "pdf")
     appendix = source("appendix", appendix_en.name, appendix_en, "pdf")
     cases.append(
         survey_case(
@@ -785,13 +783,13 @@ def create_cases(
     )
     add(
         "survey-hindi-source-search-en",
-        "Search the Hindi Economic Survey for the section about prices and inflation, then report one clearly supported FY24 statement in English with a page citation.",
+        "Search the Hindi prices and inflation chapter of the Economic Survey, then report one clearly supported FY24 statement in English with a chapter PDF page citation.",
         "en-IN",
         ["survey", "hindi-source", "cross-language", "ocr-descriptive"],
         "answerable",
-        [hi_survey],
+        [hi_chapter],
         rubric={
-            "manual_review": "Hindi original has legacy glyph encoding in embedded text; compare retrieval and citation with the rendered source."
+            "manual_review": "The 18-page Hindi chapter requires OCR for legacy fonts. Verify the FY24 claim, English translation and chapter PDF page citation against the rendered original."
         },
     )
     cases.append(

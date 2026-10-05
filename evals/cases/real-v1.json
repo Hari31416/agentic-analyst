@@ -1736,7 +1736,7 @@
     {
       "schema_version": 1,
       "id": "survey-hindi-source-search-en",
-      "question": "Search the Hindi Economic Survey for the section about prices and inflation, then report one clearly supported FY24 statement in English with a page citation.",
+      "question": "Search the Hindi prices and inflation chapter of the Economic Survey, then report one clearly supported FY24 statement in English with a chapter PDF page citation.",
       "language": "en-IN",
       "tags": [
         "survey",
@@ -1747,11 +1747,11 @@
       "answerability": "answerable",
       "sources": [
         {
-          "alias": "survey-hi",
-          "name": "economic-survey-2023-24-hi.pdf",
+          "alias": "inflation-hi",
+          "name": "inflation-hi.pdf",
           "kind": "pdf",
-          "path": "real-v1/raw/economic-survey-2023-24-hi.pdf",
-          "sha256": "35a0623530efe9b269fa0bdd16dfc1527fe9a1fce74145acdafc6aef188312bd",
+          "path": "real-v1/raw/inflation-hi.pdf",
+          "sha256": "abc156fbbfd568e81b06e8424ff634eddaa123eb8a93630c1bd2812ed2637c35",
           "version": "1"
         }
       ],
@@ -1775,7 +1775,7 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Hindi original has legacy glyph encoding in embedded text; compare retrieval and citation with the rendered source."
+          "manual_review": "The 18-page Hindi chapter requires OCR for legacy fonts. Verify the FY24 claim, English translation and chapter PDF page citation against the rendered original."
         }
       },
       "review": {

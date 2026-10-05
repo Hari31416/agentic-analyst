@@ -1004,3 +1004,14 @@ Keep secrets and raw client data out of this file.
   retrieval tests. Black, mypy and diff checks passed. Originals verify against
   all seven pinned hashes. No schema change; phase 10 remains unstarted and
   ranking/model-quality tuning remains deferred under the baseline policy.
+
+## 5 October 2026: use a bounded Hindi source sample
+
+- Changed `survey-hindi-source-search-en` to the 18-page Hindi inflation chapter
+  while keeping English output and page-citation review. The full Hindi Survey
+  remains downloaded. The 30-case inventory no longer selects a document known
+  to exceed the 100-page legacy-font OCR budget.
+- Updated the generator and regenerated inventory. The changed question/source
+  requires fresh execution; old trials cannot be rescored as this sample.
+- Verified case schema and pinned source bytes with the dataset-pack checks.
+  No additional live model run was made; the user will run the full inventory.

@@ -45,6 +45,13 @@ Case source versions are `1`, matching each trial's freshly uploaded API
 source. `real-v1` identifies the evaluation pack in its manifest and is not an
 application source version.
 
+`survey-hindi-source-search-en` uses the 18-page Hindi inflation chapter and
+asks for an English answer with a chapter PDF page citation. This retains
+Hindi-source OCR and cross-language retrieval coverage within the 100-page OCR
+budget. The full Hindi Survey remains downloaded but is not selected by this
+case. This case's source and question changed; use a fresh trial rather than
+rescoring or resuming its earlier full-report execution.
+
 ## Running cases
 
 Start the API, worker, sandbox, and required infrastructure as described in the

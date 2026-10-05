@@ -400,3 +400,71 @@ async def test_sql_stderr_reaches_model_before_corrected_query():
     assert result["data"]["stderr"] == stderr
     assert result["data"]["execution"]["exit_code"] == 1
     assert queries == [bad_sql, fixed_sql]
+
+
+async def test_invalid_tool_diagnostics_exclude_submitted_values():
+    events = []
+
+    async def emit(kind, payload):
+        events.append((kind, payload))
+
+    model = ScriptedModel(
+        [
+            response("run_python", {"code": "print(42)", "extra": "private-value"}),
+            response(
+                "finish_answer", {"text": "Cannot execute", "clarification": True}
+            ),
+        ]
+    )
+    loop = AgentLoop(
+        model,
+        settings(),
+        [Tool("run_python", "Python", PythonInput, ignore)],
+        emit,
+        ignore,
+    )
+    await loop.run([{"role": "user", "content": "calculate"}], "en-IN")
+    diagnostic = next(p for k, p in events if k == "tool_validation_diagnostic")
+    assert diagnostic["model_calls"] == 1
+    assert diagnostic["name"] == "run_python"
+    assert diagnostic["validation_errors"][0]["field"] == "extra"
+    assert diagnostic["error_message_characters"] > 0
+    assert "private-value" not in json.dumps(events)
+    response_info = next(p for k, p in events if k == "model_response_diagnostic")
+    assert response_info["tool_calls"][0]["argument_characters"] > 0
+    assert "arguments" not in response_info["tool_calls"][0]
+
+
+async def test_oversized_validation_diagnostic_rejects_and_recovers():
+    events = []
+
+    async def emit(kind, payload):
+        events.append((kind, payload))
+
+    model = ScriptedModel(
+        [
+            response(
+                "run_python",
+                {
+                    "code": "print(42)",
+                    **{f"unsupported_field_{n}": "unused" for n in range(10)},
+                },
+            ),
+            response("finish_answer", {"text": "Recovered", "clarification": True}),
+        ]
+    )
+    loop = AgentLoop(
+        model,
+        settings(),
+        [Tool("run_python", "Python", PythonInput, ignore)],
+        emit,
+        ignore,
+    )
+    answer = await loop.run([{"role": "user", "content": "calculate"}], "en-IN")
+    assert answer.text == "Recovered"
+    diagnostic = next(p for k, p in events if k == "tool_validation_diagnostic")
+    assert diagnostic["error_message_characters"] == 646
+    result = json.loads(model.requests[1][-1]["content"])
+    assert result["status"] == "rejected"
+    assert len(result["error"]["message"]) == 500
+    assert len(result["data"]["validation_errors"]) == 10

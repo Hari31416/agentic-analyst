@@ -226,6 +226,21 @@ class AgentLoop:
                         await asyncio.sleep(provider_failures)
                         continue
                     provider_failures = 0
+                    await self.events(
+                        "model_response_diagnostic",
+                        {
+                            "model_calls": self.model_calls,
+                            "finish_reason": response.finish_reason,
+                            "content_characters": len(response.content or ""),
+                            "tool_calls": [
+                                {
+                                    "name": call.name[:80],
+                                    "argument_characters": len(call.arguments),
+                                }
+                                for call in response.tool_calls[:20]
+                            ],
+                        },
+                    )
                     for key, value in response.usage.items():
                         self.usage[key] = self.usage.get(key, 0) + value
                     if response.finish_reason in {"length", "content_filter"}:
@@ -370,13 +385,25 @@ class AgentLoop:
                                 err_summary = "; ".join(
                                     f"{e['field']}: {e['message']}" for e in errors
                                 )
+                                diagnostic_message = f"Tool input validation failed for {call.name}: {err_summary}. Correct the listed fields using the tool schema and returned input IDs."
+                                await self.events(
+                                    "tool_validation_diagnostic",
+                                    {
+                                        "name": call.name[:80],
+                                        "model_calls": self.model_calls,
+                                        "validation_errors": errors,
+                                        "error_message_characters": len(
+                                            diagnostic_message
+                                        ),
+                                    },
+                                )
                                 result = ToolResult(
                                     status="rejected",
                                     summary=f"Invalid arguments for {call.name}: {err_summary}",
                                     data={"validation_errors": errors},
                                     error=SafeError(
                                         code="invalid_arguments",
-                                        message=f"Tool input validation failed for {call.name}: {err_summary}. Correct the listed fields using the tool schema and returned input IDs.",
+                                        message=diagnostic_message[:500],
                                     ),
                                 )
                             else:

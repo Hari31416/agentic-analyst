@@ -1,0 +1,107 @@
+{
+  "method": "Deterministic scripted model replay through unchanged AgentLoop validation-error handling before fix; not evidence of original missing response",
+  "events": [
+    {
+      "type": "context_selected",
+      "payload": {
+        "compacted": false,
+        "original_assistant_characters": 0,
+        "retained_assistant_characters": 0,
+        "dropped_assistant_characters": 0,
+        "omitted_assistant_messages": 0,
+        "protected_fact_sentences": 0
+      }
+    },
+    {
+      "type": "status",
+      "payload": {
+        "message": "Requesting the next action",
+        "model_calls": 1
+      }
+    },
+    {
+      "type": "model_response_diagnostic",
+      "payload": {
+        "model_calls": 1,
+        "finish_reason": "tool_calls",
+        "content_characters": 0,
+        "tool_calls": [
+          {
+            "name": "run_python",
+            "argument_characters": 421
+          }
+        ]
+      }
+    },
+    {
+      "type": "tool_validation_diagnostic",
+      "payload": {
+        "name": "run_python",
+        "model_calls": 1,
+        "validation_errors": [
+          {
+            "field": "unsupported_field_0",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_1",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_2",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_3",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_4",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_5",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_6",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_7",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_8",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          },
+          {
+            "field": "unsupported_field_9",
+            "message": "Extra inputs are not permitted",
+            "type": "extra_forbidden"
+          }
+        ],
+        "error_message_characters": 646
+      }
+    }
+  ],
+  "exception_type": "ValidationError",
+  "exception_errors": [
+    {
+      "type": "string_too_long",
+      "loc": [
+        "message"
+      ],
+      "msg": "String should have at most 500 characters"
+    }
+  ]
+}

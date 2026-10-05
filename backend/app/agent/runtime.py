@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import json
+import json
 import logging
 from contextlib import suppress
 from typing import Any
@@ -11,7 +12,13 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.agent.references import ModelReferences
-from app.agent.loop import AgentLoop, BudgetExhausted, PROMPT_VERSION, Tool
+from app.agent.loop import (
+    AgentLoop,
+    BudgetExhausted,
+    PROMPT_VERSION,
+    Tool,
+    answer_validation_errors,
+)
 from app.agent.model import ModelError, OpenAICompatibleModel
 from app.agent.protocol import ModelToolCall
 from app.config import Settings
@@ -1041,6 +1048,9 @@ class RunRuntime:
                     },
                 )
         except (BudgetExhausted, ModelError, ValueError) as exc:
+            diagnostics = (
+                answer_validation_errors(exc) if isinstance(exc, ValueError) else []
+            )
             code = (
                 exc.code
                 if isinstance(exc, ModelError)
@@ -1056,16 +1066,26 @@ class RunRuntime:
                 else "The model returned an invalid response"
             )
             logger.error(
-                "Run %s failed with %s: code=%s message=%s",
+                "Run %s failed with %s: code=%s message=%s validation_errors=%s",
                 self.task.run_id,
                 type(exc).__name__,
                 code,
                 message,
+                json.dumps(diagnostics, ensure_ascii=False),
                 extra={"run_id": str(self.task.run_id)},
             )
             with self.db() as session, session.begin():
                 run = self.guard(session, allow_cancelled=True)
                 if run.state not in TERMINAL_STATES:
+                    append_event(
+                        session,
+                        run.id,
+                        "failure_diagnostic",
+                        {
+                            "exception_type": type(exc).__name__,
+                            "validation_errors": diagnostics,
+                        },
+                    )
                     self._fail_open_tool_calls(session, run, code)
                     self.finalize(
                         session,

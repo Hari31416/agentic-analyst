@@ -1070,3 +1070,22 @@ Keep secrets and raw client data out of this file.
   this remains an unproven cause for the recorded run. No model re-execution.
 - Added the user-requested detailed HTML comparison through a Luna subagent,
   using the reviewed results and explicit single-run/AI-review limitations.
+
+## 5 October 2026: instrument and replay OSS failure
+
+- Added bounded model-response structure, tool-validation and fatal exception
+  diagnostics without submitted argument values or private model reasoning.
+- Ran one authorized live chart/export query with GPT OSS 120B before repairing
+  the error-message bound. Run 7043637f-932c-476c-89d1-48ab213214aa completed;
+  it did not reproduce the historical fatal exception. No profile mismatches.
+- A deterministic replay through the actual loop confirmed a 646-character
+  invalid-argument diagnostic causes SafeError.message string_too_long and
+  aborts the run. Bounded its short message to 500 characters, retaining the
+  structured diagnostics and detailed tool summary; recovery regression passes.
+- Saved live events and pre-fix replay under
+  evals/reviews/oss-120b-chart-diagnostic-2026-10-05/. The historical response
+  remains missing, so its precise cause is still unconfirmed. Original benchmark
+  scores were not changed. No extra live trial or phase 10 work.
+- Validation: 33 focused tests pass, two opt-in live transport tests skipped;
+  eight PostgreSQL runtime integration checks and mypy pass. Worker restarted to load the instrumentation
+  and repair after checking no active jobs.

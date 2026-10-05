@@ -44,7 +44,13 @@ generator repeats these calculations on every regeneration.
 ## Running cases
 
 Start the API, worker, sandbox, and required infrastructure as described in the
-project setup. List and schema-check the pack without model calls:
+project setup. Live runs also require a regular application account. Create one
+through the admin **Users** screen and set its username and password as
+`EVAL_USERNAME` and `EVAL_PASSWORD` in the repository's ignored `.env`. The
+runner reads these settings on startup; no service restart is needed. See
+[authentication setup](../docs/authentication.md#evaluation-and-validation).
+
+List and schema-check the pack without model calls:
 
 ```sh
 cd backend
@@ -71,6 +77,10 @@ unreviewed labels a quality certification. Keep original failures and review
 the report's per-case metrics, evidence, artifacts, latency, and missing usage
 data. The standard runner accepts only loopback API URLs and requires the
 configured evaluation account.
+
+If an attempt fails during login, it may already have created an empty
+checkpoint. Retry the same command with `--resume` to use that checkpoint.
+Use `--fresh` or a different output directory when experiment inputs change.
 
 The unsupported-data cases exercise the current clarification contract. The
 runner checks for a clarification event, so a reasonable prose refusal alone

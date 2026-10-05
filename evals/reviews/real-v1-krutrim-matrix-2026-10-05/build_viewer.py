@@ -14,93 +14,2209 @@ HTML = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>Real-v1 | model comparison</title>
+<title>Model Evaluation Matrix | Real-v1 Benchmark</title>
 <style>
-:root{--paper:#f3f0e8;--sheet:#fbfaf6;--ink:#1d2927;--muted:#68736f;--line:#d8d8ce;--blue:#245c73;--blue-soft:#e1edf0;--rust:#a75135;--rust-soft:#f4e4dc;--green:#386b50;--green-soft:#e2eee5;--gold:#a47b2e;--gold-soft:#f4ecd9;--shadow:0 14px 42px rgba(31,45,40,.08);--serif:Georgia,'Times New Roman',serif;--mono:'SFMono-Regular',Consolas,'Liberation Mono',monospace}
-*{box-sizing:border-box}html{background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.48}body{margin:0;background:radial-gradient(ellipse at 88% 0%,rgba(36,92,115,.09),transparent 36rem),var(--paper)}a{color:var(--blue);text-underline-offset:3px}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #bd713d;outline-offset:2px}.shell{max-width:1440px;margin:0 auto;padding:26px clamp(16px,4vw,58px) 64px}.mast{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:4px 0 16px;color:var(--muted);font:11px var(--mono);text-transform:uppercase;letter-spacing:.11em}.mast strong{color:var(--blue);font-weight:700}.hero{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(250px,.55fr);gap:clamp(22px,5vw,72px);align-items:end;padding:50px 0 34px}.eyebrow{font:11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--rust)}h1,h2,h3,p{margin-top:0}h1{font:clamp(42px,6vw,78px)/.98 var(--serif);letter-spacing:-.045em;margin:14px 0 18px;max-width:820px}h1 span{color:var(--blue)}.dek{font:18px/1.55 var(--serif);color:#45524f;max-width:720px;margin:0}.hero-note{border-left:2px solid var(--rust);padding:2px 0 3px 17px;color:var(--muted);font-size:13px}.hero-note strong{color:var(--ink);display:block;font-size:14px;margin-bottom:5px}.trial-stamp{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:7px 10px;border:1px solid var(--line);border-radius:2px;color:var(--muted);font:11px var(--mono);text-transform:uppercase}.trial-stamp i{display:block;width:7px;height:7px;border-radius:50%;background:var(--rust)}.notice{display:grid;grid-template-columns:auto 1fr;gap:13px;padding:14px 17px;background:#e9e7de;border:1px solid #d4d2c8;border-left:3px solid var(--gold);color:#4c5753;font-size:12px;margin:4px 0 35px}.notice b{font:11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#745b24;padding-top:1px}.notice p{margin:0}.notice p+p{margin-top:6px}.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin:35px 0 14px}.section-head h2{font:26px var(--serif);letter-spacing:-.025em;margin:0}.section-head p{margin:0;color:var(--muted);font-size:12px}.model-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.model-card{position:relative;overflow:hidden;padding:17px 17px 15px;background:var(--sheet);border:1px solid var(--line);box-shadow:var(--shadow);min-height:205px}.model-card:before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--card-color,var(--blue))}.model-card h3{font:17px/1.2 var(--serif);margin:2px 0 4px;overflow-wrap:anywhere}.model-card .exp{font:10px var(--mono);color:var(--muted);margin-bottom:13px}.dist{height:9px;display:flex;background:#e9e7de;margin:7px 0 10px;overflow:hidden}.dist span{height:100%;min-width:0}.legend{display:flex;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:10px}.legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}.card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}.stat b{display:block;font:16px var(--mono);letter-spacing:-.05em}.stat span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.07em;margin-top:2px}.auto-line{margin-top:11px;color:var(--muted);font-size:10px}.auto-line strong{color:var(--ink);font-family:var(--mono);font-weight:500}.controls{background:var(--sheet);border:1px solid var(--line);padding:14px;display:grid;grid-template-columns:2fr repeat(5,minmax(115px,1fr)) auto;gap:9px;align-items:end}.field label{display:block;margin-bottom:5px;font:10px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}.field input,.field select{width:100%;min-height:38px;border:1px solid var(--line);border-radius:0;background:#fffefa;color:var(--ink);padding:7px 9px;font-size:12px}.reset{min-height:38px;padding:7px 12px;border:1px solid var(--blue);background:var(--blue);color:white;font-size:12px}.result-line{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font:11px var(--mono);padding:11px 2px}.table-wrap{overflow:auto;border:1px solid var(--line);background:var(--sheet)}table{width:100%;border-collapse:collapse;min-width:960px}thead{background:#e9e7de;color:#53605c;font:10px var(--mono);letter-spacing:.06em;text-transform:uppercase;text-align:left}th,td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}th{position:sticky;top:0;z-index:1}tbody tr:hover{background:#f3f6f4}.case-name{font:14px var(--serif);color:var(--ink)}.tags{max-width:240px;color:var(--muted);font-size:10px;line-height:1.5}.mono{font:10px var(--mono);color:var(--muted)}.badge{display:inline-flex;align-items:center;border-radius:2px;padding:3px 6px;font:10px var(--mono);white-space:nowrap}.b-complete{background:var(--green-soft);color:#27563e}.b-partial{background:var(--gold-soft);color:#735820}.b-failed{background:var(--rust-soft);color:#8c402b}.b-unresolved{background:#e8e8e4;color:#525a57}.b-auto{background:var(--blue-soft);color:#234f62}.open-case{border:1px solid var(--line);background:transparent;color:var(--blue);font-size:11px;padding:5px 8px}.open-case:hover{background:var(--blue);color:white}.empty{padding:45px;text-align:center;color:var(--muted);font:17px var(--serif)}dialog{width:min(1280px,96vw);max-height:91vh;padding:0;border:1px solid #9da49d;background:var(--sheet);color:var(--ink);box-shadow:0 24px 80px rgba(20,30,26,.28)}dialog::backdrop{background:rgba(19,28,25,.58);backdrop-filter:blur(2px)}.dialog-head{position:sticky;top:0;z-index:2;padding:16px 20px;background:var(--sheet);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:start;gap:15px}.dialog-head h2{font:25px var(--serif);margin:0}.dialog-head p{margin:4px 0 0;color:var(--muted);font-size:11px}.close{border:1px solid var(--line);background:transparent;width:34px;height:34px;font-size:20px;color:var(--ink)}.dialog-body{padding:18px 20px 24px}.question{padding:13px 15px;background:#e9e7de;border-left:2px solid var(--blue);font:15px/1.5 var(--serif);white-space:pre-wrap;margin-bottom:17px}.compare-grid{display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:11px;overflow:auto}.answer-card{border:1px solid var(--line);background:#fffefa;min-width:0}.answer-head{padding:11px 12px;border-bottom:1px solid var(--line);background:#f4f2eb}.answer-head strong{display:block;font:14px var(--serif);overflow-wrap:anywhere}.answer-head .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.answer-content{padding:12px}.answer-text{white-space:pre-wrap;overflow-wrap:anywhere;max-height:330px;overflow:auto;font:12px/1.6 var(--mono);margin:0 0 12px;color:#25332f}.review-box{border-left:2px solid var(--green);padding:7px 9px;background:#eef3ed;font-size:11px;margin:10px 0}.review-box.partial{border-color:var(--gold);background:#f5f0e2}.review-box.failed{border-color:var(--rust);background:#f6ebe5}.review-box h4{font:10px var(--mono);text-transform:uppercase;letter-spacing:.07em;margin:0 0 5px}.review-box p{margin:4px 0}.subhead{font:10px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:13px 0 5px}.metric-list,.tool-list,.artifact-list{margin:0;padding:0;list-style:none}.metric-list li,.tool-list li,.artifact-list li{border-top:1px solid #e7e5dc;padding:6px 0;font-size:10px}.metric-list li{display:grid;grid-template-columns:auto 1fr;gap:7px;align-items:start}.mstatus{font:9px var(--mono);padding:2px 4px;background:#efeee8;color:#5f6562}.mstatus.pass{color:var(--green);background:var(--green-soft)}.mstatus.fail{color:var(--rust);background:var(--rust-soft)}.tool-name{font:10px var(--mono);color:var(--blue)}.tool-result{display:block;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}.refs{font:9px var(--mono);color:var(--muted);overflow-wrap:anywhere}.artifact-list a{display:block;font-size:10px;overflow-wrap:anywhere}.artifact-list img{display:block;max-width:100%;max-height:240px;object-fit:contain;margin:6px 0;border:1px solid var(--line);background:white}.run-meta{padding:10px;background:#f1f0e9;color:var(--muted);font:10px/1.55 var(--mono);overflow-wrap:anywhere}.foot{margin-top:32px;padding-top:13px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font:10px var(--mono)}
-@media(max-width:1100px){.model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.controls{grid-template-columns:repeat(3,1fr)}.field.search{grid-column:span 2}.reset{align-self:end}.hero{grid-template-columns:1fr minmax(220px,.55fr)}}@media(max-width:700px){.shell{padding:16px 14px 40px}.mast{font-size:9px}.hero{display:block;padding:34px 0 24px}.hero-note{margin-top:20px}.dek{font-size:16px}.model-grid{grid-template-columns:1fr 1fr;gap:8px}.model-card{padding:13px;min-height:190px}.model-card h3{font-size:15px}.card-stats{gap:3px}.stat b{font-size:13px}.controls{grid-template-columns:1fr 1fr}.field.search{grid-column:span 2}.section-head{align-items:start;flex-direction:column}.notice{grid-template-columns:1fr;gap:4px}.compare-grid{grid-template-columns:1fr;overflow:visible}.answer-card{min-width:0}.dialog-body{padding:13px}.dialog-head{padding:13px}.dialog-head h2{font-size:21px}.foot{gap:12px;flex-direction:column}}@media(max-width:400px){.model-grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.field.search{grid-column:auto}}
-</style>
-<style>
-.chart-grid{display:grid;grid-template-columns:1.05fr 1.1fr .85fr;gap:12px}.chart-panel{margin:0;padding:16px;background:var(--sheet);border:1px solid var(--line);box-shadow:var(--shadow);min-width:0}.chart-panel figcaption{font:17px var(--serif);margin-bottom:4px}.chart-note{font-size:10px;color:var(--muted);margin:0 0 12px}.chart-row{display:grid;grid-template-columns:minmax(105px,.72fr) minmax(110px,1fr) 78px;gap:8px;align-items:center;margin:10px 0}.chart-label{font:10px var(--mono);overflow-wrap:anywhere}.chart-track{height:13px;background:#e9e7de;position:relative;overflow:hidden}.chart-segment{height:100%;display:inline-block;vertical-align:top}.chart-bar{height:100%;min-width:1px}.chart-values{font:9px var(--mono);text-align:right;color:var(--muted);white-space:nowrap}.chart-legend{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 0;color:var(--muted);font-size:9px}.chart-legend i{display:inline-block;width:8px;height:8px;margin-right:4px}.coverage-note{font-size:9px;color:#735820;background:var(--gold-soft);padding:6px;margin-top:9px}.answer-rendered{max-height:360px;overflow:auto;overflow-wrap:anywhere;font:12px/1.55 system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:0 0 12px;color:#25332f}.answer-rendered h3,.answer-rendered h4{font:17px/1.2 var(--serif);margin:10px 0 5px}.answer-rendered h4{font-size:15px}.answer-rendered p{margin:5px 0 9px}.answer-rendered ul,.answer-rendered ol{margin:5px 0 10px;padding-left:22px}.answer-rendered li{padding-left:2px;margin:2px 0}.answer-rendered code{font:11px var(--mono);background:#efeee8;padding:1px 3px}.answer-rendered pre{white-space:pre;overflow:auto;background:#202e2b;color:#edf3e9;padding:9px;font:10px/1.5 var(--mono);margin:6px 0 10px}.answer-rendered pre code{padding:0;background:transparent;color:inherit}.md-table-wrap{overflow:auto;max-width:100%;margin:7px 0 10px;border:1px solid var(--line)}.answer-rendered table{min-width:0;width:max-content;max-width:100%;font-size:10px}.answer-rendered th,.answer-rendered td{padding:5px 8px;white-space:nowrap}.answer-rendered thead{position:static;font:9px var(--mono)}.answer-rendered a{overflow-wrap:anywhere}.answer-rendered blockquote{border-left:2px solid var(--blue);margin:5px 0;padding:2px 9px;color:var(--muted)}@media(max-width:1100px){.chart-grid{grid-template-columns:1fr 1fr}.chart-panel:last-child{grid-column:span 2}}@media(max-width:700px){.chart-grid{grid-template-columns:1fr}.chart-panel:last-child{grid-column:auto}}
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-raised: #f1f5f9;
+  --surface-subtle: #f8fafc;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+  --primary: #2563eb;
+  --primary-subtle: #eff6ff;
+  --primary-border: #bfdbfe;
+  --complete: #059669;
+  --complete-bg: #ecfdf5;
+  --complete-border: #a7f3d0;
+  --complete-text: #065f46;
+  --partial: #d97706;
+  --partial-bg: #fffbeb;
+  --partial-border: #fde68a;
+  --partial-text: #92400e;
+  --failed: #dc2626;
+  --failed-bg: #fef2f2;
+  --failed-border: #fecaca;
+  --failed-text: #991b1b;
+  --badge-blue: #0284c7;
+  --badge-blue-bg: #f0f9ff;
+  --badge-blue-border: #bae6fd;
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+*, *:before, *:after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, select { font-family: inherit; font-size: inherit; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.app-container {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 24px 28px 72px;
+}
+/* Top App Header */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+.brand-tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.top-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  box-shadow: var(--shadow-sm);
+}
+.btn-scope {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+.btn-scope:hover {
+  background: var(--surface-raised);
+  color: var(--text-main);
+}
+/* Page Hero */
+.dashboard-hero {
+  padding: 24px 0 20px;
+}
+.hero-headline {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-main);
+}
+.hero-desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 900px;
+  line-height: 1.6;
+}
+/* Executive Model Grid */
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 20px 0 32px;
+}
+.model-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.model-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+.model-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.model-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+  overflow-wrap: anywhere;
+}
+.model-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.rank-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.score-rate {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--text-main);
+}
+.score-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.score-bar {
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--surface-raised);
+  display: flex;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.score-bar span { height: 100%; }
+.pill-counts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.stat-box {
+  display: flex;
+  flex-direction: column;
+}
+.stat-val {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.stat-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+/* Section Headers */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 32px 0 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.section-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+.section-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+/* Visualizations Grid */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+.chart-header {
+  margin-bottom: 14px;
+}
+.chart-title {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.chart-subtitle {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.chart-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 65px;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+}
+.bar-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bar-track {
+  height: 14px;
+  border-radius: 4px;
+  background: var(--surface-raised);
+  overflow: hidden;
+  display: flex;
+  position: relative;
+}
+.bar-fill {
+  height: 100%;
+}
+.bar-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text-muted);
+}
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--surface-raised);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.legend-sq {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+/* Tradeoff Table Card */
+.tradeoff-card {
+  grid-column: span 3;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 32px;
+}
+.table-simple {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 12px;
+}
+.table-simple th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+.table-simple td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table-simple tr:hover td {
+  background: var(--surface-subtle);
+}
+/* Explorer Controls & Toolbar */
+.explorer-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.explorer-toolbar {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.toolbar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.view-toggle {
+  display: inline-flex;
+  background: var(--surface-raised);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.view-btn {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+.view-btn.active {
+  background: var(--surface);
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+}
+.search-box {
+  flex: 1;
+  max-width: 440px;
+  position: relative;
+}
+.search-input {
+  width: 100%;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--text-main);
+  transition: border-color 0.15s ease;
+}
+.search-input:focus {
+  border-color: var(--primary);
+}
+.filters-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.filter-select {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 11px;
+  color: var(--text-main);
+}
+.chip-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.chip-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  transition: all 0.12s ease;
+}
+.chip-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text-main);
+}
+.chip-btn.active {
+  background: var(--primary-subtle);
+  border-color: var(--primary-border);
+  color: var(--primary);
+  font-weight: 600;
+}
+.btn-reset {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+}
+.btn-reset:hover {
+  background: var(--surface-raised);
+  color: var(--text-main);
+}
+.explorer-summary-bar {
+  padding: 8px 20px;
+  background: var(--surface-subtle);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+/* Matrix Grid View */
+.matrix-container {
+  overflow-x: auto;
+}
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1080px;
+}
+.matrix-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.matrix-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.matrix-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.matrix-table tbody tr:hover td {
+  background: #f1f5f9;
+}
+.case-cell {
+  max-width: 320px;
+}
+.case-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+.case-prompt {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.case-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.tag-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.model-outcome-cell {
+  min-width: 170px;
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  transition: background 0.12s ease;
+}
+.model-outcome-cell:hover {
+  background: #e2e8f0;
+}
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.b-complete { background: var(--complete-bg); color: var(--complete-text); border: 1px solid var(--complete-border); }
+.b-partial { background: var(--partial-bg); color: var(--partial-text); border: 1px solid var(--partial-border); }
+.b-failed { background: var(--failed-bg); color: var(--failed-text); border: 1px solid var(--failed-border); }
+.b-unresolved { background: var(--surface-raised); color: var(--text-muted); border: 1px solid var(--border); }
+.b-auto { background: var(--badge-blue-bg); color: var(--badge-blue); border: 1px solid var(--badge-blue-border); }
+.cell-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+}
+.btn-inspect {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: all 0.12s ease;
+}
+.btn-inspect:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+/* List Runs View */
+.runs-table-wrap {
+  overflow-x: auto;
+}
+.runs-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+.runs-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.runs-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  vertical-align: top;
+}
+.runs-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.runs-table tbody tr:hover td {
+  background: #f1f5f9;
+}
+.empty-state {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+/* Modal Dialogs */
+dialog {
+  width: min(1320px, 96vw);
+  max-height: 92vh;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text-main);
+  box-shadow: var(--shadow-lg);
+}
+dialog::backdrop {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+}
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 16px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.modal-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.modal-close {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  font-size: 18px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover {
+  background: var(--surface-raised);
+  color: var(--text-main);
+}
+.modal-body {
+  padding: 20px 24px 28px;
+  overflow-y: auto;
+}
+/* Detail Question Box */
+.question-box {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+.question-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+#modalQuestionText {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-main);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* Side-by-side Answer Grid */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(280px, 1fr));
+  gap: 16px;
+  overflow-x: auto;
+}
+.answer-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.answer-header {
+  padding: 12px 14px;
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+}
+.answer-model-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+.answer-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.answer-content {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rendered-markdown {
+  max-height: 340px;
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-main);
+  padding: 8px 10px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.rendered-markdown p { margin: 6px 0; }
+.rendered-markdown p:first-child { margin-top: 0; }
+.rendered-markdown p:last-child { margin-bottom: 0; }
+.rendered-markdown h3, .rendered-markdown h4 { margin: 10px 0 4px; font-size: 13px; }
+.rendered-markdown pre {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  overflow-x: auto;
+}
+.rendered-markdown code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--surface-raised);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.rendered-markdown pre code { background: transparent; padding: 0; }
+.rendered-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: 6px 0;
+}
+.rendered-markdown th, .rendered-markdown td {
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.rendered-markdown th { background: var(--surface-raised); }
+.review-callout {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+.review-callout.complete {
+  background: var(--complete-bg);
+  border-left: 3px solid var(--complete);
+  color: var(--complete-text);
+}
+.review-callout.partial {
+  background: var(--partial-bg);
+  border-left: 3px solid var(--partial);
+  color: var(--partial-text);
+}
+.review-callout.failed {
+  background: var(--failed-bg);
+  border-left: 3px solid var(--failed);
+  color: var(--failed-text);
+}
+.review-title {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.review-reasons {
+  margin: 4px 0 0;
+  padding-left: 14px;
+}
+.telemetry-box {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.trace-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.trace-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.trace-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  max-height: 160px;
+  overflow-y: auto;
+}
+.trace-list li {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.trace-list li:last-child { border-bottom: none; }
+.tool-header {
+  color: var(--primary);
+  font-weight: 600;
+}
+.tool-detail {
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  word-break: break-word;
+}
+.artifact-img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  margin-top: 6px;
+}
+.links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding-top: 4px;
+}
+/* Scope Modal Styling */
+.scope-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-main);
+}
+.scope-content h3 {
+  font-size: 15px;
+  margin: 16px 0 6px;
+}
+.scope-content h3:first-child { margin-top: 0; }
+.scope-content ul {
+  padding-left: 20px;
+  margin: 6px 0 16px;
+}
+.scope-content li { margin-bottom: 6px; }
+/* App Footer */
+.app-footer {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@media (max-width: 1200px) {
+  .model-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: repeat(2, 1fr); }
+  .tradeoff-card { grid-column: span 2; }
+}
+@media (max-width: 768px) {
+  .app-container { padding: 16px 14px 40px; }
+  .model-grid { grid-template-columns: 1fr; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .tradeoff-card { grid-column: 1; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .hero-headline { font-size: 22px; }
+}
 </style>
 </head>
 <body>
-<main class="shell">
-  <div class="mast"><strong>Evaluation notebook / real-v1</strong><span>Krutrim matrix · 05 Oct 2026</span></div>
-  <header class="hero">
-    <div><div class="eyebrow">Four models · thirty shared cases</div><h1>One answer set.<br><span>Four different runs.</span></h1><p class="dek">An inspectable comparison of task outcomes, automatic checks, and operating traces across the same retail and Economic Survey questions.</p><div class="trial-stamp"><i></i> One trial per case · exploratory</div></div>
-    <aside class="hero-note"><strong>Read the labels as a first pass.</strong> The task-quality labels were assigned by Luna with AI assistance. They are uncalibrated and do not certify language quality, grounding, or repeatability.</aside>
-  </header>
-  <section class="notice" aria-label="Scope and limitations"><b>Scope note</b><div id="limits"></div></section>
-  <section aria-labelledby="overview-title"><div class="section-head"><h2 id="overview-title">Model overview</h2><p>AI task labels and original automatic status shown separately</p></div><div class="model-grid" id="modelGrid"></div></section>
-  <section aria-labelledby="charts-title"><div class="section-head"><h2 id="charts-title">Across the four runs</h2><p>Descriptive slices of these single trials</p></div><div class="chart-grid" id="chartGrid"></div></section>
-  <section aria-labelledby="cases-title"><div class="section-head"><h2 id="cases-title">Case explorer</h2><p>Open a case to compare all four saved answers side by side</p></div>
-    <div class="controls" role="search">
-      <div class="field search"><label for="search">Search</label><input id="search" type="search" placeholder="Question, case ID, answer text…"></div>
-      <div class="field"><label for="modelFilter">Model</label><select id="modelFilter"><option value="">All models</option></select></div>
-      <div class="field"><label for="languageFilter">Language</label><select id="languageFilter"><option value="">All languages</option></select></div>
-      <div class="field"><label for="typeFilter">Task type</label><select id="typeFilter"><option value="">All task types</option></select></div>
-      <div class="field"><label for="autoFilter">Automatic status</label><select id="autoFilter"><option value="">All automatic statuses</option></select></div>
-      <div class="field"><label for="reviewFilter">AI task label</label><select id="reviewFilter"><option value="">All AI labels</option></select></div>
-      <button class="reset" id="reset" type="button">Reset</button>
+<div class="app-container">
+  <header class="top-nav">
+    <div class="brand-group">
+      <span class="brand-title">Agentic RAG Analyst</span>
     </div>
-    <div class="result-line"><span id="resultCount" aria-live="polite"></span><span>Rows: model × case</span></div>
-    <div class="table-wrap"><table><thead><tr><th scope="col">Case</th><th scope="col">Model</th><th scope="col">Language</th><th scope="col">Task type / tags</th><th scope="col">Auto</th><th scope="col">Run</th><th scope="col">AI task label</th><th scope="col">Query · tokens</th><th scope="col">Inspect</th></tr></thead><tbody id="caseRows"></tbody></table><div class="empty" id="empty" hidden>No cases match these filters.</div></div>
+    <div class="top-meta">
+      <span class="meta-chip">30 Cases</span>
+      <span class="meta-chip">4 Models · 120 Runs</span>
+      <span class="meta-chip">Evaluator: GPT-6 Luna</span>
+      <button class="btn-scope" id="openScopeBtn" type="button">Scope & Methodology</button>
+    </div>
+  </header>
+
+  <section class="dashboard-hero">
+    <h1 class="hero-headline">Model Evaluation & Benchmark Matrix</h1>
+    <p class="hero-desc">Comparative analysis across 30 identical retail analytics and macroeconomic survey tasks. Evaluating task completion accuracy, latency profiles, token efficiency, and agentic tool traces.</p>
   </section>
-  <footer class="foot"><span>Source: saved report.json, checkpoint audits, case inventory, and reviewed answer records.</span><span>Qwen3.5-9B excluded at user request.</span></footer>
-</main>
-<dialog id="detail" aria-labelledby="detailTitle"><div class="dialog-head"><div><h2 id="detailTitle"></h2><p id="detailSub"></p></div><button class="close" type="button" aria-label="Close case comparison">×</button></div><div class="dialog-body"><div class="question" id="question"></div><div class="compare-grid" id="answers"></div></div></dialog>
+
+  <!-- Executive Model Grid -->
+  <section aria-label="Model Scorecards">
+    <div class="model-grid" id="modelGrid"></div>
+  </section>
+
+  <!-- Visualizations & Comparative Analytics -->
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Comparative Analytics</h2>
+      <p class="section-desc">Task completion, latency profiles, token consumption, domain categories, and multilingual resilience</p>
+    </div>
+  </div>
+
+  <section class="charts-grid" id="chartsContainer"></section>
+
+  <section class="tradeoff-card">
+    <div class="chart-header">
+      <h3 class="chart-title">Key Model Performance Summary & Trade-offs</h3>
+      <p class="chart-subtitle">Direct comparison of accuracy, latency, token consumption, and agent behavior</p>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="table-simple" id="summaryTable">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Task Complete</th>
+            <th>Acceptable (Comp + Part)</th>
+            <th>Latency (p50 / p95)</th>
+            <th>Total Tokens</th>
+            <th>Avg Tokens/Task</th>
+            <th>Tool Calls</th>
+            <th>Key Characteristics</th>
+          </tr>
+        </thead>
+        <tbody id="summaryTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Case Explorer & Matrix Grid -->
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Case Explorer & Comparison Matrix</h2>
+      <p class="section-desc">Switch between the side-by-side Matrix Grid and Detailed Run List. Open any case to inspect answers and execution traces.</p>
+    </div>
+  </div>
+
+  <section class="explorer-section">
+    <div class="explorer-toolbar">
+      <div class="toolbar-top">
+        <div class="view-toggle" role="tablist" aria-label="View Mode">
+          <button class="view-btn active" id="btnViewMatrix" type="button" role="tab" aria-selected="true">Matrix Grid View</button>
+          <button class="view-btn" id="btnViewList" type="button" role="tab" aria-selected="false">All Runs List</button>
+        </div>
+        <div class="search-box">
+          <input class="search-input" id="searchInput" type="search" placeholder="Search case ID, prompt text, answers, or tags..." aria-label="Search cases">
+        </div>
+      </div>
+
+      <div class="filters-row">
+        <div class="chip-group" id="quickChips">
+          <button class="chip-btn active" data-filter="all" type="button">All 30 Cases</button>
+          <button class="chip-btn" data-filter="hard" type="button">Challenging Cases (Any Partial / Fail)</button>
+          <button class="chip-btn" data-filter="unanimous" type="button">All Models Passed</button>
+          <button class="chip-btn" data-filter="multilingual" type="button">Multilingual (Hindi / Hinglish)</button>
+          <button class="chip-btn" data-filter="artifacts" type="button">Artifact & Chart Tasks</button>
+        </div>
+
+        <div class="filter-group">
+          <label for="categoryFilter">Category:</label>
+          <select class="filter-select" id="categoryFilter">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="languageFilter">Language:</label>
+          <select class="filter-select" id="languageFilter">
+            <option value="">All Languages</option>
+          </select>
+        </div>
+
+        <div class="filter-group" id="modelFilterGroup" style="display: none;">
+          <label for="modelFilter">Model:</label>
+          <select class="filter-select" id="modelFilter">
+            <option value="">All Models</option>
+          </select>
+        </div>
+
+        <div class="filter-group" id="statusFilterGroup" style="display: none;">
+          <label for="statusFilter">Status:</label>
+          <select class="filter-select" id="statusFilter">
+            <option value="">All Statuses</option>
+          </select>
+        </div>
+
+        <button class="btn-reset" id="resetBtn" type="button">Reset Filters</button>
+      </div>
+    </div>
+
+    <div class="explorer-summary-bar">
+      <span id="resultCount">Showing 30 cases</span>
+      <span id="resultModeHint">Click any row or cell to compare all 4 model answers</span>
+    </div>
+
+    <!-- Matrix View -->
+    <div class="matrix-container" id="matrixView">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th style="width: 320px;">Case & Prompt</th>
+            <th>gpt-oss-120b</th>
+            <th>gemma-4-31b-it</th>
+            <th>gemma-4-26B-A4B-it</th>
+            <th>Qwen3.6-35B-A3B</th>
+            <th style="text-align: right; width: 110px;">Compare</th>
+          </tr>
+        </thead>
+        <tbody id="matrixTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- List View -->
+    <div class="runs-table-wrap" id="listView" style="display: none;">
+      <table class="runs-table">
+        <thead>
+          <tr>
+            <th>Case ID</th>
+            <th>Model</th>
+            <th>Category</th>
+            <th>Language</th>
+            <th>AI Task Label</th>
+            <th>Auto Check</th>
+            <th>Latency</th>
+            <th>Tokens</th>
+            <th>Tool Calls</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="runsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" id="emptyState" style="display: none;">
+      No cases or runs match the selected filters.
+    </div>
+  </section>
+
+  <footer class="app-footer">
+    <span>Evaluation Matrix · Real-v1 · AI-Assisted First-Pass Review</span>
+    <span>Dataset: 30 Retail Analytics & Economic Survey Tasks · Qwen3.5-9B Excluded</span>
+  </footer>
+</div>
+
+<!-- Case Deep Comparison Modal -->
+<dialog id="caseModal" aria-labelledby="caseModalTitle">
+  <div class="modal-header">
+    <div>
+      <h2 class="modal-title" id="caseModalTitle">Case Comparison</h2>
+      <p class="modal-sub" id="caseModalSub"></p>
+    </div>
+    <button class="modal-close" id="closeCaseModal" type="button" aria-label="Close dialog">×</button>
+  </div>
+  <div class="modal-body">
+    <div class="question-box">
+      <div class="question-label">Task Prompt</div>
+      <p class="question-text" id="modalQuestionText"></p>
+    </div>
+    <div class="detail-grid" id="modalAnswerGrid"></div>
+  </div>
+</dialog>
+
+<!-- Scope & Methodology Modal -->
+<dialog id="scopeModal" aria-labelledby="scopeModalTitle">
+  <div class="modal-header">
+    <div>
+      <h2 class="modal-title" id="scopeModalTitle">Evaluation Scope & Methodology</h2>
+      <p class="modal-sub">Evaluation bounds, review provenance, and telemetry notes</p>
+    </div>
+    <button class="modal-close" id="closeScopeModal" type="button" aria-label="Close dialog">×</button>
+  </div>
+  <div class="modal-body scope-content">
+    <h3>Evaluation Methodology</h3>
+    <p>Each model was evaluated across 30 identical tasks from the Real-v1 benchmark suite, covering complex multi-step retail analytics and macroeconomic document retrieval.</p>
+    
+    <h3>Review Provenance</h3>
+    <p id="scopeProvenance"></p>
+
+    <h3>Known Limitations & Boundary Conditions</h3>
+    <ul id="scopeLimitationsList"></ul>
+
+    <h3>Model Selection & Exclusions</h3>
+    <p id="scopeExclusionText"></p>
+  </div>
+</dialog>
+
 <script>
-const DATA=__DATA__;
-const $=(s,r=document)=>r.querySelector(s);
-const models=DATA.models, rows=models.flatMap(m=>m.cases), byModel=new Map(models.map(m=>[m.model,m]));
-const palette={complete:'#386b50',partial:'#a47b2e',failed:'#a75135',unresolved:'#8a908c'};
-function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n}
-function fmt(n,d=1){return n==null||!Number.isFinite(Number(n))?'—':Number(n).toLocaleString('en-US',{maximumFractionDigits:d})}
-function badge(label,kind){return el('span',`badge b-${kind}`,label)}
-function sumUsage(m){const u=m.model_usage||{};return u.total_tokens==null?'—':fmt(u.total_tokens,0)}
-function addText(parent,tag,cls,value){const n=el(tag,cls,value);parent.append(n);return n}
-function renderLimits(){const root=$('#limits');for(const limitation of DATA.limitations){const p=el('p','',limitation);root.append(p)}const ex=DATA.excluded_models?.[0];if(ex)root.append(el('p','',`${ex.model} was excluded at user request and is absent from these model aggregates.`))}
-function renderModels(){const grid=$('#modelGrid');models.forEach((m,i)=>{const c=el('article','model-card');c.style.setProperty('--card-color',['#245c73','#a75135','#58774b','#a47b2e'][i]);addText(c,'h3','',m.model);addText(c,'div','exp',`experiment ${m.experiment_id}`);const dist=el('div','dist');dist.setAttribute('aria-label','AI reviewed task outcome distribution');const total=m.trials||1;['complete','partial','failed','unresolved'].forEach(k=>{const s=el('span');s.style.width=`${((m.review_counts?.[k]||0)/total)*100}%`;s.style.background=palette[k];s.title=`${k}: ${m.review_counts?.[k]||0}`;dist.append(s)});c.append(dist);const lg=el('div','legend');[['complete','complete'],['partial','partial'],['failed','failed'],['unresolved','unresolved']].forEach(([k,label])=>{const item=el('span');const dot=el('i');dot.style.background=palette[k];item.append(dot,document.createTextNode(`${label} ${m.review_counts?.[k]||0}`));lg.append(item)});c.append(lg);const stats=el('div','card-stats');[[fmt(m.median_seconds),'p50 query s'],[sumUsage(m),'known response tokens'],[fmt(m.model_attempt_count,0),'model attempts']].forEach(([v,label])=>{const s=el('div','stat');s.append(el('b','',v),el('span','',label));stats.append(s)});c.append(stats);const auto=Object.entries(m.auto_status_counts||{}).map(([k,v])=>`${k} ${v}`).join(' · ');addText(c,'div','auto-line',`Original auto status  ${auto}`);grid.append(c)})}
-function fillFilter(id,values){const f=$(id);[...new Set(values.filter(Boolean))].sort().forEach(v=>{const o=el('option','',v);o.value=v;f.append(o)})}
-function initFilters(){fillFilter('#modelFilter',rows.map(r=>r.model));fillFilter('#languageFilter',rows.map(r=>r.language));fillFilter('#typeFilter',rows.map(r=>r.task_type));fillFilter('#autoFilter',rows.map(r=>r.auto_status));fillFilter('#reviewFilter',rows.map(r=>r.review.overall_task));['#search','#modelFilter','#languageFilter','#typeFilter','#autoFilter','#reviewFilter'].forEach(id=>$(id).addEventListener('input',renderRows));$('#reset').addEventListener('click',()=>{['#search','#modelFilter','#languageFilter','#typeFilter','#autoFilter','#reviewFilter'].forEach(id=>$(id).value='');renderRows()})}
-function chartPanel(title,note){const f=el('figure','chart-panel');f.append(el('figcaption','',title),el('p','chart-note',note));return f}
-function chartRow(label){const row=el('div','chart-row');row.append(el('div','chart-label',label));return row}
-function chartLegend(items){const lg=el('div','chart-legend');items.forEach(([label,color])=>{const s=el('span');const mark=el('i');mark.style.background=color;s.append(mark,document.createTextNode(label));lg.append(s)});return lg}
-function renderCharts(){const grid=$('#chartGrid');grid.replaceChildren();
-  const outcomes=chartPanel('Reviewed task outcomes','One AI-assisted label per case. Each bar represents 30 tasks.');
-  const colors={complete:'#386b50',partial:'#a47b2e',failed:'#a75135',unresolved:'#8a908c'};
-  models.forEach(m=>{const row=chartRow(m.model),track=el('div','chart-track');track.setAttribute('role','img');track.setAttribute('aria-label',`${m.model}: ${Object.entries(m.review_counts||{}).map(([k,v])=>`${k} ${v}`).join(', ')}`);const total=m.trials||1;Object.keys(colors).forEach(k=>{const seg=el('span','chart-segment');seg.style.width=`${(100*(m.review_counts?.[k]||0)/total)}%`;seg.style.background=colors[k];seg.title=`${k}: ${m.review_counts?.[k]||0}`;track.append(seg)});row.append(track,el('div','chart-values',`${m.review_counts?.complete||0} complete`));outcomes.append(row)});
-  outcomes.append(chartLegend(Object.entries(colors)));grid.append(outcomes);
-  const latency=chartPanel('Query time','Median and p95 query seconds from this concurrent, one-trial matrix.');
-  const maxLatency=Math.max(...models.map(m=>Number(m.p95_seconds)||0),1);
-  models.forEach(m=>{const block=el('div');block.append(el('div','chart-label',m.model));[['p50',m.median_seconds,'#245c73'],['p95',m.p95_seconds,'#a75135']].forEach(([label,value,color])=>{const row=el('div','chart-row');row.append(el('div','chart-label',label));const track=el('div','chart-track');const bar=el('div','chart-bar');bar.style.width=`${Math.max(1,100*(Number(value)||0)/maxLatency)}%`;bar.style.background=color;track.append(bar);row.append(track,el('div','chart-values',`${fmt(value)}s`));block.append(row)});latency.append(block)});
-  latency.append(chartLegend([['p50','#245c73'],['p95','#a75135']]));grid.append(latency);
-  const usage=chartPanel('Known response tokens','Sum of token counters attached to successful model responses.');
-  const maxTokens=Math.max(...models.map(m=>Number(m.model_usage?.total_tokens)||0),1);
-  models.forEach(m=>{const row=chartRow(m.model),track=el('div','chart-track');const bar=el('div','chart-bar');bar.style.width=`${Math.max(1,100*(Number(m.model_usage?.total_tokens)||0)/maxTokens)}%`;bar.style.background='#58774b';track.append(bar);row.append(track,el('div','chart-values',fmt(m.model_usage?.total_tokens,0)));usage.append(row);const cover=m.usage_coverage_counts||{};usage.append(el('div','chart-note',`Usage counters: ${cover.measured||0} full · ${cover.partial||0} partial · ${cover.unavailable||0} unavailable trials`))});
-  usage.append(el('div','coverage-note','Known response usage is not a billing total. Partial or failed attempts may have no usage counters.'));grid.append(usage);
+const DATA = __DATA__;
+const models = DATA.models;
+const allRuns = models.flatMap(m => m.cases);
+
+// Unique cases list
+const uniqueCaseMap = new Map();
+models[0].cases.forEach(c => {
+  uniqueCaseMap.set(c.case_id, {
+    case_id: c.case_id,
+    question: c.question,
+    language: c.language,
+    task_type: c.task_type,
+    tags: c.tags || [],
+    runsByModel: {}
+  });
+});
+models.forEach(m => {
+  m.cases.forEach(c => {
+    if (uniqueCaseMap.has(c.case_id)) {
+      uniqueCaseMap.get(c.case_id).runsByModel[m.model] = c;
+    }
+  });
+});
+const uniqueCases = Array.from(uniqueCaseMap.values());
+
+const palette = {
+  complete: '#059669',
+  partial: '#d97706',
+  failed: '#dc2626',
+  unresolved: '#94a3b8'
+};
+
+function fmt(n, d = 1) {
+  if (n == null || !Number.isFinite(Number(n))) return '—';
+  return Number(n).toLocaleString('en-US', { maximumFractionDigits: d });
 }
-function rowSearchText(r){return [r.case_id,r.model,r.language,r.task_type,r.question,r.answer_text,(r.tags||[]).join(' '),r.review.comment,(r.review.reasons||[]).join(' ')].join(' ').toLowerCase()}
-function renderRows(){const q=$('#search').value.trim().toLowerCase(),mf=$('#modelFilter').value,lf=$('#languageFilter').value,tf=$('#typeFilter').value,af=$('#autoFilter').value,rf=$('#reviewFilter').value;const filtered=rows.filter(r=>(!q||rowSearchText(r).includes(q))&&(!mf||r.model===mf)&&(!lf||r.language===lf)&&(!tf||r.task_type===tf)&&(!af||r.auto_status===af)&&(!rf||r.review.overall_task===rf));const tbody=$('#caseRows');tbody.replaceChildren();$('#resultCount').textContent=`${filtered.length.toLocaleString()} of ${rows.length.toLocaleString()} rows`;$('#empty').hidden=filtered.length>0;filtered.forEach(r=>{const tr=document.createElement('tr');const tdCase=el('td');tdCase.append(el('div','case-name',r.case_id),el('div','mono',r.question.slice(0,95)+(r.question.length>95?'…':'')));tr.append(tdCase);tr.append(el('td','',r.model));tr.append(el('td','mono',r.language||'—'));const tdTag=el('td');tdTag.append(el('div','mono',r.task_type),el('div','tags',(r.tags||[]).join(' · ')));tr.append(tdTag);const tdAuto=el('td');tdAuto.append(badge(r.auto_status,'auto'));tr.append(tdAuto);tr.append(el('td','mono',r.run_state||'—'));const tdReview=el('td');tdReview.append(badge(r.review.overall_task,r.review.overall_task));tr.append(tdReview);tr.append(el('td','mono',`${fmt(r.query_seconds)}s · ${fmt(r.tokens,0)}`));const td=el('td');const b=el('button','open-case','Compare answers');b.type='button';b.setAttribute('aria-label',`Compare ${r.case_id} across all models`);b.addEventListener('click',()=>openCase(r.case_id));td.append(b);tr.append(td);tbody.append(tr)})}
-function metricName(m){return m.name||m.code||'metric'}
-function metricDetails(d){if(!d||typeof d!=='object')return'';const out=[];for(const k of ['actual_value','expected_value','actual_unit','expected_unit','expected','scope','reason','expected_phrase','source_alias'])if(d[k]!=null)out.push(`${k.replaceAll('_',' ')}: ${d[k]}`);if(Array.isArray(d.unexpected_actions)&&d.unexpected_actions.length)out.push(`unexpected actions: ${d.unexpected_actions.join(', ')}`);return out.join(' · ')}
-function appendInline(parent,text){const pattern=/(`[^`\n]+`|\*\*.+?\*\*|\*[^*\n]+\*|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g;let last=0,match;while((match=pattern.exec(text))){if(match.index>last)parent.append(document.createTextNode(text.slice(last,match.index)));const token=match[0];let node;if(token.startsWith('`')){node=el('code','',token.slice(1,-1))}else if(token.startsWith('**')){node=el('strong','',token.slice(2,-2))}else if(token.startsWith('*')){node=el('em','',token.slice(1,-1))}else{const link=/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/.exec(token);if(link){try{const url=new URL(link[2]);if(url.protocol==='https:'||url.protocol==='http:'){node=el('a','',link[1]);node.href=url.href;node.target='_blank';node.rel='noopener noreferrer'}}catch(_){}}if(!node)node=document.createTextNode(token)}parent.append(node);last=pattern.lastIndex}if(last<text.length)parent.append(document.createTextNode(text.slice(last)))}
-function markdownTableCells(line){let value=line.trim();if(value.startsWith('|'))value=value.slice(1);if(value.endsWith('|'))value=value.slice(0,-1);return value.split(/(?<!\\)\|/).map(x=>x.replace(/\\\|/g,'|').trim())}
-function renderMarkdown(text){const root=el('div','answer-rendered'),lines=String(text||'').replace(/\r\n?/g,'\n').split('\n');let paragraph=[],i=0;const flush=()=>{if(!paragraph.length)return;const p=el('p');appendInline(p,paragraph.join(' '));root.append(p);paragraph=[]};while(i<lines.length){const line=lines[i];if(/^\s*```/.test(line)){flush();const code=[];i++;while(i<lines.length&&!/^\s*```/.test(lines[i]))code.push(lines[i++]);if(i<lines.length)i++;const pre=el('pre'),c=el('code','',code.join('\n'));pre.append(c);root.append(pre);continue}if(!line.trim()){flush();i++;continue}const heading=/^\s{0,3}(#{1,4})\s+(.+)$/.exec(line);if(heading){flush();const level=Math.min(heading[1].length,4),h=el(level<=2?'h3':'h4');appendInline(h,heading[2].replace(/\s+#+\s*$/,''));root.append(h);i++;continue}if(i+1<lines.length&&line.includes('|')&&/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[i+1])){flush();const heads=markdownTableCells(line),table=el('table'),thead=document.createElement('thead'),hr=document.createElement('tr');heads.forEach(x=>{const th=el('th');appendInline(th,x);hr.append(th)});thead.append(hr);table.append(thead);i+=2;const body=document.createElement('tbody');while(i<lines.length&&lines[i].includes('|')&&lines[i].trim()){const cells=markdownTableCells(lines[i]),tr=document.createElement('tr');heads.forEach((_,col)=>{const td=el('td');appendInline(td,cells[col]||'');tr.append(td)});body.append(tr);i++}table.append(body);const wrap=el('div','md-table-wrap');wrap.append(table);root.append(wrap);continue}const list=/^\s*(?:[-+*]\s+|\d+[.)]\s+)/.exec(line);if(list){flush();const ordered=/^\s*\d+[.)]\s+/.test(line),items=[];while(i<lines.length){const m=/^\s*(?:[-+*]\s+|\d+[.)]\s+)(.*)$/.exec(lines[i]);if(!m)break;items.push(m[1]);i++}const ul=el(ordered?'ol':'ul');items.forEach(x=>{const li=el('li');appendInline(li,x);ul.append(li)});root.append(ul);continue}const quote=/^\s*>\s?(.*)$/.exec(line);if(quote){flush();const q=el('blockquote');appendInline(q,quote[1]);root.append(q);i++;continue}paragraph.push(line.trim());i++}flush();return root}
-function safeArtifactHref(a){const p=a.cached_path||'';return /^\.\.\/\.\.\/runs\/real-v1-krutrim-matrix-2026-10-05\/model-[a-f0-9]+\/artifacts\/[A-Za-z0-9._-]+$/.test(p)?p:null}
-function anchor(parent,href,label){const a=el('a','',label);a.href=href;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);return a}
-function answerCard(r){const card=el('article','answer-card'),head=el('div','answer-head');head.append(el('strong','',r.model));const chips=el('div','chips');chips.append(badge(`auto ${r.auto_status}`,'auto'),badge(`run ${r.run_state||'unknown'}`,r.run_state==='completed'?'complete':'failed'),badge(`AI ${r.review.overall_task}`,r.review.overall_task));head.append(chips);card.append(head);const body=el('div','answer-content');body.append(renderMarkdown(r.answer_text||'(No final answer was recorded.)'));const rb=el('section',`review-box ${r.review.overall_task}`);rb.append(el('h4','',`Luna task review · ${r.review.overall_task}`));if(r.review.comment)rb.append(el('p','',r.review.comment));(r.review.reasons||[]).forEach(x=>rb.append(el('p','',`• ${x}`)));body.append(rb);const coverage=r.usage_coverage||{};const meta=el('div','run-meta',`query ${fmt(r.query_seconds)}s · queue ${fmt(r.queue_seconds)}s · ingestion ${fmt(r.ingestion_seconds)}s\nmodel attempts ${fmt(coverage.attempts,0)} · responses ${fmt(coverage.responses,0)} · usage ${coverage.usage_status||'unavailable'}\nknown response usage ${fmt(r.tokens,0)} tokens · run ${r.run_id||'—'}\nanswer SHA-256 ${r.answer_hash}`);body.append(meta);
-const metrics=el('section');metrics.append(el('h4','subhead','Automatic checks'));const ul=el('ul','metric-list');(r.metrics||[]).forEach(m=>{const li=el('li');li.append(el('span',`mstatus ${m.status||''}`,m.status||'—'));const description=el('span');description.append(el('span','',metricName(m)));const details=metricDetails(m.details);if(details)description.append(el('span','tool-result',details));li.append(description);ul.append(li)});metrics.append(ul);body.append(metrics);
-const tools=el('section');tools.append(el('h4','subhead',`Tool sequence · ${r.tool_calls?.length||0} retained records`));const tl=el('ol','tool-list');(r.tool_calls||[]).forEach((t,i)=>{const li=el('li');li.append(el('span','tool-name',`${i+1}. ${t.name||'unknown'} · ${t.decision||t.status||'—'}`));const result=t.result||{};if(result.summary)li.append(el('span','tool-result',result.summary));if(result.error)li.append(el('span','tool-result',`${result.error.code||'error'}: ${result.error.message||''}`));tl.append(li)});if(!r.tool_calls?.length)tl.append(el('li','tool-result','No persisted tool-call records.'));tools.append(tl);body.append(tools);
-const refs=el('section');refs.append(el('h4','subhead','Evidence references'));refs.append(el('div','refs',r.evidence_ids?.length?r.evidence_ids.join(' · '):'No evidence IDs recorded'));body.append(refs);
-const arts=el('section');arts.append(el('h4','subhead',`Artifacts · ${r.artifacts?.length||0} observed`));const al=el('ul','artifact-list');(r.artifacts||[]).forEach(a=>{const li=el('li');const href=safeArtifactHref(a);const title=`${a.display_name||a.id} · ${a.media_type||'unknown'} · SHA-256 ${a.sha256||'unavailable'}`;if(href){anchor(li,href,title);if(a.media_type==='image/png'&&a.cache_sha256_matches_expected){const img=document.createElement('img');img.src=href;img.alt=`Saved chart artifact ${a.display_name||a.id}`;li.append(img)}}else li.append(el('span','refs',title));al.append(li)});if(!r.artifacts?.length)al.append(el('li','refs','No artifact observed'));arts.append(al);body.append(arts);
-if(r.error){const er=el('div','review-box failed');er.append(el('h4','','Recorded error'));er.append(el('p','',`${r.error.code||'error'}: ${r.error.message||''}`));body.append(er)}
-body.append(anchorWrapper(r.automatic_report_ref,'Original automatic report'));body.append(anchorWrapper(`${r.model_slug}/reviewed-report.json`,'Report with AI labels attached'));body.append(anchorWrapper(r.answer_review_ref,'Exact-answer-bound AI review'));body.append(anchorWrapper(r.artifact_review_ref,'Artifact checks'));card.append(body);return card}
-function anchorWrapper(path,label){const wrap=el('p','refs'),a=el('a','',label);a.href=path;a.target='_blank';a.rel='noopener noreferrer';wrap.append(a);return wrap}
-function openCase(caseId){const group=models.map(m=>m.cases.find(r=>r.case_id===caseId)).filter(Boolean);if(!group.length)return;$('#detailTitle').textContent=caseId;$('#detailSub').textContent=`${group[0].language||'language unavailable'} · ${group[0].task_type} · one saved trial for each model`;$('#question').textContent=group[0].question;const answers=$('#answers');answers.replaceChildren(...group.map(answerCard));$('#detail').showModal();$('.close').focus()}
-$('.close').addEventListener('click',()=>$('#detail').close());$('#detail').addEventListener('click',ev=>{if(ev.target===$('#detail'))$('#detail').close()});document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('#detail').open)$('#detail').close()});
-renderLimits();renderModels();renderCharts();initFilters();renderRows();
+
+function badge(label, kind) {
+  const span = document.createElement('span');
+  span.className = `badge-pill b-${kind}`;
+  span.textContent = label;
+  return span;
+}
+
+// Render Scope Modal
+function initScopeModal() {
+  const btn = document.getElementById('openScopeBtn');
+  const modal = document.getElementById('scopeModal');
+  const close = document.getElementById('closeScopeModal');
+  btn.addEventListener('click', () => modal.showModal());
+  close.addEventListener('click', () => modal.close());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.close(); });
+
+  document.getElementById('scopeProvenance').textContent = DATA.review_provenance || 'AI-assisted task evaluation.';
+  const limList = document.getElementById('scopeLimitationsList');
+  limList.innerHTML = '';
+  (DATA.limitations || []).forEach(l => {
+    const li = document.createElement('li');
+    li.textContent = l;
+    limList.appendChild(li);
+  });
+  const ex = DATA.excluded_models?.[0];
+  document.getElementById('scopeExclusionText').textContent = ex 
+    ? `${ex.model} was excluded at user request and is absent from all benchmark aggregates.` 
+    : 'No models excluded.';
+}
+
+// Render Model Scorecards
+function renderModelCards() {
+  const container = document.getElementById('modelGrid');
+  container.innerHTML = '';
+
+  const modelCharacteristics = {
+    'gpt-oss-120b': 'High-capacity dense open-source model. Strong on complex reasoning.',
+    'gemma-4-31b-it': 'Ultra-fast dense model with lowest latency and minimal token consumption.',
+    'gemma-4-26B-A4B-it': 'MoE (26B total, 4B active). Balanced speed and high completion.',
+    'Qwen3.6-35B-A3B': 'MoE (35B total, 3B active). Benchmark leader in overall task completion.'
+  };
+
+  models.forEach(m => {
+    const total = m.trials || 30;
+    const comp = m.review_counts?.complete || 0;
+    const part = m.review_counts?.partial || 0;
+    const fail = m.review_counts?.failed || 0;
+    const compRate = ((comp / total) * 100).toFixed(1);
+    const acceptRate = (((comp + part) / total) * 100).toFixed(1);
+
+    const card = document.createElement('div');
+    card.className = 'model-card';
+
+    const header = document.createElement('div');
+    header.className = 'model-card-header';
+    header.innerHTML = `
+      <div>
+        <h3 class="model-name">${m.model}</h3>
+      </div>
+      <span class="rank-badge">${comp}/30 Complete</span>
+    `;
+    card.appendChild(header);
+
+    const scoreRow = document.createElement('div');
+    scoreRow.className = 'score-row';
+    scoreRow.innerHTML = `
+      <div class="score-rate">${compRate}%</div>
+      <div class="score-label">Complete (${acceptRate}% Acceptable)</div>
+    `;
+    card.appendChild(scoreRow);
+
+    const bar = document.createElement('div');
+    bar.className = 'score-bar';
+    bar.innerHTML = `
+      <span style="width: ${(comp / total) * 100}%; background: var(--complete);" title="Complete: ${comp}"></span>
+      <span style="width: ${(part / total) * 100}%; background: var(--partial);" title="Partial: ${part}"></span>
+      <span style="width: ${(fail / total) * 100}%; background: var(--failed);" title="Failed: ${fail}"></span>
+    `;
+    card.appendChild(bar);
+
+    const pills = document.createElement('div');
+    pills.className = 'pill-counts';
+    pills.innerHTML = `
+      <span class="pill-item"><span class="pill-dot" style="background: var(--complete);"></span>${comp} Complete</span>
+      <span class="pill-item"><span class="pill-dot" style="background: var(--partial);"></span>${part} Partial</span>
+      <span class="pill-item"><span class="pill-dot" style="background: var(--failed);"></span>${fail} Failed</span>
+    `;
+    card.appendChild(pills);
+
+    const stats = document.createElement('div');
+    stats.className = 'stats-grid';
+    const totalTokens = m.model_usage?.total_tokens || 0;
+    const avgTokens = Math.round(totalTokens / total);
+    const avgTools = (m.tool_call_count / total).toFixed(1);
+
+    stats.innerHTML = `
+      <div class="stat-box">
+        <span class="stat-val">${fmt(m.median_seconds)}s</span>
+        <span class="stat-sub">p50 Latency (p95: ${fmt(m.p95_seconds)}s)</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-val">${fmt(totalTokens, 0)}</span>
+        <span class="stat-sub">Total Tokens (~${fmt(avgTokens, 0)}/task)</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-val">${m.tool_call_count}</span>
+        <span class="stat-sub">Tool Calls (~${avgTools}/task)</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-val">${m.model_attempt_count}</span>
+        <span class="stat-sub">Model Attempts</span>
+      </div>
+    `;
+    card.appendChild(stats);
+
+    container.appendChild(card);
+  });
+}
+
+// Render Comparative Analytics Charts
+function renderAnalyticsCharts() {
+  const container = document.getElementById('chartsContainer');
+  container.innerHTML = '';
+
+  // 1. Task Completion Breakdown Chart
+  const card1 = document.createElement('div');
+  card1.className = 'chart-card';
+  card1.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Task Completion Distribution</h3>
+      <p class="chart-subtitle">Evaluated outcomes across 30 identical tasks</p>
+    </div>
+    <div class="chart-body" id="chartTaskOutcomes"></div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-sq" style="background: var(--complete);"></span>Complete</span>
+      <span class="legend-item"><span class="legend-sq" style="background: var(--partial);"></span>Partial</span>
+      <span class="legend-item"><span class="legend-sq" style="background: var(--failed);"></span>Failed</span>
+    </div>
+  `;
+  container.appendChild(card1);
+
+  const body1 = card1.querySelector('#chartTaskOutcomes');
+  models.forEach(m => {
+    const total = m.trials || 30;
+    const c = m.review_counts?.complete || 0;
+    const p = m.review_counts?.partial || 0;
+    const f = m.review_counts?.failed || 0;
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <span class="bar-label" title="${m.model}">${m.model}</span>
+      <div class="bar-track">
+        <span class="bar-fill" style="width: ${(c / total) * 100}%; background: var(--complete);" title="Complete: ${c}"></span>
+        <span class="bar-fill" style="width: ${(p / total) * 100}%; background: var(--partial);" title="Partial: ${p}"></span>
+        <span class="bar-fill" style="width: ${(f / total) * 100}%; background: var(--failed);" title="Failed: ${f}"></span>
+      </div>
+      <span class="bar-value">${c}/30 (${((c / total) * 100).toFixed(0)}%)</span>
+    `;
+    body1.appendChild(row);
+  });
+
+  // 2. Query Latency Comparison Chart (p50 & p95)
+  const card2 = document.createElement('div');
+  card2.className = 'chart-card';
+  card2.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Query Latency Profile</h3>
+      <p class="chart-subtitle">Median (p50) and 95th-percentile (p95) latency</p>
+    </div>
+    <div class="chart-body" id="chartLatency"></div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-sq" style="background: #2563eb;"></span>Median (p50)</span>
+      <span class="legend-item"><span class="legend-sq" style="background: #93c5fd;"></span>Tail (p95)</span>
+    </div>
+  `;
+  container.appendChild(card2);
+
+  const body2 = card2.querySelector('#chartLatency');
+  const maxP95 = Math.max(...models.map(m => m.p95_seconds || 1));
+  models.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    const p50w = ((m.median_seconds / maxP95) * 100).toFixed(1);
+    const p95w = (((m.p95_seconds - m.median_seconds) / maxP95) * 100).toFixed(1);
+    row.innerHTML = `
+      <span class="bar-label" title="${m.model}">${m.model}</span>
+      <div class="bar-track">
+        <span class="bar-fill" style="width: ${p50w}%; background: #2563eb;" title="p50: ${fmt(m.median_seconds)}s"></span>
+        <span class="bar-fill" style="width: ${p95w}%; background: #93c5fd;" title="p95: ${fmt(m.p95_seconds)}s"></span>
+      </div>
+      <span class="bar-value">${fmt(m.median_seconds)}s / ${fmt(m.p95_seconds, 0)}s</span>
+    `;
+    body2.appendChild(row);
+  });
+
+  // 3. Token Consumption & Efficiency Chart
+  const card3 = document.createElement('div');
+  card3.className = 'chart-card';
+  card3.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Token Consumption</h3>
+      <p class="chart-subtitle">Total tokens used across all 30 benchmark tasks</p>
+    </div>
+    <div class="chart-body" id="chartTokens"></div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-sq" style="background: #4f46e5;"></span>Prompt Tokens</span>
+      <span class="legend-item"><span class="legend-sq" style="background: #c7d2fe;"></span>Completion Tokens</span>
+    </div>
+  `;
+  container.appendChild(card3);
+
+  const body3 = card3.querySelector('#chartTokens');
+  const maxTok = Math.max(...models.map(m => m.model_usage?.total_tokens || 1));
+  models.forEach(m => {
+    const u = m.model_usage || {};
+    const promptW = (((u.prompt_tokens || 0) / maxTok) * 100).toFixed(1);
+    const compW = (((u.completion_tokens || 0) / maxTok) * 100).toFixed(1);
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <span class="bar-label" title="${m.model}">${m.model}</span>
+      <div class="bar-track">
+        <span class="bar-fill" style="width: ${promptW}%; background: #4f46e5;" title="Prompt: ${fmt(u.prompt_tokens, 0)}"></span>
+        <span class="bar-fill" style="width: ${compW}%; background: #c7d2fe;" title="Completion: ${fmt(u.completion_tokens, 0)}"></span>
+      </div>
+      <span class="bar-value">${fmt(u.total_tokens / 1000, 0)}k</span>
+    `;
+    body3.appendChild(row);
+  });
+
+  // 4. Performance by Domain Category
+  const card4 = document.createElement('div');
+  card4.className = 'chart-card';
+  card4.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Accuracy by Task Category</h3>
+      <p class="chart-subtitle">Completion rate across domain categories</p>
+    </div>
+    <div class="chart-body" id="chartCategory"></div>
+    <div class="chart-legend">
+      <span class="legend-item">Retail Analysis (17 tasks)</span>
+      <span class="legend-item">Doc Retrieval (9 tasks)</span>
+    </div>
+  `;
+  container.appendChild(card4);
+
+  const body4 = card4.querySelector('#chartCategory');
+  const cats = ['retail data analysis', 'document retrieval'];
+  models.forEach(m => {
+    const retailTotal = m.cases.filter(c => c.task_type === 'retail data analysis');
+    const retailPass = retailTotal.filter(c => c.review.overall_task === 'complete').length;
+    const docTotal = m.cases.filter(c => c.task_type === 'document retrieval');
+    const docPass = docTotal.filter(c => c.review.overall_task === 'complete').length;
+
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    const rPct = Math.round((retailPass / retailTotal.length) * 100);
+    const dPct = Math.round((docPass / docTotal.length) * 100);
+    row.innerHTML = `
+      <span class="bar-label" title="${m.model}">${m.model}</span>
+      <div class="bar-track">
+        <span class="bar-fill" style="width: ${rPct}%; background: #0891b2;" title="Retail: ${retailPass}/${retailTotal.length}"></span>
+      </div>
+      <span class="bar-value">${retailPass}/${retailTotal.length} (${rPct}%)</span>
+    `;
+    body4.appendChild(row);
+  });
+
+  // 5. Multilingual Performance Breakdown
+  const card5 = document.createElement('div');
+  card5.className = 'chart-card';
+  card5.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Multilingual Resilience</h3>
+      <p class="chart-subtitle">Task completion across English vs Hindi/Hinglish</p>
+    </div>
+    <div class="chart-body" id="chartMulti"></div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-sq" style="background: #059669;"></span>English (23)</span>
+      <span class="legend-item"><span class="legend-sq" style="background: #0284c7;"></span>Hindi / Hinglish (7)</span>
+    </div>
+  `;
+  container.appendChild(card5);
+
+  const body5 = card5.querySelector('#chartMulti');
+  models.forEach(m => {
+    const enTasks = m.cases.filter(c => c.language === 'en-IN');
+    const enPass = enTasks.filter(c => c.review.overall_task === 'complete').length;
+    const hiTasks = m.cases.filter(c => c.language !== 'en-IN');
+    const hiPass = hiTasks.filter(c => c.review.overall_task === 'complete').length;
+
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <span class="bar-label" title="${m.model}">${m.model}</span>
+      <div class="bar-track">
+        <span class="bar-fill" style="width: ${(enPass / 23) * 50}%; background: #059669;" title="English: ${enPass}/23"></span>
+        <span class="bar-fill" style="width: ${(hiPass / 7) * 50}%; background: #0284c7;" title="Hindi/Hinglish: ${hiPass}/7"></span>
+      </div>
+      <span class="bar-value">EN ${enPass} · HI ${hiPass}</span>
+    `;
+    body5.appendChild(row);
+  });
+
+  // 6. Tool Interactions & Reasoning Depth
+  const card6 = document.createElement('div');
+  card6.className = 'chart-card';
+  card6.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Agent Tool Calls & Reasoning Depth</h3>
+      <p class="chart-subtitle">Average tool calls executed per task</p>
+    </div>
+    <div class="chart-body" id="chartTools"></div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-sq" style="background: #d97706;"></span>Tool Calls / Task</span>
+    </div>
+  `;
+  container.appendChild(card6);
+
+  const body6 = card6.querySelector('#chartTools');
+  const maxToolsAvg = 8.0;
+  models.forEach(m => {
+    const avg = m.tool_call_count / (m.trials || 30);
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <span class="bar-label" title="${m.model}">${m.model}</span>
+      <div class="bar-track">
+        <span class="bar-fill" style="width: ${(avg / maxToolsAvg) * 100}%; background: #d97706;" title="Average ${avg.toFixed(1)} tools/task"></span>
+      </div>
+      <span class="bar-value">${avg.toFixed(1)} / task</span>
+    `;
+    body6.appendChild(row);
+  });
+}
+
+// Render Summary Table
+function renderSummaryTable() {
+  const tbody = document.getElementById('summaryTableBody');
+  tbody.innerHTML = '';
+
+  const modelNotes = {
+    'gpt-oss-120b': 'High reasoning capability on multi-step SQL queries; higher median latency; 18/30 completion.',
+    'gemma-4-31b-it': 'Fastest response time (12.4s p50); lowest token usage (945k); strong baseline for cost-sensitive workloads.',
+    'gemma-4-26B-A4B-it': 'MoE efficiency (4B active parameters); robust 73.3% completion; balanced latency and cost.',
+    'Qwen3.6-35B-A3B': 'Top benchmark performer (80.0% complete, 93.3% acceptable); highest multilingual accuracy; higher token consumption.'
+  };
+
+  models.forEach(m => {
+    const tr = document.createElement('tr');
+    const total = m.trials || 30;
+    const comp = m.review_counts?.complete || 0;
+    const part = m.review_counts?.partial || 0;
+    const totalTok = m.model_usage?.total_tokens || 0;
+    const avgTok = Math.round(totalTok / total);
+
+    tr.innerHTML = `
+      <td style="font-weight: 700; font-family: var(--font-mono);">${m.model}</td>
+      <td><span class="badge-pill b-complete">${comp}/${total} (${((comp / total) * 100).toFixed(1)}%)</span></td>
+      <td><span class="badge-pill b-auto">${comp + part}/${total} (${(((comp + part) / total) * 100).toFixed(1)}%)</span></td>
+      <td style="font-family: var(--font-mono);">${fmt(m.median_seconds)}s / ${fmt(m.p95_seconds, 0)}s</td>
+      <td style="font-family: var(--font-mono);">${fmt(totalTok, 0)}</td>
+      <td style="font-family: var(--font-mono);">${fmt(avgTok, 0)}</td>
+      <td style="font-family: var(--font-mono);">${m.tool_call_count} (${(m.tool_call_count / total).toFixed(1)}/task)</td>
+      <td style="color: var(--text-muted); font-size: 11px;">${modelNotes[m.model] || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Explorer Filters & Search Logic
+let activeFilterMode = 'all'; // 'all', 'hard', 'unanimous', 'multilingual', 'artifacts'
+let activeView = 'matrix'; // 'matrix' or 'list'
+
+function initFilters() {
+  // Populate category filter
+  const catFilter = document.getElementById('categoryFilter');
+  const cats = [...new Set(uniqueCases.map(c => c.task_type))].sort();
+  cats.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    catFilter.appendChild(opt);
+  });
+
+  // Populate language filter
+  const langFilter = document.getElementById('languageFilter');
+  const langs = [...new Set(uniqueCases.map(c => c.language))].sort();
+  langs.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l;
+    opt.textContent = l;
+    langFilter.appendChild(opt);
+  });
+
+  // Populate model filter (for list view)
+  const mFilter = document.getElementById('modelFilter');
+  models.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.model;
+    opt.textContent = m.model;
+    mFilter.appendChild(opt);
+  });
+
+  // Populate status filter (for list view)
+  const sFilter = document.getElementById('statusFilter');
+  ['complete', 'partial', 'failed'].forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+    sFilter.appendChild(opt);
+  });
+
+  // View toggle
+  document.getElementById('btnViewMatrix').addEventListener('click', () => setView('matrix'));
+  document.getElementById('btnViewList').addEventListener('click', () => setView('list'));
+
+  // Quick chips
+  const chips = document.querySelectorAll('#quickChips .chip-btn');
+  chips.forEach(btn => {
+    btn.addEventListener('click', () => {
+      chips.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilterMode = btn.dataset.filter;
+      applyFilters();
+    });
+  });
+
+  // Inputs
+  ['searchInput', 'categoryFilter', 'languageFilter', 'modelFilter', 'statusFilter'].forEach(id => {
+    document.getElementById(id).addEventListener('input', applyFilters);
+  });
+
+  // Reset
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('categoryFilter').value = '';
+    document.getElementById('languageFilter').value = '';
+    document.getElementById('modelFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    chips.forEach(b => b.classList.remove('active'));
+    chips[0].classList.add('active');
+    activeFilterMode = 'all';
+    applyFilters();
+  });
+}
+
+function setView(view) {
+  activeView = view;
+  const btnMatrix = document.getElementById('btnViewMatrix');
+  const btnList = document.getElementById('btnViewList');
+  const matrixContainer = document.getElementById('matrixView');
+  const listContainer = document.getElementById('listView');
+  const modelFilterGroup = document.getElementById('modelFilterGroup');
+  const statusFilterGroup = document.getElementById('statusFilterGroup');
+
+  if (view === 'matrix') {
+    btnMatrix.classList.add('active');
+    btnList.classList.remove('active');
+    matrixContainer.style.display = 'block';
+    listContainer.style.display = 'none';
+    modelFilterGroup.style.display = 'none';
+    statusFilterGroup.style.display = 'none';
+    document.getElementById('resultModeHint').textContent = 'Click any row or cell to compare all 4 model answers';
+  } else {
+    btnMatrix.classList.remove('active');
+    btnList.classList.add('active');
+    matrixContainer.style.display = 'none';
+    listContainer.style.display = 'block';
+    modelFilterGroup.style.display = 'flex';
+    statusFilterGroup.style.display = 'flex';
+    document.getElementById('resultModeHint').textContent = 'Click Compare to inspect run details side-by-side';
+  }
+  applyFilters();
+}
+
+function caseMatchesFilters(c, query, cat, lang) {
+  if (cat && c.task_type !== cat) return false;
+  if (lang && c.language !== lang) return false;
+
+  if (query) {
+    const q = query.toLowerCase();
+    const matchId = c.case_id.toLowerCase().includes(q);
+    const matchPrompt = c.question.toLowerCase().includes(q);
+    const matchTags = (c.tags || []).some(t => t.toLowerCase().includes(q));
+    const matchAnswers = Object.values(c.runsByModel).some(r => 
+      (r.answer_text || '').toLowerCase().includes(q) ||
+      (r.review.comment || '').toLowerCase().includes(q)
+    );
+    if (!matchId && !matchPrompt && !matchTags && !matchAnswers) return false;
+  }
+
+  // Quick filter chips
+  if (activeFilterMode === 'hard') {
+    const hasFailOrPart = Object.values(c.runsByModel).some(r => 
+      r.review.overall_task === 'failed' || r.review.overall_task === 'partial'
+    );
+    if (!hasFailOrPart) return false;
+  } else if (activeFilterMode === 'unanimous') {
+    const allComp = Object.values(c.runsByModel).every(r => r.review.overall_task === 'complete');
+    if (!allComp) return false;
+  } else if (activeFilterMode === 'multilingual') {
+    if (c.language === 'en-IN') return false;
+  } else if (activeFilterMode === 'artifacts') {
+    if (c.task_type !== 'artifact generation' && !(c.tags || []).includes('chart') && !(c.tags || []).includes('artifact')) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function applyFilters() {
+  const query = document.getElementById('searchInput').value.trim();
+  const cat = document.getElementById('categoryFilter').value;
+  const lang = document.getElementById('languageFilter').value;
+
+  if (activeView === 'matrix') {
+    const filteredCases = uniqueCases.filter(c => caseMatchesFilters(c, query, cat, lang));
+    renderMatrixRows(filteredCases);
+    document.getElementById('resultCount').textContent = `Showing ${filteredCases.length} of ${uniqueCases.length} cases`;
+    document.getElementById('emptyState').style.display = filteredCases.length === 0 ? 'block' : 'none';
+  } else {
+    const model = document.getElementById('modelFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const filteredRuns = allRuns.filter(r => {
+      const parentCase = uniqueCaseMap.get(r.case_id);
+      if (!parentCase || !caseMatchesFilters(parentCase, query, cat, lang)) return false;
+      if (model && r.model !== model) return false;
+      if (status && r.review.overall_task !== status) return false;
+      return true;
+    });
+    renderListRows(filteredRuns);
+    document.getElementById('resultCount').textContent = `Showing ${filteredRuns.length} of ${allRuns.length} runs`;
+    document.getElementById('emptyState').style.display = filteredRuns.length === 0 ? 'block' : 'none';
+  }
+}
+
+function renderMatrixRows(cases) {
+  const tbody = document.getElementById('matrixTableBody');
+  tbody.innerHTML = '';
+
+  cases.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.addEventListener('click', () => openCaseModal(c.case_id));
+
+    // Case Info Column
+    const tdCase = document.createElement('td');
+    tdCase.className = 'case-cell';
+    tdCase.innerHTML = `
+      <div class="case-title">${c.case_id}</div>
+      <div class="case-prompt" title="${c.question.replace(/"/g, '&quot;')}">${c.question}</div>
+      <div class="case-tags">
+        <span class="tag-badge">${c.language}</span>
+        <span class="tag-badge">${c.task_type}</span>
+      </div>
+    `;
+    tr.appendChild(tdCase);
+
+    // 4 Model Outcome Columns
+    models.forEach(m => {
+      const td = document.createElement('td');
+      const r = c.runsByModel[m.model];
+      if (!r) {
+        td.innerHTML = '<span class="badge-pill b-unresolved">—</span>';
+      } else {
+        const outcome = r.review.overall_task;
+        const cellBox = document.createElement('div');
+        cellBox.className = 'model-outcome-cell';
+        cellBox.title = `Click to inspect: ${r.review.comment || ''}`;
+        cellBox.innerHTML = `
+          <div><span class="badge-pill b-${outcome}">${outcome}</span></div>
+          <div class="cell-meta">
+            <span>${fmt(r.query_seconds)}s</span>
+            <span>·</span>
+            <span>${fmt(r.tokens / 1000, 1)}k tok</span>
+          </div>
+        `;
+        td.appendChild(cellBox);
+      }
+      tr.appendChild(td);
+    });
+
+    // Action Column
+    const tdAction = document.createElement('td');
+    tdAction.style.textAlign = 'right';
+    const btn = document.createElement('button');
+    btn.className = 'btn-inspect';
+    btn.type = 'button';
+    btn.textContent = 'Compare';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openCaseModal(c.case_id);
+    });
+    tdAction.appendChild(btn);
+    tr.appendChild(tdAction);
+
+    tbody.appendChild(tr);
+  });
+}
+
+function renderListRows(runs) {
+  const tbody = document.getElementById('runsTableBody');
+  tbody.innerHTML = '';
+
+  runs.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.addEventListener('click', () => openCaseModal(r.case_id));
+    tr.innerHTML = `
+      <td>
+        <div style="font-weight: 700; font-family: var(--font-mono);">${r.case_id}</div>
+        <div style="font-size: 11px; color: var(--text-muted); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${r.question}</div>
+      </td>
+      <td style="font-weight: 600; font-family: var(--font-mono);">${r.model}</td>
+      <td><span class="tag-badge">${r.task_type}</span></td>
+      <td style="font-family: var(--font-mono);">${r.language}</td>
+      <td><span class="badge-pill b-${r.review.overall_task}">${r.review.overall_task}</span></td>
+      <td><span class="badge-pill b-auto">${r.auto_status}</span></td>
+      <td style="font-family: var(--font-mono);">${fmt(r.query_seconds)}s</td>
+      <td style="font-family: var(--font-mono);">${fmt(r.tokens, 0)}</td>
+      <td style="font-family: var(--font-mono);">${r.tool_calls?.length || 0}</td>
+      <td style="text-align: right;">
+        <button class="btn-inspect" type="button">Compare</button>
+      </td>
+    `;
+    const btn = tr.querySelector('.btn-inspect');
+    if (btn) {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openCaseModal(r.case_id);
+      });
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+// Markdown rendering
+function appendInline(parent, text) {
+  const pattern = /(`[^`\n]+`|\*\*.+?\*\*|\*[^*\n]+\*|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g;
+  let last = 0, match;
+  while ((match = pattern.exec(text))) {
+    if (match.index > last) parent.append(document.createTextNode(text.slice(last, match.index)));
+    const token = match[0];
+    let node;
+    if (token.startsWith('`')) {
+      node = document.createElement('code');
+      node.textContent = token.slice(1, -1);
+    } else if (token.startsWith('**')) {
+      node = document.createElement('strong');
+      node.textContent = token.slice(2, -2);
+    } else if (token.startsWith('*')) {
+      node = document.createElement('em');
+      node.textContent = token.slice(1, -1);
+    } else {
+      const link = /^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/.exec(token);
+      if (link) {
+        node = document.createElement('a');
+        node.textContent = link[1];
+        node.href = link[2];
+        node.target = '_blank';
+        node.rel = 'noopener noreferrer';
+      }
+    }
+    if (node) parent.append(node);
+    last = pattern.lastIndex;
+  }
+  if (last < text.length) parent.append(document.createTextNode(text.slice(last)));
+}
+
+function markdownTableCells(line) {
+  let val = line.trim();
+  if (val.startsWith('|')) val = val.slice(1);
+  if (val.endsWith('|')) val = val.slice(0, -1);
+  return val.split(/(?<!\\)\|/).map(x => x.replace(/\\\|/g, '|').trim());
+}
+
+function renderMarkdown(text) {
+  const root = document.createElement('div');
+  root.className = 'rendered-markdown';
+  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
+  let paragraph = [], i = 0;
+
+  const flush = () => {
+    if (!paragraph.length) return;
+    const p = document.createElement('p');
+    appendInline(p, paragraph.join(' '));
+    root.append(p);
+    paragraph = [];
+  };
+
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^\s*```/.test(line)) {
+      flush();
+      const code = [];
+      i++;
+      while (i < lines.length && !/^\s*```/.test(lines[i])) code.push(lines[i++]);
+      if (i < lines.length) i++;
+      const pre = document.createElement('pre');
+      const c = document.createElement('code');
+      c.textContent = code.join('\n');
+      pre.append(c);
+      root.append(pre);
+      continue;
+    }
+    if (!line.trim()) {
+      flush();
+      i++;
+      continue;
+    }
+    const heading = /^\s{0,3}(#{1,4})\s+(.+)$/.exec(line);
+    if (heading) {
+      flush();
+      const level = Math.min(heading[1].length, 4);
+      const h = document.createElement(level <= 2 ? 'h3' : 'h4');
+      appendInline(h, heading[2].replace(/\s+#+\s*$/, ''));
+      root.append(h);
+      i++;
+      continue;
+    }
+    if (i + 1 < lines.length && line.includes('|') && /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[i + 1])) {
+      flush();
+      const heads = markdownTableCells(line);
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const tr = document.createElement('tr');
+      heads.forEach(x => {
+        const th = document.createElement('th');
+        appendInline(th, x);
+        tr.append(th);
+      });
+      thead.append(tr);
+      table.append(thead);
+      i += 2;
+      const tbody = document.createElement('tbody');
+      while (i < lines.length && lines[i].includes('|') && lines[i].trim()) {
+        const cells = markdownTableCells(lines[i]);
+        const row = document.createElement('tr');
+        heads.forEach((_, col) => {
+          const td = document.createElement('td');
+          appendInline(td, cells[col] || '');
+          row.append(td);
+        });
+        tbody.append(row);
+        i++;
+      }
+      table.append(tbody);
+      root.append(table);
+      continue;
+    }
+    const list = /^\s*(?:[-+*]\s+|\d+[.)]\s+)/.exec(line);
+    if (list) {
+      flush();
+      const ordered = /^\s*\d+[.)]\s+/.test(line);
+      const items = [];
+      while (i < lines.length) {
+        const m = /^\s*(?:[-+*]\s+|\d+[.)]\s+)(.*)$/.exec(lines[i]);
+        if (!m) break;
+        items.push(m[1]);
+        i++;
+      }
+      const listEl = document.createElement(ordered ? 'ol' : 'ul');
+      items.forEach(x => {
+        const li = document.createElement('li');
+        appendInline(li, x);
+        listEl.append(li);
+      });
+      root.append(listEl);
+      continue;
+    }
+    paragraph.push(line.trim());
+    i++;
+  }
+  flush();
+  return root;
+}
+
+function safeArtifactHref(a) {
+  const p = a.cached_path || '';
+  return /^\.\.\/\.\.\/runs\/real-v1-krutrim-matrix-2026-10-05\/model-[a-f0-9]+\/artifacts\/[A-Za-z0-9._-]+$/.test(p) ? p : null;
+}
+
+// Deep Comparison Modal
+function openCaseModal(caseId) {
+  const caseObj = uniqueCaseMap.get(caseId);
+  if (!caseObj) return;
+
+  const modal = document.getElementById('caseModal');
+  document.getElementById('caseModalTitle').textContent = caseId;
+  document.getElementById('caseModalSub').textContent = `${caseObj.task_type} · ${caseObj.language} · ${(caseObj.tags || []).join(' · ')}`;
+  document.getElementById('modalQuestionText').textContent = (caseObj.question || '').trim();
+
+  const grid = document.getElementById('modalAnswerGrid');
+  grid.innerHTML = '';
+
+  models.forEach(m => {
+    const r = caseObj.runsByModel[m.model];
+    if (!r) return;
+
+    const panel = document.createElement('div');
+    panel.className = 'answer-panel';
+
+    const header = document.createElement('div');
+    header.className = 'answer-header';
+    header.innerHTML = `
+      <div class="answer-model-name">${r.model}</div>
+      <div class="answer-chips">
+        <span class="badge-pill b-${r.review.overall_task}">${r.review.overall_task}</span>
+        <span class="badge-pill b-auto">${r.auto_status}</span>
+        <span class="badge-pill b-${r.run_state === 'completed' ? 'complete' : 'failed'}">${r.run_state || 'unknown'}</span>
+      </div>
+    `;
+    panel.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'answer-content';
+
+    // 1. Answer text
+    body.appendChild(renderMarkdown(r.answer_text || '(No final answer recorded)'));
+
+    // 2. Luna review commentary
+    const reviewBox = document.createElement('div');
+    reviewBox.className = `review-callout ${r.review.overall_task}`;
+    reviewBox.innerHTML = `
+      <div class="review-title">Evaluator Review · ${r.review.overall_task}</div>
+      <div>${r.review.comment || 'No specific reviewer note.'}</div>
+      ${(r.review.reasons && r.review.reasons.length) ? `<ul class="review-reasons">${r.review.reasons.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+    `;
+    body.appendChild(reviewBox);
+
+    // 3. Telemetry Box
+    const telem = document.createElement('div');
+    telem.className = 'telemetry-box';
+    telem.innerHTML = `
+      <div><strong>Query:</strong> ${fmt(r.query_seconds)}s | <strong>Queue:</strong> ${fmt(r.queue_seconds)}s | <strong>Ingestion:</strong> ${fmt(r.ingestion_seconds)}s</div>
+      <div><strong>Tokens:</strong> ${fmt(r.tokens, 0)} (${r.usage_coverage?.usage_status || 'measured'})</div>
+      <div><strong>Model Calls:</strong> ${fmt(r.usage_coverage?.attempts || r.model_calls, 0)} attempts, ${fmt(r.usage_coverage?.responses || 0, 0)} responses</div>
+      <div style="word-break: break-all;"><strong>Answer Hash:</strong> ${r.answer_hash.slice(0, 24)}...</div>
+    `;
+    body.appendChild(telem);
+
+    // 4. Tool Calls Trace
+    const traceSec = document.createElement('div');
+    traceSec.className = 'trace-section';
+    traceSec.innerHTML = `<div class="trace-title">Tool Calls (${r.tool_calls?.length || 0})</div>`;
+    const traceList = document.createElement('ul');
+    traceList.className = 'trace-list';
+    if (r.tool_calls && r.tool_calls.length) {
+      r.tool_calls.forEach((t, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <div class="tool-header">${idx + 1}. ${t.name || 'tool'} (${t.decision || t.status || 'executed'})</div>
+          ${t.result?.summary ? `<div class="tool-detail">${t.result.summary}</div>` : ''}
+          ${t.result?.error ? `<div class="tool-detail" style="color: var(--failed);">${t.result.error.message || 'error'}</div>` : ''}
+        `;
+        traceList.appendChild(li);
+      });
+    } else {
+      traceList.innerHTML = '<li style="color: var(--text-muted);">No persisted tool execution records.</li>';
+    }
+    traceSec.appendChild(traceList);
+    body.appendChild(traceSec);
+
+    // 5. Artifacts
+    if (r.artifacts && r.artifacts.length) {
+      const artSec = document.createElement('div');
+      artSec.className = 'trace-section';
+      artSec.innerHTML = `<div class="trace-title">Generated Artifacts (${r.artifacts.length})</div>`;
+      r.artifacts.forEach(a => {
+        const href = safeArtifactHref(a);
+        const artItem = document.createElement('div');
+        artItem.style.fontSize = '11px';
+        artItem.style.marginTop = '4px';
+        if (href) {
+          const link = document.createElement('a');
+          link.href = href;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = `${a.display_name || a.id} (${a.media_type || 'file'})`;
+          artItem.appendChild(link);
+          if (a.media_type === 'image/png' && a.cache_sha256_matches_expected) {
+            const img = document.createElement('img');
+            img.src = href;
+            img.className = 'artifact-img';
+            img.alt = a.display_name || a.id;
+            artItem.appendChild(img);
+          }
+        } else {
+          artItem.textContent = `${a.display_name || a.id} (${a.media_type || 'file'})`;
+        }
+        artSec.appendChild(artItem);
+      });
+      body.appendChild(artSec);
+    }
+
+    // 6. Source Report Links
+    const links = document.createElement('div');
+    links.className = 'links-row';
+    if (r.automatic_report_ref) {
+      links.innerHTML += `<a href="${r.automatic_report_ref}" target="_blank" rel="noopener noreferrer">Auto Report</a>`;
+    }
+    if (r.answer_review_ref) {
+      links.innerHTML += ` · <a href="${r.answer_review_ref}" target="_blank" rel="noopener noreferrer">Review JSON</a>`;
+    }
+    if (r.model_slug) {
+      links.innerHTML += ` · <a href="${r.model_slug}/reviewed-report.json" target="_blank" rel="noopener noreferrer">Full Reviewed Report</a>`;
+    }
+    body.appendChild(links);
+
+    panel.appendChild(body);
+    grid.appendChild(panel);
+  });
+
+  modal.showModal();
+}
+
+document.getElementById('closeCaseModal').addEventListener('click', () => {
+  document.getElementById('caseModal').close();
+});
+document.getElementById('caseModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('caseModal')) {
+    document.getElementById('caseModal').close();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const cModal = document.getElementById('caseModal');
+    if (cModal && cModal.open) cModal.close();
+    const sModal = document.getElementById('scopeModal');
+    if (sModal && sModal.open) sModal.close();
+  }
+});
+
+// Initialization
+initScopeModal();
+renderModelCards();
+renderAnalyticsCharts();
+renderSummaryTable();
+initFilters();
+applyFilters();
 </script>
 </body>
 </html>"""

@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "models": [
+    {
+      "model": "gpt-oss-120b",
+      "experiment_id": "30e222dd0fe7f47c-d36c1e55",
+      "trials": 30,
+      "statuses": {
+        "failed": 7,
+        "needs_review": 23
+      },
+      "run_states": {
+        "completed": 27,
+        "failed": 2,
+        "awaiting_clarification": 1
+      },
+      "completed_run_check_failures": 5,
+      "execution_failures": 2,
+      "wall_seconds": 287.466262,
+      "query_p50_seconds": 18.9547955,
+      "query_p95_seconds": 52.44571009999994,
+      "model_calls": {
+        "measured_count": 30,
+        "total": 203,
+        "unavailable_count": 0
+      },
+      "tokens": {
+        "measured_count": 30,
+        "total": 1208613,
+        "unavailable_count": 0
+      },
+      "tool_names": {
+        "list_sources": 19,
+        "source_passage": 12,
+        "inspect_artifact": 19,
+        "search_documents": 69,
+        "dataset_profile": 14,
+        "run_sql": 17,
+        "inspect_schema": 1,
+        "summarize_documents": 3,
+        "list_artifacts": 3,
+        "analyze_data": 1,
+        "run_python": 4
+      },
+      "model_errors": {
+        "model_provider_error": 1,
+        "invalid_model_response": 2
+      },
+      "profile_mismatch_count": 0,
+      "audit_export_count": 30
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "experiment_id": "13e74cf091ac1d6b-38acabe0",
+      "trials": 30,
+      "statuses": {
+        "failed": 9,
+        "needs_review": 21
+      },
+      "run_states": {
+        "completed": 28,
+        "awaiting_clarification": 2
+      },
+      "completed_run_check_failures": 9,
+      "execution_failures": 0,
+      "wall_seconds": 211.095868,
+      "query_p50_seconds": 6.1926805,
+      "query_p95_seconds": 13.060706599999998,
+      "model_calls": {
+        "measured_count": 30,
+        "total": 138,
+        "unavailable_count": 0
+      },
+      "tokens": {
+        "measured_count": 30,
+        "total": 945337,
+        "unavailable_count": 0
+      },
+      "tool_names": {
+        "list_sources": 15,
+        "summarize_documents": 14,
+        "dataset_profile": 19,
+        "run_sql": 19,
+        "search_documents": 17,
+        "analyze_data": 2,
+        "run_python": 3,
+        "finish_answer": 1
+      },
+      "model_errors": {},
+      "profile_mismatch_count": 0,
+      "audit_export_count": 30
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "experiment_id": "19e10421bd5a2808-c1b97af5",
+      "trials": 30,
+      "statuses": {
+        "failed": 6,
+        "model_error": 1,
+        "needs_review": 23
+      },
+      "run_states": {
+        "completed": 27,
+        "budget_exhausted": 1,
+        "awaiting_clarification": 1,
+        "failed": 1
+      },
+      "completed_run_check_failures": 5,
+      "execution_failures": 2,
+      "wall_seconds": 329.584451,
+      "query_p50_seconds": 8.4533285,
+      "query_p95_seconds": 22.356482149999977,
+      "model_calls": {
+        "measured_count": 30,
+        "total": 173,
+        "unavailable_count": 0
+      },
+      "tokens": {
+        "measured_count": 30,
+        "total": 1227879,
+        "unavailable_count": 0
+      },
+      "tool_names": {
+        "list_sources": 24,
+        "search_documents": 35,
+        "dataset_profile": 18,
+        "run_sql": 22,
+        "finish_answer": 4,
+        "summarize_documents": 7,
+        "run_python": 7,
+        "register_dataset": 1,
+        "inspect_schema": 2,
+        "inspect_artifact": 3,
+        "source_passage": 2
+      },
+      "model_errors": {
+        "budget_exhausted": 1,
+        "invalid_model_response": 1
+      },
+      "profile_mismatch_count": 0,
+      "audit_export_count": 30
+    },
+    {
+      "model": "Qwen3.5-9B",
+      "experiment_id": "c225b5a4afdecf70-c2bab50d",
+      "trials": 30,
+      "statuses": {
+        "failed": 29,
+        "needs_review": 1
+      },
+      "run_states": {
+        "failed": 29,
+        "awaiting_clarification": 1
+      },
+      "completed_run_check_failures": 0,
+      "execution_failures": 29,
+      "wall_seconds": 241.256052,
+      "query_p50_seconds": 14.1625345,
+      "query_p95_seconds": 23.944574849999995,
+      "model_calls": {
+        "measured_count": 30,
+        "total": 60,
+        "unavailable_count": 0
+      },
+      "tokens": {
+        "measured_count": 30,
+        "total": 469204,
+        "unavailable_count": 0
+      },
+      "tool_names": {
+        "list_sources": 18,
+        "list_artifacts": 5,
+        "dataset_profile": 5,
+        "inspect_schema": 3,
+        "search_documents": 11,
+        "sample_rows": 1
+      },
+      "model_errors": {
+        "invalid_model_response": 29
+      },
+      "profile_mismatch_count": 0,
+      "audit_export_count": 30
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "experiment_id": "b212b69cf90f66cc-56166b2e",
+      "trials": 30,
+      "statuses": {
+        "failed": 5,
+        "model_error": 2,
+        "needs_review": 23
+      },
+      "run_states": {
+        "completed": 27,
+        "budget_exhausted": 2,
+        "awaiting_clarification": 1
+      },
+      "completed_run_check_failures": 5,
+      "execution_failures": 2,
+      "wall_seconds": 351.333155,
+      "query_p50_seconds": 11.079448,
+      "query_p95_seconds": 42.56313434999994,
+      "model_calls": {
+        "measured_count": 30,
+        "total": 198,
+        "unavailable_count": 0
+      },
+      "tokens": {
+        "measured_count": 30,
+        "total": 3134999,
+        "unavailable_count": 0
+      },
+      "tool_names": {
+        "list_sources": 24,
+        "list_artifacts": 7,
+        "search_documents": 33,
+        "dataset_profile": 18,
+        "summarize_documents": 19,
+        "run_sql": 33,
+        "finish_answer": 10,
+        "inspect_schema": 9,
+        "inspect_artifact": 4,
+        "sample_rows": 2,
+        "run_python": 7,
+        "register_dataset": 1,
+        "generate_report": 1,
+        "source_passage": 17
+      },
+      "model_errors": {
+        "budget_exhausted": 2
+      },
+      "profile_mismatch_count": 0,
+      "audit_export_count": 30
+    }
+  ],
+  "scope": "One repetition per case, automatic checks only; manual quality review pending. Models sequential, four queries in flight per model. Latency includes shared load. Missing/partial usage remains explicit in detailed reports.",
+  "usage_scope": "Known response token counters, not provider billing totals; failed/interrupted request usage can be unavailable.",
+  "usage_coverage_corrections": [
+    {
+      "model": "gpt-oss-120b",
+      "experiment_id": "30e222dd0fe7f47c-d36c1e55",
+      "case_id": "retail-top-country-en",
+      "run_id": "31594263-602c-4341-b066-aacb3836084e",
+      "answer_hash": "6bf1b9764ae06a302736d375d05830d910e460df327b617bd9838a9eb4a0aafc",
+      "attempts": 9,
+      "responses": 8,
+      "usage_measured_calls": 8,
+      "usage_status": "partial",
+      "known_response_usage": {
+        "prompt_tokens": 31714,
+        "completion_tokens": 1939,
+        "total_tokens": 33653
+      },
+      "original_usage_status": "measured"
+    }
+  ],
+  "provider_http_error_counts": {
+    "500": 1,
+    "429": 0
+  },
+  "retained_audit_exports": 150,
+  "retained_comparison_artifacts": 428,
+  "services_stopped": true,
+  "comparison_review": "AI-assisted Luna review in progress; Qwen3.5-9B excluded from requested interactive comparison."
+}

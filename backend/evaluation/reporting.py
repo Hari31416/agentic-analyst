@@ -66,9 +66,13 @@ def _telemetry_summary(trials: list[dict[str, Any]]) -> dict[str, Any]:
     model_errors: dict[str, int] = {}
     measured_tools = 0
     model_usage: dict[str, int] = {}
+    usage_status_counts: dict[str, int] = {}
     for trial in trials:
         telemetry = trial.get("telemetry")
         if not isinstance(telemetry, dict):
+            usage_status_counts["unrecorded"] = (
+                usage_status_counts.get("unrecorded", 0) + 1
+            )
             continue
         tools = telemetry.get("tool_calls")
         model = telemetry.get("model")
@@ -78,6 +82,12 @@ def _telemetry_summary(trials: list[dict[str, Any]]) -> dict[str, Any]:
             for key, count in (tools.get("error_counts") or {}).items():
                 if isinstance(count, int) and not isinstance(count, bool):
                     tool_errors[key] = tool_errors.get(key, 0) + count
+        usage_status = (
+            str(model.get("usage_status", "unrecorded"))
+            if isinstance(model, dict)
+            else "unrecorded"
+        )
+        usage_status_counts[usage_status] = usage_status_counts.get(usage_status, 0) + 1
         if isinstance(model, dict):
             model_counts += int(model.get("call_count") or 0)
             for key, count in (model.get("error_counts") or {}).items():
@@ -95,6 +105,8 @@ def _telemetry_summary(trials: list[dict[str, Any]]) -> dict[str, Any]:
         "model_call_count": model_counts,
         "model_error_counts": model_errors,
         "model_usage": model_usage or None,
+        "usage_scope": "Known reported response counters; not provider billing totals",
+        "usage_status_counts": usage_status_counts,
     }
 
 

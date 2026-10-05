@@ -572,3 +572,107 @@ async def test_original_hashes_bound_selected_members_not_all_index_metadata(
             )
     finally:
         await client.close()
+
+
+def test_outcome_usage_does_not_imply_failed_attempt_usage_coverage():
+    telemetry = audit_telemetry(
+        {
+            "run": {"outcome": {"model_calls": 2, "usage": {"total_tokens": 42}}},
+            "events": [
+                {
+                    "type": "status",
+                    "payload": {
+                        "message": "Requesting the next action",
+                        "model_calls": 1,
+                    },
+                },
+                {
+                    "type": "model_request_failed",
+                    "payload": {"model_calls": 1, "code": "model_provider_error"},
+                },
+                {
+                    "type": "status",
+                    "payload": {
+                        "message": "Requesting the next action",
+                        "model_calls": 2,
+                    },
+                },
+                {
+                    "type": "model_response_diagnostic",
+                    "payload": {"model_calls": 2, "usage": {"total_tokens": 42}},
+                },
+            ],
+        }
+    )
+    assert telemetry["model"]["usage"] == {"total_tokens": 42}
+    assert telemetry["model"]["usage_measured_calls"] == 1
+    assert telemetry["model"]["usage_status"] == "partial"
+    assert telemetry["model"]["call_count"] == 2
+
+
+def test_aggregate_without_response_events_discloses_unavailable_per_call_coverage():
+    telemetry = audit_telemetry(
+        {"run": {"outcome": {"model_calls": 3, "usage": {"total_tokens": 99}}}}
+    )
+    assert telemetry["model"]["usage_measured_calls"] == 0
+    assert telemetry["model"]["usage_status"] == "reported_aggregate"
+    assert telemetry["model"]["usage"]["total_tokens"] == 99
+
+
+async def test_runner_keeps_partial_response_usage_out_of_aggregate_token_total(
+    tmp_path,
+):
+    server = Server()
+
+    async def handle(request):
+        if request.url.path.endswith("/audit/export"):
+            return httpx.Response(
+                200,
+                json={
+                    "run": {"config": {}},
+                    "tool_calls": [],
+                    "evidence": [],
+                    "artifacts": [],
+                    "events": [
+                        {
+                            "type": "status",
+                            "payload": {
+                                "message": "Requesting the next action",
+                                "model_calls": 1,
+                            },
+                        },
+                        {
+                            "type": "model_response_diagnostic",
+                            "payload": {
+                                "model_calls": 1,
+                                "usage": {"total_tokens": 10},
+                            },
+                        },
+                        {
+                            "type": "status",
+                            "payload": {
+                                "message": "Requesting the next action",
+                                "model_calls": 2,
+                            },
+                        },
+                    ],
+                },
+            )
+        return await server.handle(request)
+
+    client = ApplicationClient(
+        "http://localhost", transport=httpx.MockTransport(handle)
+    )
+    try:
+        result = await run_experiment(
+            [case()],
+            Checkpoint(tmp_path / "checkpoint.json", {}, [case()]),
+            client,
+            tmp_path,
+        )
+        trial = result["trials"][0]
+        assert trial["telemetry"]["model"]["usage"]["total_tokens"] == 10
+        assert trial["telemetry"]["model"]["usage_status"] == "partial"
+        assert trial["tokens"] is None
+    finally:
+        await client.close()

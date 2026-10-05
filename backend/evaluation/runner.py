@@ -327,8 +327,8 @@ def audit_telemetry(audit: dict[str, Any]) -> dict[str, Any]:
         if (value := _safe_count(raw_usage.get(key))) is not None
     }
     usage = outcome_usage or dict(model_usage)
-    if outcome_usage:
-        usage_calls = model_count
+    # An aggregate describes known response usage, not coverage of failed
+    # attempts. Per-call coverage comes only from response diagnostics.
     return {
         "tool_calls": {
             "count": (
@@ -362,7 +362,15 @@ def audit_telemetry(audit: dict[str, Any]) -> dict[str, Any]:
             "usage_status": (
                 "measured"
                 if usage_calls == model_count and usage_calls
-                else "partial" if usage_calls else "unavailable_in_public_audit"
+                else (
+                    "partial"
+                    if usage_calls
+                    else (
+                        "reported_aggregate"
+                        if outcome_usage
+                        else "unavailable_in_public_audit"
+                    )
+                )
             ),
         },
     }
@@ -674,6 +682,8 @@ async def run_experiment(
                         trial["tokens"] = (
                             trial["telemetry"]["model"]["usage"].get("total_tokens")
                             if trial["telemetry"]["model"]["usage"]
+                            and trial["telemetry"]["model"]["usage_status"]
+                            == "measured"
                             else None
                         )
                     hashes = await client.original_hashes(workspace_id, sources)

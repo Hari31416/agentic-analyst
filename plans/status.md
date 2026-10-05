@@ -1132,3 +1132,32 @@ Keep secrets and raw client data out of this file.
   PostgreSQL runtime checks passed, plus the added concurrency-bound test and 26
   focused telemetry/audit checks. Black, full backend/evaluation mypy and diff
   checks passed. No schema migration or phase-10 work.
+
+## 5 October 2026: complete the sequential Krutrim matrix
+
+- Finished 150 real-v1 trials, one per case per model, using the admin account.
+  Models ran sequentially, with four concurrent trials within each model.
+  Wall time per model: GPT OSS 120B 4.79 minutes, Gemma 31B 3.52,
+  Gemma 26B A4B 5.49, Qwen 9B 4.02, Qwen 35B A3B 5.86.
+- Automatic statuses, not reviewed quality scores: OSS 23 needs review/7 failed;
+  Gemma 31B 21 needs review/9 failed; Gemma 26B 23 needs review/6 failed/1
+  model error; Qwen 9B 1 needs review/29 failed; Qwen 35B 23 needs review/5
+  failed/2 model errors. Failed statuses include execution failures as well as
+  calculation/literal/passage/action checks; see retained run states and errors.
+- The 29 Qwen 9B executions returned an empty final response with finish_reason
+  stop after initial tool calls. No HTTP 429 was recorded. One HTTP 500 was
+  retried within the OSS run budget. No model/profile mismatches or audit export
+  truncation were recorded. This does not establish stable model quality or
+  independent human/native-speaker review.
+- Retained 150 public audit exports and 428 downloaded artifacts for the four
+  comparison models under evals/runs/real-v1-krutrim-matrix-2026-10-05/.
+  At the user's request, stopped API, worker pool, sandbox and project Compose
+  infrastructure after all runs and downloads; verified stopped state.
+- Fixed per-attempt usage coverage after the live run: aggregate outcome usage
+  no longer implies measurement of failed attempts. Retained an offline,
+  answer/run-bound telemetry-coverage.json companion, preserving original
+  reports and execution identities. Only OSS retail-top-country-en has partial
+  attempt coverage, with eight measured responses across nine attempts.
+- User requested an interactive Luna comparison and AI labels for needs_review
+  cases, excluding Qwen 9B. Offline review is in progress; original automatic
+  reports remain unchanged. No additional live calls, reruns or phase-10 work.

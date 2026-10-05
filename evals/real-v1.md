@@ -58,7 +58,8 @@ Start the API, worker, sandbox, and required infrastructure as described in the
 project setup. Live runs also require a regular application account. Create one
 through the admin **Users** screen and set its username and password as
 `EVAL_USERNAME` and `EVAL_PASSWORD` in the repository's ignored `.env`. The
-runner reads these settings on startup; no service restart is needed. See
+runner reads these settings on startup; no service restart is needed. A configured
+admin account also works when `EVAL_USERNAME` and `EVAL_PASSWORD` identify it. See
 [authentication setup](../docs/authentication.md#evaluation-and-validation).
 
 List and schema-check the pack without model calls:

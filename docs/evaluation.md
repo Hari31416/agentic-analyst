@@ -1,5 +1,9 @@
 # Evaluation baseline
 
+The optional [real-data pack](../evals/real-v1.md) uses UCI Online Retail and the
+Economic Survey 2023–24. Select its case inventory explicitly; it does not
+replace the synthetic regression baseline or claim reviewed quality thresholds.
+
 The phase 09 first pass lives in `backend/evaluation`, outside production request
 handling. It runs fixture-backed trials through the public workspace, upload,
 chat, audit, artifact and portability APIs. It does not execute a separate mock

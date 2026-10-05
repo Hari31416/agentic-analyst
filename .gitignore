@@ -21,3 +21,7 @@ logs/
 
 # Evaluation checkpoints/traces are local; retain reviewed reports explicitly.
 evals/runs/
+
+# Public real-data evaluation inputs are downloaded/generated locally.
+evals/fixtures/real-v1/raw/
+evals/fixtures/real-v1/derived/

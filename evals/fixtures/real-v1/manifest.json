@@ -1,0 +1,166 @@
+{
+  "version": "real-v1",
+  "downloads_manifest": {
+    "path": "real-v1/downloads.json",
+    "sha256": "81b87f59b1bd9a3ec5277531d03920906640a9a528840b29961c36a05a6a97d5"
+  },
+  "provenance": "Real-source-derived; expected retail values are calculated from the verified original workbook with Decimal. English passage labels are checked against PDF text extraction. Hindi PDF embedded-text limitations and unreviewed language labels are explicitly recorded.",
+  "source_files": {
+    "economic-survey-2023-24-en.pdf": {
+      "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
+      "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+      "bytes": 15387751,
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/echapter.pdf",
+      "archive_member": null,
+      "attribution": "Government of India, Economic Survey 2023-24, identified in the source publication.",
+      "license": "See the dataset or government publication source page for applicable reuse terms."
+    },
+    "economic-survey-2023-24-hi.pdf": {
+      "path": "real-v1/raw/economic-survey-2023-24-hi.pdf",
+      "sha256": "35a0623530efe9b269fa0bdd16dfc1527fe9a1fce74145acdafc6aef188312bd",
+      "bytes": 16263530,
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/hechapter.pdf",
+      "archive_member": null,
+      "attribution": "Government of India, Economic Survey 2023-24, identified in the source publication.",
+      "license": "See the dataset or government publication source page for applicable reuse terms."
+    },
+    "inflation-en.pdf": {
+      "path": "real-v1/raw/inflation-en.pdf",
+      "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+      "bytes": 1447746,
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/eschapter/echap03.pdf",
+      "archive_member": null,
+      "attribution": "Government of India, Economic Survey 2023-24, identified in the source publication.",
+      "license": "See the dataset or government publication source page for applicable reuse terms."
+    },
+    "inflation-hi.pdf": {
+      "path": "real-v1/raw/inflation-hi.pdf",
+      "sha256": "abc156fbbfd568e81b06e8424ff634eddaa123eb8a93630c1bd2812ed2637c35",
+      "bytes": 1575785,
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/eschapter/hechap03.pdf",
+      "archive_member": null,
+      "attribution": "Government of India, Economic Survey 2023-24, identified in the source publication.",
+      "license": "See the dataset or government publication source page for applicable reuse terms."
+    },
+    "online-retail.xlsx": {
+      "path": "real-v1/raw/online-retail.xlsx",
+      "sha256": "43465a06f2ccf7c8b5bd2892bc7defb52f97487934fe93b16ae4c3936424676d",
+      "bytes": 23715344,
+      "url": "https://archive.ics.uci.edu/static/public/352/online+retail.zip",
+      "archive_member": "Online Retail.xlsx",
+      "attribution": "Chen, D. (2015). Online Retail. UCI Machine Learning Repository.",
+      "license": "See the dataset or government publication source page for applicable reuse terms."
+    },
+    "statistical-appendix-en.pdf": {
+      "path": "real-v1/raw/statistical-appendix-en.pdf",
+      "sha256": "2724d440da77b029934d395bc203c0ae50d140870a5f410645e75ac72b6bb83d",
+      "bytes": 3155275,
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/Statistical-Appendix-in-English.pdf",
+      "archive_member": null,
+      "attribution": "Government of India, Economic Survey 2023-24, identified in the source publication.",
+      "license": "See the dataset or government publication source page for applicable reuse terms."
+    },
+    "statistical-appendix-hi.pdf": {
+      "path": "real-v1/raw/statistical-appendix-hi.pdf",
+      "sha256": "6a887afce7228fa6d61684f8c4afe4252cb73778c43e5b61d4474ae38d33f90c",
+      "bytes": 3327655,
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/Statistical-Appendix-in-Hindi.pdf",
+      "archive_member": null,
+      "attribution": "Government of India, Economic Survey 2023-24, identified in the source publication.",
+      "license": "See the dataset or government publication source page for applicable reuse terms."
+    }
+  },
+  "retail_slice": {
+    "row_count": 35147,
+    "columns": [
+      "InvoiceNo",
+      "StockCode",
+      "Description",
+      "Quantity",
+      "InvoiceDate",
+      "UnitPrice",
+      "CustomerID",
+      "Country"
+    ],
+    "path": "real-v1/derived/online-retail-2011-01.csv",
+    "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+    "date_window": "2011-01-01 through 2011-01-31 inclusive",
+    "gold": {
+      "qualifying_rows": "34306",
+      "sales_gbp": "691364.56",
+      "qualifying_units": "387785",
+      "invoice_count": "1086",
+      "country_count": "22",
+      "customer_count": "741",
+      "missing_customer_lines": "13077",
+      "missing_customer_percent": "38.11869643794088497638896986",
+      "top_country": "United Kingdom",
+      "top_country_sales_gbp": "561289.98",
+      "top_five_countries": [
+        [
+          "United Kingdom",
+          "561289.98"
+        ],
+        [
+          "Netherlands",
+          "26611.16"
+        ],
+        [
+          "EIRE",
+          "21904.19"
+        ],
+        [
+          "France",
+          "17740.12"
+        ],
+        [
+          "Germany",
+          "16910.84"
+        ]
+      ],
+      "missing_customer_sales_gbp": "121919.52",
+      "country_sales": {
+        "United Kingdom": "561289.98",
+        "Sweden": "3486.32",
+        "France": "17740.12",
+        "Australia": "9017.71",
+        "Germany": "16910.84",
+        "Spain": "10086.09",
+        "Portugal": "4055.71",
+        "EIRE": "21904.19",
+        "Israel": "379.84",
+        "Cyprus": "547.50",
+        "Belgium": "1200.20",
+        "Italy": "2402.51",
+        "Netherlands": "26611.16",
+        "Poland": "613.22",
+        "Switzerland": "4231.23",
+        "Finland": "889.02",
+        "Greece": "2661.24",
+        "Hong Kong": "2439.76",
+        "Singapore": "2053.07",
+        "Iceland": "475.39",
+        "Channel Islands": "675.58",
+        "Lebanon": "1693.88"
+      },
+      "cancelled_rows": "701",
+      "negative_quantity_rows": "797",
+      "negative_price_rows": "0"
+    }
+  },
+  "authored_rules": {
+    "path": "real-v1/derived/retail-analysis-rules.txt",
+    "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276"
+  },
+  "coverage": {
+    "total_cases": 30,
+    "retail_cases": 20,
+    "survey_cases": 10,
+    "document_numeric_calculations": "Narrative numeric claims are not scored as SQL values; review prose and page context manually.",
+    "judge_calibration": "not included",
+    "multi_turn": "not supported by case schema",
+    "OCR": "descriptive/manual only; Hindi embedded-text extraction is garbled in places",
+    "language_quality": "requires human review, including Hindi and code-switched cases",
+    "automatic_metric_limits": "Top-k category/value lists, chart correctness, clarification quality, passage page number, and prose factuality need manual review."
+  }
+}

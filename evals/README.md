@@ -1,5 +1,9 @@
 # Synthetic benchmark fixtures
 
+For the downloaded UCI Online Retail and Economic Survey 2023–24 evaluation
+pack, see [real-data cases](real-v1.md). The synthetic pack below remains the
+default regression baseline.
+
 `fixtures/v1` is a versioned, developer-only synthetic pack. The records are
 invented and do not represent real people. CSV and XLSX contain the same five
 applications; PostgreSQL and MySQL scripts seed the same records into the

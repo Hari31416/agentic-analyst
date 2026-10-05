@@ -1,0 +1,1864 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "schema_version": 1,
+      "id": "retail-jan-sales-en",
+      "question": "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite calculation evidence and state GBP. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp, qualifying_rows, invoice_count.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "sql",
+        "aggregation"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "sales_gbp",
+            "value": "691364.56",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "qualifying_rows",
+            "value": "34306",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "invoice_count",
+            "value": "1086",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-distinct-countries",
+      "question": "Apply the attached rules and return country_count, the number of distinct countries with qualifying sales in January 2011. Return the final numeric results together in one SQL/analysis result row with these column names: country_count.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "distinct",
+        "sql"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "country_count",
+            "value": "22",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Distinct country count after row filters."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-customer-null-en",
+      "question": "Among qualifying January 2011 invoice lines, return missing_customer_lines and missing_customer_percent. Use all qualifying lines as the percentage denominator. Return the final numeric results together in one SQL/analysis result row with these column names: missing_customer_lines, missing_customer_percent.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "nulls",
+        "aggregation"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "missing_customer_lines",
+            "value": "13077",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "missing_customer_percent",
+            "value": "38.12",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Denominator is qualifying invoice lines, not distinct invoices or all raw rows. State percentage units."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-top-country-en",
+      "question": "Which country has the highest qualifying sales in January 2011? Return a one-row aggregate with columns top_country and top_country_sales_gbp. Return the final numeric results together in one SQL/analysis result row with these column names: top_country_sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "groupby",
+        "ranking"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "top_country_sales_gbp",
+            "value": "561289.98",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "expected_category": "United Kingdom",
+          "manual_review": "The runner checks the sales amount; manually check the country category and its ordering."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-cancellations",
+      "question": "Return cancelled_rows for all raw January 2011 rows whose invoice number begins with C. In the same response return qualifying sales as sales_gbp after applying all attached rules. Return the final numeric results together in one SQL/analysis result row with these column names: cancelled_rows, sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "filters",
+        "cancellations"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "cancelled_rows",
+            "value": "701",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "sales_gbp",
+            "value": "691364.56",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Cancellation count uses raw month rows; sales applies all three rules."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-sales-chart-csv",
+      "question": "Calculate qualifying sales by country for January 2011. Save the grouped results as CSV and create a labelled bar chart of the top five countries in GBP.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "artifact",
+        "chart",
+        "csv"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [],
+        "artifacts": [
+          {
+            "media_type": "text/csv"
+          },
+          {
+            "media_type": "image/png"
+          }
+        ],
+        "rubric": {
+          "expected_ordered_country_sales": [
+            [
+              "United Kingdom",
+              "561289.98"
+            ],
+            [
+              "Netherlands",
+              "26611.16"
+            ],
+            [
+              "EIRE",
+              "21904.19"
+            ],
+            [
+              "France",
+              "17740.12"
+            ],
+            [
+              "Germany",
+              "16910.84"
+            ]
+          ],
+          "manual_review": "Artifact type/presence is checked by the runner; inspect CSV values, top-five order, and chart labels manually."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-revenue-hindi",
+      "question": "संलग्न नियमों के अनुसार जनवरी 2011 में qualifying sales निकालें। एक aggregate row में sales_gbp, qualifying_rows और invoice_count दें। अंतिम संख्यात्मक परिणाम एक ही SQL/analysis परिणाम पंक्ति में दें। इन कॉलम नामों का उपयोग करें: sales_gbp, qualifying_rows, invoice_count।",
+      "language": "hi-IN",
+      "tags": [
+        "retail",
+        "hindi",
+        "aggregation"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "sales_gbp",
+            "value": "691364.56",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "qualifying_rows",
+            "value": "34306",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "invoice_count",
+            "value": "1086",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Native-speaker review is required for Hindi correctness and terminology."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-codeswitch-top-country",
+      "question": "Jan 2011 mein rules apply karke highest qualifying sales wala country batayein; us country ki sales GBP mein aur sabhi qualifying rows se overall distinct invoice count bhi dein. Final numeric results ek hi SQL/analysis result row mein dein, in column names ke saath: top_country_sales_gbp, invoice_count.",
+      "language": "hi-Latn",
+      "tags": [
+        "retail",
+        "code-switch",
+        "aggregation"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "top_country_sales_gbp",
+            "value": "561289.98",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "invoice_count",
+            "value": "1086",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "expected_category": "United Kingdom",
+          "manual_review": "Transliterated Hindi/English code-switching needs human review."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-mixed-rule-retrieval",
+      "question": "Find the row inclusion rules in the attached note, then return a one-row aggregate with sales_gbp for January 2011. Cite the rules and calculation evidence. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "mixed-source",
+        "retrieval",
+        "calculation"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        },
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "sales_gbp",
+            "value": "691364.56",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "InvoiceNo does not begin with C"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Verify the retrieved rule is applied to the data."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-missing-cost-unsupported",
+      "question": "What were gross profit and profit margin in January 2011? The selected source contains sales information only. Ask for cost data and do not infer costs or margins.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "unsupported",
+        "abstention"
+      ],
+      "answerability": "unsupported",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "The runner checks clarification status; manually verify no invented profit/margin is given."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-lines-vs-invoices",
+      "question": "Return distinct invoice_count and qualifying_rows for January 2011 under the attached rules. Briefly explain the difference between invoice count and invoice-line count. Return the final numeric results together in one SQL/analysis result row with these column names: invoice_count, qualifying_rows.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "grain",
+        "distinct"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "invoice_count",
+            "value": "1086",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "qualifying_rows",
+            "value": "34306",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check distinction between row grain and invoice grain."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-units-sold",
+      "question": "Using the attached rules, return the sum as qualifying_units: total quantity from qualifying January 2011 invoice lines. Return the final numeric results together in one SQL/analysis result row with these column names: qualifying_units.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "sum",
+        "units"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "qualifying_units",
+            "value": "387785",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check filters and describe the result as items/units."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-missing-customer-sales",
+      "question": "Return missing_customer_sales_gbp and sales_gbp for January 2011 under the attached rules. Use the two values to report what share of qualifying sales value comes from rows with a missing CustomerID. Return the final numeric results together in one SQL/analysis result row with these column names: missing_customer_sales_gbp, sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "nulls",
+        "ratio"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "missing_customer_sales_gbp",
+            "value": "121919.52",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "sales_gbp",
+            "value": "691364.56",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Do not impute customer identity. Check the ratio uses qualifying sales value."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-top-five",
+      "question": "Return the five countries with the largest qualifying sales in January 2011, ordered highest to lowest, with each value in GBP.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "ranking",
+        "top-k"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "expected_ordered_country_sales": [
+            [
+              "United Kingdom",
+              "561289.98"
+            ],
+            [
+              "Netherlands",
+              "26611.16"
+            ],
+            [
+              "EIRE",
+              "21904.19"
+            ],
+            [
+              "France",
+              "17740.12"
+            ],
+            [
+              "Germany",
+              "16910.84"
+            ]
+          ],
+          "manual_review": "The case schema cannot score per-category grouped values; compare names, order, and amounts with manifest."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-hindi-english-rules",
+      "question": "Apply the attached English rules to January 2011. योग्य rows की count और sales_gbp बताइए; missing CustomerID को missing ही रखें. अंतिम संख्यात्मक परिणाम एक ही SQL/analysis परिणाम पंक्ति में दें। इन कॉलम नामों का उपयोग करें: qualifying_rows, sales_gbp।",
+      "language": "hi-IN",
+      "tags": [
+        "retail",
+        "code-switch",
+        "filters",
+        "nulls"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "qualifying_rows",
+            "value": "34306",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "sales_gbp",
+            "value": "691364.56",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Review transliterated/code-switched language and missing-value treatment."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-export-and-chart-hi",
+      "question": "संलग्न नियमों के अनुसार जनवरी 2011 में देश के अनुसार qualifying sales निकालें। CSV सहेजें और शीर्ष पाँच देशों का GBP में नामांकित bar chart बनाएँ।",
+      "language": "hi-IN",
+      "tags": [
+        "retail",
+        "hindi",
+        "artifact",
+        "chart",
+        "csv"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [],
+        "artifacts": [
+          {
+            "media_type": "text/csv"
+          },
+          {
+            "media_type": "image/png"
+          }
+        ],
+        "rubric": {
+          "manual_review": "Inspect exported values and chart labels; language quality needs a native speaker."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-cancellation-only-count",
+      "question": "Return cancelled_rows: the count of raw January 2011 rows whose InvoiceNo begins with C, without applying other filters. Return the final numeric results together in one SQL/analysis result row with these column names: cancelled_rows.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "filter",
+        "cancellations"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "cancelled_rows",
+            "value": "701",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Count raw rows; no other filters apply."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-distinct-customer-count",
+      "question": "After applying the attached rules, return customer_count, the count of distinct non-missing customers with qualifying January 2011 invoice lines. Return the final numeric results together in one SQL/analysis result row with these column names: customer_count.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "distinct",
+        "nulls"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "customer_count",
+            "value": "741",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Distinct count excludes missing CustomerID."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-netherlands-sales",
+      "question": "Using the attached rules, calculate qualifying January 2011 sales for Country = Netherlands. Return one aggregate value in a column named sales_gbp. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "filtered-aggregation",
+        "country"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [
+          {
+            "key": "sales_gbp",
+            "value": "26611.16",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Verify country filter and the three inclusion rules."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-scope-clarification",
+      "question": "Give total qualifying sales for all of 2011. If this source covers January only, ask whether I want January's total or can provide the remaining months.",
+      "language": "en-IN",
+      "tags": [
+        "retail",
+        "ambiguous",
+        "scope"
+      ],
+      "answerability": "ambiguous",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "real-v1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Verify temporal coverage is clarified; scorer only checks clarification status."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-fy24-retail-inflation-en",
+      "question": "What retail inflation did India record in FY24, and how does the Survey characterize that level relative to the Covid-19 pandemic? Cite the chapter passage and preserve the percentage unit.",
+      "language": "en-IN",
+      "tags": [
+        "survey",
+        "inflation",
+        "numeric-claim",
+        "retrieval"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "retail inflation at 5.4 per cent in FY24"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "The 5.4 per cent claim is supported by this phrase; manually verify page/paragraph and context.",
+          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-fy24-inflation-hi-query-en-source",
+      "question": "FY24 में भारत की खुदरा मुद्रास्फीति कितनी थी? Economic Survey के अंग्रेज़ी अध्याय से साक्ष्य दें और प्रतिशत इकाई बनाए रखें।",
+      "language": "hi-IN",
+      "tags": [
+        "survey",
+        "inflation",
+        "hindi-query",
+        "cross-language"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "retail inflation at 5.4 per cent in FY24"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Verify Hindi meaning, 5.4 per cent, FY24 scope, and citation against English source."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-inflation-drivers-en",
+      "question": "What factors does the opening summary of the inflation chapter associate with price pressures in FY22 and FY23? Cite the passage and distinguish external supply/commodity factors from food-price conditions.",
+      "language": "en-IN",
+      "tags": [
+        "survey",
+        "inflation",
+        "causal-language",
+        "retrieval"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "Food prices were affected by adverse weather conditions in the last two years"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Review all opening-page factors without overclaiming causation.",
+          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-inflation-policy-measures-en",
+      "question": "Which government measures does the chapter say helped mitigate food inflation? Cite the passage and list only the measures named there.",
+      "language": "en-IN",
+      "tags": [
+        "survey",
+        "inflation",
+        "list-extraction"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "dynamic stock management, open market operations"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Verify the entire list against the full sentence.",
+          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-inflation-hi-source",
+      "question": "इस हिंदी अध्याय के अनुसार FY24 में खुदरा मुद्रास्फीति और खाद्य मुद्रास्फीति के बारे में क्या कहा गया है? मुद्रास्फीति अध्याय में मूल साक्ष्य दें।",
+      "language": "hi-IN",
+      "tags": [
+        "survey",
+        "inflation",
+        "hindi-source",
+        "ocr-descriptive"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation-hi",
+          "name": "inflation-hi.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-hi.pdf",
+          "sha256": "abc156fbbfd568e81b06e8424ff634eddaa123eb8a93630c1bd2812ed2637c35",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Hindi PDF is visually legible, but embedded extraction uses legacy glyphs. Review rendered page and cited evidence manually; no garbled-text gold label."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-summary-vs-chapter",
+      "question": "Compare the inflation chapter in the full Economic Survey PDF with the standalone inflation chapter on the FY24 retail inflation figure. Cite both sources and explain whether they agree.",
+      "language": "en-IN",
+      "tags": [
+        "survey",
+        "mixed-source",
+        "cross-document",
+        "retrieval"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "survey",
+          "name": "economic-survey-2023-24-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
+          "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+          "version": "real-v1"
+        },
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "survey",
+            "contains": "retail inflation at 5.4 per cent in FY24"
+          },
+          {
+            "source_alias": "inflation",
+            "contains": "retail inflation at 5.4 per cent in FY24"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Verify both documents are cited for the same FY24 measure and period."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-inflation-hi-cross-language",
+      "question": "English inflation chapter में FY24 के core inflation के बारे में क्या निष्कर्ष है? उद्धरण और chapter page दें।",
+      "language": "hi-IN",
+      "tags": [
+        "survey",
+        "hindi-query",
+        "code-switch",
+        "cross-language"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "core inflation to a four-year low in FY24"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Human review required for code-switched Hindi and exact core-inflation claim."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-hindi-source-search-en",
+      "question": "Search the Hindi Economic Survey for the section about prices and inflation, then report one clearly supported FY24 statement in English with a page citation.",
+      "language": "en-IN",
+      "tags": [
+        "survey",
+        "hindi-source",
+        "cross-language",
+        "ocr-descriptive"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "survey-hi",
+          "name": "economic-survey-2023-24-hi.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/economic-survey-2023-24-hi.pdf",
+          "sha256": "35a0623530efe9b269fa0bdd16dfc1527fe9a1fce74145acdafc6aef188312bd",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Hindi original has legacy glyph encoding in embedded text; compare retrieval and citation with the rendered source."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-appendix-table-retrieval",
+      "question": "In the statistical appendix, locate Table 4.3, All India Consumer Price Index Numbers. Identify the table's coverage categories and report the source page numbers; do not calculate a trend unless the correct column and period are clear.",
+      "language": "en-IN",
+      "tags": [
+        "survey",
+        "appendix",
+        "table-retrieval",
+        "ambiguity"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "appendix",
+          "name": "statistical-appendix-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/statistical-appendix-en.pdf",
+          "sha256": "2724d440da77b029934d395bc203c0ae50d140870a5f410645e75ac72b6bb83d",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "appendix",
+            "contains": "Table 4.3. All India Consumer Price Index Numbers"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "PDF page 92 starts printed Statistical Appendix page 85; inspect continuation pages and column headers visually.",
+          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-causal-overclaim",
+      "question": "Does the chapter establish that adverse weather alone caused India's FY24 food inflation? Use the cited evidence to distinguish reported contributing conditions from a claim of a single proven cause.",
+      "language": "en-IN",
+      "tags": [
+        "survey",
+        "inflation",
+        "causality",
+        "guardrail"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "real-v1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "Food prices were affected by adverse weather conditions"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check the answer says 'alone' is not established by this sentence and separates attribution from causal proof."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    }
+  ]
+}

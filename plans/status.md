@@ -842,3 +842,28 @@ Keep secrets and raw client data out of this file.
   a scripted corrected query. Runtime strict mypy and changed-file Black pass.
   This verifies feedback delivery, not live model self-correction. No live model
   call, migration or historical outcome rewrite was performed.
+
+## 5 October 2026: real-source evaluation pack preparation
+
+- Downloaded the UCI Online Retail workbook and Economic Survey 2023–24 full
+  English/Hindi reports, inflation chapters and statistical appendices from
+  their official archives. Originals remain local and ignored; URLs, byte sizes
+  and SHA-256 hashes are pinned in `evals/fixtures/real-v1/downloads.json`.
+- Used Luna subagent work to generate and review `evals/cases/real-v1.json`:
+  30 unreviewed cases, with 20 retail and 10 Survey workflows. The generator
+  preserves all 35,147 January 2011 retail rows and keeps labels outside sources.
+  Coverage includes filters, nulls, distinct grain, ranking, CSV/chart output,
+  mixed rules/data, cross-language retrieval, unsupported data and ambiguity.
+- Independent integer-price SQLite calculations against the original workbook
+  agree with Decimal gold: 34,306 qualifying lines, 1,086 distinct invoices and
+  GBP 691,364.56 qualifying sales. Pinned downloads and case source hashes pass;
+  the CLI accepts all cases and computed-result column names are explicit.
+- Validation: 27 focused fixture/download/evaluation tests passed; Black and
+  `git diff --check` passed. Reviewed inflation chapter first pages visually;
+  Hindi renders correctly but embedded extraction uses legacy glyph encoding.
+- No live model/API evaluation was run in this preparation task. Language,
+  document factuality/page support, grouped rankings, artifact contents and
+  structured units still require review. Prose abstention may fail the current
+  clarification-event check; the guide records this scoring limitation.
+  See `evals/real-v1.md` for download/generation and bounded live-run commands.
+  Phase 09 retains its existing status; phase 10 remains unstarted.

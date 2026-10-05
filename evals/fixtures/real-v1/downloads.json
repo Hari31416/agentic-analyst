@@ -1,0 +1,55 @@
+{
+  "version": "real-v1",
+  "downloaded_at": "2026-10-05",
+  "files": [
+    {
+      "name": "economic-survey-2023-24-en.pdf",
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/echapter.pdf",
+      "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+      "bytes": 15387751,
+      "archive_member": null
+    },
+    {
+      "name": "economic-survey-2023-24-hi.pdf",
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/hechapter.pdf",
+      "sha256": "35a0623530efe9b269fa0bdd16dfc1527fe9a1fce74145acdafc6aef188312bd",
+      "bytes": 16263530,
+      "archive_member": null
+    },
+    {
+      "name": "inflation-en.pdf",
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/eschapter/echap03.pdf",
+      "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+      "bytes": 1447746,
+      "archive_member": null
+    },
+    {
+      "name": "inflation-hi.pdf",
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/eschapter/hechap03.pdf",
+      "sha256": "abc156fbbfd568e81b06e8424ff634eddaa123eb8a93630c1bd2812ed2637c35",
+      "bytes": 1575785,
+      "archive_member": null
+    },
+    {
+      "name": "online-retail.xlsx",
+      "url": "https://archive.ics.uci.edu/static/public/352/online+retail.zip",
+      "sha256": "43465a06f2ccf7c8b5bd2892bc7defb52f97487934fe93b16ae4c3936424676d",
+      "bytes": 23715344,
+      "archive_member": "Online Retail.xlsx"
+    },
+    {
+      "name": "statistical-appendix-en.pdf",
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/Statistical-Appendix-in-English.pdf",
+      "sha256": "2724d440da77b029934d395bc203c0ae50d140870a5f410645e75ac72b6bb83d",
+      "bytes": 3155275,
+      "archive_member": null
+    },
+    {
+      "name": "statistical-appendix-hi.pdf",
+      "url": "https://www.indiabudget.gov.in/budget2024-25/economicsurvey/doc/Statistical-Appendix-in-Hindi.pdf",
+      "sha256": "6a887afce7228fa6d61684f8c4afe4252cb73778c43e5b61d4474ae38d33f90c",
+      "bytes": 3327655,
+      "archive_member": null
+    }
+  ]
+}

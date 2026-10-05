@@ -34,6 +34,31 @@ def make_db():
     return engine, sessionmaker(engine, expire_on_commit=False)
 
 
+def test_audit_sanitizer_preserves_numeric_usage_counters_only():
+    sanitized = inspection._bounded(
+        {
+            "usage": {
+                "prompt_tokens": 12,
+                "completion_tokens": 5,
+                "total_tokens": 17,
+                "token": "provider-secret",
+                "negative_tokens": -1,
+                "boolean_tokens": True,
+            }
+        }
+    )
+    assert sanitized == {
+        "usage": {
+            "prompt_tokens": 12,
+            "completion_tokens": 5,
+            "total_tokens": 17,
+            "token": "[redacted]",
+            "negative_tokens": "[redacted]",
+            "boolean_tokens": "[redacted]",
+        }
+    }
+
+
 def test_export_reconstructs_run_and_redacts_nested_secrets():
     engine, sessions = make_db()
     try:

@@ -25,6 +25,22 @@ def report():
                 "elapsed_seconds": 2,
                 "tokens": 10,
                 "model_calls": 2,
+                "query_seconds": 1.25,
+                "queue_seconds": 0.5,
+                "telemetry": {
+                    "tool_calls": {
+                        "count": 2,
+                        "retained_count": 2,
+                        "error_counts": {"database_timeout": 1},
+                        "sequence": [{"sequence": 1, "name": "search_documents"}],
+                    },
+                    "model": {
+                        "call_count": 3,
+                        "error_counts": {"model_timeout": 1},
+                        "usage": {"total_tokens": 10},
+                        "usage_status": "measured",
+                    },
+                },
                 "answer_text": "=1+1",
                 "metrics": [
                     {
@@ -60,11 +76,16 @@ def test_report_writes_escaped_html_safe_csv_and_language_cohorts(tmp_path):
     assert "http://localhost:8000/api/runs/r1/audit" in rendered
     assert "http://localhost:8000/api/artifacts/a%2F1" in rendered
     assert "do not establish human review or judge calibration" in rendered
+    assert "Operational trace" in rendered
     data = json.loads(paths["json"].read_text())
     assert data["summary"]["cohorts"]["Hindi"]["count"] == 1
     english = data["summary"]["cohorts"]["English"]
     assert english["known_answer_failure_trials"] == 1
     assert english["status_counts"] == {"failed": 1}
+    assert english["telemetry"]["model_call_count"] == 3
+    assert english["telemetry"]["tool_error_counts"] == {"database_timeout": 1}
+    assert english["telemetry"]["model_usage"] == {"total_tokens": 10}
+    assert english["query_seconds"]["total"] == 1.25
     hindi = data["summary"]["cohorts"]["Hindi"]
     assert hindi["tokens"] == {
         "total": None,

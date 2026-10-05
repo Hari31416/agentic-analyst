@@ -6,6 +6,7 @@ import asyncio
 import json
 import os
 import re
+from collections import Counter
 from decimal import Decimal, InvalidOperation
 import resource
 import sys
@@ -153,6 +154,220 @@ def observations(
     }
 
 
+def _elapsed_ms(started: Any, finished: Any) -> float | None:
+    """Return bounded, non-negative elapsed milliseconds for exported timestamps."""
+    if not isinstance(started, str) or not isinstance(finished, str):
+        return None
+    try:
+        start = datetime.fromisoformat(started.replace("Z", "+00:00"))
+        finish = datetime.fromisoformat(finished.replace("Z", "+00:00"))
+        elapsed = (finish - start).total_seconds() * 1000
+    except (ValueError, TypeError):
+        return None
+    return round(elapsed, 3) if 0 <= elapsed <= 86_400_000 else None
+
+
+def _safe_count(value: Any) -> int | None:
+    return (
+        value
+        if isinstance(value, int)
+        and not isinstance(value, bool)
+        and 0 <= value <= 10**12
+        else None
+    )
+
+
+def _safe_duration(value: Any) -> float | None:
+    if (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and 0 <= value <= 86_400_000
+    ):
+        return round(float(value), 3)
+    return None
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def audit_telemetry(audit: dict[str, Any]) -> dict[str, Any]:
+    """Reduce the public audit export to bounded operational telemetry.
+
+    Event and tool payload text is deliberately excluded: answers, prompts,
+    arguments, and private reasoning do not belong in evaluation telemetry.
+    """
+    raw_tools = audit.get("tool_calls", [])
+    tool_rows = raw_tools if isinstance(raw_tools, list) else []
+    sequence: list[dict[str, Any]] = []
+    tool_statuses: Counter[str] = Counter()
+    tool_errors: Counter[str] = Counter()
+    tool_durations = []
+    for row in tool_rows[:500]:
+        if not isinstance(row, dict):
+            continue
+        result = _as_dict(row.get("result"))
+        error = _as_dict(result.get("error"))
+        status = str(row.get("status") or "unknown")[:40]
+        tool_statuses[status] += 1
+        error_code = error.get("code")
+        if isinstance(error_code, str) and error_code:
+            tool_errors[error_code[:80]] += 1
+        duration = _elapsed_ms(row.get("started_at"), row.get("finished_at"))
+        if duration is not None:
+            tool_durations.append(duration)
+        sequence.append(
+            {
+                "sequence": len(sequence) + 1,
+                "name": str(row.get("name") or "unknown")[:80],
+                "decision": str(row.get("decision") or "unknown")[:40],
+                "status": status,
+                "error_code": error_code[:80] if isinstance(error_code, str) else None,
+                "duration_ms": duration,
+            }
+        )
+
+    raw_events = audit.get("events", [])
+    event_rows = raw_events if isinstance(raw_events, list) else []
+    attempts: set[int] = set()
+    responses: set[int] = set()
+    model_errors: Counter[str] = Counter()
+    model_sequence: list[dict[str, Any]] = []
+    model_durations: list[float] = []
+    model_usage: Counter[str] = Counter()
+    usage_calls = 0
+    for row in event_rows[:500]:
+        if not isinstance(row, dict):
+            continue
+        event_type = row.get("type")
+        payload = _as_dict(row.get("payload"))
+        call_number = _safe_count(payload.get("model_calls"))
+        if (
+            event_type == "status"
+            and payload.get("message") == "Requesting the next action"
+            and call_number
+        ):
+            attempts.add(call_number)
+            model_sequence.append({"call": call_number, "status": "requested"})
+        elif event_type == "model_response_diagnostic" and call_number:
+            responses.add(call_number)
+            duration = _safe_duration(payload.get("duration_ms"))
+            if duration is not None:
+                model_durations.append(duration)
+            response_usage = _as_dict(payload.get("usage"))
+            clean_usage = {
+                key: value
+                for key in (
+                    "prompt_tokens",
+                    "completion_tokens",
+                    "total_tokens",
+                    "input_tokens",
+                    "output_tokens",
+                )
+                if (value := _safe_count(response_usage.get(key))) is not None
+            }
+            if clean_usage:
+                usage_calls += 1
+                model_usage.update(clean_usage)
+            descriptor = {
+                "call": call_number,
+                "status": "response",
+                "finish_reason": str(payload.get("finish_reason") or "unknown")[:40],
+                "duration_ms": duration,
+                "usage": clean_usage or None,
+                "content_characters": _safe_count(payload.get("content_characters")),
+                "tool_names": (
+                    [
+                        str(tool.get("name") or "unknown")[:80]
+                        for tool in payload.get("tool_calls", [])[:20]
+                        if isinstance(tool, dict)
+                    ]
+                    if isinstance(payload.get("tool_calls"), list)
+                    else []
+                ),
+            }
+            model_sequence.append(descriptor)
+        elif event_type == "model_request_failed" and call_number:
+            code = payload.get("code")
+            if isinstance(code, str) and code:
+                model_errors[code[:80]] += 1
+            duration = _safe_duration(payload.get("duration_ms"))
+            if duration is not None:
+                model_durations.append(duration)
+            model_sequence.append(
+                {
+                    "call": call_number,
+                    "status": "failed",
+                    "error_code": code[:80] if isinstance(code, str) else None,
+                    "retryable": (
+                        payload.get("retryable")
+                        if isinstance(payload.get("retryable"), bool)
+                        else None
+                    ),
+                    "duration_ms": duration,
+                }
+            )
+
+    run = _as_dict(audit.get("run"))
+    outcome = _as_dict(run.get("outcome"))
+    reported_model_calls = _safe_count(outcome.get("model_calls"))
+    reported_tool_calls = _safe_count(outcome.get("tool_calls"))
+    model_count = max([*attempts, *responses, reported_model_calls or 0], default=0)
+    if isinstance(outcome.get("error"), dict):
+        code = outcome["error"].get("code")
+        if isinstance(code, str) and code and code not in model_errors:
+            model_errors[code[:80]] += 1
+
+    # Accept usage only from the adapter's explicitly allowlisted numeric
+    # response diagnostics, or numeric totals exposed by the public outcome.
+    raw_usage = _as_dict(outcome.get("usage"))
+    outcome_usage = {
+        key: value
+        for key in ("prompt_tokens", "completion_tokens", "total_tokens")
+        if (value := _safe_count(raw_usage.get(key))) is not None
+    }
+    usage = outcome_usage or dict(model_usage)
+    if outcome_usage:
+        usage_calls = model_count
+    return {
+        "tool_calls": {
+            "count": (
+                reported_tool_calls
+                if reported_tool_calls is not None
+                else len(sequence)
+            ),
+            "retained_count": len(sequence),
+            "status_counts": dict(tool_statuses),
+            "error_counts": dict(tool_errors),
+            "durations_ms": {
+                "total": round(sum(tool_durations), 3),
+                "max": round(max(tool_durations), 3) if tool_durations else None,
+                "measured_count": len(tool_durations),
+            },
+            "sequence": sequence,
+        },
+        "model": {
+            "call_count": model_count,
+            "attempted_count": len(attempts),
+            "response_count": len(responses),
+            "error_counts": dict(model_errors),
+            "sequence": model_sequence[:500],
+            "durations_ms": {
+                "total": round(sum(model_durations), 3),
+                "max": round(max(model_durations), 3) if model_durations else None,
+                "measured_count": len(model_durations),
+            },
+            "usage": usage or None,
+            "usage_measured_calls": usage_calls,
+            "usage_status": (
+                "measured"
+                if usage_calls == model_count and usage_calls
+                else "partial" if usage_calls else "unavailable_in_public_audit"
+            ),
+        },
+    }
+
+
 def score_answer_claims(case: EvaluationCase, answer: str) -> list[MetricResult]:
     """Check expected numeric claims/units separately from executed result correctness."""
     claims: list[Decimal] = []
@@ -242,6 +457,14 @@ async def run_experiment(
             "Runner limits: repeats 1..20, concurrency 1..4, timeout 1..1800"
         )
     semaphore = asyncio.Semaphore(concurrency)
+    checkpoint.report["execution_settings"] = {
+        "repeats": repeats,
+        "concurrency": concurrency,
+        "timeout_seconds": timeout,
+        "retrieval_profile": profile,
+    }
+    checkpoint.report.setdefault("started_at", datetime.now(timezone.utc).isoformat())
+    checkpoint.save()
 
     async def one(case: EvaluationCase, repetition: int) -> None:
         async with semaphore:
@@ -249,6 +472,7 @@ async def run_experiment(
             if trial["status"] not in {"pending", "running"}:
                 return  # Completed failures are reused too; resume never hides them.
             started = time.monotonic()
+            trial.setdefault("started_at", datetime.now(timezone.utc).isoformat())
             trial["status"] = "running"
             checkpoint.save()
 
@@ -372,6 +596,14 @@ async def run_experiment(
                                     for d in s.get("datasets", [])
                                 ],
                                 "retrieval_profile": profile,
+                                **(
+                                    {"model": checkpoint.report["identity"]["model"]}
+                                    if isinstance(
+                                        checkpoint.report.get("identity"), dict
+                                    )
+                                    and checkpoint.report["identity"].get("model")
+                                    else {}
+                                ),
                             },
                         )
                         trial.pop("run_creation_pending")
@@ -393,13 +625,16 @@ async def run_experiment(
                     )
                     trial["actual_run_config"] = audit["run"]["config"]
                     progress("audit", "complete")
-                    if audit["run"].get("started_at") and audit["run"].get(
-                        "finished_at"
-                    ):
-                        trial["query_seconds"] = (
-                            datetime.fromisoformat(audit["run"]["finished_at"])
-                            - datetime.fromisoformat(audit["run"]["started_at"])
-                        ).total_seconds()
+                    run_started = audit["run"].get("started_at")
+                    run_finished = audit["run"].get("finished_at")
+                    query_ms = _elapsed_ms(run_started, run_finished)
+                    queue_ms = _elapsed_ms(audit["run"].get("created_at"), run_started)
+                    trial["query_seconds"] = (
+                        query_ms / 1000 if query_ms is not None else None
+                    )
+                    trial["queue_seconds"] = (
+                        queue_ms / 1000 if queue_ms is not None else None
+                    )
                     expected_profile = checkpoint.report["identity"]
                     actual_profile = trial["actual_run_config"]
                     mismatches = [
@@ -415,21 +650,32 @@ async def run_experiment(
                     ]
                     trial["profile_mismatches"] = mismatches
                     trial["audit_limits"] = audit.get("limits", {})
+                    trial["telemetry"] = audit_telemetry(audit)
                     outcome = run.get("outcome") or {}
+                    outcome_usage = _as_dict(outcome.get("usage"))
                     trial.update(
                         answer_text=outcome.get("text", ""),
                         evidence_ids=outcome.get("evidence_ids", []),
                         artifact_ids=outcome.get("artifact_ids", []),
-                        model_calls=outcome.get("model_calls"),
+                        model_calls=(
+                            _safe_count(outcome.get("model_calls"))
+                            if _safe_count(outcome.get("model_calls")) is not None
+                            else trial["telemetry"]["model"]["call_count"]
+                        ),
                         tokens=(
-                            (outcome.get("usage") or {}).get("total_tokens")
-                            if isinstance(
-                                (outcome.get("usage") or {}).get("total_tokens"), int
-                            )
+                            _safe_count(outcome_usage.get("total_tokens"))
+                            if _safe_count(outcome_usage.get("total_tokens"))
+                            is not None
                             else None
                         ),
                         run_state=run["state"],
                     )
+                    if trial["tokens"] is None:
+                        trial["tokens"] = (
+                            trial["telemetry"]["model"]["usage"].get("total_tokens")
+                            if trial["telemetry"]["model"]["usage"]
+                            else None
+                        )
                     hashes = await client.original_hashes(workspace_id, sources)
                     observed = observations(case, run, audit, sources, hashes)
                     # Validate artifact existence over the same public download route.
@@ -493,6 +739,7 @@ async def run_experiment(
                 trial["elapsed_seconds"] = (
                     float(trial.get("elapsed_seconds", 0)) + time.monotonic() - started
                 )
+                trial["finished_at"] = datetime.now(timezone.utc).isoformat()
                 trial["runner_peak_rss_bytes"] = resource.getrusage(
                     resource.RUSAGE_SELF
                 ).ru_maxrss * (1 if sys.platform == "darwin" else 1024)

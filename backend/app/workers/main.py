@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import os
+import sys
 import re
 import signal
 import socket
@@ -394,6 +396,51 @@ async def execute_document(task: Claim, stop: asyncio.Event) -> dict[str, object
             work.cancel()
 
 
+async def run_worker_pool() -> None:
+    """Keep each slot in a process so native PDF/OCR state is never shared."""
+    concurrency = get_settings().worker_concurrency
+    if concurrency == 1:
+        await run_worker()
+        return
+    stop = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, stop.set)
+    children: list[asyncio.subprocess.Process] = []
+    watchers: list[asyncio.Task[int]] = []
+    stopped = asyncio.create_task(stop.wait())
+    try:
+        for _ in range(concurrency):
+            child = await asyncio.create_subprocess_exec(
+                sys.executable,
+                "-m",
+                "app.workers.main",
+                env={**os.environ, "WORKER_CONCURRENCY": "1"},
+            )
+            children.append(child)
+            watchers.append(asyncio.create_task(child.wait()))
+        logger.info("worker pool started with %d processes", concurrency)
+        done, _ = await asyncio.wait(
+            [stopped, *watchers], return_when=asyncio.FIRST_COMPLETED
+        )
+        if stopped not in done:
+            raise RuntimeError("A worker process exited; stopping the pool")
+    finally:
+        stopped.cancel()
+        for child in children:
+            if child.returncode is None:
+                with suppress(ProcessLookupError):
+                    child.terminate()
+        for child in children:
+            try:
+                await asyncio.wait_for(child.wait(), timeout=30)
+            except TimeoutError:
+                with suppress(ProcessLookupError):
+                    child.kill()
+                await child.wait()
+        await asyncio.gather(stopped, *watchers, return_exceptions=True)
+
+
 if __name__ == "__main__":
     configure_logging()
-    asyncio.run(run_worker())
+    asyncio.run(run_worker_pool())

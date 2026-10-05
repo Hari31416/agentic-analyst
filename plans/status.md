@@ -1109,3 +1109,26 @@ Keep secrets and raw client data out of this file.
   runs replacing older failed tasks: zero execution crashes recorded across all 30
   cases for both models (29 completed, 1 awaiting clarification), with 24 passes,
   five partials, and one population-check failure for GPT OSS 120B.
+
+## 5 October 2026: parallel evals and model traces
+
+- Added allowlisted per-run model selection and sequential `run-matrix` scheduling.
+  Model IDs are pinned in run config, checked for request idempotency, and used by
+  the worker rather than its mutable default. Runner/worker concurrency enters
+  experiment identity; each model has a separate resumable checkpoint/report.
+- Added bounded `WORKER_CONCURRENCY` 1..4. A host supervisor starts independent
+  worker processes using existing PostgreSQL claims, leases, heartbeat and cleanup.
+  Processes isolate native PDF/OCR state; the pool stops if a child exits.
+- Retained bounded tool/model traces, errors, durations, queue/query/ingestion
+  timing, safe per-response usage and coverage, including failed-model attempts.
+  Public audit sanitization preserves only nonnegative integer usage counters;
+  prompts, raw provider bodies and private reasoning remain excluded from telemetry.
+- Verified all five requested exact model IDs through Krutrim's authenticated
+  models endpoint. The requested real-v1 matrix runs models one at a time, with
+  four trials per model in flight, using the configured admin account. One trial
+  per case is exploratory; manual answer review and repeated reliability trials
+  remain separate. Results will be recorded after the live matrix completes.
+- Validation before live execution: 414 deterministic backend tests passed, nine
+  PostgreSQL runtime checks passed, plus the added concurrency-bound test and 26
+  focused telemetry/audit checks. Black, full backend/evaluation mypy and diff
+  checks passed. No schema migration or phase-10 work.

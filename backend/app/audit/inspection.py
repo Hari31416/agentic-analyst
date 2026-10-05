@@ -9,7 +9,7 @@ from typing import Any, cast
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from app.audit.redaction import configured_secrets, redact
+from app.audit.redaction import PUBLIC_COUNTERS, configured_secrets, redact
 from app.db.models import (
     Artifact,
     AuditEvent,
@@ -86,9 +86,15 @@ def _sanitize(
                 budget.truncated_items += len(value) - index
                 break
             safe_key = budget.take(str(key), max_chars=256)
+            public_counter = (
+                str(key) in PUBLIC_COUNTERS
+                and isinstance(item, int)
+                and not isinstance(item, bool)
+                and item >= 0
+            )
             result[safe_key] = (
                 "[redacted]"
-                if re_sensitive(str(key))
+                if re_sensitive(str(key)) and not public_counter
                 else _sanitize(item, budget, depth=depth + 1, path=path + (str(key),))
             )
         return result

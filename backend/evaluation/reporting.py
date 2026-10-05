@@ -59,6 +59,45 @@ def _usage_summary(trials: list[dict[str, Any]], field: str) -> dict[str, Any]:
     }
 
 
+def _telemetry_summary(trials: list[dict[str, Any]]) -> dict[str, Any]:
+    tool_counts = 0
+    tool_errors: dict[str, int] = {}
+    model_counts = 0
+    model_errors: dict[str, int] = {}
+    measured_tools = 0
+    model_usage: dict[str, int] = {}
+    for trial in trials:
+        telemetry = trial.get("telemetry")
+        if not isinstance(telemetry, dict):
+            continue
+        tools = telemetry.get("tool_calls")
+        model = telemetry.get("model")
+        if isinstance(tools, dict):
+            tool_counts += int(tools.get("count") or 0)
+            measured_tools += int(tools.get("retained_count") or 0)
+            for key, count in (tools.get("error_counts") or {}).items():
+                if isinstance(count, int) and not isinstance(count, bool):
+                    tool_errors[key] = tool_errors.get(key, 0) + count
+        if isinstance(model, dict):
+            model_counts += int(model.get("call_count") or 0)
+            for key, count in (model.get("error_counts") or {}).items():
+                if isinstance(count, int) and not isinstance(count, bool):
+                    model_errors[key] = model_errors.get(key, 0) + count
+            usage = model.get("usage")
+            if isinstance(usage, dict):
+                for key, count in usage.items():
+                    if isinstance(count, int) and not isinstance(count, bool):
+                        model_usage[key] = model_usage.get(key, 0) + count
+    return {
+        "tool_call_count": tool_counts,
+        "retained_tool_call_count": measured_tools,
+        "tool_error_counts": tool_errors,
+        "model_call_count": model_counts,
+        "model_error_counts": model_errors,
+        "model_usage": model_usage or None,
+    }
+
+
 def _summary(trials: list[dict[str, Any]]) -> dict[str, Any]:
     latency = [
         float(t["elapsed_seconds"])
@@ -95,6 +134,10 @@ def _summary(trials: list[dict[str, Any]]) -> dict[str, Any]:
         },
         "tokens": _usage_summary(trials, "tokens"),
         "model_calls": _usage_summary(trials, "model_calls"),
+        "telemetry": _telemetry_summary(trials),
+        "query_seconds": _usage_summary(trials, "query_seconds"),
+        "queue_seconds": _usage_summary(trials, "queue_seconds"),
+        "ingestion_seconds": _usage_summary(trials, "ingestion_seconds"),
     }
 
 
@@ -197,8 +240,11 @@ def _viewer(report: dict[str, Any]) -> str:
                     trial.get("repetition", ""),
                     trial.get("status", ""),
                     trial.get("elapsed_seconds", ""),
+                    trial.get("query_seconds", ""),
+                    trial.get("queue_seconds", ""),
                     trial.get("tokens", ""),
                     trial.get("model_calls", ""),
+                    json.dumps(trial.get("telemetry", {}), ensure_ascii=False),
                 )
             )
             + f"<td>{run_link} {artifact_links}</td><td>{html.escape(str(trial.get('answer_text') or ''))}</td><td>{html.escape(json.dumps(trial.get('metrics', []), ensure_ascii=False))}</td><td>{html.escape(str(trial.get('review_status') or case_review.get('provenance', 'unreviewed')))}</td></tr>"
@@ -208,7 +254,7 @@ def _viewer(report: dict[str, Any]) -> str:
     )
     table = "".join(rows)
     calibration_note = "Deterministic metric results do not establish human review or judge calibration. Review provenance is shown per trial; absent review and judge scores remain unavailable."
-    return f"""<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Evaluation report</title><style>body{{font:15px system-ui;margin:2rem;max-width:1100px}}pre{{white-space:pre-wrap;background:#f4f4f4;padding:1rem}}table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #bbb;padding:.45rem;text-align:left;vertical-align:top}}th{{background:#eee}}</style><h1>Evaluation report</h1><p>Experiment: {html.escape(str(report.get("experiment_id", "unknown")))}</p><h2>Summary</h2><p>{html.escape(calibration_note)}</p><pre>{summary}</pre><h2>Trials</h2><table><thead><tr><th>Case</th><th>Language</th><th>Question</th><th>Repeat</th><th>Status</th><th>Seconds</th><th>Tokens</th><th>Model calls</th><th>Links</th><th>Answer</th><th>Metrics</th><th>Review provenance</th></tr></thead><tbody>{table}</tbody></table></html>"""
+    return f"""<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Evaluation report</title><style>body{{font:15px system-ui;margin:2rem;max-width:1100px}}pre{{white-space:pre-wrap;background:#f4f4f4;padding:1rem}}table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #bbb;padding:.45rem;text-align:left;vertical-align:top}}th{{background:#eee}}</style><h1>Evaluation report</h1><p>Experiment: {html.escape(str(report.get("experiment_id", "unknown")))}</p><h2>Summary</h2><p>{html.escape(calibration_note)}</p><pre>{summary}</pre><h2>Trials</h2><table><thead><tr><th>Case</th><th>Language</th><th>Question</th><th>Repeat</th><th>Status</th><th>Seconds</th><th>Query seconds</th><th>Queue seconds</th><th>Tokens</th><th>Model calls</th><th>Operational trace</th><th>Links</th><th>Answer</th><th>Metrics</th><th>Review provenance</th></tr></thead><tbody>{table}</tbody></table></html>"""
 
 
 def write_reports(report: dict[str, Any], out_dir: Path) -> dict[str, Path]:
@@ -233,8 +279,12 @@ def write_reports(report: dict[str, Any], out_dir: Path) -> dict[str, Path]:
         "thread_id",
         "workspace_id",
         "elapsed_seconds",
+        "query_seconds",
+        "queue_seconds",
+        "ingestion_seconds",
         "model_calls",
         "tokens",
+        "telemetry",
         "metrics",
         "error",
         "answer_text",

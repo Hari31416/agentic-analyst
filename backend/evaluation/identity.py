@@ -62,6 +62,7 @@ def build_identity(
     repeats: int,
     profile: str,
     timeout: float,
+    concurrency: int = 1,
 ) -> dict[str, Any]:
     fixtures = {}
     for case in cases:
@@ -120,6 +121,8 @@ def build_identity(
         },
         "sandbox_image": settings.sandbox_image,
         "judge": {"configured": False, "calibrated": False},
+        "worker_concurrency": settings.worker_concurrency,
+        "runner_concurrency": concurrency,
         "repeats": repeats,
         "timeout_seconds": timeout,
     }

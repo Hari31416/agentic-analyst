@@ -468,3 +468,58 @@ async def test_oversized_validation_diagnostic_rejects_and_recovers():
     assert result["status"] == "rejected"
     assert len(result["error"]["message"]) == 500
     assert len(result["data"]["validation_errors"]) == 10
+
+
+async def test_model_diagnostics_keep_duration_usage_without_content():
+    events = []
+
+    async def collect(kind, payload):
+        events.append((kind, payload))
+
+    model = ScriptedModel(
+        [
+            ModelResponse(
+                content="private-content",
+                finish_reason="stop",
+                usage={
+                    "total_tokens": 12,
+                    "prompt_tokens": 8,
+                    "completion_tokens": 4,
+                    "provider_secret": 99,
+                },
+            )
+        ]
+    )
+    await AgentLoop(model, settings(), [], collect, ignore).run([], "en-IN")
+    diagnostic = next(
+        payload for kind, payload in events if kind == "model_response_diagnostic"
+    )
+    assert diagnostic["duration_ms"] >= 0
+    assert diagnostic["usage"] == {
+        "total_tokens": 12,
+        "prompt_tokens": 8,
+        "completion_tokens": 4,
+    }
+    assert "private-content" not in str(diagnostic)
+
+
+async def test_fatal_provider_error_records_model_attempt_duration():
+    from app.agent.model import ModelError
+
+    events = []
+
+    async def collect(kind, payload):
+        events.append((kind, payload))
+
+    class Failing:
+        async def complete(self, *_):
+            raise ModelError("model_provider_error", "private-provider-body")
+
+    with pytest.raises(ModelError):
+        await AgentLoop(Failing(), settings(), [], collect, ignore).run([], "en-IN")
+    failure = next(
+        payload for kind, payload in events if kind == "model_request_failed"
+    )
+    assert failure["code"] == "model_provider_error"
+    assert failure["model_calls"] == 1 and failure["duration_ms"] >= 0
+    assert not failure["retryable"] and "private-provider-body" not in str(failure)

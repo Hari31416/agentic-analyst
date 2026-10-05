@@ -7,7 +7,7 @@ import asyncio
 import fcntl
 import json
 import hashlib
-from copy import deepcopy
+from copy import copy, deepcopy
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -75,7 +75,8 @@ async def execute(
     if urlsplit(args.api_url).hostname not in {"localhost", "127.0.0.1", "::1"}:
         raise ValueError("The first runner requires a loopback application API")
     settings = get_settings()
-    if not settings.eval_username or not settings.eval_password:
+    eval_username, eval_password = settings.eval_username, settings.eval_password
+    if not eval_username or not eval_password:
         raise ValueError(
             "Set EVAL_USERNAME and EVAL_PASSWORD for authenticated evaluation"
         )
@@ -85,6 +86,22 @@ async def execute(
             raise ValueError(
                 f"Case {case.id} requests unsupported answer language; set answer_language to a configured canonical language"
             )
+    selected_model = getattr(args, "model", None)
+    if selected_model:
+        if selected_model not in {
+            settings.openai_model,
+            *settings.openai_allowed_models,
+        }:
+            raise ValueError("Requested model is not in OPENAI_ALLOWED_MODELS")
+        settings = settings.model_copy(update={"openai_model": selected_model})
+    if not (
+        1 <= args.concurrency <= 4
+        and 1 <= args.repeats <= 20
+        and 1 <= args.timeout <= 1800
+    ):
+        raise ValueError(
+            "Runner limits: repeats 1..20, concurrency 1..4, timeout 1..1800"
+        )
     identity = build_identity(
         cases,
         settings,
@@ -93,14 +110,13 @@ async def execute(
         args.repeats,
         args.profile,
         args.timeout,
+        args.concurrency,
     )
     client = ApplicationClient(args.api_url)
     try:
         # Authenticate before creating output state, so rejected credentials do
         # not leave a misleading empty checkpoint behind.
-        await client.login(
-            settings.eval_username, settings.eval_password.get_secret_value()
-        )
+        await client.login(eval_username, eval_password.get_secret_value())
         args.output.mkdir(parents=True, exist_ok=True)
         # One process owns a checkpoint; concurrency is controlled within it.
         with (args.output / ".runner.lock").open("a") as lock:
@@ -137,6 +153,70 @@ async def execute(
             return write_reports(report, args.output)
     finally:
         await client.close()
+
+
+async def execute_matrix(
+    args: argparse.Namespace, cases: list[EvaluationCase]
+) -> dict[str, Any]:
+    """Run each model with a shared concurrency bound and separate checkpoints."""
+    models = args.model
+    if not models or len(models) > 20 or len(set(models)) != len(models):
+        raise ValueError("Choose 1..20 distinct model IDs")
+    settings = get_settings()
+    if set(models) - {settings.openai_model, *settings.openai_allowed_models}:
+        raise ValueError("Requested models are not in OPENAI_ALLOWED_MODELS")
+    args.output.mkdir(parents=True, exist_ok=True)
+    with (args.output / ".matrix.lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise ValueError("Another runner owns this matrix directory") from error
+        return await _execute_models(args, cases, models)
+
+
+async def _execute_models(
+    args: argparse.Namespace, cases: list[EvaluationCase], models: list[str]
+) -> dict[str, Any]:
+    # Stable folders preserve exact IDs without path traversal or case collisions.
+    results = []
+    for model in models:
+        child = copy(args)
+        child.model = model
+        child.output = args.output / f"model-{digest(model)[:12]}"
+        print(json.dumps({"event": "model_started", "model": model}), flush=True)
+        paths = await execute(child, cases)
+        report = load_json(paths["json"])
+        results.append(
+            {
+                "model": model,
+                "experiment_id": report["experiment_id"],
+                "reports": {key: str(path) for key, path in paths.items()},
+                "summary": report["summary"],
+                "gate": report["gate"],
+            }
+        )
+        # Save after each model so an interrupted matrix keeps its completed results.
+        summary = {
+            "schema_version": 1,
+            "models": results,
+            "concurrency": args.concurrency,
+            "repeats": args.repeats,
+            "scope": "Automatic deterministic checks; manual answer review pending.",
+        }
+        temporary = args.output / "matrix.tmp"
+        temporary.write_text(json.dumps(summary, indent=2) + "\n")
+        temporary.replace(args.output / "matrix.json")
+        print(
+            json.dumps(
+                {
+                    "event": "model_complete",
+                    "model": model,
+                    "summary": report["summary"]["overall"],
+                }
+            ),
+            flush=True,
+        )
+    return summary
 
 
 def rescore(report: dict[str, Any], cases: list[EvaluationCase]) -> dict[str, Any]:
@@ -248,14 +328,14 @@ def rescore(report: dict[str, Any], cases: list[EvaluationCase]) -> dict[str, An
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ["list", "run"]:
+    for name in ["list", "run", "run-matrix"]:
         child = commands.add_parser(name)
         child.add_argument(
             "--cases", type=Path, default=ROOT / "evals/cases/core-v1.json"
         )
         child.add_argument("--case", action="append", default=[])
         child.add_argument("--tag", action="append", default=[])
-        if name == "run":
+        if name in {"run", "run-matrix"}:
             child.add_argument("--api-url", default="http://127.0.0.1:8000")
             child.add_argument(
                 "--fixture-root", type=Path, default=ROOT / "evals/fixtures"
@@ -263,6 +343,10 @@ def main() -> int:
             child.add_argument("--output", type=Path, required=True)
             child.add_argument("--repeats", type=int, default=1)
             child.add_argument("--concurrency", type=int, default=1)
+            if name == "run-matrix":
+                child.add_argument("--model", action="append", required=True)
+            else:
+                child.add_argument("--model", help="Configured allowlisted model ID")
             child.add_argument("--timeout", type=float, default=300)
             child.add_argument(
                 "--profile", choices=["basic", "advanced"], default="basic"
@@ -287,7 +371,7 @@ def main() -> int:
             child.add_argument("review", type=Path)
     args = parser.parse_args()
     try:
-        if args.command in {"list", "run"}:
+        if args.command in {"list", "run", "run-matrix"}:
             cases = load_cases(args.cases, args.case, args.tag)
             if args.command == "list":
                 print(
@@ -307,6 +391,13 @@ def main() -> int:
                     )
                 )
                 return 0
+            if args.command == "run-matrix":
+                summary = asyncio.run(execute_matrix(args, cases))
+                print(json.dumps({"matrix": str(args.output / "matrix.json")}))
+                return int(
+                    args.strict
+                    and any(not row["gate"]["passed"] for row in summary["models"])
+                )
             paths = asyncio.run(execute(args, cases))
             print(json.dumps({key: str(value) for key, value in paths.items()}))
             if (

@@ -82,6 +82,50 @@ uv run python -m evaluation.cli run --live \
   --repeats 1 --output ../evals/runs/real-v1
 ```
 
+### Parallel model comparison
+
+Set `WORKER_CONCURRENCY=4` and restart the worker. Its supervisor starts four
+independent host processes, each using the durable PostgreSQL queue. This isolates
+native PDF/OCR state and allows four application queries to execute at once.
+`--concurrency 4` bounds the runner's in-flight trials; setting it alone does not
+increase worker capacity. Leave capacity at one on a resource-constrained host.
+
+Add the exact candidate IDs to `OPENAI_ALLOWED_MODELS` as a JSON list in `.env`,
+then restart the API. All candidates use the existing configured endpoint/key.
+Run the five Krutrim candidates with one trial per case:
+
+```sh
+cd backend
+uv run python -m evaluation.cli run-matrix --live \
+  --cases ../evals/cases/real-v1.json --repeats 1 --concurrency 4 \
+  --timeout 900 --output ../evals/runs/real-v1-krutrim-matrix \
+  --model gpt-oss-120b --model gemma-4-31b-it \
+  --model gemma-4-26B-A4B-it --model Qwen3.5-9B \
+  --model Qwen3.6-35B-A3B
+```
+
+The matrix runs models sequentially, with four trials per model in flight, so
+five models do not multiply the concurrency bound. Each model has its own hashed
+folder, checkpoint and JSON/CSV/HTML reports. `matrix.json` links the model IDs to
+these folders and aggregates automatic results. Use the same command with
+`--resume` after interruption; completed successes and failures are retained.
+`run --model MODEL_ID` selects one configured candidate. The API snapshots the
+model ID into the run, includes it in idempotency checks, and the worker uses that
+snapshot. Runner and worker concurrency are part of experiment identity.
+
+Reports retain tool order, decisions, status and error counts, per-tool durations,
+model attempts/responses, provider failures and retryability, response durations,
+usage counters and their coverage, queue/query/ingestion timing, and bounded
+response/validation diagnostics. Existing observations retain redacted tool inputs,
+results and evidence. Operational telemetry excludes prompt text, submitted
+argument values and private reasoning. Provider failures without usage remain
+unavailable; audit truncation and missing counters must be considered when
+interpreting totals. Timing at concurrency four measures throughput under shared
+host/provider load and is not directly comparable to single-query latency.
+
+One repetition is exploratory. Automatic statuses still require the manual
+reviews described below, and this run does not establish a stable model ranking.
+
 The normal runner supports 1–20 repetitions. A repetition of three is useful
 for selected comparisons, but increases cost and still does not make these
 unreviewed labels a quality certification. Keep original failures and review

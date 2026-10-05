@@ -34,6 +34,12 @@ uv run python -m evaluation.cli run --live --case mixed-en \
 
 Useful options are `--case` and `--tag` filters, `--repeats 1..20`,
 `--concurrency 1..4`, `--timeout 1..1800`, and `--profile basic|advanced`.
+For concurrent execution, set `WORKER_CONCURRENCY=4` and restart the worker;
+the supervisor starts isolated host worker processes. `run --model MODEL_ID`
+and `run-matrix --model MODEL_ID --model OTHER_ID` select explicit IDs from
+`OPENAI_ALLOWED_MODELS`. The matrix bounds trials per model and runs models
+sequentially. See [the real-source pack](../evals/real-v1.md#parallel-model-comparison)
+for the five-model command and retained telemetry.
 Concurrency controls runner trials; the application worker may still serialize
 execution. `--strict` exits 1 when synthetic deterministic gates fail. Ordinary
 runs write failures and return a report without demanding a perfect model answer.

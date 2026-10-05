@@ -434,3 +434,27 @@ def test_retry_exhaustion_marks_run_terminal(db_factory, session_id, expected_cl
         assert run.outcome["cleanup"] == expected_cleanup
         assert "TTL" in run.outcome["cleanup_reason"]
         assert job and job.state == "failed" and job.lease_token is None
+
+
+def test_runtime_uses_submitted_model_snapshot(db_factory, monkeypatch):
+    import app.agent.runtime as runtime_module
+
+    run_id, task = queued_run(
+        db_factory, config={"answer_language": "en-IN", "model": "submitted"}
+    )
+    captured = []
+
+    class CaptureLoop:
+        def __init__(self, model, *_args, **_kwargs):
+            captured.append(model._settings.openai_model)
+
+        async def run(self, *_args, **_kwargs):
+            raise ValueError("stop after model selection")
+
+    monkeypatch.setattr(runtime_module, "AgentLoop", CaptureLoop)
+    asyncio.run(
+        RunRuntime(
+            task, Settings(_env_file=None, openai_model="changed-default"), db_factory
+        ).run()
+    )
+    assert captured == ["submitted"]

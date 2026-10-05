@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Literal
 
 from cryptography.fernet import Fernet
-from pydantic import SecretStr, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     openai_base_url: str | None = None
     openai_api_key: SecretStr | None = None
     openai_model: str | None = None
+    openai_allowed_models: list[str] = Field(default_factory=list, max_length=20)
+    worker_concurrency: int = Field(default=1, ge=1, le=4)
     sandbox_base_url: str | None = None
     sandbox_auth_token: SecretStr | None = None
     sandbox_image: str | None = None

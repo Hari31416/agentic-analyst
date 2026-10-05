@@ -44,6 +44,7 @@ class RunRequest(Contract):
     answer_language: str = "en-IN"
     retrieval_profile: Literal["basic", "advanced"] = "basic"
     request_id: UUID = Field(default_factory=uuid4)
+    model: str | None = Field(default=None, min_length=1, max_length=120)
 
     @field_validator("answer_language")
     @classmethod
@@ -126,6 +127,9 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             503,
             "Configure OPENAI_BASE_URL, OPENAI_API_KEY, and OPENAI_MODEL before starting chat",
         )
+    requested_model = body.model or settings.openai_model
+    if requested_model not in {settings.openai_model, *settings.openai_allowed_models}:
+        raise HTTPException(422, "Requested model is unavailable")
     if body.answer_language not in settings.supported_languages:
         raise HTTPException(422, "Requested answer language is unavailable")
     from app.api.resource_lifecycle import lock_thread
@@ -168,6 +172,7 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
             or original.content != body.text
             or existing.selected_source_ids != selected
             or existing.config.get("selected_dataset_ids", []) != selected_datasets
+            or existing.config.get("model") != requested_model
             or existing.config.get("answer_language") != body.answer_language
             or existing.config.get("retrieval_profile", "basic")
             != body.retrieval_profile
@@ -244,7 +249,7 @@ def create_run(thread_id: str, body: RunRequest, session: Db) -> dict[str, Any]:
                 "token_budget_default": 12000,
             },
             "selected_dataset_ids": selected_datasets,
-            "model": settings.openai_model,
+            "model": requested_model,
             "prompt_version": PROMPT_VERSION,
             "policy_version": "execution-policy-v1",
             "source_versions": {source.id: source.version for source in source_rows},

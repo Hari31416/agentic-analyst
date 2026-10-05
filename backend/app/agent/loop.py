@@ -204,9 +204,21 @@ class AgentLoop:
                             "model_calls": self.model_calls,
                         },
                     )
+                    model_started = time.monotonic()
                     try:
                         response = await self.model.complete(redact(messages), schemas)
                     except ModelError as exc:
+                        await self.events(
+                            "model_request_failed",
+                            {
+                                "model_calls": self.model_calls,
+                                "code": exc.code,
+                                "retryable": exc.retryable,
+                                "duration_ms": round(
+                                    (time.monotonic() - model_started) * 1000, 3
+                                ),
+                            },
+                        )
                         logger.error(
                             "Model call failed: code=%s retryable=%s message=%s",
                             exc.code,
@@ -231,6 +243,24 @@ class AgentLoop:
                         {
                             "model_calls": self.model_calls,
                             "finish_reason": response.finish_reason,
+                            "duration_ms": round(
+                                (time.monotonic() - model_started) * 1000, 3
+                            ),
+                            "usage": {
+                                key: value
+                                for key, value in response.usage.items()
+                                if key
+                                in {
+                                    "prompt_tokens",
+                                    "completion_tokens",
+                                    "total_tokens",
+                                    "input_tokens",
+                                    "output_tokens",
+                                }
+                                and isinstance(value, int)
+                                and not isinstance(value, bool)
+                                and value >= 0
+                            },
                             "content_characters": len(response.content or ""),
                             "tool_calls": [
                                 {

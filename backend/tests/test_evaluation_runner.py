@@ -14,7 +14,7 @@ from evaluation.client import ApplicationClient
 from evaluation.client import ApiFailure, _safe_api_error
 from evaluation.contracts import EvaluationCase
 from evaluation.identity import ROOT, digest, endpoint_identity, fixture_path
-from evaluation.runner import Checkpoint, run_experiment
+from evaluation.runner import Checkpoint, audit_telemetry, run_experiment
 
 
 def case():
@@ -29,6 +29,8 @@ def case():
 class Server:
     def __init__(self):
         self.run_posts = 0
+        self.run_request = None
+        self.audit_config = {}
         self.wait_forever = False
         self.fail_create = False
         self.running_entered = asyncio.Event()
@@ -43,6 +45,7 @@ class Server:
             return httpx.Response(201, json={"id": "thread"})
         if request.method == "POST" and path.endswith("/runs"):
             self.run_posts += 1
+            self.run_request = json.loads(request.content)
             return httpx.Response(
                 201, json={"id": json.loads(request.content)["request_id"]}
             )
@@ -53,7 +56,7 @@ class Server:
             return httpx.Response(
                 200,
                 json={
-                    "run": {"config": {}},
+                    "run": {"config": self.audit_config},
                     "tool_calls": [],
                     "evidence": [],
                     "artifacts": [],
@@ -103,6 +106,30 @@ async def test_runner_public_api_resume_and_identity_invalidation(tmp_path):
         )
     with pytest.raises(ValueError, match="Checkpoint exists"):
         Checkpoint(tmp_path / "checkpoint.json", identity, [case()])
+    await client.close()
+
+
+async def test_runner_submits_identity_model_and_records_execution_settings(tmp_path):
+    server = Server()
+    server.audit_config = {"model": "provider/model-a", "retrieval_profile": "basic"}
+    client = ApplicationClient(
+        "http://localhost", transport=httpx.MockTransport(server.handle)
+    )
+    checkpoint = Checkpoint(
+        tmp_path / "checkpoint.json", {"model": "provider/model-a"}, [case()]
+    )
+    report = await run_experiment(
+        [case()], checkpoint, client, tmp_path, repeats=1, concurrency=3, timeout=90
+    )
+    assert server.run_request["model"] == "provider/model-a"
+    assert report["execution_settings"] == {
+        "repeats": 1,
+        "concurrency": 3,
+        "timeout_seconds": 90,
+        "retrieval_profile": "basic",
+    }
+    assert report["trials"][0]["profile_mismatches"] == []
+    assert report["trials"][0]["started_at"] and report["trials"][0]["finished_at"]
     await client.close()
 
 
@@ -204,6 +231,141 @@ def test_devanagari_numeric_literals_are_preserved():
         metric.status == "pass"
         for metric in score_answer_claims(known, "आवेदन २, कुल राशि ₹२५०००.००।")
     )
+
+
+def test_audit_telemetry_extracts_bounded_tool_and_model_trace_without_payloads():
+    telemetry = audit_telemetry(
+        {
+            "run": {
+                "outcome": {
+                    "model_calls": 3,
+                    "tool_calls": 2,
+                    "usage": {"total_tokens": "[redacted]"},
+                    "error": {
+                        "code": "invalid_model_response",
+                        "message": "private answer",
+                    },
+                }
+            },
+            "tool_calls": [
+                {
+                    "name": "search_documents",
+                    "decision": "allowed",
+                    "status": "completed",
+                    "started_at": "2026-10-05T10:00:00+00:00",
+                    "finished_at": "2026-10-05T10:00:00.125+00:00",
+                    "input_reference": {"question": "private query"},
+                    "result": {"text": "private result"},
+                },
+                {
+                    "name": "run_sql",
+                    "decision": "allowed",
+                    "status": "failed",
+                    "started_at": "2026-10-05T10:00:01+00:00",
+                    "finished_at": "2026-10-05T10:00:02+00:00",
+                    "result": {
+                        "error": {"code": "database_timeout", "message": "private"}
+                    },
+                },
+            ],
+            "events": [
+                {
+                    "type": "status",
+                    "payload": {
+                        "message": "Requesting the next action",
+                        "model_calls": 1,
+                        "prompt": "private",
+                    },
+                },
+                {
+                    "type": "model_response_diagnostic",
+                    "payload": {
+                        "model_calls": 1,
+                        "finish_reason": "tool_calls",
+                        "duration_ms": 250,
+                        "usage": {
+                            "prompt_tokens": 80,
+                            "completion_tokens": 20,
+                            "total_tokens": 100,
+                        },
+                        "content_characters": 0,
+                        "tool_calls": [
+                            {"name": "search_documents", "arguments": "private"}
+                        ],
+                    },
+                },
+                {
+                    "type": "status",
+                    "payload": {
+                        "message": "Requesting the next action",
+                        "model_calls": 2,
+                    },
+                },
+                {
+                    "type": "model_request_failed",
+                    "payload": {
+                        "model_calls": 3,
+                        "code": "model_timeout",
+                        "retryable": False,
+                        "duration_ms": 900,
+                    },
+                },
+                {
+                    "type": "status",
+                    "payload": {
+                        "message": "Requesting the next action",
+                        "model_calls": 3,
+                        "code": "model_timeout",
+                    },
+                },
+            ],
+        }
+    )
+    assert telemetry["tool_calls"]["count"] == 2
+    assert telemetry["tool_calls"]["durations_ms"] == {
+        "total": 1125.0,
+        "max": 1000.0,
+        "measured_count": 2,
+    }
+    assert telemetry["tool_calls"]["error_counts"] == {"database_timeout": 1}
+    assert telemetry["model"]["call_count"] == 3
+    assert telemetry["model"]["attempted_count"] == 3
+    assert telemetry["model"]["response_count"] == 1
+    assert telemetry["model"]["durations_ms"] == {
+        "total": 1150.0,
+        "max": 900.0,
+        "measured_count": 2,
+    }
+    assert telemetry["model"]["error_counts"] == {
+        "model_timeout": 1,
+        "invalid_model_response": 1,
+    }
+    assert telemetry["model"]["usage"] == {
+        "prompt_tokens": 80,
+        "completion_tokens": 20,
+        "total_tokens": 100,
+    }
+    assert telemetry["model"]["usage_status"] == "partial"
+    assert "private" not in json.dumps(telemetry)
+
+
+def test_checkpoint_retains_numeric_token_counters(tmp_path):
+    checkpoint = Checkpoint(tmp_path / "checkpoint.json", {}, [case()])
+    trial = checkpoint.trial(case(), 0)
+    trial["tokens"] = 31
+    trial["telemetry"] = {
+        "model": {
+            "usage": {"prompt_tokens": 19, "completion_tokens": 12, "total_tokens": 31}
+        }
+    }
+    checkpoint.save()
+    saved = json.loads((tmp_path / "checkpoint.json").read_text())
+    assert saved["trials"][0]["tokens"] == 31
+    assert saved["trials"][0]["telemetry"]["model"]["usage"] == {
+        "prompt_tokens": 19,
+        "completion_tokens": 12,
+        "total_tokens": 31,
+    }
 
 
 def test_rescore_preserves_execution_identity_and_refuses_changed_inputs():

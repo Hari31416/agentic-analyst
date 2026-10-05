@@ -868,6 +868,13 @@ class RunRuntime:
                         }
                     )
                 language = str(run.config["answer_language"])
+                # Pin the submitted model even if the worker default later changes.
+                model_settings = self.settings.model_copy(
+                    update={
+                        "openai_model": run.config.get("model")
+                        or self.settings.openai_model
+                    }
+                )
                 append_event(
                     session,
                     run.id,
@@ -963,7 +970,7 @@ class RunRuntime:
                 ),
             ]
             loop = AgentLoop(
-                OpenAICompatibleModel(self.settings),
+                OpenAICompatibleModel(model_settings),
                 self.settings,
                 [
                     Tool(

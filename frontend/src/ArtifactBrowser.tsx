@@ -399,7 +399,7 @@ export function ArtifactDetail({
       )
     else if (isText)
       jobs.push(
-        chatApi.previewArtifact(artifact.id, 16000).then((result) => {
+        chatApi.previewArtifact(artifact.id, 8000).then((result) => {
           if (active) setPreview(result)
         }),
       )

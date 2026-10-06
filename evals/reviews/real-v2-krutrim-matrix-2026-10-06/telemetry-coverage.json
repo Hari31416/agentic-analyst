@@ -1,0 +1,2406 @@
+{
+  "schema_version": 1,
+  "scope": "Retained report response counters; not billing totals",
+  "trials": [
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-jan-sales-en",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 1884,
+        "prompt_tokens": 33284,
+        "total_tokens": 35168
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-distinct-countries",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 986,
+        "prompt_tokens": 18651,
+        "total_tokens": 19637
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-customer-null-en",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1522,
+        "prompt_tokens": 27866,
+        "total_tokens": 29388
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-top-country-en",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1666,
+        "prompt_tokens": 27863,
+        "total_tokens": 29529
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-cancellations",
+      "attempts": 1,
+      "responses": 1,
+      "known_response_usage": {
+        "completion_tokens": 114,
+        "prompt_tokens": 2707,
+        "total_tokens": 2821
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-sales-chart-csv",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 2622,
+        "prompt_tokens": 42702,
+        "total_tokens": 45324
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-revenue-hindi",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1041,
+        "prompt_tokens": 19585,
+        "total_tokens": 20626
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-codeswitch-top-country",
+      "attempts": 1,
+      "responses": 1,
+      "known_response_usage": {
+        "completion_tokens": 648,
+        "prompt_tokens": 2713,
+        "total_tokens": 3361
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-mixed-rule-retrieval",
+      "attempts": 1,
+      "responses": 1,
+      "known_response_usage": {
+        "completion_tokens": 100,
+        "prompt_tokens": 2702,
+        "total_tokens": 2802
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-missing-cost-unsupported",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 707,
+        "prompt_tokens": 12953,
+        "total_tokens": 13660
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-lines-vs-invoices",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 1817,
+        "prompt_tokens": 32062,
+        "total_tokens": 33879
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-units-sold",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1029,
+        "prompt_tokens": 27637,
+        "total_tokens": 28666
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-missing-customer-sales",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 815,
+        "prompt_tokens": 11868,
+        "total_tokens": 12683
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-top-five",
+      "attempts": 1,
+      "responses": 1,
+      "known_response_usage": {
+        "completion_tokens": 356,
+        "prompt_tokens": 2673,
+        "total_tokens": 3029
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-hindi-english-rules",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1505,
+        "prompt_tokens": 25803,
+        "total_tokens": 27308
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-export-and-chart-hi",
+      "attempts": 16,
+      "responses": 16,
+      "known_response_usage": {
+        "completion_tokens": 5429,
+        "prompt_tokens": 99025,
+        "total_tokens": 104454
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-cancellation-only-count",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1336,
+        "prompt_tokens": 27650,
+        "total_tokens": 28986
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-distinct-customer-count",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 842,
+        "prompt_tokens": 15630,
+        "total_tokens": 16472
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-netherlands-sales",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1091,
+        "prompt_tokens": 18613,
+        "total_tokens": 19704
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-scope-clarification",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 1953,
+        "prompt_tokens": 38638,
+        "total_tokens": 40591
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-fy24-retail-inflation-en",
+      "attempts": 2,
+      "responses": 2,
+      "known_response_usage": {
+        "completion_tokens": 322,
+        "prompt_tokens": 8057,
+        "total_tokens": 8379
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 480,
+        "prompt_tokens": 11945,
+        "total_tokens": 12425
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-inflation-drivers-en",
+      "attempts": 10,
+      "responses": 10,
+      "known_response_usage": {
+        "completion_tokens": 2386,
+        "prompt_tokens": 79263,
+        "total_tokens": 81649
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-inflation-policy-measures-en",
+      "attempts": 11,
+      "responses": 11,
+      "known_response_usage": {
+        "completion_tokens": 1498,
+        "prompt_tokens": 45807,
+        "total_tokens": 47305
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-inflation-hi-source",
+      "attempts": 17,
+      "responses": 17,
+      "known_response_usage": {
+        "completion_tokens": 5096,
+        "prompt_tokens": 114312,
+        "total_tokens": 119408
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-summary-vs-chapter",
+      "attempts": 11,
+      "responses": 11,
+      "known_response_usage": {
+        "completion_tokens": 2491,
+        "prompt_tokens": 131128,
+        "total_tokens": 133619
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-inflation-hi-cross-language",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1922,
+        "prompt_tokens": 54640,
+        "total_tokens": 56562
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-hindi-source-search-en",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 943,
+        "prompt_tokens": 20612,
+        "total_tokens": 21555
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-appendix-table-retrieval",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 2265,
+        "prompt_tokens": 43929,
+        "total_tokens": 46194
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-causal-overclaim",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 987,
+        "prompt_tokens": 14982,
+        "total_tokens": 15969
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-weekend-weekday-comparison",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 3053,
+        "prompt_tokens": 44892,
+        "total_tokens": 47945
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-calendar-week-bands",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 2098,
+        "prompt_tokens": 34074,
+        "total_tokens": 36172
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-qualifying-date-endpoints",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1321,
+        "prompt_tokens": 27197,
+        "total_tokens": 28518
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-cancellation-negative-quantity-crosstab",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1632,
+        "prompt_tokens": 26213,
+        "total_tokens": 27845
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-raw-signed-versus-qualifying-sales",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 1815,
+        "prompt_tokens": 29534,
+        "total_tokens": 31349
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-invoice-line-count-buckets",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 2021,
+        "prompt_tokens": 27020,
+        "total_tokens": 29041
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-line-average-v-invoice-average",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 1526,
+        "prompt_tokens": 31406,
+        "total_tokens": 32932
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-top-three-country-concentration",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 2664,
+        "prompt_tokens": 40587,
+        "total_tokens": 43251
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-leading-stock-code-by-sales",
+      "attempts": 11,
+      "responses": 11,
+      "known_response_usage": {
+        "completion_tokens": 2562,
+        "prompt_tokens": 42158,
+        "total_tokens": 44720
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-unit-price-buckets",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1657,
+        "prompt_tokens": 18351,
+        "total_tokens": 20008
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-quantity-size-buckets",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 1563,
+        "prompt_tokens": 15387,
+        "total_tokens": 16950
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "retail-conditional-customer-missing-shares",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 2774,
+        "prompt_tokens": 32953,
+        "total_tokens": 35727
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-fy24-gdp-and-gva-growth",
+      "attempts": 16,
+      "responses": 16,
+      "known_response_usage": {
+        "completion_tokens": 3040,
+        "prompt_tokens": 85646,
+        "total_tokens": 88686
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-union-fiscal-deficit-change",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 898,
+        "prompt_tokens": 18730,
+        "total_tokens": 19628
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-digital-finance-scale-and-ekyc",
+      "attempts": 14,
+      "responses": 13,
+      "known_response_usage": {
+        "completion_tokens": 2222,
+        "prompt_tokens": 441793,
+        "total_tokens": 444015
+      },
+      "usage_status": "partial"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-microfinance-client-shares",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 1929,
+        "prompt_tokens": 75762,
+        "total_tokens": 77691
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "survey-nifty-fy23-fy24-returns",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 484,
+        "prompt_tokens": 13039,
+        "total_tokens": 13523
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "inflation-fuel-price-cuts-2023-24",
+      "attempts": 8,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1573,
+        "prompt_tokens": 79608,
+        "total_tokens": 81181
+      },
+      "usage_status": "partial"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "inflation-core-definition",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 695,
+        "prompt_tokens": 11964,
+        "total_tokens": 12659
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gpt-oss-120b",
+      "case_id": "inflation-rural-urban-basket-and-state-count",
+      "attempts": 11,
+      "responses": 11,
+      "known_response_usage": {
+        "completion_tokens": 1730,
+        "prompt_tokens": 52878,
+        "total_tokens": 54608
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-jan-sales-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 888,
+        "prompt_tokens": 24056,
+        "total_tokens": 24944
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-distinct-countries",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 262,
+        "prompt_tokens": 24274,
+        "total_tokens": 24536
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-customer-null-en",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 251,
+        "prompt_tokens": 13509,
+        "total_tokens": 13760
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-top-country-en",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 944,
+        "prompt_tokens": 37623,
+        "total_tokens": 38567
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-cancellations",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 339,
+        "prompt_tokens": 19477,
+        "total_tokens": 19816
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-sales-chart-csv",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1093,
+        "prompt_tokens": 47093,
+        "total_tokens": 48186
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-revenue-hindi",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 447,
+        "prompt_tokens": 32063,
+        "total_tokens": 32510
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-codeswitch-top-country",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 490,
+        "prompt_tokens": 19890,
+        "total_tokens": 20380
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-mixed-rule-retrieval",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 561,
+        "prompt_tokens": 31841,
+        "total_tokens": 32402
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-missing-cost-unsupported",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 355,
+        "prompt_tokens": 25043,
+        "total_tokens": 25398
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-lines-vs-invoices",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 365,
+        "prompt_tokens": 24438,
+        "total_tokens": 24803
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-units-sold",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 208,
+        "prompt_tokens": 19602,
+        "total_tokens": 19810
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-missing-customer-sales",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 341,
+        "prompt_tokens": 13872,
+        "total_tokens": 14213
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-top-five",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 382,
+        "prompt_tokens": 19392,
+        "total_tokens": 19774
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-hindi-english-rules",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 321,
+        "prompt_tokens": 23889,
+        "total_tokens": 24210
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-export-and-chart-hi",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 845,
+        "prompt_tokens": 38023,
+        "total_tokens": 38868
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-cancellation-only-count",
+      "attempts": 2,
+      "responses": 2,
+      "known_response_usage": {
+        "completion_tokens": 136,
+        "prompt_tokens": 7868,
+        "total_tokens": 8004
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-distinct-customer-count",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 284,
+        "prompt_tokens": 24296,
+        "total_tokens": 24580
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-netherlands-sales",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 252,
+        "prompt_tokens": 24408,
+        "total_tokens": 24660
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-scope-clarification",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 385,
+        "prompt_tokens": 25764,
+        "total_tokens": 26149
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-fy24-retail-inflation-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 231,
+        "prompt_tokens": 21175,
+        "total_tokens": 21406
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 155,
+        "prompt_tokens": 19114,
+        "total_tokens": 19269
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-inflation-drivers-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 328,
+        "prompt_tokens": 38836,
+        "total_tokens": 39164
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-inflation-policy-measures-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 267,
+        "prompt_tokens": 29797,
+        "total_tokens": 30064
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-inflation-hi-source",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 563,
+        "prompt_tokens": 16702,
+        "total_tokens": 17265
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-summary-vs-chapter",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 751,
+        "prompt_tokens": 138555,
+        "total_tokens": 139306
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-inflation-hi-cross-language",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 822,
+        "prompt_tokens": 36553,
+        "total_tokens": 37375
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-hindi-source-search-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 191,
+        "prompt_tokens": 28324,
+        "total_tokens": 28515
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-appendix-table-retrieval",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 376,
+        "prompt_tokens": 23936,
+        "total_tokens": 24312
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-causal-overclaim",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 586,
+        "prompt_tokens": 24369,
+        "total_tokens": 24955
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-weekend-weekday-comparison",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1889,
+        "prompt_tokens": 24862,
+        "total_tokens": 26751
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-calendar-week-bands",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 902,
+        "prompt_tokens": 21056,
+        "total_tokens": 21958
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-qualifying-date-endpoints",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 679,
+        "prompt_tokens": 20714,
+        "total_tokens": 21393
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-cancellation-negative-quantity-crosstab",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 394,
+        "prompt_tokens": 13896,
+        "total_tokens": 14290
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-raw-signed-versus-qualifying-sales",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 590,
+        "prompt_tokens": 20513,
+        "total_tokens": 21103
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-invoice-line-count-buckets",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 941,
+        "prompt_tokens": 33553,
+        "total_tokens": 34494
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-line-average-v-invoice-average",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 323,
+        "prompt_tokens": 13740,
+        "total_tokens": 14063
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-top-three-country-concentration",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 1226,
+        "prompt_tokens": 51363,
+        "total_tokens": 52589
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-leading-stock-code-by-sales",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 716,
+        "prompt_tokens": 43296,
+        "total_tokens": 44012
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-unit-price-buckets",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 812,
+        "prompt_tokens": 21776,
+        "total_tokens": 22588
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-quantity-size-buckets",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 875,
+        "prompt_tokens": 25943,
+        "total_tokens": 26818
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "retail-conditional-customer-missing-shares",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 890,
+        "prompt_tokens": 15406,
+        "total_tokens": 16296
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-fy24-gdp-and-gva-growth",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 298,
+        "prompt_tokens": 35493,
+        "total_tokens": 35791
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-union-fiscal-deficit-change",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 371,
+        "prompt_tokens": 21364,
+        "total_tokens": 21735
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-digital-finance-scale-and-ekyc",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 317,
+        "prompt_tokens": 24874,
+        "total_tokens": 25191
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-microfinance-client-shares",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 310,
+        "prompt_tokens": 22528,
+        "total_tokens": 22838
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "survey-nifty-fy23-fy24-returns",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 157,
+        "prompt_tokens": 27846,
+        "total_tokens": 28003
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "inflation-fuel-price-cuts-2023-24",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 344,
+        "prompt_tokens": 32175,
+        "total_tokens": 32519
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "inflation-core-definition",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 218,
+        "prompt_tokens": 27903,
+        "total_tokens": 28121
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "case_id": "inflation-rural-urban-basket-and-state-count",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 322,
+        "prompt_tokens": 17253,
+        "total_tokens": 17575
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-jan-sales-en",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1111,
+        "prompt_tokens": 36540,
+        "total_tokens": 37651
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-distinct-countries",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 507,
+        "prompt_tokens": 31682,
+        "total_tokens": 32189
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-customer-null-en",
+      "attempts": 10,
+      "responses": 10,
+      "known_response_usage": {
+        "completion_tokens": 1355,
+        "prompt_tokens": 66608,
+        "total_tokens": 67963
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-top-country-en",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 385,
+        "prompt_tokens": 23137,
+        "total_tokens": 23522
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-cancellations",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 817,
+        "prompt_tokens": 39436,
+        "total_tokens": 40253
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-sales-chart-csv",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 1371,
+        "prompt_tokens": 50497,
+        "total_tokens": 51868
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-revenue-hindi",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 661,
+        "prompt_tokens": 36134,
+        "total_tokens": 36795
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-codeswitch-top-country",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1048,
+        "prompt_tokens": 37867,
+        "total_tokens": 38915
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-mixed-rule-retrieval",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1013,
+        "prompt_tokens": 40551,
+        "total_tokens": 41564
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-missing-cost-unsupported",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 580,
+        "prompt_tokens": 50552,
+        "total_tokens": 51132
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-lines-vs-invoices",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 1171,
+        "prompt_tokens": 44117,
+        "total_tokens": 45288
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-units-sold",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 848,
+        "prompt_tokens": 47425,
+        "total_tokens": 48273
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-missing-customer-sales",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 560,
+        "prompt_tokens": 28923,
+        "total_tokens": 29483
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-top-five",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 808,
+        "prompt_tokens": 30080,
+        "total_tokens": 30888
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-hindi-english-rules",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 890,
+        "prompt_tokens": 51658,
+        "total_tokens": 52548
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-export-and-chart-hi",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 1846,
+        "prompt_tokens": 60307,
+        "total_tokens": 62153
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-cancellation-only-count",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 169,
+        "prompt_tokens": 13208,
+        "total_tokens": 13377
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-distinct-customer-count",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 274,
+        "prompt_tokens": 24846,
+        "total_tokens": 25120
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-netherlands-sales",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 394,
+        "prompt_tokens": 28245,
+        "total_tokens": 28639
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-scope-clarification",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 989,
+        "prompt_tokens": 44506,
+        "total_tokens": 45495
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-fy24-retail-inflation-en",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 380,
+        "prompt_tokens": 13226,
+        "total_tokens": 13606
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 172,
+        "prompt_tokens": 25650,
+        "total_tokens": 25822
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-inflation-drivers-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 612,
+        "prompt_tokens": 32948,
+        "total_tokens": 33560
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-inflation-policy-measures-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 287,
+        "prompt_tokens": 25751,
+        "total_tokens": 26038
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-inflation-hi-source",
+      "attempts": 10,
+      "responses": 10,
+      "known_response_usage": {
+        "completion_tokens": 2667,
+        "prompt_tokens": 93263,
+        "total_tokens": 95930
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-summary-vs-chapter",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 1260,
+        "prompt_tokens": 195662,
+        "total_tokens": 196922
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-inflation-hi-cross-language",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 756,
+        "prompt_tokens": 36734,
+        "total_tokens": 37490
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-hindi-source-search-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 498,
+        "prompt_tokens": 24982,
+        "total_tokens": 25480
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-appendix-table-retrieval",
+      "attempts": 2,
+      "responses": 2,
+      "known_response_usage": {
+        "completion_tokens": 417,
+        "prompt_tokens": 15620,
+        "total_tokens": 16037
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-causal-overclaim",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 609,
+        "prompt_tokens": 40886,
+        "total_tokens": 41495
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-weekend-weekday-comparison",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 2070,
+        "prompt_tokens": 35466,
+        "total_tokens": 37536
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-calendar-week-bands",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1443,
+        "prompt_tokens": 39631,
+        "total_tokens": 41074
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-qualifying-date-endpoints",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1046,
+        "prompt_tokens": 31415,
+        "total_tokens": 32461
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-cancellation-negative-quantity-crosstab",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 765,
+        "prompt_tokens": 24266,
+        "total_tokens": 25031
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-raw-signed-versus-qualifying-sales",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1116,
+        "prompt_tokens": 31591,
+        "total_tokens": 32707
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-invoice-line-count-buckets",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 1391,
+        "prompt_tokens": 38250,
+        "total_tokens": 39641
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-line-average-v-invoice-average",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 671,
+        "prompt_tokens": 30361,
+        "total_tokens": 31032
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-top-three-country-concentration",
+      "attempts": 11,
+      "responses": 11,
+      "known_response_usage": {
+        "completion_tokens": 1586,
+        "prompt_tokens": 81595,
+        "total_tokens": 83181
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-leading-stock-code-by-sales",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 747,
+        "prompt_tokens": 34447,
+        "total_tokens": 35194
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-unit-price-buckets",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1455,
+        "prompt_tokens": 25889,
+        "total_tokens": 27344
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-quantity-size-buckets",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1824,
+        "prompt_tokens": 32507,
+        "total_tokens": 34331
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "retail-conditional-customer-missing-shares",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1327,
+        "prompt_tokens": 33455,
+        "total_tokens": 34782
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-fy24-gdp-and-gva-growth",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 478,
+        "prompt_tokens": 110359,
+        "total_tokens": 110837
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-union-fiscal-deficit-change",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 505,
+        "prompt_tokens": 21320,
+        "total_tokens": 21825
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-digital-finance-scale-and-ekyc",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 1045,
+        "prompt_tokens": 50914,
+        "total_tokens": 51959
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-microfinance-client-shares",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 507,
+        "prompt_tokens": 65527,
+        "total_tokens": 66034
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "survey-nifty-fy23-fy24-returns",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 182,
+        "prompt_tokens": 31146,
+        "total_tokens": 31328
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "inflation-fuel-price-cuts-2023-24",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 634,
+        "prompt_tokens": 51397,
+        "total_tokens": 52031
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "inflation-core-definition",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 220,
+        "prompt_tokens": 24257,
+        "total_tokens": 24477
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "case_id": "inflation-rural-urban-basket-and-state-count",
+      "attempts": 2,
+      "responses": 2,
+      "known_response_usage": {
+        "completion_tokens": 403,
+        "prompt_tokens": 18530,
+        "total_tokens": 18933
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-jan-sales-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 1356,
+        "prompt_tokens": 32779,
+        "total_tokens": 34135
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-distinct-countries",
+      "attempts": 12,
+      "responses": 12,
+      "known_response_usage": {
+        "completion_tokens": 2436,
+        "prompt_tokens": 124668,
+        "total_tokens": 127104
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-customer-null-en",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1476,
+        "prompt_tokens": 43498,
+        "total_tokens": 44974
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-top-country-en",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 902,
+        "prompt_tokens": 32628,
+        "total_tokens": 33530
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-cancellations",
+      "attempts": 10,
+      "responses": 10,
+      "known_response_usage": {
+        "completion_tokens": 2785,
+        "prompt_tokens": 98095,
+        "total_tokens": 100880
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-sales-chart-csv",
+      "attempts": 12,
+      "responses": 12,
+      "known_response_usage": {
+        "completion_tokens": 4595,
+        "prompt_tokens": 130007,
+        "total_tokens": 134602
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-revenue-hindi",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1919,
+        "prompt_tokens": 49051,
+        "total_tokens": 50970
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-codeswitch-top-country",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 1811,
+        "prompt_tokens": 33233,
+        "total_tokens": 35044
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-mixed-rule-retrieval",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 3508,
+        "prompt_tokens": 66495,
+        "total_tokens": 70003
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-missing-cost-unsupported",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 4529,
+        "prompt_tokens": 53393,
+        "total_tokens": 57922
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-lines-vs-invoices",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 4966,
+        "prompt_tokens": 71657,
+        "total_tokens": 76623
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-units-sold",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 2475,
+        "prompt_tokens": 71754,
+        "total_tokens": 74229
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-missing-customer-sales",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 1855,
+        "prompt_tokens": 73862,
+        "total_tokens": 75717
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-top-five",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 2301,
+        "prompt_tokens": 53646,
+        "total_tokens": 55947
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-hindi-english-rules",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1476,
+        "prompt_tokens": 39361,
+        "total_tokens": 40837
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-export-and-chart-hi",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 3570,
+        "prompt_tokens": 96618,
+        "total_tokens": 100188
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-cancellation-only-count",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 489,
+        "prompt_tokens": 22226,
+        "total_tokens": 22715
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-distinct-customer-count",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1229,
+        "prompt_tokens": 42971,
+        "total_tokens": 44200
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-netherlands-sales",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 911,
+        "prompt_tokens": 32956,
+        "total_tokens": 33867
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-scope-clarification",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1289,
+        "prompt_tokens": 52087,
+        "total_tokens": 53376
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-fy24-retail-inflation-en",
+      "attempts": 3,
+      "responses": 3,
+      "known_response_usage": {
+        "completion_tokens": 766,
+        "prompt_tokens": 25989,
+        "total_tokens": 26755
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "attempts": 10,
+      "responses": 10,
+      "known_response_usage": {
+        "completion_tokens": 9324,
+        "prompt_tokens": 326001,
+        "total_tokens": 335325
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-inflation-drivers-en",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 2770,
+        "prompt_tokens": 120978,
+        "total_tokens": 123748
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-inflation-policy-measures-en",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1728,
+        "prompt_tokens": 58967,
+        "total_tokens": 60695
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-inflation-hi-source",
+      "attempts": 20,
+      "responses": 20,
+      "known_response_usage": {
+        "completion_tokens": 3538,
+        "prompt_tokens": 997184,
+        "total_tokens": 1000722
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-summary-vs-chapter",
+      "attempts": 10,
+      "responses": 10,
+      "known_response_usage": {
+        "completion_tokens": 6133,
+        "prompt_tokens": 268136,
+        "total_tokens": 274269
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-inflation-hi-cross-language",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 2951,
+        "prompt_tokens": 110702,
+        "total_tokens": 113653
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-hindi-source-search-en",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 4609,
+        "prompt_tokens": 95785,
+        "total_tokens": 100394
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-appendix-table-retrieval",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 2418,
+        "prompt_tokens": 74667,
+        "total_tokens": 77085
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-causal-overclaim",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 2054,
+        "prompt_tokens": 144342,
+        "total_tokens": 146396
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-weekend-weekday-comparison",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 2493,
+        "prompt_tokens": 33750,
+        "total_tokens": 36243
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-calendar-week-bands",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 1944,
+        "prompt_tokens": 34370,
+        "total_tokens": 36314
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-qualifying-date-endpoints",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 2660,
+        "prompt_tokens": 56712,
+        "total_tokens": 59372
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-cancellation-negative-quantity-crosstab",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 1249,
+        "prompt_tokens": 34448,
+        "total_tokens": 35697
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-raw-signed-versus-qualifying-sales",
+      "attempts": 9,
+      "responses": 9,
+      "known_response_usage": {
+        "completion_tokens": 2865,
+        "prompt_tokens": 111027,
+        "total_tokens": 113892
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-invoice-line-count-buckets",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 2261,
+        "prompt_tokens": 53063,
+        "total_tokens": 55324
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-line-average-v-invoice-average",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 2382,
+        "prompt_tokens": 83055,
+        "total_tokens": 85437
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-top-three-country-concentration",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 2979,
+        "prompt_tokens": 69965,
+        "total_tokens": 72944
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-leading-stock-code-by-sales",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 1826,
+        "prompt_tokens": 53865,
+        "total_tokens": 55691
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-unit-price-buckets",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 3481,
+        "prompt_tokens": 78529,
+        "total_tokens": 82010
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-quantity-size-buckets",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 2683,
+        "prompt_tokens": 47598,
+        "total_tokens": 50281
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "retail-conditional-customer-missing-shares",
+      "attempts": 7,
+      "responses": 7,
+      "known_response_usage": {
+        "completion_tokens": 3009,
+        "prompt_tokens": 62083,
+        "total_tokens": 65092
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-fy24-gdp-and-gva-growth",
+      "attempts": 6,
+      "responses": 6,
+      "known_response_usage": {
+        "completion_tokens": 2264,
+        "prompt_tokens": 111901,
+        "total_tokens": 114165
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-union-fiscal-deficit-change",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 1034,
+        "prompt_tokens": 32911,
+        "total_tokens": 33945
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-digital-finance-scale-and-ekyc",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 917,
+        "prompt_tokens": 56403,
+        "total_tokens": 57320
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-microfinance-client-shares",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 2462,
+        "prompt_tokens": 67929,
+        "total_tokens": 70391
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "survey-nifty-fy23-fy24-returns",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 1144,
+        "prompt_tokens": 34151,
+        "total_tokens": 35295
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "inflation-fuel-price-cuts-2023-24",
+      "attempts": 5,
+      "responses": 5,
+      "known_response_usage": {
+        "completion_tokens": 1456,
+        "prompt_tokens": 58291,
+        "total_tokens": 59747
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "inflation-core-definition",
+      "attempts": 4,
+      "responses": 4,
+      "known_response_usage": {
+        "completion_tokens": 1183,
+        "prompt_tokens": 63515,
+        "total_tokens": 64698
+      },
+      "usage_status": "measured"
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "case_id": "inflation-rural-urban-basket-and-state-count",
+      "attempts": 8,
+      "responses": 8,
+      "known_response_usage": {
+        "completion_tokens": 5394,
+        "prompt_tokens": 168472,
+        "total_tokens": 173866
+      },
+      "usage_status": "measured"
+    }
+  ]
+}

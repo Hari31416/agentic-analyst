@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "models": 4,
+  "trials": 200,
+  "exact_answer_hashes_verified": 200,
+  "checks": "Review schema/hash binding, unchanged automatic results, source hashes, all 50 IDs per model, cohort counts, totals and embedded HTML payload",
+  "results": [
+    {
+      "model": "gpt-oss-120b",
+      "trials": 50,
+      "review_counts": {
+        "complete": 29,
+        "failed": 9,
+        "partial": 12
+      },
+      "auto_status_counts": {
+        "needs_review": 30,
+        "failed": 19,
+        "model_error": 1
+      }
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "trials": 50,
+      "review_counts": {
+        "complete": 35,
+        "failed": 10,
+        "partial": 5
+      },
+      "auto_status_counts": {
+        "needs_review": 30,
+        "failed": 19,
+        "model_error": 1
+      }
+    },
+    {
+      "model": "gemma-4-26B-A4B-it",
+      "trials": 50,
+      "review_counts": {
+        "complete": 36,
+        "failed": 5,
+        "partial": 9
+      },
+      "auto_status_counts": {
+        "failed": 27,
+        "model_error": 1,
+        "needs_review": 22
+      }
+    },
+    {
+      "model": "Qwen3.6-35B-A3B",
+      "trials": 50,
+      "review_counts": {
+        "complete": 41,
+        "failed": 3,
+        "partial": 6
+      },
+      "auto_status_counts": {
+        "failed": 15,
+        "needs_review": 33,
+        "model_error": 2
+      }
+    }
+  ]
+}

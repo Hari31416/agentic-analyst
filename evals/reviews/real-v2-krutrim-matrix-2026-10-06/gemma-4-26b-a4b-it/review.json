@@ -1,0 +1,1750 @@
+{
+  "schema_version": 1,
+  "experiment_id": "6dc45d23cf1da663-e6f3f396",
+  "reviews": [
+    {
+      "case_id": "inflation-core-definition",
+      "repetition": 0,
+      "answer_hash": "fbde2988d8d1abd0d0cb0578d07098a47e7c601aac23735e597b65aaa75292dd",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence.",
+        "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+        "manual_review": "Check the measure’s exclusions and the stated analytical purpose. Do not redefine it as a separate price index with a different basket.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "3.11"
+              ],
+              "pdf_pages": [
+                5
+              ],
+              "printed_pages": [
+                89
+              ]
+            }
+          },
+          "required_claims": [
+            "Core inflation is measured by excluding food and energy items from CPI headline inflation.",
+            "The measure assesses underlying price trends by largely eliminating price volatility from transitory supply shocks."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+          "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+          "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Checks CPI food/energy exclusions, underlying-trend purpose and page 5."
+    },
+    {
+      "case_id": "inflation-fuel-price-cuts-2023-24",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence.",
+        "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+        "manual_review": "Check all three measures, product scope, month, and per-cylinder/per-litre unit. Keep domestic LPG and non-subsidised LPG statements distinct.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "3.9"
+              ],
+              "pdf_pages": [
+                4
+              ],
+              "printed_pages": [
+                88
+              ]
+            }
+          },
+          "required_claims": [
+            "In August 2023, domestic LPG cylinder price was reduced by ₹200 per cylinder in all markets across the country.",
+            "In March 2024, non-subsidised LPG cylinder prices were reduced by ₹100 per cylinder.",
+            "In March 2024, petrol and diesel prices were reduced by ₹2 per litre."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+          "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+          "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+        }
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "No answer text was returned; the recorded model/provider error leaves the requested result absent. The empty answer is separately associated with a recorded model/provider error."
+    },
+    {
+      "case_id": "inflation-rural-urban-basket-and-state-count",
+      "repetition": 0,
+      "answer_hash": "9d10dd3fbe3fc34cd177c3d2653ea337bb680b72746cef9855f3ee9e3b889ccd",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence.",
+        "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+        "manual_review": "Check the state/UT count and denominator, FY24 period, correct rural/urban weights, and distinguish basket weights from inflation rates. Do not infer causation beyond the chapter text.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "3.25",
+                "3.26"
+              ],
+              "pdf_pages": [
+                13
+              ],
+              "printed_pages": [
+                97
+              ]
+            }
+          },
+          "required_claims": [
+            "FY24 inflation was below 6 per cent in 29 out of 36 States and Union Territories.",
+            "Food items have a 47.3 per cent weight in the rural consumption basket and a 29.6 per cent weight in the urban consumption basket."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+          "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+          "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Checks 29/36 States/UTs and rural 47.3% vs urban 29.6% basket weights, page 13."
+    },
+    {
+      "case_id": "retail-calendar-week-bands",
+      "repetition": 0,
+      "answer_hash": "11f1ca034e4274407897bc3bef6b1b567d81430306b436d983b2e1b3ab767d61",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: days_01_07_lines, days_01_07_sales_gbp, days_08_14_lines, days_08_14_sales_gbp, days_15_21_lines, days_15_21_sales_gbp, days_22_31_lines, days_22_31_sales_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check inclusive date boundaries, full January coverage, correct grouping, and GBP labeling. Jan 1–3 have no rows in the attached slice; the requested first band still begins Jan 1.",
+        "reference_answer": {
+          "filter_and_grain": "date-boundary",
+          "required_claims": [
+            "Every source row is assigned to exactly one inclusive calendar band, then the authored qualifying-sales filters are applied."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: days_01_07_lines=6353, days_01_07_sales_gbp=117879.99, days_08_14_lines=9153, days_08_14_sales_gbp=201898.18, days_15_21_lines=9037, days_15_21_sales_gbp=212374.99, days_22_31_lines=9763, days_22_31_sales_gbp=159211.40. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:days_01_07_lines, calculation:days_01_07_sales_gbp, calculation:days_08_14_lines, calculation:days_08_14_sales_gbp, calculation:days_15_21_lines, calculation:days_15_21_sales_gbp, calculation:days_22_31_lines, calculation:days_22_31_sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-cancellation-negative-quantity-crosstab",
+      "repetition": 0,
+      "answer_hash": "143b9a769b2ccf05701a9cab6296bf5d625f9de92817824594592b54d90e142d",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: cancel_negative_quantity_rows, noncancel_negative_quantity_rows, cancel_nonnegative_quantity_rows, noncancel_nonnegative_quantity_rows. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check the full raw row population, case-insensitive C prefix, strict Quantity < 0 condition, and the four disjoint cells. Do not equate every negative-quantity row with a cancellation.",
+        "reference_answer": {
+          "filter_and_grain": "cancellation",
+          "required_claims": [
+            "This is an explicit raw-row classification question; no sales qualification filters apply."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: cancel_negative_quantity_rows=701, noncancel_negative_quantity_rows=96, cancel_nonnegative_quantity_rows=0, noncancel_nonnegative_quantity_rows=34350. Auto status is failed but manual task review is complete; passage literal matcher flagged passage:1 although the response gives the required content and supporting evidence."
+    },
+    {
+      "case_id": "retail-cancellation-only-count",
+      "repetition": 0,
+      "answer_hash": "59f0be4c2def35f85abf66181d9d57f7772d9dd99094f7c72a4ccb4fa33f662e",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Count raw rows; no other filters apply.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: cancelled_rows=701."
+    },
+    {
+      "case_id": "retail-cancellations",
+      "repetition": 0,
+      "answer_hash": "3294179e9365cf11f4516f544181316a7a47d621290d100caf9594fe0bc44c5f",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Cancellation count uses raw month rows; sales applies all three rules.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: cancelled_rows=701, sales_gbp=691364.56. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:sales_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent."
+    },
+    {
+      "case_id": "retail-codeswitch-top-country",
+      "repetition": 0,
+      "answer_hash": "227d555b51fe2abc5c0082f121618edb9637bc0712f2db102db824aab0fb243c",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "expected_category": "United Kingdom",
+        "manual_review": "Transliterated Hindi/English code-switching needs human review.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "Expected values missing/wrong for top_country_sales_gbp. Language quality is first-pass only; no native-speaker certification. Observed answer ending: “hain: | top_country_sales_gbp | invoice_count | | :--- | :--- | | 561289.98 | 1086 | (Note: `top_country_sales_gbp` us desh ki total sales hai jiska sales amount sabse zyada tha, aur `invoice_count` sabhi qualifying rows ka overall distinct invoice count hai.)”."
+    },
+    {
+      "case_id": "retail-conditional-customer-missing-shares",
+      "repetition": 0,
+      "answer_hash": "f0d563f14152900b70a4045561cb48d7a28f82def524a06cb2900295f34296f4",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: uk_qualifying_lines, uk_missing_customer_lines, uk_missing_customer_line_share_percent, uk_missing_customer_sales_gbp, uk_missing_customer_sales_share_percent, other_countries_qualifying_lines, other_countries_missing_customer_lines, other_countries_missing_customer_line_share_percent, other_countries_missing_customer_sales_gbp, other_countries_missing_customer_sales_share_percent. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check that the UK and other-country populations partition qualifying lines; for each group, calculate line share over that group’s lines and sales share over that group’s qualifying sales. Preserve missing CustomerID and do not impute identities.",
+        "reference_answer": {
+          "filter_and_grain": "conditional-ratio",
+          "required_claims": [
+            "This is a population-conditional missingness comparison, with distinct line-count and sales-value denominators."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: uk_qualifying_lines=31164, uk_missing_customer_lines=13006, uk_missing_customer_line_share_percent=41.73, uk_missing_customer_sales_gbp=119099.92, uk_missing_customer_sales_share_percent=21.22, other_countries_qualifying_lines=3142, other_countries_missing_customer_lines=71, other_countries_missing_customer_line_share_percent=2.26, other_countries_missing_customer_sales_gbp=2819.60, other_countries_missing_customer_sales_share_percent=2.17. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:other_countries_missing_customer_line_share_percent, answer_unit:other_countries_missing_customer_sales_gbp, answer_unit:other_countries_missing_customer_sales_share_percent, answer_unit:uk_missing_customer_line_share_percent, answer_unit:uk_missing_customer_sales_gbp, answer_unit:uk_missing_customer_sales_share_percent; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:other_countries_missing_customer_line_share_percent, calculation:other_countries_missing_customer_lines, calculation:other_countries_missing_customer_sales_gbp, calculation:other_countries_missing_customer_sales_share_percent, calculation:other_countries_qualifying_lines, calculation:uk_missing_customer_line_share_percent, calculation:uk_missing_customer_lines, calculation:uk_missing_customer_sales_gbp, calculation:uk_missing_customer_sales_share_percent, calculation:uk_qualifying_lines although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-customer-null-en",
+      "repetition": 0,
+      "answer_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Denominator is qualifying invoice lines, not distinct invoices or all raw rows. State percentage units.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "No answer text was returned; the recorded model/provider error leaves the requested result absent. The empty answer is separately associated with a recorded model/provider error."
+    },
+    {
+      "case_id": "retail-distinct-countries",
+      "repetition": 0,
+      "answer_hash": "2e5ea5e82aa46b784a9723c8e7dedfe4cc0f0c93a5df5791f7b207f1a628416f",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Distinct country count after row filters.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: country_count=22. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:country_count although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-distinct-customer-count",
+      "repetition": 0,
+      "answer_hash": "75a4395c2de76cfd0abc935e9b0ae2e4e5365cf38c53c2df5ff1db031c1e2f59",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Distinct count excludes missing CustomerID.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: customer_count=741. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:customer_count although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-export-and-chart-hi",
+      "repetition": 0,
+      "answer_hash": "21f7fbb7f0009a317680db8facabcfd546803d242608274af215c3e97b6452a3",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results. The requested CSV may also be registered with lineage for reuse in a later run.",
+        "artifact_requirements": "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs.",
+        "expected_country_sales": {
+          "Australia": "9017.71",
+          "Belgium": "1200.20",
+          "Channel Islands": "675.58",
+          "Cyprus": "547.50",
+          "EIRE": "21904.19",
+          "Finland": "889.02",
+          "France": "17740.12",
+          "Germany": "16910.84",
+          "Greece": "2661.24",
+          "Hong Kong": "2439.76",
+          "Iceland": "475.39",
+          "Israel": "379.84",
+          "Italy": "2402.51",
+          "Lebanon": "1693.88",
+          "Netherlands": "26611.16",
+          "Poland": "613.22",
+          "Portugal": "4055.71",
+          "Singapore": "2053.07",
+          "Spain": "10086.09",
+          "Sweden": "3486.32",
+          "Switzerland": "4231.23",
+          "United Kingdom": "561289.98"
+        },
+        "expected_csv_rows": 22,
+        "expected_ordered_country_sales": [
+          [
+            "United Kingdom",
+            "561289.98"
+          ],
+          [
+            "Netherlands",
+            "26611.16"
+          ],
+          [
+            "EIRE",
+            "21904.19"
+          ],
+          [
+            "France",
+            "17740.12"
+          ],
+          [
+            "Germany",
+            "16910.84"
+          ]
+        ],
+        "manual_review": "Inspect exported values and chart labels; language quality needs a native speaker.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "CSV and chart artifacts are referenced, but binary contents are absent; exported values and labels are unverified. Hindi fluency is uncertified. Artifact IDs exist but no CSV/image binaries were retained; artifact content is unverified. Language quality is first-pass only; no native-speaker certification."
+    },
+    {
+      "case_id": "retail-hindi-english-rules",
+      "repetition": 0,
+      "answer_hash": "590560a9db498e6d3aab7dc9947a8e9cdfbae42e732ada84259e60d0f441809c",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Review transliterated/code-switched language and missing-value treatment.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: qualifying_rows=34306, sales_gbp=691364.56. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:qualifying_rows, calculation:sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-invoice-line-count-buckets",
+      "repetition": 0,
+      "answer_hash": "dbc95bb6296da1043480d1c52840b5dd8184a73ba957fe1fa98e9197d74887c8",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: single_line_invoice_count, single_line_qualifying_lines, single_line_sales_gbp, multi_line_invoice_count, multi_line_qualifying_lines, multi_line_sales_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check that each invoice is assigned based on qualifying lines, not raw rows, and the two groups are disjoint and exhaustive. Amounts are line sums in GBP.",
+        "reference_answer": {
+          "filter_and_grain": "invoice-grain",
+          "required_claims": [
+            "InvoiceNo is the distinct invoice key; rows are invoice lines. Apply row qualification before classifying invoice line-count groups."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: single_line_invoice_count=84, single_line_qualifying_lines=84, single_line_sales_gbp=87752.26, multi_line_invoice_count=1002, multi_line_qualifying_lines=34222, multi_line_sales_gbp=603612.30. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:multi_line_invoice_count, calculation:multi_line_qualifying_lines, calculation:multi_line_sales_gbp, calculation:single_line_invoice_count, calculation:single_line_qualifying_lines, calculation:single_line_sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-jan-sales-en",
+      "repetition": 0,
+      "answer_hash": "006eac616e371ef8cdd56f13b645a74640b761a8b05738e862f5baae824253f7",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: sales_gbp=691364.56, qualifying_rows=34306, invoice_count=1086. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:invoice_count, calculation:qualifying_rows, calculation:sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-leading-stock-code-by-sales",
+      "repetition": 0,
+      "answer_hash": "e8b870aad049ac34530a07ad6bc7d5d10bda944ad9fbca2cf6bff6f53a3a131c",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: leading_stock_sales_gbp, leading_stock_qualifying_units, leading_stock_qualifying_lines. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Verify StockCode as a text identifier in the answer and manually confirm it is the highest sales group. This source has an extreme one-row quantity concentration for the leading code, so units and sales must both be checked against the same group.",
+        "reference_answer": {
+          "filter_and_grain": "grouped-ranking",
+          "required_claims": [
+            "Rank StockCode groups by qualifying line amount; the structured measures describe only the winning group.",
+            "The leading StockCode label is 23166."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: leading_stock_sales_gbp=77183.60, leading_stock_qualifying_units=74215, leading_stock_qualifying_lines=1. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:leading_stock_sales_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:leading_stock_qualifying_lines, calculation:leading_stock_qualifying_units, calculation:leading_stock_sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-line-average-v-invoice-average",
+      "repetition": 0,
+      "answer_hash": "a3d908f88066226f982cdd138eee4a0a0d87efb1d5ea23c2da00858b86a961c3",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: average_qualifying_line_gbp, average_qualifying_invoice_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check the two grains and denominators. Both figures are GBP per line or GBP per invoice, respectively, rounded to two decimals.",
+        "reference_answer": {
+          "filter_and_grain": "invoice-grain",
+          "required_claims": [
+            "Use qualifying line amounts, with qualifying line count for the line mean and distinct invoice count for the invoice mean. Averaging qualifying invoice subtotals is equivalent for the invoice mean. Averaging UnitPrice is incorrect."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: average_qualifying_line_gbp=20.15, average_qualifying_invoice_gbp=636.62. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:average_qualifying_invoice_gbp, answer_unit:average_qualifying_line_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:average_qualifying_invoice_gbp, calculation:average_qualifying_line_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-lines-vs-invoices",
+      "repetition": 0,
+      "answer_hash": "e423bf25919419534e840a9b909993de637b369ae2e5a88986c9cb8bf09def5f",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Check distinction between row grain and invoice grain.",
+        "reference_answer": {
+          "required_claims": [
+            "Invoices are distinct InvoiceNo values; lines are qualifying rows, with multiple lines possible per invoice"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: invoice_count=1086, qualifying_rows=34306. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:invoice_count, calculation:qualifying_rows although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-missing-cost-unsupported",
+      "repetition": 0,
+      "answer_hash": "addf5a70d158d7c646e1ac23689b37e6e3d97ca5301c181ab6082caf5d4fa88f",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "The runner checks clarification status; manually verify no invented profit/margin is given.",
+        "reference_answer": {
+          "required_claims": [
+            "Sales data does not include costs needed for gross profit or margin",
+            "Request cost data; do not invent costs or margins"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Correctly explains revenue-only data cannot support gross profit/margin without cost data."
+    },
+    {
+      "case_id": "retail-missing-customer-sales",
+      "repetition": 0,
+      "answer_hash": "c9de38860a5aca32a9600ddd689dca95e12d9ac0c3b1f85778c528f01541d7c1",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Do not impute customer identity. Check the ratio uses qualifying sales value.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: missing_customer_sales_gbp=121919.52, sales_gbp=691364.56, missing_customer_sales_percent=17.63. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:missing_customer_sales_gbp, answer_unit:sales_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:missing_customer_sales_gbp, calculation:missing_customer_sales_percent, calculation:sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-mixed-rule-retrieval",
+      "repetition": 0,
+      "answer_hash": "e887c78e51f60d6025f0e77060568add9ecfc20a059993cdedd7c16f432b008e",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Verify the retrieved rule is applied to the data.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: sales_gbp=691364.56. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:sales_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent."
+    },
+    {
+      "case_id": "retail-netherlands-sales",
+      "repetition": 0,
+      "answer_hash": "35fea09a6397392d87eabbde34961178afb856a08cc48f22315355b1e486cb64",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Verify country filter and the three inclusion rules.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: sales_gbp=26611.16. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:sales_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-qualifying-date-endpoints",
+      "repetition": 0,
+      "answer_hash": "fafcb1e1e2017dac0f221507d32d6b6078fb715048339468f359086cdaa36d3b",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: first_day_lines, first_day_sales_gbp, last_day_lines, last_day_sales_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "The earliest qualifying date is 2011-01-04; the latest is 2011-01-31. Check that the dates are calendar dates, not timestamps, and report each endpoint group only. The slice begins on Jan 4 despite covering the full calendar month.",
+        "reference_answer": {
+          "filter_and_grain": "date-boundary",
+          "required_claims": [
+            "Derive the endpoint dates from qualifying rows, then count and sum each endpoint date. Jan 1–3 contain no rows in this pinned slice."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: first_day_lines=1156, first_day_sales_gbp=16026.08, last_day_lines=1473, last_day_sales_gbp=23640.36. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:first_day_sales_gbp, answer_unit:last_day_sales_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:first_day_lines, calculation:first_day_sales_gbp, calculation:last_day_lines, calculation:last_day_sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-quantity-size-buckets",
+      "repetition": 0,
+      "answer_hash": "96bf4e75c2c6d4a391e2d4819a62906f2b955c8a82181a45e3f931489a20e89b",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: quantity_under_100_lines, quantity_under_100_units, quantity_under_100_sales_gbp, quantity_under_100_sales_share_percent, quantity_100_or_more_lines, quantity_100_or_more_units, quantity_100_or_more_sales_gbp, quantity_100_or_more_sales_share_percent. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check that the cutoff uses the line Quantity field, with 100 in the upper group, and that unit totals and sale shares use matching rows.",
+        "reference_answer": {
+          "filter_and_grain": "threshold-comparison",
+          "required_claims": [
+            "Apply qualifying-sale filters before quantity bucketing; this is a descriptive split, not a causal claim."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: quantity_under_100_lines=33952, quantity_under_100_units=237597, quantity_under_100_sales_gbp=502366.02, quantity_under_100_sales_share_percent=72.66, quantity_100_or_more_lines=354, quantity_100_or_more_units=150188, quantity_100_or_more_sales_gbp=188998.54, quantity_100_or_more_sales_share_percent=27.34. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:quantity_100_or_more_sales_share_percent, answer_unit:quantity_under_100_sales_share_percent; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:quantity_100_or_more_lines, calculation:quantity_100_or_more_sales_gbp, calculation:quantity_100_or_more_sales_share_percent, calculation:quantity_100_or_more_units, calculation:quantity_under_100_lines, calculation:quantity_under_100_sales_gbp, calculation:quantity_under_100_sales_share_percent, calculation:quantity_under_100_units although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-raw-signed-versus-qualifying-sales",
+      "repetition": 0,
+      "answer_hash": "7ae52ef8abb086ef2137039111d901a72becbf94c3889a08ff071f77e5bd1a2c",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: raw_rows, raw_signed_row_amount_gbp, raw_negative_quantity_rows, raw_negative_quantity_signed_amount_gbp, qualifying_rows, qualifying_sales_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Use the raw source for the signed row amount and the rule-filtered subset for qualifying positive sales. The result is a descriptive sum of signed row amounts, not accounting net revenue. Confirm negative-quantity values remain negative and all currency outputs are GBP.",
+        "reference_answer": {
+          "filter_and_grain": "raw-rows",
+          "required_claims": [
+            "Raw signed amount is the sum of Quantity × UnitPrice across all rows. Qualifying sales use non-C invoice, positive Quantity, and positive UnitPrice. This separates raw signed values from the positive-sales convention."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: raw_rows=35147, raw_signed_row_amount_gbp=560000.26, raw_negative_quantity_rows=797, raw_negative_quantity_signed_amount_gbp=-131364.30, qualifying_rows=34306, qualifying_sales_gbp=691364.56. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:qualifying_sales_gbp, answer_unit:raw_negative_quantity_signed_amount_gbp, answer_unit:raw_signed_row_amount_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:qualifying_rows, calculation:qualifying_sales_gbp, calculation:raw_negative_quantity_rows, calculation:raw_negative_quantity_signed_amount_gbp, calculation:raw_rows, calculation:raw_signed_row_amount_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-revenue-hindi",
+      "repetition": 0,
+      "answer_hash": "a493f994ff76628ae5103fad86823ce6275b8c74f42054c45362cc1ad71e7dbf",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Native-speaker review is required for Hindi correctness and terminology.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: sales_gbp=691364.56, qualifying_rows=34306, invoice_count=1086. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:sales_gbp; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:invoice_count, calculation:qualifying_rows, calculation:sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-sales-chart-csv",
+      "repetition": 0,
+      "answer_hash": "3dd26dc225b7861fd64cca709765a098859d135d0454edce5c982a96e3776133",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results. The requested CSV may also be registered with lineage for reuse in a later run.",
+        "artifact_requirements": "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs.",
+        "expected_country_sales": {
+          "Australia": "9017.71",
+          "Belgium": "1200.20",
+          "Channel Islands": "675.58",
+          "Cyprus": "547.50",
+          "EIRE": "21904.19",
+          "Finland": "889.02",
+          "France": "17740.12",
+          "Germany": "16910.84",
+          "Greece": "2661.24",
+          "Hong Kong": "2439.76",
+          "Iceland": "475.39",
+          "Israel": "379.84",
+          "Italy": "2402.51",
+          "Lebanon": "1693.88",
+          "Netherlands": "26611.16",
+          "Poland": "613.22",
+          "Portugal": "4055.71",
+          "Singapore": "2053.07",
+          "Spain": "10086.09",
+          "Sweden": "3486.32",
+          "Switzerland": "4231.23",
+          "United Kingdom": "561289.98"
+        },
+        "expected_csv_rows": 22,
+        "expected_ordered_country_sales": [
+          [
+            "United Kingdom",
+            "561289.98"
+          ],
+          [
+            "Netherlands",
+            "26611.16"
+          ],
+          [
+            "EIRE",
+            "21904.19"
+          ],
+          [
+            "France",
+            "17740.12"
+          ],
+          [
+            "Germany",
+            "16910.84"
+          ]
+        ],
+        "manual_review": "Artifact type/presence is checked by the runner; inspect CSV values, top-five order, and chart labels manually.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "Visible top-five output is consistent, but retained CSV/chart binaries are absent, so group values and chart labels cannot be fully inspected. Artifact IDs exist but no CSV/image binaries were retained; artifact content is unverified."
+    },
+    {
+      "case_id": "retail-scope-clarification",
+      "repetition": 0,
+      "answer_hash": "d713d28224a799c9736798315928ec56bc1a5ed5604ef361aa8f638643a107a1",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Verify temporal coverage is clarified; scorer only checks clarification status.",
+        "reference_answer": {
+          "required_claims": [
+            "Selected data covers January only",
+            "Ask for remaining months or confirmation to report January; do not extrapolate an annual total"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "January-only source coverage must not be presented as a full-year figure."
+    },
+    {
+      "case_id": "retail-top-country-en",
+      "repetition": 0,
+      "answer_hash": "44a70b0eaf6073708095fd37769350d5717b0a3a0f41ed7e51286337fadaf482",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "expected_category": "United Kingdom",
+        "manual_review": "The runner checks the sales amount; manually check the country category and its ordering.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: top_country_sales_gbp=561289.98. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:top_country_sales_gbp although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-top-five",
+      "repetition": 0,
+      "answer_hash": "f5ce5edf3f98326aa1cb8dcc7fade6ea5bf2daa48ee8163c8eb38e7b43647df8",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "expected_ordered_country_sales": [
+          [
+            "United Kingdom",
+            "561289.98"
+          ],
+          [
+            "Netherlands",
+            "26611.16"
+          ],
+          [
+            "EIRE",
+            "21904.19"
+          ],
+          [
+            "France",
+            "17740.12"
+          ],
+          [
+            "Germany",
+            "16910.84"
+          ]
+        ],
+        "manual_review": "The case schema cannot score per-category grouped values; compare names, order, and amounts with manifest.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "The top five labels/order and all v2 GBP values match."
+    },
+    {
+      "case_id": "retail-top-three-country-concentration",
+      "repetition": 0,
+      "answer_hash": "dda67c8f39cc508e1c7c3323442934ab262e47964b80bbcc2907774da64a07f7",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: top_three_countries_sales_gbp, top_three_sales_share_percent. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check that the three country names match the descending top three, combined sales use only those three groups, and the percentage denominator is all qualifying sales in the same slice.",
+        "reference_answer": {
+          "filter_and_grain": "grouped-comparison",
+          "required_claims": [
+            "Top-three membership is an answer-text criterion; the structured row carries combined GBP value and share.",
+            "The top three country labels, ordered by qualifying sales, are United Kingdom, Netherlands, and EIRE."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: top_three_countries_sales_gbp=609805.33, top_three_sales_share_percent=88.20. Auto status is failed but manual task review is complete; unit checks flagged answer_unit:top_three_countries_sales_gbp, answer_unit:top_three_sales_share_percent; requested column names carry the monetary unit in `_gbp`; an explicit `_gbp` output label is present, while a standalone GBP/£ token may be absent. calculation matcher flagged calculation:top_three_countries_sales_gbp, calculation:top_three_sales_share_percent although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-unit-price-buckets",
+      "repetition": 0,
+      "answer_hash": "56dd1cfeb86325247dcf709afcd84d3ca50fcf504f6e96271f07788fb902fd36",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: unit_price_under_1_lines, unit_price_under_1_sales_gbp, unit_price_under_1_sales_share_percent, unit_price_1_or_more_lines, unit_price_1_or_more_sales_gbp, unit_price_1_or_more_sales_share_percent. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check threshold inclusivity (< 1 versus >= 1), that UnitPrice is the per-item source field, and that sales-share denominators use all qualifying sales. Shares should total 100% subject to rounding.",
+        "reference_answer": {
+          "filter_and_grain": "threshold-comparison",
+          "required_claims": [
+            "Apply the qualifying row rules before partitioning by UnitPrice."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "Expected values missing/wrong for unit_price_under_1_lines, unit_price_under_1_sales_gbp, unit_price_under_1_sales_share_percent, unit_price_1_or_more_lines, unit_price_1_or_more_sales_gbp, unit_price_1_or_more_sales_share_percent. Observed answer ending: “ce_1_or_more_lines | unit_price_1_or_more_sales_gbp | unit_price_1_or_more_sales_share_percent | | :--- | :--- | :--- | :--- | :--- | :--- | | 7265 | 60148.40 | 10.74 | 27882 | 499851.86 | 89.26 | ![Summary Table](artifact:3c3c3133-3353-5a04-9e28-5500b8c20fa8)”."
+    },
+    {
+      "case_id": "retail-units-sold",
+      "repetition": 0,
+      "answer_hash": "a3793f6736657c8ecb67a6ce15d6e97bde3e4c8c214ea15a1f27184fe6a2a3fd",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results.",
+        "manual_review": "Check filters and describe the result as items/units.",
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "All expected values match pinned gold: qualifying_units=387785. Auto status is failed but manual task review is complete; calculation matcher flagged calculation:qualifying_units although the answer and retained SQL result row were spot-checked against pinned gold."
+    },
+    {
+      "case_id": "retail-weekend-weekday-comparison",
+      "repetition": 0,
+      "answer_hash": "72ff0b9c268ea22918bf588fa4c7bb0c56c1eb70c5aa7450796ad7a11c5d1f68",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence.",
+        "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: weekend_lines, weekend_sales_gbp, weekend_invoices, weekend_avg_line_gbp, weekday_lines, weekday_sales_gbp, weekday_invoices, weekday_avg_line_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+        "manual_review": "Check that weekend is defined from the local InvoiceDate calendar date, the two groups partition the qualifying lines, and each average uses the line count rather than invoice count. Weekend data contains Sunday rows and no Saturday rows.",
+        "reference_answer": {
+          "filter_and_grain": "date-comparison",
+          "required_claims": [
+            "Use the authored qualifying-sales filters; do not read a sample as a full aggregate."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+          "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "failed"
+      },
+      "comment": "Expected values missing/wrong for weekend_lines, weekend_invoices, weekend_sales_gbp, weekend_avg_line_gbp, weekday_lines, weekday_invoices, weekday_sales_gbp, weekday_avg_line_gbp. Observed answer ending: “520430.46 | 16.37 | **Key observations:** - **Weekend Volume:** Weekend sales account for approximately 7% of the total line count for the month. - **Average Value:** The average sales per line during weekdays (£16.37) was higher than during weekends (£11.76).”."
+    },
+    {
+      "case_id": "survey-appendix-table-retrieval",
+      "repetition": 0,
+      "answer_hash": "1f555b5c7e1f1096f1ced4e43add1d2aad3343b2547068b29df64ea64a1fc7ae",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset. Report generation is an optional presentation route for this multi-part document task.",
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "PDF page 92 starts printed Statistical Appendix page 85; inspect continuation pages and column headers visually.",
+        "reference_answer": {
+          "locations": {
+            "appendix": {
+              "pdf_pages": [
+                92,
+                93
+              ],
+              "printed_pages": [
+                85,
+                86
+              ]
+            }
+          },
+          "pitfalls": [
+            "Do not place Rural/Urban/Combined under CPI-IW",
+            "Do not infer comparable trends across base-year changes"
+          ],
+          "required_claims": [
+            "CPI-IW: General",
+            "CPI-NS: Rural, Urban, Combined",
+            "CPI-AL: General",
+            "CPI-RL: General"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "Some families/pages are correct, but CPI-NS is omitted and Combined is wrongly assigned to CPI-AL."
+    },
+    {
+      "case_id": "survey-causal-overclaim",
+      "repetition": 0,
+      "answer_hash": "16703adf913a343dc829d0b71a44af743464fa22ea7ec0d49d78d9bdb7416084",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset.",
+        "manual_review": "Check the answer says 'alone' is not established by this sentence and separates attribution from causal proof.",
+        "reference_answer": {
+          "alternatives": "A supported explanation from either passage suffices; listing every condition is not required.",
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "opening summary",
+                "3.18"
+              ],
+              "pdf_pages": [
+                1,
+                9
+              ]
+            }
+          },
+          "required_claims": [
+            "The chapter does not establish adverse weather as the sole proven cause",
+            "Weather is a reported contributing condition, distinct from proof of sole causation"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Correctly says adverse weather alone is not established and separates contribution from causal proof."
+    },
+    {
+      "case_id": "survey-digital-finance-scale-and-ekyc",
+      "repetition": 0,
+      "answer_hash": "a57718b6083f9d48d842bb7e4509871940aad67141f677853c7dc1d47b35f9ab",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence.",
+        "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+        "manual_review": "Check USD versus cents for e-KYC, rupees and lakh crore for UPI, correct fiscal periods, and distinct identity/payment layer claims.",
+        "reference_answer": {
+          "locations": {
+            "survey": {
+              "paragraphs": [
+                "2.56"
+              ],
+              "pdf_pages": [
+                106
+              ],
+              "printed_pages": [
+                59
+              ]
+            }
+          },
+          "required_claims": [
+            "The Survey says e-KYC cost fell from USD 12 to 6 cents.",
+            "UPI transaction value increased from ₹0.07 lakh crore in FY17 to ₹200 lakh crore in FY24."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+          "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+          "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "UPI totals are present but e-KYC endpoints are missing/unresolved."
+    },
+    {
+      "case_id": "survey-fy24-gdp-and-gva-growth",
+      "repetition": 0,
+      "answer_hash": "7948c7509a226aab7b87a05a8160a27ba731b8cc76149e86d4cf5e931f45cf4f",
+      "reviewers": [
+        "GPT-6 Luna",
+        "Codex primary agent (AI spot check, uncalibrated)"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified. Primary agent clarified the review comment against saved answers and metrics; no independent human certification.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence.",
+        "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+        "manual_review": "Check both growth rates, the FY24 period, and that GVA is at 2011–12 prices. Do not swap GDP and GVA or describe the values as nominal growth.",
+        "reference_answer": {
+          "locations": {
+            "survey": {
+              "paragraphs": [
+                "1.11"
+              ],
+              "pdf_pages": [
+                56
+              ],
+              "printed_pages": [
+                9
+              ]
+            }
+          },
+          "required_claims": [
+            "Real GDP grew by 8.2 per cent in FY24.",
+            "GVA at 2011–12 prices grew by 7.2 per cent in FY24."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+          "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+          "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "Real GDP growth is correctly 8.2% in FY24, but the answer gives GVA growth as 9.9% instead of 7.2% at 2011–12 prices. The 9.9% figure is manufacturing growth, not aggregate GVA growth."
+    },
+    {
+      "case_id": "survey-fy24-inflation-hi-query-en-source",
+      "repetition": 0,
+      "answer_hash": "3cb3a0d845a53ed8c31557e8b19e0bdf5b4fa6c3717a6302583337f85e285b83",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset.",
+        "manual_review": "Verify Hindi meaning, 5.4 per cent, FY24 scope, and citation against English source.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "3.1"
+              ],
+              "pdf_pages": [
+                1
+              ]
+            }
+          },
+          "required_claims": [
+            "Retail inflation was 5.4% in FY24"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "Hindi answer and 5.4% are correct, but the requested English-source citation is absent. Language quality is first-pass only; no native-speaker certification."
+    },
+    {
+      "case_id": "survey-fy24-retail-inflation-en",
+      "repetition": 0,
+      "answer_hash": "b746238664436bba1b1b9c0aef92777503d9792eacb8122dbb26584222016649",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset.",
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "The 5.4 per cent claim is supported by this phrase; manually verify page/paragraph and context.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "3.1"
+              ],
+              "pdf_pages": [
+                1
+              ]
+            }
+          },
+          "required_claims": [
+            "Retail inflation was 5.4% in FY24",
+            "Lowest level since the Covid-19 pandemic period"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "FY24 retail inflation is 5.4%; Survey describes it as lowest since the Covid-19 pandemic period."
+    },
+    {
+      "case_id": "survey-hindi-source-search-en",
+      "repetition": 0,
+      "answer_hash": "6f113a092957dd870d49eb5f4d417ce4812b4054d17f8a1a8405b50d9b692a4d",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset.",
+        "manual_review": "The 18-page Hindi chapter requires OCR for legacy fonts. Verify the FY24 claim, English translation and chapter PDF page citation against the rendered original.",
+        "reference_answer": {
+          "accepted_examples": [
+            {
+              "claim": "Retail inflation was 5.4% in FY24",
+              "paragraph": "3.1",
+              "pdf_page": 1
+            },
+            {
+              "claim": "CFPI food inflation rose from 6.6% in FY23 to 7.5% in FY24",
+              "paragraph": "3.18",
+              "pdf_page": 9
+            }
+          ],
+          "alternatives": "Any other visually verified FY24 claim is acceptable; examples are not an exhaustive answer key.",
+          "required_claims": [
+            "At least one fact supported by the selected Hindi source",
+            "The fact explicitly concerns FY24",
+            "Faithful English translation and correct chapter PDF page citation"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Checks one supported English statement and Hindi chapter PDF page citation; legacy-font OCR evidence is not retained for reinspection."
+    },
+    {
+      "case_id": "survey-inflation-drivers-en",
+      "repetition": 0,
+      "answer_hash": "51c41899ca175394ebf731095de2785bb507a0f7d16cc952a06eaf2ff146120f",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset.",
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "Review all opening-page factors without overclaiming causation.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "opening summary",
+                "3.18"
+              ],
+              "pdf_pages": [
+                1,
+                9
+              ]
+            }
+          },
+          "required_claims": [
+            "Pandemic supply disruptions and conflict-related commodity prices contributed to core price pressures in FY22/FY23",
+            "Adverse weather affected food prices in FY23/FY24"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Correctly separates FY22/FY23 core pressures (pandemic supply disruptions and commodity prices amid global conflicts) from FY23/FY24 adverse-weather food pressures."
+    },
+    {
+      "case_id": "survey-inflation-hi-cross-language",
+      "repetition": 0,
+      "answer_hash": "bc47f0367b9b9e2630256375a504aded54dddeefadbe8d8b3528f6dac9aa5359",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset.",
+        "manual_review": "Human review required for code-switched Hindi and exact core-inflation claim.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "opening summary",
+                "3.11 onward"
+              ],
+              "pdf_pages": [
+                1,
+                5
+              ]
+            }
+          },
+          "period_distinction": "June 2024's 3.1% is not the annual FY24 figure.",
+          "required_claims": [
+            "Core inflation reached a four-year low in FY24"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "The response provides the FY24 four-year core low, the core-services nine-year low, core-goods four-year low, English quotation, and page 6 citation. Content is complete; code-switched Hindi fluency remains uncertified."
+    },
+    {
+      "case_id": "survey-inflation-hi-source",
+      "repetition": 0,
+      "answer_hash": "2596f31b95300509c65a04eec0ddb9120489a9810b9b609083d4717589bbbbfd",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset.",
+        "manual_review": "Hindi PDF is visually legible, but embedded extraction uses legacy glyphs. Review rendered page and cited evidence manually; no garbled-text gold label.",
+        "reference_answer": {
+          "locations": {
+            "inflation-hi": {
+              "paragraphs": [
+                "3.1",
+                "3.18"
+              ],
+              "pdf_pages": [
+                1,
+                9
+              ]
+            }
+          },
+          "measure_distinction": "CFPI food inflation is distinct from the broader food-and-beverages CPI group.",
+          "required_claims": [
+            "FY24 retail inflation was 5.4%",
+            "FY24 CFPI food inflation was 7.5%, up from 6.6% in FY23"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "Visually checked Hindi gold is FY24 retail 5.4%, CFPI 7.5%; FY23 CFPI 6.6%, a +0.9 pp change. Retail figure is present, but food figures are absent/wrong. Language quality is first-pass only; no native-speaker certification."
+    },
+    {
+      "case_id": "survey-inflation-policy-measures-en",
+      "repetition": 0,
+      "answer_hash": "9b05f54033de7d658380ac91d6909e99d7e3e00880158cf862d10d69b2b9c4f0",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset.",
+        "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+        "manual_review": "Verify the entire list against the full sentence.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "opening summary"
+              ],
+              "pdf_pages": [
+                1
+              ]
+            }
+          },
+          "required_claims": [
+            "dynamic stock management",
+            "open market operations",
+            "subsidised provision of essential food items",
+            "trade policy measures"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Includes 4/4 measures in the full source list; all four are required."
+    },
+    {
+      "case_id": "survey-microfinance-client-shares",
+      "repetition": 0,
+      "answer_hash": "b442574b053a07ce412ae327a262985e818b8062c7ea598ab11b06ebec623be1",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence.",
+        "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+        "manual_review": "Keep the denominators separate: one is rural clientele share and the other is women among total MFI clients. Avoid implying that 98 per cent is the rural share.",
+        "reference_answer": {
+          "locations": {
+            "survey": {
+              "paragraphs": [
+                "2.62",
+                "2.63"
+              ],
+              "pdf_pages": [
+                108
+              ],
+              "printed_pages": [
+                61
+              ]
+            }
+          },
+          "required_claims": [
+            "The present share of the rural clientele is 74 per cent.",
+            "Women constitute 98 per cent of the total clients of MFIs."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+          "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+          "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "74% describes rural MFI clientele; 98% describes women among total MFI clients."
+    },
+    {
+      "case_id": "survey-nifty-fy23-fy24-returns",
+      "repetition": 0,
+      "answer_hash": "c1e9ea5efb2d7b6c44ec94864ed162b3e4c44abe96b102213bd129388a61efb2",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence.",
+        "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+        "manual_review": "Check index name, fiscal-year assignment, signed returns, and that the figures refer to index returns rather than GDP or market-capitalisation growth.",
+        "reference_answer": {
+          "locations": {
+            "survey": {
+              "paragraphs": [
+                "2.73"
+              ],
+              "pdf_pages": [
+                111
+              ],
+              "printed_pages": [
+                64
+              ]
+            }
+          },
+          "required_claims": [
+            "The Nifty 50 index declined by 8.2 per cent in FY23.",
+            "The Nifty 50 index rose by 26.8 per cent in FY24."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+          "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+          "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Checks Nifty 50 FY23 -8.2%, FY24 +26.8% and chapter page citation."
+    },
+    {
+      "case_id": "survey-summary-vs-chapter",
+      "repetition": 0,
+      "answer_hash": "43126b0bdb7c59d4e968517b9f83600048b7ec9e45c5211f633feade6816ffee",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset. Report generation is an optional presentation route for this multi-part document task.",
+        "manual_review": "Verify both documents are cited for the same FY24 measure and period.",
+        "reference_answer": {
+          "locations": {
+            "inflation": {
+              "paragraphs": [
+                "3.1"
+              ],
+              "pdf_pages": [
+                1
+              ]
+            },
+            "survey": {
+              "paragraphs": [
+                "3.1"
+              ],
+              "pdf_pages": [
+                132
+              ]
+            }
+          },
+          "required_claims": [
+            "Both sources report retail inflation of 5.4% in FY24",
+            "Both sources are cited for that same measure and period"
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+          "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+          "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+          "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+        }
+      },
+      "rating": {
+        "overall_task": "partial"
+      },
+      "comment": "The response does not establish that both sources report the same FY24 figure of 5.4%."
+    },
+    {
+      "case_id": "survey-union-fiscal-deficit-change",
+      "repetition": 0,
+      "answer_hash": "fdf257894e2f7bfeffcdfeac7cc9f0ccb4d83a254afb3c70b4272bfa943e5db2",
+      "reviewers": [
+        "GPT-6 Luna"
+      ],
+      "provenance": "AI-assisted first-pass review by GPT-6 Luna; uncalibrated and not human or native-speaker certified.",
+      "rubric": {
+        "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence.",
+        "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+        "manual_review": "Check government level, fiscal deficit measure, denominator GDP, direction, periods, and FY24 provisional-actual qualification.",
+        "reference_answer": {
+          "locations": {
+            "survey": {
+              "paragraphs": [
+                "1.22"
+              ],
+              "pdf_pages": [
+                64
+              ],
+              "printed_pages": [
+                17
+              ]
+            }
+          },
+          "required_claims": [
+            "The Union Government fiscal deficit declined from 6.4 per cent of GDP in FY23 to 5.6 per cent in FY24.",
+            "The chapter identifies FY24 as provisional actuals (PA)."
+          ]
+        },
+        "review_criteria": {
+          "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+          "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+          "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+          "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+        }
+      },
+      "rating": {
+        "overall_task": "complete"
+      },
+      "comment": "Checks 6.4%→5.6% of GDP, FY23→FY24 and provisional actuals."
+    }
+  ]
+}

@@ -1250,3 +1250,28 @@ Keep secrets and raw client data out of this file.
   focused Black and diff checks passed. No model trials, rescoring, downloads,
   services, migrations or phase 10 work. Independent human quality review and
   model runs remain deferred.
+
+## 6 October 2026: review the completed real-v2 matrix
+
+- At the user's request, Luna reviewed all 200 retained answers across GPT-OSS
+  120B, Gemma 31B, Gemma 26B A4B and Qwen 35B A3B. Imported every review through
+  the exact experiment/answer-hash contract. Primary spot checks clarified numeric
+  comment precision, GVA growth, missing quotations, unit-detector disagreements
+  and three named SQL-row contract gaps. Labels remain AI-assisted/uncalibrated.
+- Saved a v1-style offline HTML comparison, data exports, per-model exact-answer
+  reviews and reviewed reports under
+  `evals/reviews/real-v2-krutrim-matrix-2026-10-06`. Removed historical hardcoded
+  scores/descriptions and corrected cohort denominators. Added a new-20 filter.
+  Complete/partial/failed counts are 29/12/9, 35/5/10, 36/9/5 and 41/6/3,
+  respectively. Automatic statuses/metrics and original matrix/checkpoint/report
+  hashes are unchanged; no rescoring or new model calls occurred.
+- Validated 200 answer hashes/imports, 50 unique cases per model, coverage/count
+  agreement and the embedded HTML payload. Black and JavaScript syntax checks
+  passed; three reporting regression tests passed. Browser checks confirmed totals,
+  cohort denominators, new-20 filtering
+  and the four-model case comparison dialog with no console errors.
+- Requested artifact binaries/CSVs were not retained locally, and the stopped
+  application API could not provide read-only downloads. Their contents remain
+  explicitly unverified; retained metadata/chart schemas/answer previews provide
+  limited support. No human/native-speaker certification or calibrated ranking
+  is claimed. Phase 10 remains unstarted.

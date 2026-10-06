@@ -100,7 +100,8 @@ def test_retail_gold_matches_independent_integer_sql():
         actual = connection.execute(
             "SELECT COUNT(*), SUM(qty*price), COUNT(DISTINCT invoice), "
             "COUNT(DISTINCT country), COUNT(DISTINCT customer), "
-            "SUM(customer IS NULL) FROM sales "
+            "SUM(customer IS NULL), "
+            "SUM(CASE WHEN customer IS NULL THEN qty*price ELSE 0 END) FROM sales "
             "WHERE qty > 0 AND price > 0 AND UPPER(invoice) NOT LIKE 'C%'"
         ).fetchone()
     finally:
@@ -112,6 +113,10 @@ def test_retail_gold_matches_independent_integer_sql():
         "country_count": actual[3],
         "customer_count": actual[4],
         "missing_customer_lines": actual[5],
+        "missing_customer_sales_gbp": Decimal(actual[6]) / scale,
+        "missing_customer_sales_percent": (
+            Decimal(actual[6]) * 100 / actual[1]
+        ).quantize(Decimal("0.01")),
     }
     # Compare the global aggregates only. A country-filtered case deliberately
     # reuses sales_gbp for a different value.
@@ -120,6 +125,7 @@ def test_retail_gold_matches_independent_integer_sql():
         "retail-distinct-countries",
         "retail-distinct-customer-count",
         "retail-customer-null-en",
+        "retail-missing-customer-sales",
     }
     calculations = {
         calculation.key: calculation.value
@@ -129,3 +135,45 @@ def test_retail_gold_matches_independent_integer_sql():
     }
     for key, value in expected.items():
         assert calculations[key] == Decimal(value)
+
+
+def test_real_reference_answers_and_artifact_gold_are_complete():
+    cases = {case.id: case for case in load_cases(INVENTORY, [], [])}
+    for case in cases.values():
+        assert case.expectations.rubric["review_criteria"].keys() >= {
+            "complete",
+            "partial",
+            "failed",
+            "separate_checks",
+        }
+        assert "register_dataset" not in case.expectations.allowed_actions
+        assert "generate_report" not in case.expectations.allowed_actions
+        if "survey" in case.tags:
+            assert case.expectations.rubric["reference_answer"]["required_claims"]
+            assert all(
+                p.match_policy == "diagnostic" for p in case.expectations.passages
+            )
+    for ident in ["retail-sales-chart-csv", "retail-export-and-chart-hi"]:
+        rubric = cases[ident].expectations.rubric
+        assert rubric["expected_csv_rows"] == 22
+        assert len(rubric["expected_country_sales"]) == 22
+        assert sum(
+            Decimal(v) for v in rubric["expected_country_sales"].values()
+        ) == Decimal("691364.56")
+        assert [row[0] for row in rubric["expected_ordered_country_sales"]] == [
+            "United Kingdom",
+            "Netherlands",
+            "EIRE",
+            "France",
+            "Germany",
+        ]
+    share = next(
+        x
+        for x in cases["retail-missing-customer-sales"].expectations.calculations
+        if x.key == "missing_customer_sales_percent"
+    )
+    assert share.value == Decimal("17.63")
+    assert share.tolerance == Decimal("0.01")
+    assert "cost data" not in cases["retail-missing-cost-unsupported"].question
+    assert "If this source" not in cases["retail-scope-clarification"].question
+    assert "FY23/FY24" in cases["survey-inflation-drivers-en"].question

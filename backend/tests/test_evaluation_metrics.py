@@ -374,3 +374,117 @@ def test_audit_excerpt_citation_requires_declared_matching_source_version():
     foreign = deepcopy(observed)
     foreign["evidence"][0]["source_ids"] = ["source-2"]
     assert passage_status(foreign) == "fail"
+
+
+def test_diagnostic_passage_preserves_citation_source_version_and_declaration_gates():
+    from copy import deepcopy
+
+    case = EvaluationCase(
+        id="alternative-evidence",
+        question="What does the source say?",
+        language="en-IN",
+        answerability="answerable",
+        sources=[
+            {"alias": "survey", "name": "survey.pdf", "kind": "pdf", "version": "1"}
+        ],
+        expectations={
+            "passages": [
+                {
+                    "source_alias": "survey",
+                    "contains": "opening claim",
+                    "contains_any": ["accepted alternative"],
+                    "match_policy": "diagnostic",
+                }
+            ]
+        },
+    )
+    observed = {
+        "run_state": "completed",
+        "source_aliases": {"survey": "s1"},
+        "declared_evidence_ids": ["e1"],
+        "evidence": [
+            {
+                "id": "e1",
+                "source_ids": ["s1"],
+                "details": {
+                    "text": "Other relevant passage",
+                    "source_versions": {"s1": "1"},
+                },
+            }
+        ],
+    }
+
+    def passage_status(value):
+        return next(m.status for m in score_case(case, value) if m.name == "passage:1")
+
+    assert passage_status(observed) == "needs_review"
+    alternative = deepcopy(observed)
+    alternative["evidence"][0]["details"]["text"] = "An accepted alternative passage"
+    assert passage_status(alternative) == "pass"
+    for invalidation in ["version", "source", "undeclared", "empty"]:
+        wrong = deepcopy(alternative)
+        if invalidation == "version":
+            wrong["evidence"][0]["details"]["source_versions"]["s1"] = "2"
+        elif invalidation == "source":
+            wrong["evidence"][0]["source_ids"] = ["other-source"]
+        elif invalidation == "undeclared":
+            wrong["declared_evidence_ids"] = []
+        else:
+            wrong["evidence"][0]["details"]["text"] = ""
+        assert passage_status(wrong) == "fail"
+    required = case.model_copy(deep=True)
+    required.expectations.passages[0].match_policy = "required"
+    assert (
+        next(m.status for m in score_case(required, observed) if m.name == "passage:1")
+        == "fail"
+    )
+
+
+def test_empty_alternative_passage_anchor_is_rejected():
+    import pytest
+    from pydantic import ValidationError
+    from evaluation.contracts import ExpectedPassage
+
+    with pytest.raises(ValidationError):
+        ExpectedPassage(source_alias="survey", contains="anchor", contains_any=[""])
+
+
+def test_declared_calculation_evidence_survives_later_supplementary_query():
+    case = EvaluationCase(
+        id="final-evidence",
+        question="Return total",
+        language="en-IN",
+        answerability="answerable",
+        expectations={"calculations": [{"key": "total", "value": 22}]},
+    )
+    observed = {
+        "run_state": "completed",
+        "declared_evidence_ids": ["aggregate"],
+        "tool_calls": [
+            {
+                "name": "run_sql",
+                "status": "ok",
+                "result": {"rows": [{"total": 22}], "evidence_ids": ["aggregate"]},
+            },
+            {
+                "name": "run_sql",
+                "status": "ok",
+                "result": {"rows": [{"total": 3}], "evidence_ids": ["supplement"]},
+            },
+        ],
+    }
+
+    def calculation_status(value):
+        return next(
+            m.status for m in score_case(case, value) if m.name == "calculation:total"
+        )
+
+    assert calculation_status(observed) == "pass"
+    assert (
+        calculation_status({**observed, "declared_evidence_ids": ["supplement"]})
+        == "fail"
+    )
+    assert calculation_status({**observed, "declared_evidence_ids": []}) == "fail"
+    legacy = dict(observed)
+    del legacy["declared_evidence_ids"]
+    assert calculation_status(legacy) == "fail"

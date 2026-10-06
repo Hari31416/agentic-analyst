@@ -4,7 +4,7 @@
     {
       "schema_version": 1,
       "id": "retail-jan-sales-en",
-      "question": "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite calculation evidence and state GBP. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp, qualifying_rows, invoice_count.",
+      "question": "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite the inclusion rules and calculation evidence and state GBP. Return the final numeric results together in one SQL/analysis result row with these column names: sales_gbp, qualifying_rows, invoice_count.",
       "language": "en-IN",
       "tags": [
         "retail",
@@ -74,7 +74,13 @@
         ],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy."
+          "manual_review": "Check the stated row filters and invoice-line versus invoice grain. 'Qualifying sales' is the evaluation convention, not source accounting policy.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -137,7 +143,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Distinct country count after row filters."
+          "manual_review": "Distinct country count after row filters.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -147,7 +159,7 @@
     {
       "schema_version": 1,
       "id": "retail-customer-null-en",
-      "question": "Among qualifying January 2011 invoice lines, return missing_customer_lines and missing_customer_percent. Use all qualifying lines as the percentage denominator. Return the final numeric results together in one SQL/analysis result row with these column names: missing_customer_lines, missing_customer_percent.",
+      "question": "Among qualifying January 2011 invoice lines, return missing_customer_lines and missing_customer_percent. Use all qualifying lines as the percentage denominator and round the percentage to two decimal places. Return the final numeric results together in one SQL/analysis result row with these column names: missing_customer_lines, missing_customer_percent.",
       "language": "en-IN",
       "tags": [
         "retail",
@@ -206,7 +218,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Denominator is qualifying invoice lines, not distinct invoices or all raw rows. State percentage units."
+          "manual_review": "Denominator is qualifying invoice lines, not distinct invoices or all raw rows. State percentage units.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -270,7 +288,13 @@
         "artifacts": [],
         "rubric": {
           "expected_category": "United Kingdom",
-          "manual_review": "The runner checks the sales amount; manually check the country category and its ordering."
+          "manual_review": "The runner checks the sales amount; manually check the country category and its ordering.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -339,7 +363,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Cancellation count uses raw month rows; sales applies all three rules."
+          "manual_review": "Cancellation count uses raw month rows; sales applies all three rules.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -349,7 +379,7 @@
     {
       "schema_version": 1,
       "id": "retail-sales-chart-csv",
-      "question": "Calculate qualifying sales by country for January 2011. Save the grouped results as CSV and create a labelled bar chart of the top five countries in GBP.",
+      "question": "Calculate qualifying sales by country for January 2011. Save all country groups as CSV and create a labelled bar chart of the top five countries in GBP.",
       "language": "en-IN",
       "tags": [
         "retail",
@@ -425,7 +455,39 @@
               "16910.84"
             ]
           ],
-          "manual_review": "Artifact type/presence is checked by the runner; inspect CSV values, top-five order, and chart labels manually."
+          "manual_review": "Artifact type/presence is checked by the runner; inspect CSV values, top-five order, and chart labels manually.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "expected_country_sales": {
+            "Australia": "9017.71",
+            "Belgium": "1200.20",
+            "Channel Islands": "675.58",
+            "Cyprus": "547.50",
+            "EIRE": "21904.19",
+            "Finland": "889.02",
+            "France": "17740.12",
+            "Germany": "16910.84",
+            "Greece": "2661.24",
+            "Hong Kong": "2439.76",
+            "Iceland": "475.39",
+            "Israel": "379.84",
+            "Italy": "2402.51",
+            "Lebanon": "1693.88",
+            "Netherlands": "26611.16",
+            "Poland": "613.22",
+            "Portugal": "4055.71",
+            "Singapore": "2053.07",
+            "Spain": "10086.09",
+            "Sweden": "3486.32",
+            "Switzerland": "4231.23",
+            "United Kingdom": "561289.98"
+          },
+          "expected_csv_rows": 22,
+          "artifact_requirements": "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs."
         }
       },
       "review": {
@@ -500,7 +562,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Native-speaker review is required for Hindi correctness and terminology."
+          "manual_review": "Native-speaker review is required for Hindi correctness and terminology.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -570,7 +638,13 @@
         "artifacts": [],
         "rubric": {
           "expected_category": "United Kingdom",
-          "manual_review": "Transliterated Hindi/English code-switching needs human review."
+          "manual_review": "Transliterated Hindi/English code-switching needs human review.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -640,7 +714,13 @@
         ],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Verify the retrieved rule is applied to the data."
+          "manual_review": "Verify the retrieved rule is applied to the data.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -650,7 +730,7 @@
     {
       "schema_version": 1,
       "id": "retail-missing-cost-unsupported",
-      "question": "What were gross profit and profit margin in January 2011? The selected source contains sales information only. Ask for cost data and do not infer costs or margins.",
+      "question": "What were gross profit and profit margin in January 2011?",
       "language": "en-IN",
       "tags": [
         "retail",
@@ -688,7 +768,19 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "The runner checks clarification status; manually verify no invented profit/margin is given."
+          "manual_review": "The runner checks clarification status; manually verify no invented profit/margin is given.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "Sales data does not include costs needed for gross profit or margin",
+              "Request cost data; do not invent costs or margins"
+            ]
+          }
         }
       },
       "review": {
@@ -757,7 +849,18 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Check distinction between row grain and invoice grain."
+          "manual_review": "Check distinction between row grain and invoice grain.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "Invoices are distinct InvoiceNo values; lines are qualifying rows, with multiple lines possible per invoice"
+            ]
+          }
         }
       },
       "review": {
@@ -820,7 +923,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Check filters and describe the result as items/units."
+          "manual_review": "Check filters and describe the result as items/units.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -830,7 +939,7 @@
     {
       "schema_version": 1,
       "id": "retail-missing-customer-sales",
-      "question": "Return missing_customer_sales_gbp and sales_gbp for January 2011 under the attached rules. Use the two values to report what share of qualifying sales value comes from rows with a missing CustomerID. Return the final numeric results together in one SQL/analysis result row with these column names: missing_customer_sales_gbp, sales_gbp.",
+      "question": "Return missing_customer_sales_gbp and sales_gbp for January 2011 under the attached rules. Also return missing_customer_sales_percent, the percentage of qualifying sales value from rows with a missing CustomerID, rounded to two decimal places. Return the final numeric results together in one SQL/analysis result row with these column names: missing_customer_sales_gbp, sales_gbp, missing_customer_sales_percent.",
       "language": "en-IN",
       "tags": [
         "retail",
@@ -884,12 +993,24 @@
             "value": "691364.56",
             "unit": "GBP",
             "tolerance": "0.01"
+          },
+          {
+            "key": "missing_customer_sales_percent",
+            "value": "17.63",
+            "unit": null,
+            "tolerance": "0.01"
           }
         ],
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Do not impute customer identity. Check the ratio uses qualifying sales value."
+          "manual_review": "Do not impute customer identity. Check the ratio uses qualifying sales value.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -967,7 +1088,13 @@
               "16910.84"
             ]
           ],
-          "manual_review": "The case schema cannot score per-category grouped values; compare names, order, and amounts with manifest."
+          "manual_review": "The case schema cannot score per-category grouped values; compare names, order, and amounts with manifest.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -1037,7 +1164,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Review transliterated/code-switched language and missing-value treatment."
+          "manual_review": "Review transliterated/code-switched language and missing-value treatment.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -1047,7 +1180,7 @@
     {
       "schema_version": 1,
       "id": "retail-export-and-chart-hi",
-      "question": "संलग्न नियमों के अनुसार जनवरी 2011 में देश के अनुसार qualifying sales निकालें। CSV सहेजें और शीर्ष पाँच देशों का GBP में नामांकित bar chart बनाएँ।",
+      "question": "संलग्न नियमों के अनुसार जनवरी 2011 में देश के अनुसार qualifying sales निकालें। सभी देशों के परिणाम CSV में सहेजें और शीर्ष पाँच देशों का GBP में नामांकित bar chart बनाएँ।",
       "language": "hi-IN",
       "tags": [
         "retail",
@@ -1102,7 +1235,61 @@
           }
         ],
         "rubric": {
-          "manual_review": "Inspect exported values and chart labels; language quality needs a native speaker."
+          "manual_review": "Inspect exported values and chart labels; language quality needs a native speaker.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "expected_country_sales": {
+            "Australia": "9017.71",
+            "Belgium": "1200.20",
+            "Channel Islands": "675.58",
+            "Cyprus": "547.50",
+            "EIRE": "21904.19",
+            "Finland": "889.02",
+            "France": "17740.12",
+            "Germany": "16910.84",
+            "Greece": "2661.24",
+            "Hong Kong": "2439.76",
+            "Iceland": "475.39",
+            "Israel": "379.84",
+            "Italy": "2402.51",
+            "Lebanon": "1693.88",
+            "Netherlands": "26611.16",
+            "Poland": "613.22",
+            "Portugal": "4055.71",
+            "Singapore": "2053.07",
+            "Spain": "10086.09",
+            "Sweden": "3486.32",
+            "Switzerland": "4231.23",
+            "United Kingdom": "561289.98"
+          },
+          "expected_csv_rows": 22,
+          "expected_ordered_country_sales": [
+            [
+              "United Kingdom",
+              "561289.98"
+            ],
+            [
+              "Netherlands",
+              "26611.16"
+            ],
+            [
+              "EIRE",
+              "21904.19"
+            ],
+            [
+              "France",
+              "17740.12"
+            ],
+            [
+              "Germany",
+              "16910.84"
+            ]
+          ],
+          "artifact_requirements": "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs."
         }
       },
       "review": {
@@ -1157,7 +1344,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Count raw rows; no other filters apply."
+          "manual_review": "Count raw rows; no other filters apply.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -1220,7 +1413,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Distinct count excludes missing CustomerID."
+          "manual_review": "Distinct count excludes missing CustomerID.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -1283,7 +1482,13 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Verify country filter and the three inclusion rules."
+          "manual_review": "Verify country filter and the three inclusion rules.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          }
         }
       },
       "review": {
@@ -1293,7 +1498,7 @@
     {
       "schema_version": 1,
       "id": "retail-scope-clarification",
-      "question": "Give total qualifying sales for all of 2011. If this source covers January only, ask whether I want January's total or can provide the remaining months.",
+      "question": "Give total qualifying sales for all of 2011.",
       "language": "en-IN",
       "tags": [
         "retail",
@@ -1339,7 +1544,19 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Verify temporal coverage is clarified; scorer only checks clarification status."
+          "manual_review": "Verify temporal coverage is clarified; scorer only checks clarification status.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "Selected data covers January only",
+              "Ask for remaining months or confirmation to report January; do not extrapolate an annual total"
+            ]
+          }
         }
       },
       "review": {
@@ -1388,13 +1605,36 @@
         "passages": [
           {
             "source_alias": "inflation",
-            "contains": "retail inflation at 5.4 per cent in FY24"
+            "contains": "retail inflation at 5.4 per cent in FY24",
+            "match_policy": "diagnostic"
           }
         ],
         "artifacts": [],
         "rubric": {
           "manual_review": "The 5.4 per cent claim is supported by this phrase; manually verify page/paragraph and context.",
-          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage."
+          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "Retail inflation was 5.4% in FY24",
+              "Lowest level since the Covid-19 pandemic period"
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  1
+                ],
+                "paragraphs": [
+                  "3.1"
+                ]
+              }
+            }
+          }
         }
       },
       "review": {
@@ -1443,12 +1683,34 @@
         "passages": [
           {
             "source_alias": "inflation",
-            "contains": "retail inflation at 5.4 per cent in FY24"
+            "contains": "retail inflation at 5.4 per cent in FY24",
+            "match_policy": "diagnostic"
           }
         ],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Verify Hindi meaning, 5.4 per cent, FY24 scope, and citation against English source."
+          "manual_review": "Verify Hindi meaning, 5.4 per cent, FY24 scope, and citation against English source.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "Retail inflation was 5.4% in FY24"
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  1
+                ],
+                "paragraphs": [
+                  "3.1"
+                ]
+              }
+            }
+          }
         }
       },
       "review": {
@@ -1458,7 +1720,7 @@
     {
       "schema_version": 1,
       "id": "survey-inflation-drivers-en",
-      "question": "What factors does the opening summary of the inflation chapter associate with price pressures in FY22 and FY23? Cite the passage and distinguish external supply/commodity factors from food-price conditions.",
+      "question": "What factors does the opening summary associate with core price pressures in FY22/FY23 and food-price pressures in FY23/FY24? Cite evidence and distinguish the two time periods.",
       "language": "en-IN",
       "tags": [
         "survey",
@@ -1497,13 +1759,38 @@
         "passages": [
           {
             "source_alias": "inflation",
-            "contains": "Food prices were affected by adverse weather conditions in the last two years"
+            "contains": "Food prices were affected by adverse weather conditions in the last two years",
+            "match_policy": "diagnostic"
           }
         ],
         "artifacts": [],
         "rubric": {
           "manual_review": "Review all opening-page factors without overclaiming causation.",
-          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage."
+          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "Pandemic supply disruptions and conflict-related commodity prices contributed to core price pressures in FY22/FY23",
+              "Adverse weather affected food prices in FY23/FY24"
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  1,
+                  9
+                ],
+                "paragraphs": [
+                  "opening summary",
+                  "3.18"
+                ]
+              }
+            }
+          }
         }
       },
       "review": {
@@ -1513,7 +1800,7 @@
     {
       "schema_version": 1,
       "id": "survey-inflation-policy-measures-en",
-      "question": "Which government measures does the chapter say helped mitigate food inflation? Cite the passage and list only the measures named there.",
+      "question": "Which government measures does the opening summary of the chapter say helped mitigate food inflation? Cite that passage and list all the measures named there.",
       "language": "en-IN",
       "tags": [
         "survey",
@@ -1551,13 +1838,38 @@
         "passages": [
           {
             "source_alias": "inflation",
-            "contains": "dynamic stock management, open market operations"
+            "contains": "dynamic stock management, open market operations",
+            "match_policy": "diagnostic"
           }
         ],
         "artifacts": [],
         "rubric": {
           "manual_review": "Verify the entire list against the full sentence.",
-          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage."
+          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "dynamic stock management",
+              "open market operations",
+              "subsidised provision of essential food items",
+              "trade policy measures"
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  1
+                ],
+                "paragraphs": [
+                  "opening summary"
+                ]
+              }
+            }
+          }
         }
       },
       "review": {
@@ -1567,7 +1879,7 @@
     {
       "schema_version": 1,
       "id": "survey-inflation-hi-source",
-      "question": "इस हिंदी अध्याय के अनुसार FY24 में खुदरा मुद्रास्फीति और खाद्य मुद्रास्फीति के बारे में क्या कहा गया है? मुद्रास्फीति अध्याय में मूल साक्ष्य दें।",
+      "question": "इस हिंदी अध्याय के अनुसार FY24 में खुदरा मुद्रास्फीति और CFPI पर आधारित खाद्य मुद्रास्फीति कितनी थी? FY23 से FY24 तक खाद्य मुद्रास्फीति में बदलाव भी बताएं और मूल साक्ष्य दें।",
       "language": "hi-IN",
       "tags": [
         "survey",
@@ -1606,7 +1918,32 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Hindi PDF is visually legible, but embedded extraction uses legacy glyphs. Review rendered page and cited evidence manually; no garbled-text gold label."
+          "manual_review": "Hindi PDF is visually legible, but embedded extraction uses legacy glyphs. Review rendered page and cited evidence manually; no garbled-text gold label.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "FY24 retail inflation was 5.4%",
+              "FY24 CFPI food inflation was 7.5%, up from 6.6% in FY23"
+            ],
+            "locations": {
+              "inflation-hi": {
+                "pdf_pages": [
+                  1,
+                  9
+                ],
+                "paragraphs": [
+                  "3.1",
+                  "3.18"
+                ]
+              }
+            },
+            "measure_distinction": "CFPI food inflation is distinct from the broader food-and-beverages CPI group."
+          }
         }
       },
       "review": {
@@ -1663,16 +2000,48 @@
         "passages": [
           {
             "source_alias": "survey",
-            "contains": "retail inflation at 5.4 per cent in FY24"
+            "contains": "retail inflation at 5.4 per cent in FY24",
+            "match_policy": "diagnostic"
           },
           {
             "source_alias": "inflation",
-            "contains": "retail inflation at 5.4 per cent in FY24"
+            "contains": "retail inflation at 5.4 per cent in FY24",
+            "match_policy": "diagnostic"
           }
         ],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Verify both documents are cited for the same FY24 measure and period."
+          "manual_review": "Verify both documents are cited for the same FY24 measure and period.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "Both sources report retail inflation of 5.4% in FY24",
+              "Both sources are cited for that same measure and period"
+            ],
+            "locations": {
+              "survey": {
+                "pdf_pages": [
+                  132
+                ],
+                "paragraphs": [
+                  "3.1"
+                ]
+              },
+              "inflation": {
+                "pdf_pages": [
+                  1
+                ],
+                "paragraphs": [
+                  "3.1"
+                ]
+              }
+            }
+          }
         }
       },
       "review": {
@@ -1721,12 +2090,37 @@
         "passages": [
           {
             "source_alias": "inflation",
-            "contains": "core inflation to a four-year low in FY24"
+            "contains": "core inflation to a four-year low in FY24",
+            "match_policy": "diagnostic"
           }
         ],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Human review required for code-switched Hindi and exact core-inflation claim."
+          "manual_review": "Human review required for code-switched Hindi and exact core-inflation claim.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "Core inflation reached a four-year low in FY24"
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  1,
+                  5
+                ],
+                "paragraphs": [
+                  "opening summary",
+                  "3.11 onward"
+                ]
+              }
+            },
+            "period_distinction": "June 2024's 3.1% is not the annual FY24 figure."
+          }
         }
       },
       "review": {
@@ -1775,7 +2169,33 @@
         "passages": [],
         "artifacts": [],
         "rubric": {
-          "manual_review": "The 18-page Hindi chapter requires OCR for legacy fonts. Verify the FY24 claim, English translation and chapter PDF page citation against the rendered original."
+          "manual_review": "The 18-page Hindi chapter requires OCR for legacy fonts. Verify the FY24 claim, English translation and chapter PDF page citation against the rendered original.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "At least one fact supported by the selected Hindi source",
+              "The fact explicitly concerns FY24",
+              "Faithful English translation and correct chapter PDF page citation"
+            ],
+            "accepted_examples": [
+              {
+                "claim": "Retail inflation was 5.4% in FY24",
+                "pdf_page": 1,
+                "paragraph": "3.1"
+              },
+              {
+                "claim": "CFPI food inflation rose from 6.6% in FY23 to 7.5% in FY24",
+                "pdf_page": 9,
+                "paragraph": "3.18"
+              }
+            ],
+            "alternatives": "Any other visually verified FY24 claim is acceptable; examples are not an exhaustive answer key."
+          }
         }
       },
       "review": {
@@ -1785,7 +2205,7 @@
     {
       "schema_version": 1,
       "id": "survey-appendix-table-retrieval",
-      "question": "In the statistical appendix, locate Table 4.3, All India Consumer Price Index Numbers. Identify the table's coverage categories and report the source page numbers; do not calculate a trend unless the correct column and period are clear.",
+      "question": "In the statistical appendix, locate Table 4.3, All India Consumer Price Index Numbers. Identify the table's index families and their coverage categories and report both PDF and printed source page numbers; do not calculate a trend unless the correct column and period are clear.",
       "language": "en-IN",
       "tags": [
         "survey",
@@ -1824,13 +2244,44 @@
         "passages": [
           {
             "source_alias": "appendix",
-            "contains": "Table 4.3. All India Consumer Price Index Numbers"
+            "contains": "Table 4.3. All India Consumer Price Index Numbers",
+            "match_policy": "diagnostic"
           }
         ],
         "artifacts": [],
         "rubric": {
           "manual_review": "PDF page 92 starts printed Statistical Appendix page 85; inspect continuation pages and column headers visually.",
-          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage."
+          "answer_requirements": "Check factual scope, year, original units, page citation, and language fidelity against the cited passage.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "CPI-IW: General",
+              "CPI-NS: Rural, Urban, Combined",
+              "CPI-AL: General",
+              "CPI-RL: General"
+            ],
+            "locations": {
+              "appendix": {
+                "pdf_pages": [
+                  92,
+                  93
+                ],
+                "printed_pages": [
+                  85,
+                  86
+                ]
+              }
+            },
+            "pitfalls": [
+              "Do not place Rural/Urban/Combined under CPI-IW",
+              "Do not infer comparable trends across base-year changes"
+            ]
+          }
         }
       },
       "review": {
@@ -1840,7 +2291,7 @@
     {
       "schema_version": 1,
       "id": "survey-causal-overclaim",
-      "question": "Does the chapter establish that adverse weather alone caused India's FY24 food inflation? Use the cited evidence to distinguish reported contributing conditions from a claim of a single proven cause.",
+      "question": "Does the chapter establish that adverse weather alone caused India's FY24 food inflation? Cite evidence for your conclusion.",
       "language": "en-IN",
       "tags": [
         "survey",
@@ -1879,12 +2330,41 @@
         "passages": [
           {
             "source_alias": "inflation",
-            "contains": "Food prices were affected by adverse weather conditions"
+            "contains": "Food prices were affected by adverse weather conditions",
+            "match_policy": "diagnostic",
+            "contains_any": [
+              "lower reservoir levels, and damaged crops"
+            ]
           }
         ],
         "artifacts": [],
         "rubric": {
-          "manual_review": "Check the answer says 'alone' is not established by this sentence and separates attribution from causal proof."
+          "manual_review": "Check the answer says 'alone' is not established by this sentence and separates attribution from causal proof.",
+          "review_criteria": {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
+          },
+          "reference_answer": {
+            "required_claims": [
+              "The chapter does not establish adverse weather as the sole proven cause",
+              "Weather is a reported contributing condition, distinct from proof of sole causation"
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  1,
+                  9
+                ],
+                "paragraphs": [
+                  "opening summary",
+                  "3.18"
+                ]
+              }
+            },
+            "alternatives": "A supported explanation from either passage suffices; listing every condition is not required."
+          }
         }
       },
       "review": {

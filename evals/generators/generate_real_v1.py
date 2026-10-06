@@ -384,7 +384,7 @@ def create_cases(
 
     add(
         "retail-jan-sales-en",
-        "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite calculation evidence and state GBP.",
+        "Using the attached retail-analysis rules, return one aggregate row with columns sales_gbp, qualifying_rows, and invoice_count for January 2011. Cite the inclusion rules and calculation evidence and state GBP.",
         "en-IN",
         ["retail", "sql", "aggregation"],
         "answerable",
@@ -413,7 +413,7 @@ def create_cases(
     )
     add(
         "retail-customer-null-en",
-        "Among qualifying January 2011 invoice lines, return missing_customer_lines and missing_customer_percent. Use all qualifying lines as the percentage denominator.",
+        "Among qualifying January 2011 invoice lines, return missing_customer_lines and missing_customer_percent. Use all qualifying lines as the percentage denominator and round the percentage to two decimal places.",
         "en-IN",
         ["retail", "nulls", "aggregation"],
         "answerable",
@@ -462,7 +462,7 @@ def create_cases(
     )
     add(
         "retail-sales-chart-csv",
-        "Calculate qualifying sales by country for January 2011. Save the grouped results as CSV and create a labelled bar chart of the top five countries in GBP.",
+        "Calculate qualifying sales by country for January 2011. Save all country groups as CSV and create a labelled bar chart of the top five countries in GBP.",
         "en-IN",
         ["retail", "artifact", "chart", "csv"],
         "answerable",
@@ -523,7 +523,7 @@ def create_cases(
     )
     add(
         "retail-missing-cost-unsupported",
-        "What were gross profit and profit margin in January 2011? The selected source contains sales information only. Ask for cost data and do not infer costs or margins.",
+        "What were gross profit and profit margin in January 2011?",
         "en-IN",
         ["retail", "unsupported", "abstention"],
         "unsupported",
@@ -561,7 +561,7 @@ def create_cases(
     )
     add(
         "retail-missing-customer-sales",
-        "Return missing_customer_sales_gbp and sales_gbp for January 2011 under the attached rules. Use the two values to report what share of qualifying sales value comes from rows with a missing CustomerID.",
+        "Return missing_customer_sales_gbp and sales_gbp for January 2011 under the attached rules. Also return missing_customer_sales_percent, the percentage of qualifying sales value from rows with a missing CustomerID, rounded to two decimal places.",
         "en-IN",
         ["retail", "nulls", "ratio"],
         "answerable",
@@ -574,6 +574,13 @@ def create_cases(
                 "0.01",
             ),
             calc("sales_gbp", gold["sales_gbp"], "GBP", "0.01"),
+            calc(
+                "missing_customer_sales_percent",
+                (gold["missing_customer_sales_gbp"] * 100 / gold["sales_gbp"]).quantize(
+                    Decimal("0.01")
+                ),
+                tolerance="0.01",
+            ),
         ],
         rubric={
             "manual_review": "Do not impute customer identity. Check the ratio uses qualifying sales value."
@@ -610,7 +617,7 @@ def create_cases(
     )
     add(
         "retail-export-and-chart-hi",
-        "संलग्न नियमों के अनुसार जनवरी 2011 में देश के अनुसार qualifying sales निकालें। CSV सहेजें और शीर्ष पाँच देशों का GBP में नामांकित bar chart बनाएँ।",
+        "संलग्न नियमों के अनुसार जनवरी 2011 में देश के अनुसार qualifying sales निकालें। सभी देशों के परिणाम CSV में सहेजें और शीर्ष पाँच देशों का GBP में नामांकित bar chart बनाएँ।",
         "hi-IN",
         ["retail", "hindi", "artifact", "chart", "csv"],
         "answerable",
@@ -661,7 +668,7 @@ def create_cases(
     )
     add(
         "retail-scope-clarification",
-        "Give total qualifying sales for all of 2011. If this source covers January only, ask whether I want January's total or can provide the remaining months.",
+        "Give total qualifying sales for all of 2011.",
         "en-IN",
         ["retail", "ambiguous", "scope"],
         "ambiguous",
@@ -711,7 +718,7 @@ def create_cases(
     cases.append(
         survey_case(
             ident="survey-inflation-drivers-en",
-            question="What factors does the opening summary of the inflation chapter associate with price pressures in FY22 and FY23? Cite the passage and distinguish external supply/commodity factors from food-price conditions.",
+            question="What factors does the opening summary associate with core price pressures in FY22/FY23 and food-price pressures in FY23/FY24? Cite evidence and distinguish the two time periods.",
             language="en-IN",
             tags=["survey", "inflation", "causal-language", "retrieval"],
             path=inflation_en,
@@ -723,7 +730,7 @@ def create_cases(
     cases.append(
         survey_case(
             ident="survey-inflation-policy-measures-en",
-            question="Which government measures does the chapter say helped mitigate food inflation? Cite the passage and list only the measures named there.",
+            question="Which government measures does the opening summary of the chapter say helped mitigate food inflation? Cite that passage and list all the measures named there.",
             language="en-IN",
             tags=["survey", "inflation", "list-extraction"],
             path=inflation_en,
@@ -734,7 +741,7 @@ def create_cases(
     )
     add(
         "survey-inflation-hi-source",
-        "इस हिंदी अध्याय के अनुसार FY24 में खुदरा मुद्रास्फीति और खाद्य मुद्रास्फीति के बारे में क्या कहा गया है? मुद्रास्फीति अध्याय में मूल साक्ष्य दें।",
+        "इस हिंदी अध्याय के अनुसार FY24 में खुदरा मुद्रास्फीति और CFPI पर आधारित खाद्य मुद्रास्फीति कितनी थी? FY23 से FY24 तक खाद्य मुद्रास्फीति में बदलाव भी बताएं और मूल साक्ष्य दें।",
         "hi-IN",
         ["survey", "inflation", "hindi-source", "ocr-descriptive"],
         "answerable",
@@ -795,7 +802,7 @@ def create_cases(
     cases.append(
         survey_case(
             ident="survey-appendix-table-retrieval",
-            question="In the statistical appendix, locate Table 4.3, All India Consumer Price Index Numbers. Identify the table's coverage categories and report the source page numbers; do not calculate a trend unless the correct column and period are clear.",
+            question="In the statistical appendix, locate Table 4.3, All India Consumer Price Index Numbers. Identify the table's index families and their coverage categories and report both PDF and printed source page numbers; do not calculate a trend unless the correct column and period are clear.",
             language="en-IN",
             tags=["survey", "appendix", "table-retrieval", "ambiguity"],
             path=appendix_en,
@@ -806,7 +813,7 @@ def create_cases(
     )
     add(
         "survey-causal-overclaim",
-        "Does the chapter establish that adverse weather alone caused India's FY24 food inflation? Use the cited evidence to distinguish reported contributing conditions from a claim of a single proven cause.",
+        "Does the chapter establish that adverse weather alone caused India's FY24 food inflation? Cite evidence for your conclusion.",
         "en-IN",
         ["survey", "inflation", "causality", "guardrail"],
         "answerable",
@@ -821,7 +828,193 @@ def create_cases(
             "manual_review": "Check the answer says 'alone' is not established by this sentence and separates attribution from causal proof."
         },
     )
+    complete_references(cases, gold)
     return cases, gold
+
+
+def complete_references(cases: list[dict[str, Any]], gold: dict[str, Any]) -> None:
+    """Bind complete manual answer keys and diagnostic anchors to each case."""
+    document_references = {
+        "survey-fy24-retail-inflation-en": {
+            "required_claims": [
+                "Retail inflation was 5.4% in FY24",
+                "Lowest level since the Covid-19 pandemic period",
+            ],
+            "locations": {"inflation": {"pdf_pages": [1], "paragraphs": ["3.1"]}},
+        },
+        "survey-fy24-inflation-hi-query-en-source": {
+            "required_claims": ["Retail inflation was 5.4% in FY24"],
+            "locations": {"inflation": {"pdf_pages": [1], "paragraphs": ["3.1"]}},
+        },
+        "survey-inflation-drivers-en": {
+            "required_claims": [
+                "Pandemic supply disruptions and conflict-related commodity prices contributed to core price pressures in FY22/FY23",
+                "Adverse weather affected food prices in FY23/FY24",
+            ],
+            "locations": {
+                "inflation": {
+                    "pdf_pages": [1, 9],
+                    "paragraphs": ["opening summary", "3.18"],
+                }
+            },
+        },
+        "survey-inflation-policy-measures-en": {
+            "required_claims": [
+                "dynamic stock management",
+                "open market operations",
+                "subsidised provision of essential food items",
+                "trade policy measures",
+            ],
+            "locations": {
+                "inflation": {"pdf_pages": [1], "paragraphs": ["opening summary"]}
+            },
+        },
+        "survey-inflation-hi-source": {
+            "required_claims": [
+                "FY24 retail inflation was 5.4%",
+                "FY24 CFPI food inflation was 7.5%, up from 6.6% in FY23",
+            ],
+            "locations": {
+                "inflation-hi": {"pdf_pages": [1, 9], "paragraphs": ["3.1", "3.18"]}
+            },
+            "measure_distinction": "CFPI food inflation is distinct from the broader food-and-beverages CPI group.",
+        },
+        "survey-summary-vs-chapter": {
+            "required_claims": [
+                "Both sources report retail inflation of 5.4% in FY24",
+                "Both sources are cited for that same measure and period",
+            ],
+            "locations": {
+                "survey": {"pdf_pages": [132], "paragraphs": ["3.1"]},
+                "inflation": {"pdf_pages": [1], "paragraphs": ["3.1"]},
+            },
+        },
+        "survey-inflation-hi-cross-language": {
+            "required_claims": ["Core inflation reached a four-year low in FY24"],
+            "locations": {
+                "inflation": {
+                    "pdf_pages": [1, 5],
+                    "paragraphs": ["opening summary", "3.11 onward"],
+                }
+            },
+            "period_distinction": "June 2024's 3.1% is not the annual FY24 figure.",
+        },
+        "survey-hindi-source-search-en": {
+            "required_claims": [
+                "At least one fact supported by the selected Hindi source",
+                "The fact explicitly concerns FY24",
+                "Faithful English translation and correct chapter PDF page citation",
+            ],
+            "accepted_examples": [
+                {
+                    "claim": "Retail inflation was 5.4% in FY24",
+                    "pdf_page": 1,
+                    "paragraph": "3.1",
+                },
+                {
+                    "claim": "CFPI food inflation rose from 6.6% in FY23 to 7.5% in FY24",
+                    "pdf_page": 9,
+                    "paragraph": "3.18",
+                },
+            ],
+            "alternatives": "Any other visually verified FY24 claim is acceptable; examples are not an exhaustive answer key.",
+        },
+        "survey-appendix-table-retrieval": {
+            "required_claims": [
+                "CPI-IW: General",
+                "CPI-NS: Rural, Urban, Combined",
+                "CPI-AL: General",
+                "CPI-RL: General",
+            ],
+            "locations": {
+                "appendix": {"pdf_pages": [92, 93], "printed_pages": [85, 86]}
+            },
+            "pitfalls": [
+                "Do not place Rural/Urban/Combined under CPI-IW",
+                "Do not infer comparable trends across base-year changes",
+            ],
+        },
+        "survey-causal-overclaim": {
+            "required_claims": [
+                "The chapter does not establish adverse weather as the sole proven cause",
+                "Weather is a reported contributing condition, distinct from proof of sole causation",
+            ],
+            "locations": {
+                "inflation": {
+                    "pdf_pages": [1, 9],
+                    "paragraphs": ["opening summary", "3.18"],
+                }
+            },
+            "alternatives": "A supported explanation from either passage suffices; listing every condition is not required.",
+        },
+    }
+    for item in cases:
+        rubric = item["expectations"]["rubric"]
+        rubric["review_criteria"] = {
+            "complete": "All requested outputs are correct, supported, in scope, and satisfy the required language/artifact contract.",
+            "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
+            "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures.",
+        }
+        if item["id"] in document_references:
+            rubric["reference_answer"] = document_references[item["id"]]
+            for passage in item["expectations"]["passages"]:
+                passage["match_policy"] = "diagnostic"
+        if item["id"] in {"retail-sales-chart-csv", "retail-export-and-chart-hi"}:
+            rubric["expected_country_sales"] = {
+                country: str(value)
+                for country, value in sorted(gold["country_sales"].items())
+            }
+            rubric["expected_csv_rows"] = len(gold["country_sales"])
+            rubric["expected_ordered_country_sales"] = [
+                [country, str(value)] for country, value in gold["top_five_countries"]
+            ]
+            rubric["artifact_requirements"] = (
+                "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs."
+            )
+        if item["id"] == "retail-missing-cost-unsupported":
+            rubric["reference_answer"] = {
+                "required_claims": [
+                    "Sales data does not include costs needed for gross profit or margin",
+                    "Request cost data; do not invent costs or margins",
+                ]
+            }
+        if item["id"] == "retail-scope-clarification":
+            rubric["reference_answer"] = {
+                "required_claims": [
+                    "Selected data covers January only",
+                    "Ask for remaining months or confirmation to report January; do not extrapolate an annual total",
+                ]
+            }
+        if item["id"] == "retail-lines-vs-invoices":
+            rubric["reference_answer"] = {
+                "required_claims": [
+                    "Invoices are distinct InvoiceNo values; lines are qualifying rows, with multiple lines possible per invoice"
+                ]
+            }
+        if item["id"] == "survey-causal-overclaim":
+            item["expectations"]["passages"][0]["contains_any"] = [
+                "lower reservoir levels, and damaged crops"
+            ]
+    # Every emitted anchor and alternative must occur in its pinned source.
+    texts: dict[str, str] = {}
+    for item in cases:
+        for passage in item["expectations"]["passages"]:
+            src = next(
+                src
+                for src in item["sources"]
+                if src["alias"] == passage["source_alias"]
+            )
+            path = FIXTURE_ROOT / src["path"]
+            if src["path"] not in texts:
+                texts[src["path"]] = normalized(
+                    extract_pdf_text(path) if src["kind"] == "pdf" else path.read_text()
+                )
+            for phrase in [passage["contains"], *passage.get("contains_any", [])]:
+                if normalized(phrase) not in texts[src["path"]]:
+                    raise ValueError(
+                        f"Unverified passage anchor for {item['id']}: {phrase}"
+                    )
 
 
 def main() -> int:
@@ -858,6 +1051,7 @@ def main() -> int:
         }
     manifest = {
         "version": VERSION,
+        "revision": "2026-10-06",
         "downloads_manifest": {
             "path": "real-v1/downloads.json",
             "sha256": sha256(PACK_ROOT / "downloads.json"),

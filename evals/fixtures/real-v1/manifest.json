@@ -1,5 +1,6 @@
 {
   "version": "real-v1",
+  "revision": "2026-10-06",
   "downloads_manifest": {
     "path": "real-v1/downloads.json",
     "sha256": "81b87f59b1bd9a3ec5277531d03920906640a9a528840b29961c36a05a6a97d5"

@@ -1182,3 +1182,33 @@ Keep secrets and raw client data out of this file.
   120-row coverage and generated JavaScript offline. Browser visual verification
   remains unperformed because browser policy blocked local file URLs.
   Apps, sandbox and Compose infrastructure remain stopped, with volumes preserved.
+
+## 6 October 2026: correct real-v1 ground-truth contracts
+
+- Audited all 30 cases against pinned source bytes, the original January XLSX
+  rows, independent integer-penny SQLite aggregates and rendered Survey pages.
+  All retail gold values and expected source phrases are valid. Retained the
+  case-by-case audit under evals/reviews/real-v1-ground-truth-audit-2026-10-06.md.
+- At the user's direction, preserved the 13-action allowlist as an intentional
+  tool-appropriateness expectation. Withdrew the audit's earlier recommendation
+  to expose or broaden it. No tool sequence is prescribed.
+- Added complete document reference claims, PDF/printed page locations, CPI
+  category hierarchy, full 22-country CSV gold, top-five chart criteria and
+  complete/partial/failed review instructions. Clarified periods and measures,
+  requested the missing-customer value share as 17.63%, and removed answer-revealing
+  instructions from unsupported, coverage and causal decision questions.
+- Corrected protected Western/Indian digit-grouping and currency-symbol scoring.
+  Survey passage anchors support verified alternatives; valid other wording needs
+  review, while missing/undeclared/wrong-source/version citations still fail.
+  Declared linked calculation evidence survives later supplementary queries;
+  legacy observations retain latest-successful-result behavior.
+- Regenerated the 30-case inventory and manifest revision 2026-10-06 from the
+  pinned originals. Twelve changed questions require fresh trials. Historical
+  reports, reviews and the user's comparison-viewer edits remain untouched.
+- Validation: 422 deterministic backend/eval tests passed, 13 opt-in live tests
+  skipped and 67 integration tests deselected; mypy passed across 109 files.
+  No model calls, service starts, migrations, or phase 10 implementation.
+- Gold provenance remains unreviewed. Independent human/Hindi review, semantic
+  and artifact-content scoring, calibrated judges and reliability repetitions
+  remain separate coverage limits. Final numeric results still use the explicit
+  SQL/analysis contract; Python can support the work.

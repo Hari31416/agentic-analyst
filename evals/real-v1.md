@@ -8,6 +8,47 @@ chart artifacts, English/Hindi/code-switched requests, cross-language document
 retrieval, table finding, ambiguity, unsupported information, and causal
 overstatement.
 
+## Ground-truth revision of 6 October 2026
+
+This revision preserves the 30-case inventory and verified retail gold, and adds
+complete reference claims, source locations, partial-credit criteria and full
+22-country CSV expectations in the generated case rubrics. Labels remain
+`unreviewed`; source-backed agent verification is not independent human or
+native-speaker certification.
+
+The action allowlist remains an expected tool-appropriateness policy. The agent
+receives its ordinary tools and must decide which are appropriate to the query;
+using every allowed tool is not required. `register_dataset` and `generate_report`
+remain excluded because these tasks do not request derived-source registration
+or reports. Tool appropriateness is recorded separately from factual correctness.
+
+Survey passage anchors are diagnostic. A declared citation from the correct
+selected source/version can receive `needs_review` when it uses different wording;
+missing, undeclared or wrong-source/version citations still fail. Accepted anchor
+alternatives are pinned to original source text. Anchor presence does not certify
+that the answer's claims follow from that passage.
+
+Numeric prose checks support Devanagari digits, comma grouping and protected
+Western/Indian grouping spaces. GBP/INR/EUR codes and their unambiguous symbols
+are accepted. Structured units still require explicit unit metadata. Numeric
+checks prefer declared calculation evidence when tool/evidence links are available;
+legacy observations use the latest successful SQL/analysis result. Python remains
+available for supporting work, but numeric questions require the final named
+SQL/analysis row. Currency, percentage and count tolerances are explicit.
+
+The changed questions require fresh trials: `retail-jan-sales-en`,
+`retail-customer-null-en`, `retail-sales-chart-csv`,
+`retail-missing-cost-unsupported`, `retail-missing-customer-sales`,
+`retail-export-and-chart-hi`, `retail-scope-clarification`,
+`survey-inflation-drivers-en`, `survey-inflation-policy-measures-en`,
+`survey-inflation-hi-source`, `survey-appendix-table-retrieval`, and
+`survey-causal-overclaim`. The unsupported/scope/causality questions no longer
+supply the expected decision. The missing-customer sales question now requests
+`missing_customer_sales_percent`, expected at 17.63% to two decimal places.
+The runner refuses to rescore old observations under changed execution questions.
+Historical runs and AI reviews remain unchanged. Scoring-only corrections can be
+applied to unchanged questions in a separately identified rescore.
+
 ## Inputs and generation
 
 The seven public originals are stored under the ignored

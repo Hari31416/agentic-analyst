@@ -676,3 +676,23 @@ async def test_runner_keeps_partial_response_usage_out_of_aggregate_token_total(
         assert trial["tokens"] is None
     finally:
         await client.close()
+
+
+def test_numeric_claims_accept_protected_grouping_and_currency_equivalents():
+    from decimal import Decimal
+    from evaluation.metrics import numeric_claims, unit_present
+    from evaluation.runner import score_answer_claims
+
+    known = load_cases(ROOT / "evals/cases/core-v1.json", ["data-hi"], [])[0]
+    for separator in ["\u202f", "\u00a0", "\u2009"]:
+        answer = f"आवेदन २, कुल राशि ₹२५{separator}०००.००।"
+        assert all(m.status == "pass" for m in score_answer_claims(known, answer))
+        assert numeric_claims(f"£6{separator}91{separator}364.56") == [
+            Decimal("691364.56")
+        ]
+    assert numeric_claims("22 34") == [Decimal("22"), Decimal("34")]
+    assert numeric_claims("691\u202f364.57") == [Decimal("691364.57")]
+    assert unit_present("GBP", "£691,364.56")
+    assert not unit_present("GBP", "USD 691,364.56")
+    assert not unit_present("GBP", "NOTGBP 691,364.56")
+    assert not unit_present("GBP", "$691,364.56")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation
+import re
 from typing import Any, Iterable
 
 from .contracts import EvaluationCase, MetricResult
@@ -19,6 +20,34 @@ def _result(name: str, passed: bool, **details: Any) -> MetricResult:
 
 def _normalise_text(value: str) -> str:
     return " ".join(value.casefold().split())
+
+
+def unit_present(unit: str, text: str) -> bool:
+    """Accept an explicit currency code or its unambiguous symbol."""
+    symbols = {"GBP": "£", "INR": "₹", "EUR": "€"}
+    return bool(re.search(r"(?<!\w)" + re.escape(unit) + r"(?!\w)", text, re.I)) or (
+        unit.upper() in symbols and symbols[unit.upper()] in text
+    )
+
+
+def numeric_claims(answer: str) -> list[Decimal]:
+    """Read numeric literals, preserving decimals and protected digit grouping."""
+    text = re.sub(r"\[(?:evidence|artifact):[^\]]+\]", "", answer)
+    # Only remove typographic grouping inside full three-digit groups. Ordinary
+    # whitespace separates values; never turn '22 34' into 2234.
+    text = re.sub(
+        r"(?<![\w\d])[+-]?(?:\d{1,3}(?:[\u00a0\u202f\u2009]\d{3})+"
+        r"|\d{1,2}(?:[\u00a0\u202f\u2009]\d{2})+[\u00a0\u202f\u2009]\d{3})(?!\d)",
+        lambda match: re.sub(r"[\u00a0\u202f\u2009]", "", match.group()),
+        text,
+    )
+    claims = []
+    for match in re.findall(r"(?<![\w/-])-?\d[\d,]*(?:\.\d+)?(?![\w/-])", text):
+        try:
+            claims.append(Decimal(match.replace(",", "")))
+        except InvalidOperation:
+            pass
+    return claims
 
 
 def _flatten(value: Any) -> Iterable[str]:
@@ -52,8 +81,11 @@ def _schema_matches(actual: Any, expected: Any) -> bool:
 def _observation_rows(
     outcome: dict[str, Any],
 ) -> list[tuple[dict[str, Any], dict[str, Any]]]:
-    """Return rows from the latest successful structured query/analysis call."""
+    """Prefer declared calculation evidence, then the latest legacy result."""
     eligible: list[dict[str, Any]] = []
+    declared = set(outcome.get("declared_evidence_ids") or [])
+    has_evidence_links = False
+    linked: list[dict[str, Any]] = []
     for call in outcome.get("tool_calls", []) or []:
         if not isinstance(call, dict):
             continue
@@ -66,10 +98,25 @@ def _observation_rows(
         if state not in {"ok", "success", "succeeded", "completed"}:
             continue
         eligible.append(result)
+        evidence_ids = set(result.get("evidence_ids") or [])
+        evidence_ids.update(
+            item["id"]
+            for item in outcome.get("evidence", []) or []
+            if isinstance(item, dict)
+            and item.get("id")
+            and call.get("id")
+            and item.get("tool_call_id") == call["id"]
+        )
+        has_evidence_links = has_evidence_links or bool(evidence_ids)
+        if declared.intersection(evidence_ids):
+            linked.append(result)
+    if "declared_evidence_ids" in outcome and has_evidence_links:
+        eligible = linked
     if not eligible:
         return []
-    # Audit exports preserve call order. Reading one latest result avoids mistaking an
-    # earlier source sample for the aggregate produced by the final SQL/analysis step.
+    # Never choose an earlier result merely because its values happen to match gold.
+    # Linked final evidence survives a later supplementary query; older observations
+    # without links retain the latest-successful-result behavior.
     result = eligible[-1]
     rows: list[tuple[dict[str, Any], dict[str, Any]]] = []
     for container in (result, result.get("data"), result.get("result")):
@@ -104,6 +151,10 @@ def _observed_calculation(
     }
     for evidence in outcome.get("evidence", []) or []:
         if not isinstance(evidence, dict):
+            continue
+        if "declared_evidence_ids" in outcome and evidence.get("id") not in set(
+            outcome.get("declared_evidence_ids") or []
+        ):
             continue
         if source_ids and not source_ids.intersection(evidence.get("source_ids", [])):
             continue
@@ -291,7 +342,7 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
             metrics.append(
                 _result(
                     f"answer_unit:{calculation.key}",
-                    calculation.unit.casefold() in answer,
+                    unit_present(calculation.unit, answer),
                     expected_unit=calculation.unit,
                 )
             )
@@ -299,6 +350,7 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
     evidence = outcome.get("evidence", outcome.get("passages", [])) or []
     for index, passage in enumerate(case.expectations.passages):
         found = False
+        eligible_citation = False
         for item in evidence:
             if isinstance(item, dict):
                 alias = item.get("source_alias") or item.get("alias")
@@ -366,17 +418,36 @@ def score_case(case: EvaluationCase, outcome: dict[str, Any]) -> list[MetricResu
                 alias, text = getattr(item, "source_alias", None), getattr(
                     item, "text", ""
                 )
-            if alias == passage.source_alias and _normalise_text(
-                passage.contains
-            ) in _normalise_text(str(text)):
-                found = True
-                break
+            if alias == passage.source_alias and _normalise_text(str(text)):
+                eligible_citation = True
+                if any(
+                    _normalise_text(phrase) in _normalise_text(str(text))
+                    for phrase in [passage.contains, *passage.contains_any]
+                ):
+                    found = True
+                    break
+        status = (
+            "pass"
+            if found
+            else (
+                "needs_review"
+                if eligible_citation and passage.match_policy == "diagnostic"
+                else "fail"
+            )
+        )
         metrics.append(
-            _result(
-                f"passage:{index + 1}",
-                found,
-                source_alias=passage.source_alias,
-                expected_phrase=passage.contains,
+            MetricResult(
+                name=f"passage:{index + 1}",
+                status=status,
+                score=None if status == "needs_review" else float(found),
+                details={
+                    "source_alias": passage.source_alias,
+                    "expected_phrase": passage.contains,
+                    "accepted_alternatives": passage.contains_any,
+                    "match_policy": passage.match_policy,
+                    "eligible_citation": eligible_citation,
+                    "scope": "Passage anchor presence; factual support requires review",
+                },
             )
         )
 

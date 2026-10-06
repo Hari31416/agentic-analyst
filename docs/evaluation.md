@@ -65,14 +65,17 @@ All labels are synthetic developer expectations, not client or native-speaker
 quality validation.
 
 Known-answer metrics compare structured results, not SQL strings or model prose.
-They use the latest successful SQL/analysis result, avoiding inspection samples
-and earlier calculations. Numeric expectations use Decimal tolerances. Unit
+They prefer declared calculation evidence when tool/evidence links are available;
+legacy observations use the latest successful SQL/analysis result, avoiding
+inspection samples and earlier calculations. Numeric expectations use Decimal tolerances. Unit
 hints come from explicit result/source evidence; absent hints require review,
 while conflicting hints fail. Answer-number/unit presence is checked separately
 and cannot prove that the prose explains the correct calculation.
 
 Passage checks require the expected selected source and version and a declared
-citation containing the normalized phrase. Artifacts must be declared and
+citation. Required anchors fail on a missing normalized phrase; diagnostic anchors
+allow alternative wording to remain a review item. Missing or invalid citations
+still fail. Accepted anchor alternatives do not certify semantic claim support. Artifacts must be declared and
 available through the public download API; an optional schema subset checks
 JSON outputs. Original-source hashes are recomputed from the public portable
 archive, then compared with the uploaded fixture hash. Tool allowlists and

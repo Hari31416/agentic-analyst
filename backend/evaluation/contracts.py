@@ -1,7 +1,7 @@
 """Versioned, deterministic evaluation case and outcome contracts."""
 
 from decimal import Decimal
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -32,6 +32,11 @@ class ExpectedPassage(BaseModel):
 
     source_alias: str = Field(min_length=1, max_length=80)
     contains: str = Field(min_length=1, max_length=1000)
+    # Alternatives are source-backed anchors, not semantic entailment checks.
+    contains_any: list[Annotated[str, Field(min_length=1, max_length=1000)]] = Field(
+        default_factory=list, max_length=20
+    )
+    match_policy: Literal["required", "diagnostic"] = "required"
 
 
 class ExpectedArtifact(BaseModel):

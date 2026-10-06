@@ -5,9 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import re
 from collections import Counter
-from decimal import Decimal, InvalidOperation
 import resource
 import sys
 import time
@@ -20,7 +18,7 @@ from app.audit.redaction import redact
 from evaluation.client import ApiFailure, ApplicationClient
 from evaluation.contracts import EvaluationCase, MetricResult
 from evaluation.identity import digest
-from evaluation.metrics import score_case
+from evaluation.metrics import numeric_claims, score_case, unit_present
 
 
 class Checkpoint:
@@ -378,13 +376,7 @@ def audit_telemetry(audit: dict[str, Any]) -> dict[str, Any]:
 
 def score_answer_claims(case: EvaluationCase, answer: str) -> list[MetricResult]:
     """Check expected numeric claims/units separately from executed result correctness."""
-    claims: list[Decimal] = []
-    text = re.sub(r"\[(?:evidence|artifact):[^\]]+\]", "", answer)
-    for match in re.findall(r"(?<![\w/-])-?\d[\d,]*(?:\.\d+)?(?![\w/-])", text):
-        try:
-            claims.append(Decimal(match.replace(",", "")))
-        except InvalidOperation:
-            pass
+    claims = numeric_claims(answer)
     results = []
     for calculation in case.expectations.calculations:
         results.append(
@@ -405,9 +397,7 @@ def score_answer_claims(case: EvaluationCase, answer: str) -> list[MetricResult]
             )
         )
         if calculation.unit:
-            present = calculation.unit.casefold() in answer.casefold() or (
-                calculation.unit == "INR" and "₹" in answer
-            )
+            present = unit_present(calculation.unit, answer)
             results.append(
                 MetricResult(
                     name=f"answer_unit:{calculation.key}",

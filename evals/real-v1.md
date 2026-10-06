@@ -16,11 +16,27 @@ complete reference claims, source locations, partial-credit criteria and full
 `unreviewed`; source-backed agent verification is not independent human or
 native-speaker certification.
 
-The action allowlist remains an expected tool-appropriateness policy. The agent
+The action allowlists evaluate tool appropriateness for each question. The agent
 receives its ordinary tools and must decide which are appropriate to the query;
-using every allowed tool is not required. `register_dataset` and `generate_report`
-remain excluded because these tasks do not request derived-source registration
-or reports. Tool appropriateness is recorded separately from factual correctness.
+using every allowed tool is not required. Luna reviewed all 15 exposed tools and
+assigned generous case-specific lists, covering useful discovery, supporting
+calculations, evidence inspection and artifact workflows. The generator records
+why each case uses its list. Tool appropriateness is recorded separately from
+factual correctness. These expectations do not change the source-protection
+rules or the runtime's available tools.
+
+| Question group | Cases | Allowed tools |
+| --- | --- | --- |
+| Retail analysis and clarification | 18 | 14, including SQL, Python, analysis, retrieval and optional reports |
+| Retail CSV/chart outputs | 2 | All 15, including registration of the requested CSV |
+| Survey comparison and appendix table | 2 | 8, including retrieval, evidence/artifact inspection and optional reports |
+| Other Survey questions | 8 | 7, covering source discovery, retrieval, summaries and evidence/artifact inspection |
+
+PDF-only cases have no selected structured dataset, so SQL, dataset operations
+and Python analysis are excluded. Lists are generous permission sets rather than
+required steps. Optional outputs must still be supported and answer the request.
+Allowlist revisions can be used in a separately identified rescore of unchanged
+execution inputs; original reports and review labels remain untouched.
 
 Survey passage anchors are diagnostic. A declared citation from the correct
 selected source/version can receive `needs_review` when it uses different wording;

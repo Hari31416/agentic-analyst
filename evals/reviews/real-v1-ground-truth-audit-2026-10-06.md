@@ -50,10 +50,11 @@ are coherent. Counting raw cancellation rows separately is also correct.
 ### 1. The action allowlist is intentional, not a defect
 
 The user confirmed that choosing tools appropriate to the query is part of the
-evaluation. The 13-action allowlist remains unchanged, and the agent is expected
-to choose among its ordinary runtime tools without instructions naming which
-ones to use. Allowed actions are optional, not a required sequence.
-`register_dataset` and `generate_report` remain excluded for these tasks.
+evaluation. The agent is expected to choose among its ordinary runtime tools
+without instructions naming which ones to use. Allowed actions are optional,
+not a required sequence. The original shared 13-action list was retained in the
+first fix, then superseded by Luna's generous per-question review at the user's
+request. The current case inventory and generator define those lists.
 
 The prior `retail-scope-clarification` result can therefore retain correct
 factual content while failing tool appropriateness. Both dimensions should be
@@ -277,7 +278,9 @@ passage checks; binds calculations to declared evidence where linkage exists;
 adds complete Survey and artifact references and review criteria; clarifies
 periods, requested units/measures, CSV coverage and the missing-customer value
 share; and removes answer-revealing guidance from three decision tasks.
-The action allowlist remains unchanged at the user's direction.
+The first fix preserved the shared action allowlist. The user subsequently
+requested generous per-question lists from Luna; that review supersedes the
+shared list without prescribing a tool sequence or changing runtime permissions.
 
 Historical reports and labels remain untouched. Changed questions require fresh
 execution. Independent human/Hindi review, calibrated semantic scoring and

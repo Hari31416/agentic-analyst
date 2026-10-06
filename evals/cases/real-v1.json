@@ -44,7 +44,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -80,7 +81,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -130,7 +132,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -149,7 +152,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -199,7 +203,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -224,7 +229,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -274,7 +280,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -294,7 +301,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -344,7 +352,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -369,7 +378,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -420,7 +430,9 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report",
+          "register_dataset"
         ],
         "calculations": [],
         "passages": [],
@@ -487,7 +499,8 @@
             "United Kingdom": "561289.98"
           },
           "expected_csv_rows": 22,
-          "artifact_requirements": "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs."
+          "artifact_requirements": "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs.",
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results. The requested CSV may also be registered with lineage for reuse in a later run."
         }
       },
       "review": {
@@ -537,7 +550,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -568,7 +582,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -618,7 +633,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -644,7 +660,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -696,7 +713,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -720,7 +738,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -762,7 +781,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [],
         "passages": [],
@@ -780,7 +800,8 @@
               "Sales data does not include costs needed for gross profit or margin",
               "Request cost data; do not invent costs or margins"
             ]
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -830,7 +851,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -860,7 +882,8 @@
             "required_claims": [
               "Invoices are distinct InvoiceNo values; lines are qualifying rows, with multiple lines possible per invoice"
             ]
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -910,7 +933,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -929,7 +953,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -979,7 +1004,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -1010,7 +1036,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -1060,7 +1087,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [],
         "passages": [],
@@ -1094,7 +1122,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -1145,7 +1174,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -1170,7 +1200,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -1222,7 +1253,9 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report",
+          "register_dataset"
         ],
         "calculations": [],
         "passages": [],
@@ -1289,7 +1322,8 @@
               "16910.84"
             ]
           ],
-          "artifact_requirements": "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs."
+          "artifact_requirements": "CSV contains all 22 country groups exactly once with GBP values within 0.01; bar chart shows the top five in descending order, with country labels and a GBP axis. Extra execution artifacts do not replace requested outputs.",
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results. The requested CSV may also be registered with lineage for reuse in a later run."
         }
       },
       "review": {
@@ -1331,7 +1365,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -1350,7 +1385,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -1400,7 +1436,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -1419,7 +1456,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -1469,7 +1507,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [
           {
@@ -1488,7 +1527,8 @@
             "partial": "Some requested outputs are correct but at least one is missing or incomplete; explain each omission.",
             "failed": "The central result is incorrect, unsupported or absent; record contradictions explicitly.",
             "separate_checks": "Record factual task success, tool appropriateness, execution, citation validity and language quality separately. Preserve deterministic failures."
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -1538,7 +1578,8 @@
           "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "generate_report"
         ],
         "calculations": [],
         "passages": [],
@@ -1556,7 +1597,8 @@
               "Selected data covers January only",
               "Ask for remaining months or confirmation to report January; do not extrapolate an annual total"
             ]
-          }
+          },
+          "allowed_actions_rationale": "The selected retail CSV and any attached rules support source/schema/profile/sample inspection, full-data SQL aggregates, Python or dataframe calculation and repair, document retrieval, and artifact inspection. Report generation is an optional presentation route for these analytical results."
         }
       },
       "review": {
@@ -1589,17 +1631,11 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
         ],
         "calculations": [],
         "passages": [
@@ -1634,7 +1670,8 @@
                 ]
               }
             }
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset."
         }
       },
       "review": {
@@ -1667,17 +1704,11 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
         ],
         "calculations": [],
         "passages": [
@@ -1710,7 +1741,8 @@
                 ]
               }
             }
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset."
         }
       },
       "review": {
@@ -1743,17 +1775,11 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
         ],
         "calculations": [],
         "passages": [
@@ -1790,7 +1816,8 @@
                 ]
               }
             }
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset."
         }
       },
       "review": {
@@ -1822,17 +1849,11 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
         ],
         "calculations": [],
         "passages": [
@@ -1869,7 +1890,8 @@
                 ]
               }
             }
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset."
         }
       },
       "review": {
@@ -1902,17 +1924,11 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
         ],
         "calculations": [],
         "passages": [],
@@ -1943,7 +1959,8 @@
               }
             },
             "measure_distinction": "CFPI food inflation is distinct from the broader food-and-beverages CPI group."
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset."
         }
       },
       "review": {
@@ -1984,17 +2001,12 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts",
+          "generate_report"
         ],
         "calculations": [],
         "passages": [
@@ -2041,7 +2053,8 @@
                 ]
               }
             }
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset. Report generation is an optional presentation route for this multi-part document task."
         }
       },
       "review": {
@@ -2074,17 +2087,11 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
         ],
         "calculations": [],
         "passages": [
@@ -2120,7 +2127,8 @@
               }
             },
             "period_distinction": "June 2024's 3.1% is not the annual FY24 figure."
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset."
         }
       },
       "review": {
@@ -2153,17 +2161,11 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
         ],
         "calculations": [],
         "passages": [],
@@ -2195,7 +2197,8 @@
               }
             ],
             "alternatives": "Any other visually verified FY24 claim is acceptable; examples are not an exhaustive answer key."
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset."
         }
       },
       "review": {
@@ -2228,17 +2231,12 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts",
+          "generate_report"
         ],
         "calculations": [],
         "passages": [
@@ -2281,7 +2279,8 @@
               "Do not place Rural/Urban/Combined under CPI-IW",
               "Do not infer comparable trends across base-year changes"
             ]
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset. Report generation is an optional presentation route for this multi-part document task."
         }
       },
       "review": {
@@ -2314,17 +2313,11 @@
         "allowed_actions": [
           "finish_answer",
           "list_sources",
-          "dataset_profile",
-          "inspect_schema",
-          "sample_rows",
-          "run_sql",
-          "run_python",
-          "analyze_data",
-          "inspect_artifact",
-          "list_artifacts",
           "search_documents",
           "source_passage",
-          "summarize_documents"
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
         ],
         "calculations": [],
         "passages": [
@@ -2364,7 +2357,8 @@
               }
             },
             "alternatives": "A supported explanation from either passage suffices; listing every condition is not required."
-          }
+          },
+          "allowed_actions_rationale": "The selected input is a document PDF, so source discovery, document summaries, lexical/dense retrieval, exact passage inspection, and artifact inspection are relevant routes; structured dataset and calculation tools have no selected dataset."
         }
       },
       "review": {

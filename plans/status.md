@@ -1212,3 +1212,23 @@ Keep secrets and raw client data out of this file.
   and artifact-content scoring, calibrated judges and reliability repetitions
   remain separate coverage limits. Final numeric results still use the explicit
   SQL/analysis contract; Python can support the work.
+
+## 6 October 2026: tailor tool allowlists to each question
+
+- At the user's explicit request, Luna reviewed all 15 exposed agent tools and
+  replaced the shared real-v1 list with generous case-specific expectations.
+  Eighteen retail analysis/clarification cases allow 14 tools, including optional
+  report presentation; the two CSV/chart cases allow all 15, including registration
+  of their requested output. Eight Survey cases allow seven document/evidence
+  tools; the comparison and appendix cases also allow optional reports.
+- Recorded a rationale in every case rubric and kept generator/inventory policies
+  aligned. PDF-only questions have no selected dataset, so structured-data tools
+  are excluded. Permission to use a tool does not require using it or relax factual,
+  source-protection, unit, citation or artifact requirements.
+- Added an AST-based runtime-catalog drift check and inventory/generator agreement
+  checks. Verified that all 30 questions, sources, gold expectations and existing
+  rubric content are unchanged. Updated the guide and audit to supersede the
+  earlier shared-list policy; historical reports and review labels remain intact.
+- Validation: 423 deterministic tests passed, 80 live/integration tests deselected;
+  evaluation mypy, focused Black and scoped diff checks passed. No model trials,
+  rescoring, service starts, migrations, or phase 10 work were performed.

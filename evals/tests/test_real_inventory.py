@@ -1,8 +1,10 @@
 """Validate real cases without downloads; cross-check local data when present."""
 
+import ast
 import csv
 import hashlib
 import json
+import runpy
 import sqlite3
 from decimal import Decimal
 from pathlib import Path
@@ -146,8 +148,7 @@ def test_real_reference_answers_and_artifact_gold_are_complete():
             "failed",
             "separate_checks",
         }
-        assert "register_dataset" not in case.expectations.allowed_actions
-        assert "generate_report" not in case.expectations.allowed_actions
+        assert case.expectations.rubric["allowed_actions_rationale"]
         if "survey" in case.tags:
             assert case.expectations.rubric["reference_answer"]["required_claims"]
             assert all(
@@ -177,3 +178,71 @@ def test_real_reference_answers_and_artifact_gold_are_complete():
     assert "cost data" not in cases["retail-missing-cost-unsupported"].question
     assert "If this source" not in cases["retail-scope-clarification"].question
     assert "FY23/FY24" in cases["survey-inflation-drivers-en"].question
+
+
+def test_allowlists_match_runtime_tools_and_question_families():
+    runtime = EVALS.parents[0] / "backend/app/agent/runtime.py"
+    loop = EVALS.parents[0] / "backend/app/agent/loop.py"
+    runtime_tree = ast.parse(runtime.read_text(encoding="utf-8"))
+    loop_tree = ast.parse(loop.read_text(encoding="utf-8"))
+    runtime_tools = {
+        call.args[0].value
+        for call in ast.walk(runtime_tree)
+        if isinstance(call, ast.Call)
+        and isinstance(call.func, ast.Name)
+        and call.func.id in {"Tool", "structured_tool"}
+        and call.args
+        and isinstance(call.args[0], ast.Constant)
+        and isinstance(call.args[0].value, str)
+    }
+    finish_answer = any(
+        isinstance(node, ast.Constant) and node.value == "finish_answer"
+        for node in ast.walk(loop_tree)
+    )
+    assert finish_answer
+    actual_tools = runtime_tools | {"finish_answer"}
+    cases = {case.id: case for case in load_cases(INVENTORY, [], [])}
+    assert len(cases) == 30
+    generator = runpy.run_path(str(EVALS / "generators/generate_real_v1.py"))
+    for case in cases.values():
+        actions = set(case.expectations.allowed_actions)
+        assert "finish_answer" in actions
+        assert actions <= actual_tools
+        assert case.expectations.rubric["allowed_actions_rationale"]
+        assert case.expectations.allowed_actions == generator["allowed_actions"](
+            case.id, case.tags
+        )
+
+    retail = cases["retail-jan-sales-en"].expectations.allowed_actions
+    assert {
+        "list_sources",
+        "dataset_profile",
+        "inspect_schema",
+        "sample_rows",
+        "run_sql",
+        "run_python",
+        "analyze_data",
+        "search_documents",
+        "source_passage",
+        "summarize_documents",
+        "generate_report",
+    } <= set(retail)
+    chart = cases["retail-sales-chart-csv"].expectations.allowed_actions
+    assert {"generate_report", "register_dataset"} <= set(chart)
+    assert "register_dataset" not in retail
+    survey = cases["survey-fy24-retail-inflation-en"].expectations.allowed_actions
+    assert {
+        "search_documents",
+        "source_passage",
+        "summarize_documents",
+        "inspect_artifact",
+        "list_artifacts",
+    } <= set(survey)
+    assert not {"run_sql", "run_python", "analyze_data", "register_dataset"} & set(
+        survey
+    )
+    assert (
+        "generate_report"
+        in cases["survey-summary-vs-chapter"].expectations.allowed_actions
+    )
+    assert "generate_report" not in survey

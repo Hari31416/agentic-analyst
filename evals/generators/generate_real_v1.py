@@ -40,7 +40,7 @@ RAW_SURVEYS = {
 MONTH_CSV = GENERATED_ROOT / "online-retail-2011-01.csv"
 RULES = GENERATED_ROOT / "retail-analysis-rules.txt"
 VERSION = "real-v1"
-ALLOWED_ACTIONS = [
+RETAIL_ACTIONS = [
     "finish_answer",
     "list_sources",
     "dataset_profile",
@@ -54,7 +54,55 @@ ALLOWED_ACTIONS = [
     "search_documents",
     "source_passage",
     "summarize_documents",
+    "generate_report",
 ]
+
+DOCUMENT_ACTIONS = [
+    "finish_answer",
+    "list_sources",
+    "search_documents",
+    "source_passage",
+    "summarize_documents",
+    "inspect_artifact",
+    "list_artifacts",
+]
+
+DATASET_OUTPUT_CASES = {"retail-sales-chart-csv", "retail-export-and-chart-hi"}
+REPORT_CASES = DATASET_OUTPUT_CASES | {
+    "survey-summary-vs-chapter",
+    "survey-appendix-table-retrieval",
+}
+
+
+def allowed_actions(ident: str, tags: list[str]) -> list[str]:
+    """Return generous, task-relevant actions from the runtime tool catalog."""
+    actions = list(RETAIL_ACTIONS if "retail" in tags else DOCUMENT_ACTIONS)
+    if ident in REPORT_CASES and "generate_report" not in actions:
+        actions.append("generate_report")
+    if ident in DATASET_OUTPUT_CASES:
+        actions.append("register_dataset")
+    return actions
+
+
+def allowed_actions_rationale(ident: str, tags: list[str]) -> str:
+    if "retail" in tags:
+        rationale = (
+            "The selected retail CSV and any attached rules support source/schema/profile/sample "
+            "inspection, full-data SQL aggregates, Python or dataframe calculation and repair, "
+            "document retrieval, and artifact inspection. Report generation is an optional "
+            "presentation route for these analytical results."
+        )
+        if ident in DATASET_OUTPUT_CASES:
+            rationale += " The requested CSV may also be registered with lineage for reuse in a later run."
+        return rationale
+    rationale = (
+        "The selected input is a document PDF, so source discovery, document summaries, "
+        "lexical/dense retrieval, exact passage inspection, and artifact inspection are "
+        "relevant routes; structured dataset and calculation tools have no selected dataset."
+    )
+    if ident in REPORT_CASES:
+        rationale += " Report generation is an optional presentation route for this multi-part document task."
+    return rationale
 
 
 def sha256(path: Path) -> str:
@@ -291,6 +339,8 @@ def case(
                 " Return the final numeric results together in one SQL/analysis "
                 f"result row with these column names: {columns}."
             )
+    case_rubric = dict(rubric or {})
+    case_rubric["allowed_actions_rationale"] = allowed_actions_rationale(ident, tags)
     result = {
         "schema_version": 1,
         "id": ident,
@@ -300,11 +350,11 @@ def case(
         "answerability": answerability,
         "sources": sources,
         "expectations": {
-            "allowed_actions": ALLOWED_ACTIONS,
+            "allowed_actions": allowed_actions(ident, tags),
             "calculations": calculations or [],
             "passages": passages or [],
             "artifacts": artifacts or [],
-            "rubric": rubric or {},
+            "rubric": case_rubric,
         },
         "review": {"provenance": "unreviewed"},
     }

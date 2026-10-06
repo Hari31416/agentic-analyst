@@ -950,6 +950,13 @@ dialog::backdrop {
   padding: 6px 8px;
   border-bottom: 1px solid var(--border);
 }
+.trace-list li.is-rejected {
+  background: var(--failed-bg);
+  border-left: 3px solid var(--failed);
+}
+.trace-list li.is-allowed {
+  border-left: 3px solid var(--complete);
+}
 .trace-list li:last-child { border-bottom: none; }
 .tool-header {
   color: var(--primary);
@@ -1082,6 +1089,40 @@ dialog::backdrop {
     </div>
   </section>
 
+  <!-- Agent Tool Call & Guardrail Telemetry Section -->
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Tool Execution & Guardrail Telemetry</h2>
+      <p class="section-desc">Tool invocation volume, allowed vs. rejected calls, action allowlist compliance, and agent tool discipline across models</p>
+    </div>
+  </div>
+
+  <section class="charts-grid" id="toolChartsContainer"></section>
+
+  <section class="tradeoff-card">
+    <div class="chart-header">
+      <h3 class="chart-title">Tool Guardrail & Allowlist Compliance Matrix</h3>
+      <p class="chart-subtitle">Direct comparison of tool volume, rejection rates, and security policy violations</p>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="table-simple" id="toolSummaryTable">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Dispatched</th>
+            <th>Retained Calls</th>
+            <th>Allowed Calls</th>
+            <th>Rejected Calls</th>
+            <th>Allowlist Violations</th>
+            <th>Top Blocked Tool</th>
+            <th>Guardrail & Tool Discipline Profile</th>
+          </tr>
+        </thead>
+        <tbody id="toolSummaryTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- Case Explorer & Matrix Grid -->
   <div class="section-header">
     <div>
@@ -1106,6 +1147,8 @@ dialog::backdrop {
         <div class="chip-group" id="quickChips">
           <button class="chip-btn active" data-filter="all" type="button">All 30 Cases</button>
           <button class="chip-btn" data-filter="hard" type="button">Challenging Cases (Any Partial / Fail)</button>
+          <button class="chip-btn" data-filter="tool-rejections" type="button">Has Rejected Tools</button>
+          <button class="chip-btn" data-filter="allowlist-violation" type="button">Allowlist Violations</button>
           <button class="chip-btn" data-filter="unanimous" type="button">All Models Passed</button>
           <button class="chip-btn" data-filter="multilingual" type="button">Multilingual (Hindi / Hinglish)</button>
           <button class="chip-btn" data-filter="artifacts" type="button">Artifact & Chart Tasks</button>
@@ -1460,14 +1503,18 @@ function renderAnalyticsCharts() {
     const row = document.createElement('div');
     row.className = 'bar-row';
     const p50w = ((m.median_seconds / maxP95) * 100).toFixed(1);
-    const p95w = (((m.p95_seconds - m.median_seconds) / maxP95) * 100).toFixed(1);
+    const p95w = ((m.p95_seconds / maxP95) * 100).toFixed(1);
     row.innerHTML = `
       <span class="bar-label" title="${m.model}">${m.model}</span>
-      <div class="bar-track">
-        <span class="bar-fill" style="width: ${p50w}%; background: #2563eb;" title="p50: ${fmt(m.median_seconds)}s"></span>
-        <span class="bar-fill" style="width: ${p95w}%; background: #93c5fd;" title="p95: ${fmt(m.p95_seconds)}s"></span>
+      <div style="display: flex; flex-direction: column; gap: 3px; width: 100%;">
+        <div style="height: 7px; border-radius: 2px; background: var(--surface-raised); overflow: hidden;">
+          <div style="height: 100%; width: ${p50w}%; background: #2563eb;" title="p50: ${fmt(m.median_seconds)}s"></div>
+        </div>
+        <div style="height: 7px; border-radius: 2px; background: var(--surface-raised); overflow: hidden;">
+          <div style="height: 100%; width: ${p95w}%; background: #93c5fd;" title="p95: ${fmt(m.p95_seconds)}s"></div>
+        </div>
       </div>
-      <span class="bar-value">${fmt(m.median_seconds)}s / ${fmt(m.p95_seconds, 0)}s</span>
+      <span class="bar-value" style="font-size: 10px;">${fmt(m.median_seconds)}s / ${fmt(m.p95_seconds, 0)}s</span>
     `;
     body2.appendChild(row);
   });
@@ -1647,6 +1694,199 @@ function renderSummaryTable() {
   });
 }
 
+// Render Tool Call & Rejection Analytics
+function renderToolAnalytics() {
+  const container = document.getElementById('toolChartsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // 1. Tool Call Decisions: Allowed vs Rejected
+  const card1 = document.createElement('div');
+  card1.className = 'chart-card';
+  card1.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Tool Invocations: Allowed vs. Rejected</h3>
+      <p class="chart-subtitle">Security guardrail and validation decisions across retained calls</p>
+    </div>
+    <div class="chart-body" id="chartToolDecisions"></div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-sq" style="background: var(--complete);"></span>Allowed</span>
+      <span class="legend-item"><span class="legend-sq" style="background: var(--failed);"></span>Rejected</span>
+    </div>
+  `;
+  container.appendChild(card1);
+
+  const body1 = card1.querySelector('#chartToolDecisions');
+  models.forEach(m => {
+    let allowed = 0, rejected = 0;
+    m.cases.forEach(c => {
+      (c.tool_calls || []).forEach(tc => {
+        if (tc.decision === 'rejected' || tc.status === 'rejected') rejected++;
+        else allowed++;
+      });
+    });
+    const total = allowed + rejected || 1;
+    const allowPct = ((allowed / total) * 100).toFixed(0);
+    const rejPct = ((rejected / total) * 100).toFixed(0);
+
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <span class="bar-label" title="${m.model}">${m.model}</span>
+      <div class="bar-track">
+        <span class="bar-fill" style="width: ${(allowed / total) * 100}%; background: var(--complete);" title="Allowed: ${allowed} (${allowPct}%)"></span>
+        <span class="bar-fill" style="width: ${(rejected / total) * 100}%; background: var(--failed);" title="Rejected: ${rejected} (${rejPct}%)"></span>
+      </div>
+      <span class="bar-value">${rejected} rej (${rejPct}%)</span>
+    `;
+    body1.appendChild(row);
+  });
+
+  // 2. Most Frequently Blocked / Rejected Tool Types
+  const card2 = document.createElement('div');
+  card2.className = 'chart-card';
+  card2.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Most Blocked / Rejected Tool Types</h3>
+      <p class="chart-subtitle">Rejection frequency across all 120 benchmark runs</p>
+    </div>
+    <div class="chart-body" id="chartRejectedTypes"></div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-sq" style="background: #dc2626;"></span>Rejected Invocations</span>
+    </div>
+  `;
+  container.appendChild(card2);
+
+  const body2 = card2.querySelector('#chartRejectedTypes');
+  const rejectedToolCounts = {};
+  models.forEach(m => {
+    m.cases.forEach(c => {
+      (c.tool_calls || []).forEach(tc => {
+        if (tc.decision === 'rejected' || tc.status === 'rejected') {
+          const name = tc.name || 'unknown';
+          rejectedToolCounts[name] = (rejectedToolCounts[name] || 0) + 1;
+        }
+      });
+    });
+  });
+  const sortedRej = Object.entries(rejectedToolCounts).sort((a, b) => b[1] - a[1]);
+  const maxRej = sortedRej[0]?.[1] || 1;
+
+  sortedRej.forEach(([name, count]) => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    const w = ((count / maxRej) * 100).toFixed(1);
+    row.innerHTML = `
+      <span class="bar-label" title="${name}">${name}</span>
+      <div class="bar-track">
+        <span class="bar-fill" style="width: ${w}%; background: #dc2626;" title="${name}: ${count} rejections"></span>
+      </div>
+      <span class="bar-value">${count} blocked</span>
+    `;
+    body2.appendChild(row);
+  });
+
+  // 3. Model Attempts vs. Retained Tool Calls
+  const card3 = document.createElement('div');
+  card3.className = 'chart-card';
+  card3.innerHTML = `
+    <div class="chart-header">
+      <h3 class="chart-title">Model Attempts vs. Retained Tools</h3>
+      <p class="chart-subtitle">Telemetry comparison highlighting agent retry loops and tool retention</p>
+    </div>
+    <div class="chart-body" id="chartLoopOverhead"></div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-sq" style="background: #0284c7;"></span>Model Attempts</span>
+      <span class="legend-item"><span class="legend-sq" style="background: #38bdf8;"></span>Retained Tools</span>
+    </div>
+  `;
+  container.appendChild(card3);
+
+  const body3 = card3.querySelector('#chartLoopOverhead');
+  const maxAttempts = Math.max(...models.map(m => m.model_attempt_count || 1));
+  models.forEach(m => {
+    const attempts = m.model_attempt_count || 0;
+    const retained = m.retained_tool_call_count || m.tool_call_count || 0;
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    const aw = ((attempts / maxAttempts) * 100).toFixed(1);
+    const rw = ((retained / maxAttempts) * 100).toFixed(1);
+    row.innerHTML = `
+      <span class="bar-label" title="${m.model}">${m.model}</span>
+      <div style="display: flex; flex-direction: column; gap: 3px; width: 100%;">
+        <div style="height: 7px; border-radius: 2px; background: var(--surface-raised); overflow: hidden;">
+          <div style="height: 100%; width: ${aw}%; background: #0284c7;" title="Model Attempts: ${attempts}"></div>
+        </div>
+        <div style="height: 7px; border-radius: 2px; background: var(--surface-raised); overflow: hidden;">
+          <div style="height: 100%; width: ${rw}%; background: #38bdf8;" title="Retained Tools: ${retained}"></div>
+        </div>
+      </div>
+      <span class="bar-value" style="font-size: 10px;">${attempts} / ${retained}</span>
+    `;
+    body3.appendChild(row);
+  });
+}
+
+// Render Tool Summary Table
+function renderToolSummaryTable() {
+  const tbody = document.getElementById('toolSummaryTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const guardrailProfiles = {
+    'gpt-oss-120b': 'High rejection rate (30.9%) due to repeated exploratory search_documents and premature artifact inspection; 0 allowlist policy violations.',
+    'gemma-4-31b-it': 'Highest tool discipline (92.2% allowed calls, only 7 rejections); zero allowlist policy violations; concise tool chains.',
+    'gemma-4-26B-A4B-it': 'Moderate rejection rate (13.6%); 1 allowlist violation (called register_dataset on retail-sales-chart-csv).',
+    'Qwen3.6-35B-A3B': 'Highest tool activity (209 dispatched, 185 retained); 11.4% rejection rate (chiefly finish_answer & search_documents); 2 allowlist violations (register_dataset, generate_report).'
+  };
+
+  models.forEach(m => {
+    let allowed = 0, rejected = 0;
+    const toolRejCounts = {};
+    m.cases.forEach(c => {
+      (c.tool_calls || []).forEach(tc => {
+        if (tc.decision === 'rejected' || tc.status === 'rejected') {
+          rejected++;
+          const name = tc.name || 'unknown';
+          toolRejCounts[name] = (toolRejCounts[name] || 0) + 1;
+        } else {
+          allowed++;
+        }
+      });
+    });
+    const totalRetained = allowed + rejected || m.retained_tool_call_count || 1;
+    const allowPct = ((allowed / totalRetained) * 100).toFixed(1);
+    const rejPct = ((rejected / totalRetained) * 100).toFixed(1);
+
+    // Allowlist violations
+    let allowlistViolations = 0;
+    m.cases.forEach(c => {
+      (c.metrics || []).forEach(met => {
+        if (met.name === 'action_allowlist' && met.status === 'fail') {
+          allowlistViolations++;
+        }
+      });
+    });
+
+    // Top rejected tool
+    const topRejEntry = Object.entries(toolRejCounts).sort((a, b) => b[1] - a[1])[0];
+    const topRejStr = topRejEntry ? `${topRejEntry[0]} (${topRejEntry[1]})` : 'None';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight: 700; font-family: var(--font-mono);">${m.model}</td>
+      <td style="font-family: var(--font-mono);">${m.tool_call_count}</td>
+      <td style="font-family: var(--font-mono);">${totalRetained}</td>
+      <td><span class="badge-pill b-complete">${allowed} (${allowPct}%)</span></td>
+      <td><span class="badge-pill ${rejected > 20 ? 'b-failed' : 'b-partial'}">${rejected} (${rejPct}%)</span></td>
+      <td><span class="badge-pill ${allowlistViolations > 0 ? 'b-failed' : 'b-auto'}">${allowlistViolations} violation${allowlistViolations === 1 ? '' : 's'}</span></td>
+      <td style="font-family: var(--font-mono); font-size: 11px;">${topRejStr}</td>
+      <td style="color: var(--text-muted); font-size: 11px;">${guardrailProfiles[m.model] || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
 // Explorer Filters & Search Logic
 let activeFilterMode = 'all'; // 'all', 'hard', 'unanimous', 'multilingual', 'artifacts'
 let activeView = 'matrix'; // 'matrix' or 'list'
@@ -1775,6 +2015,16 @@ function caseMatchesFilters(c, query, cat, lang) {
       r.review.overall_task === 'failed' || r.review.overall_task === 'partial'
     );
     if (!hasFailOrPart) return false;
+  } else if (activeFilterMode === 'tool-rejections') {
+    const hasRej = Object.values(c.runsByModel).some(r => 
+      (r.tool_calls || []).some(tc => tc.decision === 'rejected' || tc.status === 'rejected')
+    );
+    if (!hasRej) return false;
+  } else if (activeFilterMode === 'allowlist-violation') {
+    const hasViolation = Object.values(c.runsByModel).some(r => 
+      (r.metrics || []).some(m => m.name === 'action_allowlist' && m.status === 'fail')
+    );
+    if (!hasViolation) return false;
   } else if (activeFilterMode === 'unanimous') {
     const allComp = Object.values(c.runsByModel).every(r => r.review.overall_task === 'complete');
     if (!allComp) return false;
@@ -2126,11 +2376,16 @@ function openCaseModal(caseId) {
     traceList.className = 'trace-list';
     if (r.tool_calls && r.tool_calls.length) {
       r.tool_calls.forEach((t, idx) => {
+        const isRejected = t.decision === 'rejected' || t.status === 'rejected';
         const li = document.createElement('li');
+        li.className = isRejected ? 'is-rejected' : 'is-allowed';
         li.innerHTML = `
-          <div class="tool-header">${idx + 1}. ${t.name || 'tool'} (${t.decision || t.status || 'executed'})</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+            <span class="tool-header">${idx + 1}. ${t.name || 'tool'}</span>
+            <span class="badge-pill ${isRejected ? 'b-failed' : 'b-complete'}">${isRejected ? 'Rejected' : 'Allowed'}</span>
+          </div>
           ${t.result?.summary ? `<div class="tool-detail">${t.result.summary}</div>` : ''}
-          ${t.result?.error ? `<div class="tool-detail" style="color: var(--failed);">${t.result.error.message || 'error'}</div>` : ''}
+          ${t.result?.error ? `<div class="tool-detail" style="color: var(--failed); font-weight: 500;">${t.result.error.message || 'error'}</div>` : ''}
         `;
         traceList.appendChild(li);
       });
@@ -2215,6 +2470,8 @@ initScopeModal();
 renderModelCards();
 renderAnalyticsCharts();
 renderSummaryTable();
+renderToolAnalytics();
+renderToolSummaryTable();
 initFilters();
 applyFilters();
 </script>

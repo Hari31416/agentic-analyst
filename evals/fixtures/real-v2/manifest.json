@@ -1,0 +1,157 @@
+{
+  "version": "real-v2",
+  "revision": "2026-10-06",
+  "base_inventory": {
+    "path": "evals/cases/real-v1.json",
+    "sha256": "b1e17fc5234b706351c9832e6359ec3af9d34a505ea219b7f1dffc791f0d7192",
+    "inherited_cases": 30
+  },
+  "case_inventory": {
+    "path": "evals/cases/real-v2.json",
+    "sha256": "e2bf0bfc1dd840f9a1c696635735b61db447369bf3a7938830af1e0fe116b943"
+  },
+  "shared_source_manifest": {
+    "path": "real-v1/manifest.json",
+    "sha256": "82dac43cd14ff4d91e786ffba628f379163f321c70ad2da6203d44d1415ace50"
+  },
+  "sources": [
+    {
+      "alias": "retail",
+      "name": "online-retail-2011-01.csv",
+      "kind": "csv",
+      "path": "real-v1/derived/online-retail-2011-01.csv",
+      "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+      "version": "1"
+    },
+    {
+      "alias": "rules",
+      "name": "retail-analysis-rules.txt",
+      "kind": "txt",
+      "path": "real-v1/derived/retail-analysis-rules.txt",
+      "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+      "version": "1"
+    },
+    {
+      "alias": "inflation",
+      "name": "inflation-en.pdf",
+      "kind": "pdf",
+      "path": "real-v1/raw/inflation-en.pdf",
+      "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+      "version": "1"
+    },
+    {
+      "alias": "inflation-hi",
+      "name": "inflation-hi.pdf",
+      "kind": "pdf",
+      "path": "real-v1/raw/inflation-hi.pdf",
+      "sha256": "abc156fbbfd568e81b06e8424ff634eddaa123eb8a93630c1bd2812ed2637c35",
+      "version": "1"
+    },
+    {
+      "alias": "survey",
+      "name": "economic-survey-2023-24-en.pdf",
+      "kind": "pdf",
+      "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
+      "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+      "version": "1"
+    },
+    {
+      "alias": "appendix",
+      "name": "statistical-appendix-en.pdf",
+      "kind": "pdf",
+      "path": "real-v1/raw/statistical-appendix-en.pdf",
+      "sha256": "2724d440da77b029934d395bc203c0ae50d140870a5f410645e75ac72b6bb83d",
+      "version": "1"
+    }
+  ],
+  "additional_gold": {
+    "weekend_lines": "3314",
+    "weekend_sales_gbp": "40036.26",
+    "weekend_invoices": "124",
+    "weekend_avg_line_gbp": "12.08",
+    "weekday_lines": "30992",
+    "weekday_sales_gbp": "651328.30",
+    "weekday_invoices": "962",
+    "weekday_avg_line_gbp": "21.02",
+    "days_01_07_lines": "6353",
+    "days_01_07_sales_gbp": "117879.99",
+    "days_08_14_lines": "9153",
+    "days_08_14_sales_gbp": "201898.18",
+    "days_15_21_lines": "9037",
+    "days_15_21_sales_gbp": "212374.99",
+    "days_22_31_lines": "9763",
+    "days_22_31_sales_gbp": "159211.40",
+    "first_day_lines": "1156",
+    "first_day_sales_gbp": "16026.08",
+    "last_day_lines": "1473",
+    "last_day_sales_gbp": "23640.36",
+    "cancel_negative_quantity_rows": "701",
+    "noncancel_negative_quantity_rows": "96",
+    "cancel_nonnegative_quantity_rows": "0",
+    "noncancel_nonnegative_quantity_rows": "34350",
+    "raw_rows": "35147",
+    "raw_signed_row_amount_gbp": "560000.26",
+    "raw_negative_quantity_rows": "797",
+    "raw_negative_quantity_signed_amount_gbp": "-131364.30",
+    "qualifying_rows": "34306",
+    "qualifying_sales_gbp": "691364.56",
+    "single_line_invoice_count": "84",
+    "single_line_qualifying_lines": "84",
+    "single_line_sales_gbp": "87752.26",
+    "multi_line_invoice_count": "1002",
+    "multi_line_qualifying_lines": "34222",
+    "multi_line_sales_gbp": "603612.30",
+    "average_qualifying_line_gbp": "20.15",
+    "average_qualifying_invoice_gbp": "636.62",
+    "top_three_countries_sales_gbp": "609805.33",
+    "top_three_sales_share_percent": "88.20",
+    "leading_stock_sales_gbp": "77183.60",
+    "leading_stock_qualifying_units": "74215",
+    "leading_stock_qualifying_lines": "1",
+    "unit_price_under_1_lines": "7036",
+    "unit_price_under_1_sales_gbp": "61477.88",
+    "unit_price_under_1_sales_share_percent": "8.89",
+    "unit_price_1_or_more_lines": "27270",
+    "unit_price_1_or_more_sales_gbp": "629886.68",
+    "unit_price_1_or_more_sales_share_percent": "91.11",
+    "quantity_under_100_lines": "33952",
+    "quantity_under_100_units": "237597",
+    "quantity_under_100_sales_gbp": "502366.02",
+    "quantity_under_100_sales_share_percent": "72.66",
+    "quantity_100_or_more_lines": "354",
+    "quantity_100_or_more_units": "150188",
+    "quantity_100_or_more_sales_gbp": "188998.54",
+    "quantity_100_or_more_sales_share_percent": "27.34",
+    "uk_qualifying_lines": "31164",
+    "uk_missing_customer_lines": "13006",
+    "uk_missing_customer_line_share_percent": "41.73",
+    "uk_missing_customer_sales_gbp": "119099.92",
+    "uk_missing_customer_sales_share_percent": "21.22",
+    "other_countries_qualifying_lines": "3142",
+    "other_countries_missing_customer_lines": "71",
+    "other_countries_missing_customer_line_share_percent": "2.26",
+    "other_countries_missing_customer_sales_gbp": "2819.60",
+    "other_countries_missing_customer_sales_share_percent": "2.17"
+  },
+  "coverage": {
+    "total_cases": 50,
+    "added_cases": 20,
+    "retail_cases": 32,
+    "survey_cases": 18,
+    "languages": {
+      "en-IN": 43,
+      "hi-IN": 6,
+      "hi-Latn-IN": 1
+    }
+  },
+  "review": {
+    "provenance": "unreviewed",
+    "method": "Luna draft and primary agent source/independent integer-SQL review; not independent human or native-speaker certification"
+  },
+  "limits": [
+    "Document factuality and language require manual review",
+    "Grouped/category values and artifact contents require manual review",
+    "No model trials or calibrated judges",
+    "More cases do not establish statistical reliability; source families remain shared"
+  ]
+}

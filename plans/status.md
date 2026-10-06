@@ -1232,3 +1232,21 @@ Keep secrets and raw client data out of this file.
 - Validation: 423 deterministic tests passed, 80 live/integration tests deselected;
   evaluation mypy, focused Black and scoped diff checks passed. No model trials,
   rescoring, service starts, migrations, or phase 10 work were performed.
+
+## 6 October 2026: expand the real-data pack to v2
+
+- At the user's request, Luna drafted 20 additions and the primary agent checked
+  them before integration. Saved 50 cases as real-v2, preserving all 30 v1 objects
+  exactly. Added 12 retail and 8 English Survey questions, for 32 retail and 18
+  document cases overall. Hindi and code-switched coverage remains inherited.
+- Reused pinned v1 sources. Added a reproducible generator, reviewed definitions,
+  manifest, usage guide and audit notes. Decimal gold recomputation and separate
+  integer-penny SQLite checks verify all 67 new numeric expectations, date labels,
+  ranking labels and denominators. PDF anchors are checked on declared pages.
+- Corrected draft tags, an invoice-average equivalence restriction, an unnecessary
+  second PDF citation and a required rule anchor on an unfiltered raw-row question.
+  Recorded generous tool expectations and kept provenance unreviewed.
+- Validation: 429 deterministic tests passed, 80 live/integration tests deselected;
+  focused Black and diff checks passed. No model trials, rescoring, downloads,
+  services, migrations or phase 10 work. Independent human quality review and
+  model runs remain deferred.

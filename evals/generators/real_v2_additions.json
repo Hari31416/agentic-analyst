@@ -1,0 +1,1982 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "schema_version": 1,
+      "id": "retail-weekend-weekday-comparison",
+      "question": "For qualifying January 2011 invoice lines, compare weekend dates (Saturday or Sunday) with Monday–Friday. Return line count, distinct invoice count, qualifying sales in GBP, and sales per qualifying line for each group. Use total group sales divided by that group’s qualifying line count for the per-line average. Return all final numeric values together in one SQL/analysis row with columns: weekend_lines, weekend_invoices, weekend_sales_gbp, weekend_avg_line_gbp, weekday_lines, weekday_invoices, weekday_sales_gbp, weekday_avg_line_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "date-comparison"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "weekend_lines",
+            "value": "3314",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "weekend_sales_gbp",
+            "value": "40036.26",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "weekend_invoices",
+            "value": "124",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "weekend_avg_line_gbp",
+            "value": "12.08",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "weekday_lines",
+            "value": "30992",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "weekday_sales_gbp",
+            "value": "651328.30",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "weekday_invoices",
+            "value": "962",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "weekday_avg_line_gbp",
+            "value": "21.02",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: weekend_lines, weekend_sales_gbp, weekend_invoices, weekend_avg_line_gbp, weekday_lines, weekday_sales_gbp, weekday_invoices, weekday_avg_line_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check that weekend is defined from the local InvoiceDate calendar date, the two groups partition the qualifying lines, and each average uses the line count rather than invoice count. Weekend data contains Sunday rows and no Saturday rows.",
+          "reference_answer": {
+            "required_claims": [
+              "Use the authored qualifying-sales filters; do not read a sample as a full aggregate."
+            ],
+            "filter_and_grain": "date-comparison"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-calendar-week-bands",
+      "question": "Using the attached qualifying-sales rules, compare January 2011 by these inclusive calendar-date bands: Jan 1–7, Jan 8–14, Jan 15–21, and Jan 22–31. Return qualifying line count and sales in GBP for each band in one aggregate row with columns days_01_07_lines, days_01_07_sales_gbp, days_08_14_lines, days_08_14_sales_gbp, days_15_21_lines, days_15_21_sales_gbp, days_22_31_lines, days_22_31_sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "date-boundary"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "days_01_07_lines",
+            "value": "6353",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "days_01_07_sales_gbp",
+            "value": "117879.99",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "days_08_14_lines",
+            "value": "9153",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "days_08_14_sales_gbp",
+            "value": "201898.18",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "days_15_21_lines",
+            "value": "9037",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "days_15_21_sales_gbp",
+            "value": "212374.99",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "days_22_31_lines",
+            "value": "9763",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "days_22_31_sales_gbp",
+            "value": "159211.40",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: days_01_07_lines, days_01_07_sales_gbp, days_08_14_lines, days_08_14_sales_gbp, days_15_21_lines, days_15_21_sales_gbp, days_22_31_lines, days_22_31_sales_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check inclusive date boundaries, full January coverage, correct grouping, and GBP labeling. Jan 1–3 have no rows in the attached slice; the requested first band still begins Jan 1.",
+          "reference_answer": {
+            "required_claims": [
+              "Every source row is assigned to exactly one inclusive calendar band, then the authored qualifying-sales filters are applied."
+            ],
+            "filter_and_grain": "date-boundary"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-qualifying-date-endpoints",
+      "question": "For the January 2011 slice, identify the earliest and latest calendar dates that have qualifying sales. For each endpoint date return its qualifying line count and sales in GBP. Keep the date labels in the answer and return the four numeric measures together in one SQL/analysis row with columns: first_day_lines, first_day_sales_gbp, last_day_lines, last_day_sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "date-boundary"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "first_day_lines",
+            "value": "1156",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "first_day_sales_gbp",
+            "value": "16026.08",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "last_day_lines",
+            "value": "1473",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "last_day_sales_gbp",
+            "value": "23640.36",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: first_day_lines, first_day_sales_gbp, last_day_lines, last_day_sales_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "The earliest qualifying date is 2011-01-04; the latest is 2011-01-31. Check that the dates are calendar dates, not timestamps, and report each endpoint group only. The slice begins on Jan 4 despite covering the full calendar month.",
+          "reference_answer": {
+            "required_claims": [
+              "Derive the endpoint dates from qualifying rows, then count and sum each endpoint date. Jan 1–3 contain no rows in this pinned slice."
+            ],
+            "filter_and_grain": "date-boundary"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-cancellation-negative-quantity-crosstab",
+      "question": "On all raw January 2011 rows, cross-tabulate whether InvoiceNo begins with C (case-insensitive) against whether Quantity is negative. Return the four cell counts in one aggregate row with columns: cancel_negative_quantity_rows, noncancel_negative_quantity_rows, cancel_nonnegative_quantity_rows, noncancel_nonnegative_quantity_rows. Do not apply the qualifying-sales filters.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "cancellation"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "cancel_negative_quantity_rows",
+            "value": "701",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "noncancel_negative_quantity_rows",
+            "value": "96",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "cancel_nonnegative_quantity_rows",
+            "value": "0",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "noncancel_nonnegative_quantity_rows",
+            "value": "34350",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: cancel_negative_quantity_rows, noncancel_negative_quantity_rows, cancel_nonnegative_quantity_rows, noncancel_nonnegative_quantity_rows. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check the full raw row population, case-insensitive C prefix, strict Quantity < 0 condition, and the four disjoint cells. Do not equate every negative-quantity row with a cancellation.",
+          "reference_answer": {
+            "required_claims": [
+              "This is an explicit raw-row classification question; no sales qualification filters apply."
+            ],
+            "filter_and_grain": "cancellation"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-raw-signed-versus-qualifying-sales",
+      "question": "For every raw January 2011 row, calculate its signed row amount as Quantity × UnitPrice in GBP, retaining negative quantities. Compare that raw signed amount with qualifying positive sales under the attached rules. Also return the raw-row count, negative-quantity row count and signed amount for negative-quantity rows, and qualifying row count. Return one SQL/analysis row with columns: raw_rows, raw_signed_row_amount_gbp, raw_negative_quantity_rows, raw_negative_quantity_signed_amount_gbp, qualifying_rows, qualifying_sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "raw-rows"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "raw_rows",
+            "value": "35147",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "raw_signed_row_amount_gbp",
+            "value": "560000.26",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "raw_negative_quantity_rows",
+            "value": "797",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "raw_negative_quantity_signed_amount_gbp",
+            "value": "-131364.30",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "qualifying_rows",
+            "value": "34306",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "qualifying_sales_gbp",
+            "value": "691364.56",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: raw_rows, raw_signed_row_amount_gbp, raw_negative_quantity_rows, raw_negative_quantity_signed_amount_gbp, qualifying_rows, qualifying_sales_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Use the raw source for the signed row amount and the rule-filtered subset for qualifying positive sales. The result is a descriptive sum of signed row amounts, not accounting net revenue. Confirm negative-quantity values remain negative and all currency outputs are GBP.",
+          "reference_answer": {
+            "required_claims": [
+              "Raw signed amount is the sum of Quantity × UnitPrice across all rows. Qualifying sales use non-C invoice, positive Quantity, and positive UnitPrice. This separates raw signed values from the positive-sales convention."
+            ],
+            "filter_and_grain": "raw-rows"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-invoice-line-count-buckets",
+      "question": "Apply the attached rules, group distinct January 2011 invoices by their number of qualifying lines (exactly one versus two or more), and report invoice count, qualifying line count, and sales in GBP for each group. Return one SQL/analysis row with columns: single_line_invoice_count, single_line_qualifying_lines, single_line_sales_gbp, multi_line_invoice_count, multi_line_qualifying_lines, multi_line_sales_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "invoice-grain"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "single_line_invoice_count",
+            "value": "84",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "single_line_qualifying_lines",
+            "value": "84",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "single_line_sales_gbp",
+            "value": "87752.26",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "multi_line_invoice_count",
+            "value": "1002",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "multi_line_qualifying_lines",
+            "value": "34222",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "multi_line_sales_gbp",
+            "value": "603612.30",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: single_line_invoice_count, single_line_qualifying_lines, single_line_sales_gbp, multi_line_invoice_count, multi_line_qualifying_lines, multi_line_sales_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check that each invoice is assigned based on qualifying lines, not raw rows, and the two groups are disjoint and exhaustive. Amounts are line sums in GBP.",
+          "reference_answer": {
+            "required_claims": [
+              "InvoiceNo is the distinct invoice key; rows are invoice lines. Apply row qualification before classifying invoice line-count groups."
+            ],
+            "filter_and_grain": "invoice-grain"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-line-average-v-invoice-average",
+      "question": "For qualifying January 2011 sales, compare the average value per qualifying invoice line with the average value per distinct invoice. Use the sum of qualifying line amounts as the numerator for both measures, and use qualifying line count or distinct invoice count as the corresponding denominator. Return one SQL/analysis row with columns: average_qualifying_line_gbp, average_qualifying_invoice_gbp.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "invoice-grain"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "average_qualifying_line_gbp",
+            "value": "20.15",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "average_qualifying_invoice_gbp",
+            "value": "636.62",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: average_qualifying_line_gbp, average_qualifying_invoice_gbp. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check the two grains and denominators. Both figures are GBP per line or GBP per invoice, respectively, rounded to two decimals.",
+          "reference_answer": {
+            "required_claims": [
+              "Use qualifying line amounts, with qualifying line count for the line mean and distinct invoice count for the invoice mean. Averaging qualifying invoice subtotals is equivalent for the invoice mean. Averaging UnitPrice is incorrect."
+            ],
+            "filter_and_grain": "invoice-grain"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-top-three-country-concentration",
+      "question": "After applying the attached rules, identify the three countries with the highest January 2011 qualifying sales and report their combined sales and percentage of all qualifying sales, rounded to two decimal places. State the three country labels. Return the numeric results in one SQL/analysis row with columns: top_three_countries_sales_gbp, top_three_sales_share_percent.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "grouped-comparison"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "top_three_countries_sales_gbp",
+            "value": "609805.33",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "top_three_sales_share_percent",
+            "value": "88.20",
+            "unit": "percent",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: top_three_countries_sales_gbp, top_three_sales_share_percent. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check that the three country names match the descending top three, combined sales use only those three groups, and the percentage denominator is all qualifying sales in the same slice.",
+          "reference_answer": {
+            "required_claims": [
+              "Top-three membership is an answer-text criterion; the structured row carries combined GBP value and share.",
+              "The top three country labels, ordered by qualifying sales, are United Kingdom, Netherlands, and EIRE."
+            ],
+            "filter_and_grain": "grouped-comparison"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-leading-stock-code-by-sales",
+      "question": "Using the attached rules, find the StockCode with the highest qualifying sales in January 2011. State the StockCode label and return that code’s sales in GBP, qualifying units, and qualifying line count together in one SQL/analysis row with columns: leading_stock_sales_gbp, leading_stock_qualifying_units, leading_stock_qualifying_lines.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "grouped-ranking"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "leading_stock_sales_gbp",
+            "value": "77183.60",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "leading_stock_qualifying_units",
+            "value": "74215",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "leading_stock_qualifying_lines",
+            "value": "1",
+            "unit": null,
+            "tolerance": "0"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: leading_stock_sales_gbp, leading_stock_qualifying_units, leading_stock_qualifying_lines. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Verify StockCode as a text identifier in the answer and manually confirm it is the highest sales group. This source has an extreme one-row quantity concentration for the leading code, so units and sales must both be checked against the same group.",
+          "reference_answer": {
+            "required_claims": [
+              "Rank StockCode groups by qualifying line amount; the structured measures describe only the winning group.",
+              "The leading StockCode label is 23166."
+            ],
+            "filter_and_grain": "grouped-ranking"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-unit-price-buckets",
+      "question": "Among qualifying January 2011 lines, compare UnitPrice below GBP 1 with UnitPrice at least GBP 1. Return line count, qualifying sales in GBP, and each group’s share of all qualifying sales, rounded to two decimals. Use one aggregate row with columns: unit_price_under_1_lines, unit_price_under_1_sales_gbp, unit_price_under_1_sales_share_percent, unit_price_1_or_more_lines, unit_price_1_or_more_sales_gbp, unit_price_1_or_more_sales_share_percent.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "threshold-comparison"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "unit_price_under_1_lines",
+            "value": "7036",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "unit_price_under_1_sales_gbp",
+            "value": "61477.88",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "unit_price_under_1_sales_share_percent",
+            "value": "8.89",
+            "unit": "percent",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "unit_price_1_or_more_lines",
+            "value": "27270",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "unit_price_1_or_more_sales_gbp",
+            "value": "629886.68",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "unit_price_1_or_more_sales_share_percent",
+            "value": "91.11",
+            "unit": "percent",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: unit_price_under_1_lines, unit_price_under_1_sales_gbp, unit_price_under_1_sales_share_percent, unit_price_1_or_more_lines, unit_price_1_or_more_sales_gbp, unit_price_1_or_more_sales_share_percent. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check threshold inclusivity (< 1 versus >= 1), that UnitPrice is the per-item source field, and that sales-share denominators use all qualifying sales. Shares should total 100% subject to rounding.",
+          "reference_answer": {
+            "required_claims": [
+              "Apply the qualifying row rules before partitioning by UnitPrice."
+            ],
+            "filter_and_grain": "threshold-comparison"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-quantity-size-buckets",
+      "question": "Among qualifying January 2011 invoice lines, compare quantities below 100 units with quantities of 100 units or more. Return line count, unit total, sales in GBP, and each group’s share of all qualifying sales, rounded to two decimal places. Use one aggregate row with columns: quantity_under_100_lines, quantity_under_100_units, quantity_under_100_sales_gbp, quantity_under_100_sales_share_percent, quantity_100_or_more_lines, quantity_100_or_more_units, quantity_100_or_more_sales_gbp, quantity_100_or_more_sales_share_percent.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "threshold-comparison"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "quantity_under_100_lines",
+            "value": "33952",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "quantity_under_100_units",
+            "value": "237597",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "quantity_under_100_sales_gbp",
+            "value": "502366.02",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "quantity_under_100_sales_share_percent",
+            "value": "72.66",
+            "unit": "percent",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "quantity_100_or_more_lines",
+            "value": "354",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "quantity_100_or_more_units",
+            "value": "150188",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "quantity_100_or_more_sales_gbp",
+            "value": "188998.54",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "quantity_100_or_more_sales_share_percent",
+            "value": "27.34",
+            "unit": "percent",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: quantity_under_100_lines, quantity_under_100_units, quantity_under_100_sales_gbp, quantity_under_100_sales_share_percent, quantity_100_or_more_lines, quantity_100_or_more_units, quantity_100_or_more_sales_gbp, quantity_100_or_more_sales_share_percent. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check that the cutoff uses the line Quantity field, with 100 in the upper group, and that unit totals and sale shares use matching rows.",
+          "reference_answer": {
+            "required_claims": [
+              "Apply qualifying-sale filters before quantity bucketing; this is a descriptive split, not a causal claim."
+            ],
+            "filter_and_grain": "threshold-comparison"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "retail-conditional-customer-missing-shares",
+      "question": "For qualifying January 2011 lines, compare the United Kingdom with all other countries combined. For each population return qualifying line count, missing-CustomerID line count and line share, plus missing-CustomerID sales in GBP and share of that population’s qualifying sales. Round the percentages to two decimals. Return one SQL/analysis row with columns: uk_qualifying_lines, uk_missing_customer_lines, uk_missing_customer_line_share_percent, uk_missing_customer_sales_gbp, uk_missing_customer_sales_share_percent, other_countries_qualifying_lines, other_countries_missing_customer_lines, other_countries_missing_customer_line_share_percent, other_countries_missing_customer_sales_gbp, other_countries_missing_customer_sales_share_percent.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "retail",
+        "conditional-ratio"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "retail",
+          "name": "online-retail-2011-01.csv",
+          "kind": "csv",
+          "path": "real-v1/derived/online-retail-2011-01.csv",
+          "sha256": "e865953e9a71f55da6a9f10e28a14217a7504ce127cb669b90975f47ea1150d6",
+          "version": "1"
+        },
+        {
+          "alias": "rules",
+          "name": "retail-analysis-rules.txt",
+          "kind": "txt",
+          "path": "real-v1/derived/retail-analysis-rules.txt",
+          "sha256": "b4822871c8812e3c2f8725e62989836048a1adb15a33734f6d5994cd5fc76276",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "dataset_profile",
+          "inspect_schema",
+          "sample_rows",
+          "run_sql",
+          "run_python",
+          "analyze_data",
+          "inspect_artifact",
+          "list_artifacts",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "generate_report"
+        ],
+        "calculations": [
+          {
+            "key": "uk_qualifying_lines",
+            "value": "31164",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "uk_missing_customer_lines",
+            "value": "13006",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "uk_missing_customer_line_share_percent",
+            "value": "41.73",
+            "unit": "percent",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "uk_missing_customer_sales_gbp",
+            "value": "119099.92",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "uk_missing_customer_sales_share_percent",
+            "value": "21.22",
+            "unit": "percent",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "other_countries_qualifying_lines",
+            "value": "3142",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "other_countries_missing_customer_lines",
+            "value": "71",
+            "unit": null,
+            "tolerance": "0"
+          },
+          {
+            "key": "other_countries_missing_customer_line_share_percent",
+            "value": "2.26",
+            "unit": "percent",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "other_countries_missing_customer_sales_gbp",
+            "value": "2819.60",
+            "unit": "GBP",
+            "tolerance": "0.01"
+          },
+          {
+            "key": "other_countries_missing_customer_sales_share_percent",
+            "value": "2.17",
+            "unit": "percent",
+            "tolerance": "0.01"
+          }
+        ],
+        "passages": [
+          {
+            "source_alias": "rules",
+            "contains": "Quantity is greater than zero"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "final_result_contract": "Keep these final numeric outputs together in one SQL/analysis result row: uk_qualifying_lines, uk_missing_customer_lines, uk_missing_customer_line_share_percent, uk_missing_customer_sales_gbp, uk_missing_customer_sales_share_percent, other_countries_qualifying_lines, other_countries_missing_customer_lines, other_countries_missing_customer_line_share_percent, other_countries_missing_customer_sales_gbp, other_countries_missing_customer_sales_share_percent. Explicitly label the relevant periods, populations, grouping rules and units.",
+          "manual_review": "Check that the UK and other-country populations partition qualifying lines; for each group, calculate line share over that group’s lines and sales share over that group’s qualifying sales. Preserve missing CustomerID and do not impute identities.",
+          "reference_answer": {
+            "required_claims": [
+              "This is a population-conditional missingness comparison, with distinct line-count and sales-value denominators."
+            ],
+            "filter_and_grain": "conditional-ratio"
+          },
+          "review_criteria": {
+            "complete": "All requested group values, units, denominators, source support, and language requirements are correct.",
+            "partial": "Some values are correct but one or more requested groups, denominators, units, or explanations are missing; name each omission.",
+            "failed": "The central comparison or population is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, tool appropriateness, execution, rule citations, and language quality separately; preserve deterministic failures."
+          },
+          "allowed_actions_rationale": "The selected retail CSV and rules support schema/profile/sample inspection, full-data read-only SQL aggregates, Python or dataframe calculations, document retrieval for the authored inclusion note, and artifact inspection. Report generation is an optional presentation route. The allowlist permits useful alternatives without requiring a particular tool sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-fy24-gdp-and-gva-growth",
+      "question": "According to chapter 1 of the Economic Survey, what were India’s real GDP growth rate and GVA growth rate at 2011–12 prices in FY24? Cite the chapter PDF page and keep the two measures and period distinct.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "survey",
+        "chapter-1",
+        "growth"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "survey",
+          "name": "economic-survey-2023-24-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
+          "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "survey",
+            "contains": "India’s real GDP grew by 8.2 per cent in FY24",
+            "match_policy": "diagnostic"
+          },
+          {
+            "source_alias": "survey",
+            "contains": "gross value added (GVA) at 2011-12 prices grew by 7.2 per cent in FY24",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check both growth rates, the FY24 period, and that GVA is at 2011–12 prices. Do not swap GDP and GVA or describe the values as nominal growth.",
+          "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+          "reference_answer": {
+            "required_claims": [
+              "Real GDP grew by 8.2 per cent in FY24.",
+              "GVA at 2011–12 prices grew by 7.2 per cent in FY24."
+            ],
+            "locations": {
+              "survey": {
+                "pdf_pages": [
+                  56
+                ],
+                "printed_pages": [
+                  9
+                ],
+                "paragraphs": [
+                  "1.11"
+                ]
+              }
+            }
+          },
+          "review_criteria": {
+            "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+            "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+            "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+          },
+          "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-union-fiscal-deficit-change",
+      "question": "How did the Union Government fiscal deficit as a share of GDP change from FY23 to FY24, according to chapter 1? Cite the passage and state whether FY24 uses provisional actuals.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "survey",
+        "chapter-1",
+        "public-finance"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "survey",
+          "name": "economic-survey-2023-24-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
+          "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "survey",
+            "contains": "from 6.4 per cent of GDP in FY23 to 5.6 per cent of GDP in FY24",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check government level, fiscal deficit measure, denominator GDP, direction, periods, and FY24 provisional-actual qualification.",
+          "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+          "reference_answer": {
+            "required_claims": [
+              "The Union Government fiscal deficit declined from 6.4 per cent of GDP in FY23 to 5.6 per cent in FY24.",
+              "The chapter identifies FY24 as provisional actuals (PA)."
+            ],
+            "locations": {
+              "survey": {
+                "pdf_pages": [
+                  64
+                ],
+                "printed_pages": [
+                  17
+                ],
+                "paragraphs": [
+                  "1.22"
+                ]
+              }
+            }
+          },
+          "review_criteria": {
+            "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+            "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+            "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+          },
+          "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-digital-finance-scale-and-ekyc",
+      "question": "In the Economic Survey’s account of India Stack, report the two e-KYC cost endpoints and the stated UPI transaction values for FY17 and FY24. Cite chapter 2 and label each currency/unit and period; do not combine the measures.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "survey",
+        "chapter-2",
+        "digital-finance"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "survey",
+          "name": "economic-survey-2023-24-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
+          "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "survey",
+            "contains": "reducing the cost of conducting e-KYC from USD 12 to 6 cents",
+            "match_policy": "diagnostic"
+          },
+          {
+            "source_alias": "survey",
+            "contains": "from ₹0.07 lakh crore in FY17 to ₹200 lakh crore in FY24",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check USD versus cents for e-KYC, rupees and lakh crore for UPI, correct fiscal periods, and distinct identity/payment layer claims.",
+          "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+          "reference_answer": {
+            "required_claims": [
+              "The Survey says e-KYC cost fell from USD 12 to 6 cents.",
+              "UPI transaction value increased from ₹0.07 lakh crore in FY17 to ₹200 lakh crore in FY24."
+            ],
+            "locations": {
+              "survey": {
+                "pdf_pages": [
+                  106
+                ],
+                "printed_pages": [
+                  59
+                ],
+                "paragraphs": [
+                  "2.56"
+                ]
+              }
+            }
+          },
+          "review_criteria": {
+            "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+            "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+            "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+          },
+          "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-microfinance-client-shares",
+      "question": "What rural-clientele share and women-client share does chapter 2 report for microfinance institutions? Cite the passage and explain which population each percentage describes.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "survey",
+        "chapter-2",
+        "microfinance",
+        "population-denominators"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "survey",
+          "name": "economic-survey-2023-24-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
+          "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "survey",
+            "contains": "The present share of the rural clientele is at 74 per cent",
+            "match_policy": "diagnostic"
+          },
+          {
+            "source_alias": "survey",
+            "contains": "Women constitute 98 per cent of the total clients of MFIs",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Keep the denominators separate: one is rural clientele share and the other is women among total MFI clients. Avoid implying that 98 per cent is the rural share.",
+          "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+          "reference_answer": {
+            "required_claims": [
+              "The present share of the rural clientele is 74 per cent.",
+              "Women constitute 98 per cent of the total clients of MFIs."
+            ],
+            "locations": {
+              "survey": {
+                "pdf_pages": [
+                  108
+                ],
+                "printed_pages": [
+                  61
+                ],
+                "paragraphs": [
+                  "2.62",
+                  "2.63"
+                ]
+              }
+            }
+          },
+          "review_criteria": {
+            "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+            "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+            "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+          },
+          "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "survey-nifty-fy23-fy24-returns",
+      "question": "What change in Nifty 50 index return does chapter 2 report for FY23 and FY24? Cite the chapter page and preserve both fiscal-year labels and the negative sign.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "survey",
+        "chapter-2",
+        "capital-markets"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "survey",
+          "name": "economic-survey-2023-24-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/economic-survey-2023-24-en.pdf",
+          "sha256": "4e578c304e0f8eb6c1a9eb3366ab28b48242df596d54dbdf1e931685d350fcbe",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "survey",
+            "contains": "Nifty 50 index ascending by 26.8 per cent during FY24, as against (-)8.2 per cent during FY23",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check index name, fiscal-year assignment, signed returns, and that the figures refer to index returns rather than GDP or market-capitalisation growth.",
+          "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+          "reference_answer": {
+            "required_claims": [
+              "The Nifty 50 index declined by 8.2 per cent in FY23.",
+              "The Nifty 50 index rose by 26.8 per cent in FY24."
+            ],
+            "locations": {
+              "survey": {
+                "pdf_pages": [
+                  111
+                ],
+                "printed_pages": [
+                  64
+                ],
+                "paragraphs": [
+                  "2.73"
+                ]
+              }
+            }
+          },
+          "review_criteria": {
+            "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+            "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+            "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+          },
+          "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "inflation-fuel-price-cuts-2023-24",
+      "question": "Which fuel-price reductions does paragraph 3.9 of the prices chapter report during FY24? List each product, month, amount, and unit, and cite the chapter PDF page.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "survey",
+        "chapter-3",
+        "policy-measures"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "the price of a domestic LPG cylinder was reduced by ₹200 per cylinder",
+            "match_policy": "diagnostic"
+          },
+          {
+            "source_alias": "inflation",
+            "contains": "the price of non-subsidised LPG cylinders was reduced by ₹100 per cylinder",
+            "match_policy": "diagnostic"
+          },
+          {
+            "source_alias": "inflation",
+            "contains": "lowered the prices of petrol and diesel by ₹2 per litre",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check all three measures, product scope, month, and per-cylinder/per-litre unit. Keep domestic LPG and non-subsidised LPG statements distinct.",
+          "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+          "reference_answer": {
+            "required_claims": [
+              "In August 2023, domestic LPG cylinder price was reduced by ₹200 per cylinder in all markets across the country.",
+              "In March 2024, non-subsidised LPG cylinder prices were reduced by ₹100 per cylinder.",
+              "In March 2024, petrol and diesel prices were reduced by ₹2 per litre."
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  4
+                ],
+                "printed_pages": [
+                  88
+                ],
+                "paragraphs": [
+                  "3.9"
+                ]
+              }
+            }
+          },
+          "review_criteria": {
+            "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+            "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+            "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+          },
+          "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "inflation-core-definition",
+      "question": "How does paragraph 3.11 define core inflation and what is the stated reason for using it? Cite the chapter PDF page.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "survey",
+        "chapter-3",
+        "definitions"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "Core inflation is measured by excluding food and energy items from CPI headline inflation",
+            "match_policy": "diagnostic"
+          },
+          {
+            "source_alias": "inflation",
+            "contains": "It assesses the underlying price trends by largely eliminating the impact of price volatilities arising from transitory supply shocks",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check the measure’s exclusions and the stated analytical purpose. Do not redefine it as a separate price index with a different basket.",
+          "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+          "reference_answer": {
+            "required_claims": [
+              "Core inflation is measured by excluding food and energy items from CPI headline inflation.",
+              "The measure assesses underlying price trends by largely eliminating price volatility from transitory supply shocks."
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  5
+                ],
+                "printed_pages": [
+                  89
+                ],
+                "paragraphs": [
+                  "3.11"
+                ]
+              }
+            }
+          },
+          "review_criteria": {
+            "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+            "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+            "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+          },
+          "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "inflation-rural-urban-basket-and-state-count",
+      "question": "According to paragraphs 3.25–3.26, how many States/UTs had FY24 retail inflation below 6 per cent, and what food-item weights does the chapter give for rural versus urban consumption baskets? Cite the relevant chapter PDF page and keep each denominator clear.",
+      "language": "en-IN",
+      "tags": [
+        "real-v2-added",
+        "survey",
+        "chapter-3",
+        "regional-comparison",
+        "population-denominators"
+      ],
+      "answerability": "answerable",
+      "sources": [
+        {
+          "alias": "inflation",
+          "name": "inflation-en.pdf",
+          "kind": "pdf",
+          "path": "real-v1/raw/inflation-en.pdf",
+          "sha256": "d1553936a2324be36c45feb6d3949e094d1888edb26d7338b4bfefe3a5ea891b",
+          "version": "1"
+        }
+      ],
+      "expectations": {
+        "allowed_actions": [
+          "finish_answer",
+          "list_sources",
+          "search_documents",
+          "source_passage",
+          "summarize_documents",
+          "inspect_artifact",
+          "list_artifacts"
+        ],
+        "calculations": [],
+        "passages": [
+          {
+            "source_alias": "inflation",
+            "contains": "less than 6 per cent in 29 out of the 36 States and Union Territories",
+            "match_policy": "diagnostic"
+          },
+          {
+            "source_alias": "inflation",
+            "contains": "rural consumption basket has a much higher weightage of food items (47.3%) than the urban (29.6%)",
+            "match_policy": "diagnostic"
+          }
+        ],
+        "artifacts": [],
+        "rubric": {
+          "manual_review": "Check the state/UT count and denominator, FY24 period, correct rural/urban weights, and distinguish basket weights from inflation rates. Do not infer causation beyond the chapter text.",
+          "answer_requirements": "Check every requested claim against the cited original PDF passage. Preserve the stated source measure, unit, population, and fiscal/calendar period. Verify the cited PDF page; passage-anchor matching alone does not certify claim completeness.",
+          "reference_answer": {
+            "required_claims": [
+              "FY24 inflation was below 6 per cent in 29 out of 36 States and Union Territories.",
+              "Food items have a 47.3 per cent weight in the rural consumption basket and a 29.6 per cent weight in the urban consumption basket."
+            ],
+            "locations": {
+              "inflation": {
+                "pdf_pages": [
+                  13
+                ],
+                "printed_pages": [
+                  97
+                ],
+                "paragraphs": [
+                  "3.25",
+                  "3.26"
+                ]
+              }
+            }
+          },
+          "review_criteria": {
+            "complete": "All requested claims are accurate, cited to the correct selected source and PDF page, and keep periods, units, and populations distinct.",
+            "partial": "Some claims are correct but at least one requested value, distinction, citation or unit is missing; record each omission.",
+            "failed": "The central claim is wrong, unsupported, or absent; record contradictions explicitly.",
+            "separate_checks": "Record factual task success, citation validity, retrieval, language quality, and execution separately. Numeric prose is manually reviewed, not represented as a SQL result."
+          },
+          "allowed_actions_rationale": "The selected input is a PDF, so source discovery, lexical/dense retrieval, exact passage inspection, summaries, and artifact inspection are relevant. No structured data source is selected, so dataset operations, SQL, and Python analysis have no task input. The allowlist permits alternative document retrieval paths without requiring a fixed sequence."
+        }
+      },
+      "review": {
+        "provenance": "unreviewed"
+      }
+    }
+  ]
+}

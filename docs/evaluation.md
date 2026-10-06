@@ -1,6 +1,7 @@
 # Evaluation baseline
 
-The optional [real-data pack](../evals/real-v1.md) uses UCI Online Retail and the
+The optional [50-case real-data v2 pack](../evals/real-v2.md), extending the
+[30-case v1 pack](../evals/real-v1.md), uses UCI Online Retail and the
 Economic Survey 2023–24. Select its case inventory explicitly; it does not
 replace the synthetic regression baseline or claim reviewed quality thresholds.
 

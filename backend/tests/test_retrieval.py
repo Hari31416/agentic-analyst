@@ -194,3 +194,51 @@ def test_custom_adapter_prefixes_e5_query_and_passages(
         ["passage: नियम लागू होता है", "passage: eligibility threshold"],
         ["query: आय सीमा क्या है?"],
     ]
+
+
+def test_embeddinggemma_adapter_prefixes_and_512_dimensions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.retrieval.embedding import EmbeddingGemmaAdapter, get_embedding_adapter
+
+    seen_calls: list[tuple[list[str], dict[str, Any]]] = []
+
+    class FakeSentenceTransformer:
+        def encode(self, texts: list[str], **kwargs: Any) -> list[list[float]]:
+            seen_calls.append((list(texts), dict(kwargs)))
+            dim = kwargs.get("truncate_dim", 512)
+            return [[1.0] + [0.0] * (dim - 1) for _ in texts]
+
+    import app.retrieval.embedding as module
+
+    monkeypatch.setattr(
+        module, "_load_embeddinggemma", lambda *_args: FakeSentenceTransformer()
+    )
+
+    settings = Settings(
+        embedding_model="google/embeddinggemma-2",
+        embedding_dimension=512,
+    )
+    adapter = get_embedding_adapter(settings)
+    assert isinstance(adapter, EmbeddingGemmaAdapter)
+    assert adapter.dimensions == 512
+
+    passages = ["raw chunk content", "title: Summary | text: already titled"]
+    vectors = adapter.embed_passages(passages)
+    assert len(vectors) == 2
+    assert len(vectors[0]) == 512
+    assert len(vectors[1]) == 512
+    assert seen_calls[0][0] == [
+        "title: none | text: raw chunk content",
+        "title: Summary | text: already titled",
+    ]
+    assert seen_calls[0][1]["truncate_dim"] == 512
+    assert seen_calls[0][1]["normalize_embeddings"] is True
+    assert "prompt_name" not in seen_calls[0][1]
+
+    query_vec = adapter.embed_query("search query")
+    assert len(query_vec) == 512
+    assert seen_calls[1][0] == ["search query"]
+    assert seen_calls[1][1]["prompt_name"] == "SearchQuery"
+    assert seen_calls[1][1]["truncate_dim"] == 512
+    assert seen_calls[1][1]["normalize_embeddings"] is True

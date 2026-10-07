@@ -43,9 +43,9 @@ class Settings(BaseSettings):
     sandbox_auth_token: SecretStr | None = None
     sandbox_image: str | None = None
     external_provider_policy: Literal["local_only", "configured"] = "local_only"
-    embedding_model: str | None = None
+    embedding_model: str | None = "google/embeddinggemma-2"
     embedding_model_path: Path | None = None
-    embedding_dimension: int = 384
+    embedding_dimension: int = 512
     embedding_revision: str | None = None
     embedding_batch_size: int = 16
     document_max_chunks: int = 4096

@@ -128,10 +128,23 @@ def build_index_generation(
         # Fingerprint the actual pinned model revision, even when settings omitted
         # it and the verified on-disk manifest supplies the revision.
         fingerprint_payload["model_revision"] = adapter.revision
-        fingerprint_payload["embedding_adapter_version"] = "fastembed-e5-custom-v1"
-        fingerprint_payload["fastembed_version"] = importlib.metadata.version(
-            "fastembed"
-        )
+        adapter_name = getattr(adapter, "adapter_name", "fastembed-e5-custom-v1")
+        adapter_type = getattr(adapter, "adapter_type", "fastembed-local")
+        fingerprint_payload["embedding_adapter_version"] = adapter_name
+        if "sentence-transformers" in adapter_type:
+            try:
+                fingerprint_payload["sentence_transformers_version"] = (
+                    importlib.metadata.version("sentence_transformers")
+                )
+            except Exception:
+                fingerprint_payload["sentence_transformers_version"] = "unknown"
+        else:
+            try:
+                fingerprint_payload["fastembed_version"] = importlib.metadata.version(
+                    "fastembed"
+                )
+            except Exception:
+                fingerprint_payload["fastembed_version"] = "unknown"
         fingerprint = hashlib.sha256(
             json.dumps(
                 fingerprint_payload,
@@ -225,7 +238,7 @@ def build_index_generation(
                 **fingerprint_payload,
                 "model_revision": adapter.revision,
                 "embedding_status": "building",
-                "adapter": "fastembed-local",
+                "adapter": getattr(adapter, "adapter_type", "fastembed-local"),
             },
         )
     else:
@@ -236,7 +249,7 @@ def build_index_generation(
             **fingerprint_payload,
             "model_revision": adapter.revision,
             "embedding_status": "building",
-            "adapter": "fastembed-local",
+            "adapter": getattr(adapter, "adapter_type", "fastembed-local"),
         }
         session.execute(
             delete(ChunkEmbedding).where(ChunkEmbedding.generation_id == generation.id)
@@ -531,8 +544,8 @@ def _chunks_hash(chunks: list[DocumentChunk]) -> str:
 
 
 def _passage_text(chunk: DocumentChunk) -> str:
-    pieces = [chunk.heading, chunk.text]
-    return "\n".join(piece.strip() for piece in pieces if piece and piece.strip())
+    title = chunk.heading.strip() if chunk.heading and chunk.heading.strip() else "none"
+    return f"title: {title} | text: {chunk.text.strip()}"
 
 
 def _clean_query(query: str) -> str:

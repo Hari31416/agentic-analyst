@@ -12,7 +12,9 @@ from typing import Any, Protocol
 
 from app.config import Settings
 
-_EXPECTED_MODEL = "intfloat/multilingual-e5-small"
+_DEFAULT_MODEL = "google/embeddinggemma-2"
+_LEGACY_MODEL = "intfloat/multilingual-e5-small"
+_SUPPORTED_MODELS = {_DEFAULT_MODEL, _LEGACY_MODEL}
 _MANIFEST_NAME = "analyst-model.json"
 _REGISTRATION_LOCK = threading.Lock()
 _ADAPTER_LOCK = threading.Lock()
@@ -40,7 +42,7 @@ class EmbeddingAdapter(Protocol):
 
 
 def _manifest(model_path: Path, settings: Settings) -> dict[str, Any]:
-    if settings.embedding_model != _EXPECTED_MODEL:
+    if settings.embedding_model not in _SUPPORTED_MODELS:
         raise EmbeddingUnavailable(
             "embedding_unavailable",
             "The configured local embedding model is unavailable.",
@@ -70,13 +72,14 @@ def _manifest(model_path: Path, settings: Settings) -> dict[str, Any]:
     dimensions = value.get("dimensions")
     model_file = value.get("model_file")
     file_hashes = value.get("sha256")
+    expected_dim = 384 if settings.embedding_model == _LEGACY_MODEL else 512
     if (
         model_id != settings.embedding_model
         or not isinstance(revision, str)
         or not revision
         or (settings.embedding_revision and revision != settings.embedding_revision)
         or dimensions != settings.embedding_dimension
-        or dimensions != 384
+        or dimensions != expected_dim
         or not isinstance(model_file, str)
         or not isinstance(file_hashes, dict)
         or not file_hashes
@@ -120,6 +123,9 @@ def _manifest(model_path: Path, settings: Settings) -> dict[str, Any]:
 class FastEmbedE5Adapter:
     """E5 wrapper that adds required task prefixes and validates vectors."""
 
+    adapter_name = "fastembed-e5-custom-v1"
+    adapter_type = "fastembed-local"
+
     def __init__(self, settings: Settings) -> None:
         model_path = settings.embedding_model_path
         if model_path is None:
@@ -151,6 +157,69 @@ class FastEmbedE5Adapter:
     def _embed(self, texts: list[str]) -> list[list[float]]:
         try:
             raw_vectors = self._model.embed(texts, batch_size=self._batch_size)
+            vectors = [
+                _validate_vector(vector, self.dimensions) for vector in raw_vectors
+            ]
+        except EmbeddingUnavailable:
+            raise
+        except Exception:
+            raise EmbeddingUnavailable(
+                "embedding_inference_failed", "Local embedding inference failed."
+            ) from None
+        if len(vectors) != len(texts):
+            raise EmbeddingUnavailable(
+                "embedding_output_mismatch",
+                "The embedding model returned an incomplete batch.",
+            )
+        return vectors
+
+
+class EmbeddingGemmaAdapter:
+    """EmbeddingGemma-2 wrapper with task prefixes, Matryoshka truncation, and bfloat16."""
+
+    adapter_name = "embeddinggemma-sentence-transformers-v1"
+    adapter_type = "sentence-transformers"
+
+    def __init__(self, settings: Settings) -> None:
+        self.model_id = settings.embedding_model or _DEFAULT_MODEL
+        self.revision = settings.embedding_revision or "main"
+        self.dimensions = settings.embedding_dimension
+        self._batch_size = settings.embedding_batch_size
+        self._model = _load_embeddinggemma(settings)
+
+    def embed_passages(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+        formatted: list[str] = []
+        for text in texts:
+            stripped = text.strip()
+            if stripped.startswith("title: "):
+                formatted.append(stripped)
+            else:
+                formatted.append(f"title: none | text: {stripped}")
+        return self._embed(formatted, prompt_name=None)
+
+    def embed_query(self, text: str) -> list[float]:
+        cleaned = text.strip()
+        if not cleaned:
+            raise EmbeddingUnavailable(
+                "empty_query", "Embedding query cannot be empty."
+            )
+        vectors = self._embed([cleaned], prompt_name="SearchQuery")
+        return vectors[0]
+
+    def _embed(
+        self, texts: list[str], prompt_name: str | None = None
+    ) -> list[list[float]]:
+        try:
+            encode_kwargs: dict[str, Any] = {
+                "batch_size": self._batch_size,
+                "truncate_dim": self.dimensions,
+                "normalize_embeddings": True,
+            }
+            if prompt_name is not None:
+                encode_kwargs["prompt_name"] = prompt_name
+            raw_vectors = self._model.encode(texts, **encode_kwargs)
             vectors = [
                 _validate_vector(vector, self.dimensions) for vector in raw_vectors
             ]
@@ -243,17 +312,42 @@ def _load_fastembed(settings: Settings, manifest: dict[str, Any]) -> Any:
         ) from None
 
 
-def get_embedding_adapter(settings: Settings) -> EmbeddingAdapter:
-    """Load the verified local model once per process; never downloads assets."""
-    model_path = settings.embedding_model_path
-    if model_path is None:
-        raise EmbeddingUnavailable(
-            "embedding_unavailable", "Local embedding model files are not configured."
+def _load_embeddinggemma(settings: Settings) -> Any:
+    # Disable Hugging Face hub telemetry before loading
+    os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+    import torch
+    from sentence_transformers import SentenceTransformer
+
+    model_name_or_path = settings.embedding_model or _DEFAULT_MODEL
+    if settings.embedding_model_path is not None:
+        resolved = _resolved_model_path(settings.embedding_model_path)
+        if resolved.exists():
+            model_name_or_path = str(resolved)
+
+    try:
+        return SentenceTransformer(
+            model_name_or_path,
+            model_kwargs={"torch_dtype": torch.bfloat16},
+            config_kwargs={"audio_config": None},
         )
-    revision = settings.embedding_revision or "manifest"
+    except Exception:
+        raise EmbeddingUnavailable(
+            "embedding_model_load_failed",
+            "EmbeddingGemma model could not be loaded.",
+        ) from None
+
+
+def get_embedding_adapter(settings: Settings) -> EmbeddingAdapter:
+    """Load the configured embedding model once per process."""
+    model_id = settings.embedding_model or _DEFAULT_MODEL
+    model_path = settings.embedding_model_path
+    model_path_key = (
+        str(_resolved_model_path(model_path)) if model_path is not None else "online"
+    )
+    revision = settings.embedding_revision or "default"
     key = (
-        settings.embedding_model or "",
-        str(_resolved_model_path(model_path)),
+        model_id,
+        model_path_key,
         revision,
         settings.embedding_dimension,
         settings.embedding_threads,
@@ -261,7 +355,17 @@ def get_embedding_adapter(settings: Settings) -> EmbeddingAdapter:
     with _ADAPTER_LOCK:
         adapter = _ADAPTERS.get(key)
         if adapter is None:
-            adapter = FastEmbedE5Adapter(settings)
+            if "embeddinggemma" in model_id.lower():
+                adapter = EmbeddingGemmaAdapter(settings)
+            elif model_id == _LEGACY_MODEL:
+                if model_path is None:
+                    raise EmbeddingUnavailable(
+                        "embedding_unavailable",
+                        "Local embedding model files are not configured.",
+                    )
+                adapter = FastEmbedE5Adapter(settings)
+            else:
+                adapter = EmbeddingGemmaAdapter(settings)
             _ADAPTERS[key] = adapter
         return adapter
 

@@ -38,6 +38,7 @@ import {
   chatApi,
 } from './chatApi'
 import { restoreThreadSelection } from './lib/threadSelection'
+import { apiFetch } from './lib/apiFetch'
 import { InlineArtifactPreview } from './components/InlineArtifactPreview'
 import { DatasetSummary } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
@@ -1591,7 +1592,7 @@ function ChatPanel({
                 type="file"
                 multiple
                 className="hidden"
-                accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv,.tsv,.xlsx,.xls,.json,.parquet"
+                accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv,.tsv,.xlsx,.xls,.json,.parquet,.png,.jpg,.jpeg,.webp,image/*"
                 onChange={(e) => {
                   if (e.target.files) void handleAttachFiles(e.target.files)
                   e.target.value = ''
@@ -1604,7 +1605,7 @@ function ChatPanel({
                 disabled={
                   !workspaceId || !modelAvailable || !!activeRun || loading
                 }
-                title="Attach files (PDF, DOCX, CSV, Excel, TXT, MD)"
+                title="Attach files (PDF, DOCX, CSV, Excel, TXT, MD, Images)"
               >
                 <Paperclip size={13} />
                 <span>Attach</span>
@@ -1743,11 +1744,53 @@ function locationText(
   location: Record<string, unknown> | null | undefined,
 ): string {
   if (!location) return 'Location not provided'
-  const parts = Object.entries(location)
-    .filter(
-      ([, value]) => value !== null && value !== undefined && value !== '',
-    )
-    .map(([key, value]) => `${key.replaceAll('_', ' ')} ${String(value)}`)
+  const ignoredKeys = new Set([
+    'ocr_word_boxes',
+    'image_key',
+    'block_ids',
+    'cells',
+    'table_id',
+    'ocr_confidence_type',
+    'extractor',
+    'filename',
+    'type',
+  ])
+  const parts: string[] = []
+
+  if (
+    location.page !== undefined &&
+    location.page !== null &&
+    location.page !== ''
+  ) {
+    parts.push(`Page ${location.page}`)
+  }
+
+  if (
+    typeof location.image_width === 'number' &&
+    typeof location.image_height === 'number'
+  ) {
+    parts.push(`${location.image_width} × ${location.image_height} px`)
+  }
+
+  if (typeof location.ocr_confidence === 'number') {
+    parts.push(`OCR Confidence ${location.ocr_confidence.toFixed(1)}%`)
+  }
+
+  for (const [key, value] of Object.entries(location)) {
+    if (ignoredKeys.has(key)) continue
+    if (
+      key === 'page' ||
+      key === 'image_width' ||
+      key === 'image_height' ||
+      key === 'ocr_confidence'
+    ) {
+      continue
+    }
+    if (value === null || value === undefined || value === '') continue
+    if (typeof value === 'object') continue
+    parts.push(`${key.replaceAll('_', ' ')} ${String(value)}`)
+  }
+
   return parts.join(' · ') || 'Location not provided'
 }
 
@@ -1764,6 +1807,9 @@ function EvidenceViewer({
   error: string
   onClose: () => void
 }) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imageLoading, setImageLoading] = useState(false)
+
   const details = evidence?.details ?? {}
   const trace = evidence?.trace ?? details.trace ?? details.retrieval_trace
   const structuredDetails = [
@@ -1772,6 +1818,55 @@ function EvidenceViewer({
     ['Result hash', details.result_sha256],
     ['Result artifact', details.result_artifact_id ?? details.artifact_id],
   ].filter(([, value]) => value !== null && value !== undefined)
+
+  const locationObj = evidence?.location as Record<string, unknown> | null | undefined
+  const detailsObj = details as Record<string, unknown>
+  const hasImage = Boolean(
+    evidence?.has_image ||
+    evidence?.image_url ||
+    locationObj?.image_key ||
+    locationObj?.type === 'image' ||
+    detailsObj.image_key
+  )
+
+  useEffect(() => {
+    if (!hasImage || !evidenceId) {
+      setImageUrl(null)
+      setImageLoading(false)
+      return
+    }
+
+    let cancelled = false
+    let currentObjectUrl: string | null = null
+    setImageLoading(true)
+
+    apiFetch(`/api/evidence/${encodeURIComponent(evidenceId)}/image`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Image not found')
+        return res.blob()
+      })
+      .then((blob) => {
+        if (!cancelled) {
+          currentObjectUrl = URL.createObjectURL(blob)
+          setImageUrl(currentObjectUrl)
+          setImageLoading(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setImageUrl(null)
+          setImageLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl)
+      }
+    }
+  }, [hasImage, evidenceId])
+
   return (
     <aside
       className="evidence-viewer"
@@ -1830,6 +1925,24 @@ function EvidenceViewer({
             <div className="evidence-location">
               {locationText(evidence.location)}
             </div>
+                {hasImage && (
+                  <div className="evidence-image-preview">
+                    <span className="mini-label">EXTRACTED IMAGE</span>
+                    {imageLoading ? (
+                      <div className="evidence-viewer-state" style={{ marginTop: 6 }}>
+                        <LoaderCircle size={14} className="spin" /> Loading image preview...
+                      </div>
+                    ) : imageUrl ? (
+                      <div className="evidence-image-container">
+                        <img
+                          src={imageUrl}
+                          alt={evidence.excerpt || 'Evidence image'}
+                          className="evidence-image"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                )}
             {evidence.excerpt ? (
               <blockquote className="evidence-excerpt">
                 {evidence.excerpt}

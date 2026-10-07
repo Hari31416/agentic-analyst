@@ -65,6 +65,7 @@ export function sourceKindLabel(kind: string): string {
     xlsx: 'Excel workbook',
     mysql: 'MySQL database',
     postgresql: 'PostgreSQL database',
+    image: 'Image document',
   }
   return labels[kind.toLowerCase()] ?? kind
 }

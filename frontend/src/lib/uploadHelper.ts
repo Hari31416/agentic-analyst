@@ -32,6 +32,10 @@ export function isDocumentFile(file: File): boolean {
     name.endsWith('.html') ||
     name.endsWith('.htm') ||
     name.endsWith('.pptx') ||
+    name.endsWith('.png') ||
+    name.endsWith('.jpg') ||
+    name.endsWith('.jpeg') ||
+    name.endsWith('.webp') ||
     file.type === 'application/pdf' ||
     file.type ===
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
@@ -39,7 +43,8 @@ export function isDocumentFile(file: File): boolean {
       'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
     file.type === 'text/plain' ||
     file.type === 'text/markdown' ||
-    file.type === 'text/html'
+    file.type === 'text/html' ||
+    file.type.startsWith('image/')
   )
 }
 

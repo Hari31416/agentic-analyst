@@ -319,6 +319,15 @@ export const RightSidebar: FC<RightSidebarProps> = ({
     ) {
       return <Database size={16} />
     }
+    if (
+      lower.includes('image') ||
+      lower.includes('png') ||
+      lower.includes('jpg') ||
+      lower.includes('jpeg') ||
+      lower.includes('webp')
+    ) {
+      return <FileImage size={16} />
+    }
     return <FileText size={16} />
   }
 
@@ -428,7 +437,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                 <input
                   id="quick-upload-input"
                   type="file"
-                  accept=".csv,.xlsx,.xls,.json,.parquet,.pdf,.docx,.txt,.md,.markdown,.html,.htm,.pptx"
+                  accept=".csv,.xlsx,.xls,.json,.parquet,.pdf,.docx,.txt,.md,.markdown,.html,.htm,.pptx,.png,.jpg,.jpeg,.webp,image/*"
                   className="hidden"
                   onChange={handleFileInput}
                   disabled={isUploading}
@@ -440,7 +449,7 @@ export const RightSidebar: FC<RightSidebarProps> = ({
                     : 'Drop source document here'}
                 </div>
                 <div className="text-[10px] text-muted-foreground">
-                  Supports PDF, CSV, Excel, JSON, Parquet, and documents
+                  Supports PDF, CSV, Excel, JSON, Parquet, documents, and images
                 </div>
               </div>
 

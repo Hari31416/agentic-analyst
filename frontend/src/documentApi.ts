@@ -72,6 +72,8 @@ export type EvidenceView = {
   rank?: number | null
   retrieval_mode?: string | null
   trace?: unknown
+  has_image?: boolean
+  image_url?: string | null
 }
 
 export type DocumentUpload = {

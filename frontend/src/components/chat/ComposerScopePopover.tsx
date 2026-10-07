@@ -2,6 +2,7 @@ import { FC, useRef, useEffect, useState } from 'react'
 import {
   ChevronDown,
   Database,
+  FileImage,
   FileSpreadsheet,
   FileText,
   Layers,
@@ -41,6 +42,14 @@ function SourceIcon({ kind }: { kind: string }) {
     lower.includes('excel')
   ) {
     return <FileSpreadsheet size={13} />
+  }
+  if (
+    lower.includes('image') ||
+    lower.includes('png') ||
+    lower.includes('jpg') ||
+    lower.includes('webp')
+  ) {
+    return <FileImage size={13} />
   }
   return <FileText size={13} />
 }

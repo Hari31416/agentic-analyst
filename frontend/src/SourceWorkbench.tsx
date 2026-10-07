@@ -86,7 +86,7 @@ function isDatabase(source: SourceView): boolean {
 }
 
 function isDocument(source: SourceView): boolean {
-  return /pdf|docx|txt|text|markdown|html|pptx|document/i.test(source.kind)
+  return /pdf|docx|txt|text|markdown|html|pptx|document|image/i.test(source.kind)
 }
 
 type UploadItem = {
@@ -879,7 +879,7 @@ function SourceWorkbench({
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,.docx,.txt,.md,.html,.htm,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                    accept=".pdf,.docx,.txt,.md,.html,.htm,.pptx,.png,.jpg,.jpeg,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.presentationml.presentation,image/png,image/jpeg,image/webp"
                     onChange={(event) =>
                       setSelectedDocumentFiles(
                         Array.from(event.target.files ?? []),
@@ -937,7 +937,7 @@ function SourceWorkbench({
                     : copy('addDocuments')}
                 </button>
                 <span className="supported-formats">
-                  PDF · DOCX · TXT · MD · HTML · PPTX
+                  PDF · DOCX · TXT · MD · HTML · PPTX · PNG · JPG · WEBP
                 </span>
               </form>
               {uploadError && (
@@ -1839,13 +1839,56 @@ function SourceWorkbench({
 }
 
 function documentLocation(location: Record<string, unknown>): string {
-  const parts = Object.entries(location)
-    .filter(
-      ([, value]) => value !== null && value !== undefined && value !== '',
-    )
-    .map(([key, value]) => `${key.replaceAll('_', ' ')} ${String(value)}`)
+  const ignoredKeys = new Set([
+    'ocr_word_boxes',
+    'image_key',
+    'block_ids',
+    'cells',
+    'table_id',
+    'ocr_confidence_type',
+    'extractor',
+    'filename',
+    'type',
+  ])
+  const parts: string[] = []
+
+  if (
+    location.page !== undefined &&
+    location.page !== null &&
+    location.page !== ''
+  ) {
+    parts.push(`Page ${location.page}`)
+  }
+
+  if (
+    typeof location.image_width === 'number' &&
+    typeof location.image_height === 'number'
+  ) {
+    parts.push(`${location.image_width} × ${location.image_height} px`)
+  }
+
+  if (typeof location.ocr_confidence === 'number') {
+    parts.push(`OCR Confidence ${location.ocr_confidence.toFixed(1)}%`)
+  }
+
+  for (const [key, value] of Object.entries(location)) {
+    if (ignoredKeys.has(key)) continue
+    if (
+      key === 'page' ||
+      key === 'image_width' ||
+      key === 'image_height' ||
+      key === 'ocr_confidence'
+    ) {
+      continue
+    }
+    if (value === null || value === undefined || value === '') continue
+    if (typeof value === 'object') continue
+    parts.push(`${key.replaceAll('_', ' ')} ${String(value)}`)
+  }
+
   return parts.join(' · ') || 'Location not provided'
 }
+
 
 function documentWarnings(document: DocumentView): string[] {
   const warnings = document.details.warnings
@@ -2146,8 +2189,25 @@ function DocumentInspector({
                 <span>{block.kind.replaceAll('_', ' ')}</span>
                 <span>{documentLocation(block.location)}</span>
               </div>
+              {Boolean(block.location?.image_key) && (
+                <div className="document-block-image-wrap">
+                  <img
+                    src={`/api/documents/${selectedDocument.id}/blocks/${block.id}/image`}
+                    alt={block.heading || block.text || 'Extracted block image'}
+                    className="document-block-image"
+                    loading="lazy"
+                    onClick={() => {
+                      window.open(
+                        `/api/documents/${selectedDocument.id}/blocks/${block.id}/image`,
+                        '_blank',
+                      )
+                    }}
+                    title="Click to view full image in a new tab"
+                  />
+                </div>
+              )}
               {block.heading && <h4>{block.heading}</h4>}
-              <p>{block.text}</p>
+              {block.text && <p>{block.text}</p>}
               {(block.language || block.scripts?.length) && (
                 <small>
                   {[block.language, ...(block.scripts ?? [])]

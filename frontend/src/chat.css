@@ -512,6 +512,28 @@
   color: #88684f;
   font: 9px/1.5 var(--serif);
 }
+.evidence-image-preview {
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+.evidence-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--background);
+  overflow: hidden;
+}
+.evidence-image {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+}
 .evidence-excerpt {
   margin: 12px 0;
   padding: 13px 14px;

@@ -179,7 +179,24 @@ def build_index_generation(
             chunk_batch = chunks[offset : offset + batch_size]
             text_batch = passage_texts[offset : offset + batch_size]
             try:
-                vectors = adapter.embed_passages(text_batch)
+                has_multimodal = hasattr(adapter, "embed_multimodal") and any(
+                    bool(chunk.location and chunk.location.get("image_key"))
+                    for chunk in chunk_batch
+                )
+                if has_multimodal:
+                    from app.storage.factory import get_storage
+
+                    storage = get_storage(settings)
+                    items: list[dict[str, Any]] = []
+                    for chunk, text in zip(chunk_batch, text_batch, strict=True):
+                        image_key = (
+                            chunk.location.get("image_key") if chunk.location else None
+                        )
+                        img_bytes = storage.read(image_key) if image_key else None
+                        items.append({"text": text, "image_bytes": img_bytes})
+                    vectors = adapter.embed_multimodal(items)
+                else:
+                    vectors = adapter.embed_passages(text_batch)
                 if len(vectors) != len(text_batch):
                     raise EmbeddingUnavailable(
                         "embedding_output_mismatch",
@@ -859,6 +876,7 @@ def _search_passages(
 def _chunk_view(
     chunk: DocumentChunk, document: Document, source: Source
 ) -> dict[str, Any]:
+    loc = dict(chunk.location or {})
     return {
         "chunk_id": chunk.id,
         "document_id": document.id,
@@ -867,9 +885,10 @@ def _chunk_view(
         "display_name": source.display_name,
         "excerpt": chunk.text,
         "heading": chunk.heading,
-        "location": dict(chunk.location or {}),
+        "location": loc,
         "language": chunk.language,
         "block_ids": list(chunk.block_ids or []),
+        "image_key": loc.get("image_key"),
     }
 
 

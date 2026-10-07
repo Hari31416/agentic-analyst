@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import PurePosixPath
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
@@ -134,14 +135,23 @@ async def upload_document(
             )
             session.commit()
             raise _upload_error(error) from error
-        media_type = {
-            "pdf": "application/pdf",
-            "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            "html": "text/html",
-            "md": "text/markdown",
-            "txt": "text/plain",
-        }[kind]
+        if kind == "image":
+            ext = PurePosixPath(filename.replace("\\", "/")).suffix.lower()
+            media_type = {
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".webp": "image/webp",
+            }.get(ext, "image/png")
+        else:
+            media_type = {
+                "pdf": "application/pdf",
+                "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "html": "text/html",
+                "md": "text/markdown",
+                "txt": "text/plain",
+            }[kind]
         digest = hashlib.sha256(content).hexdigest()
         # Serialize same-workspace duplicate checks with the Workspace row lock.
         locked_workspace = session.scalar(

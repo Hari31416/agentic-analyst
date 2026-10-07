@@ -20,6 +20,7 @@ from docx.text.paragraph import Paragraph
 from pypdf import PdfReader
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, sessionmaker
+from uuid import uuid4
 
 from app.config import Settings
 from app.db.models import (
@@ -93,6 +94,7 @@ class ExtractedBlock:
     location: dict[str, Any]
     language: str
     scripts: list[str]
+    image_bytes: bytes | None = None
 
 
 @dataclass(frozen=True)
@@ -166,15 +168,44 @@ def validate_document_upload(filename: str, content: bytes, max_bytes: int) -> s
         names = _safe_archive(content, "pptx")
         if "[Content_Types].xml" in names and "ppt/presentation.xml" in names:
             return "pptx"
-    if suffix in {".pdf", ".docx", ".pptx"}:
+    if suffix in {".png", ".jpg", ".jpeg", ".webp"}:
+        _validate_image_content(suffix, content)
+        return "image"
+    if suffix in {".pdf", ".docx", ".pptx", ".png", ".jpg", ".jpeg", ".webp"}:
         raise DocumentIngestionError(
             "file_type_mismatch",
             "The file extension does not match a supported document format.",
         )
     raise DocumentIngestionError(
         "file_type_unsupported",
-        "Supported documents are PDF, DOCX, TXT, Markdown, HTML, and PPTX.",
+        "Supported documents are PDF, DOCX, TXT, Markdown, HTML, PPTX, and images (PNG, JPEG, WebP).",
     )
+
+
+def _validate_image_content(suffix: str, content: bytes) -> None:
+    if suffix == ".png" and not content.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise DocumentIngestionError(
+            "file_type_mismatch", "PNG extension does not match image content."
+        )
+    if suffix in {".jpg", ".jpeg"} and not content.startswith(b"\xff\xd8\xff"):
+        raise DocumentIngestionError(
+            "file_type_mismatch", "JPEG extension does not match image content."
+        )
+    if suffix == ".webp" and not (
+        content.startswith(b"RIFF") and len(content) >= 12 and content[8:12] == b"WEBP"
+    ):
+        raise DocumentIngestionError(
+            "file_type_mismatch", "WebP extension does not match image content."
+        )
+    try:
+        from PIL import Image
+
+        with Image.open(io.BytesIO(content)) as img:
+            img.verify()
+    except Exception as error:
+        raise DocumentIngestionError(
+            "invalid_image", "The image file could not be verified."
+        ) from error
 
 
 def _validate_docx_archive(content: bytes) -> bool:
@@ -277,10 +308,14 @@ def _script_and_language(text: str) -> tuple[str, list[str]]:
 
 
 def _block(
-    kind: str, text: str, heading: str | None, location: dict[str, Any]
+    kind: str,
+    text: str,
+    heading: str | None,
+    location: dict[str, Any],
+    image_bytes: bytes | None = None,
 ) -> ExtractedBlock:
     language, scripts = _script_and_language(text)
-    return ExtractedBlock(kind, text, heading, location, language, scripts)
+    return ExtractedBlock(kind, text, heading, location, language, scripts, image_bytes)
 
 
 def _extract_pdf(content: bytes) -> tuple[list[ExtractedBlock], list[str], list[str]]:
@@ -448,6 +483,43 @@ def _extract_docx(content: bytes) -> tuple[list[ExtractedBlock], list[str], list
                     )
                 )
             table_index += 1
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        image_names = [
+            n
+            for n in archive.namelist()
+            if n.startswith("word/media/") and not n.endswith("/")
+        ][:100]
+        for img_name in image_names:
+            img_data = archive.read(img_name)
+            if len(img_data) < 100 or len(img_data) > MAX_MEMBER_BYTES:
+                continue
+            try:
+                from PIL import Image
+
+                with Image.open(io.BytesIO(img_data)) as pil_img:
+                    w, h = pil_img.size
+                    fmt = (pil_img.format or "PNG").lower()
+                    if w < 32 or h < 32:
+                        continue
+            except Exception:
+                continue
+            base_name = PurePosixPath(img_name).name
+            blocks.append(
+                _block(
+                    "image",
+                    f"[Image: {base_name}]",
+                    " > ".join(headings) or None,
+                    {
+                        "type": "image",
+                        "image_name": base_name,
+                        "image_format": fmt,
+                        "image_width": w,
+                        "image_height": h,
+                        "image_size_bytes": len(img_data),
+                    },
+                    image_bytes=img_data,
+                )
+            )
     if total_bytes > MAX_EXTRACTED_BYTES:
         raise DocumentIngestionError(
             "extracted_text_too_large",
@@ -471,6 +543,16 @@ def extract_document(
     profile: str = "baseline",
 ) -> tuple[list[ExtractedBlock], list[str], list[str]]:
     kind = validate_document_upload(filename, content, max(len(content), 1))
+    if kind == "image":
+        from app.ingestion.extractors import extract_image
+
+        return extract_image(
+            filename,
+            content,
+            ocr_enabled=ocr_enabled,
+            ocr_languages=ocr_languages,
+            ocr_timeout_seconds=ocr_timeout_seconds,
+        )
     if kind == "pdf":
         from app.ingestion.extractors import extract_pdf, extract_pdf_layout
 
@@ -575,6 +657,20 @@ def _group_blocks(blocks: Sequence[ExtractedBlock]) -> list[TextGroup]:
             flush_narrative()
             active_heading = block.heading or block.text.strip()
             heading_block_ids = [index]
+            index += 1
+            continue
+        if block.kind == "image":
+            flush_narrative()
+            groups.append(
+                TextGroup(
+                    text=block.text,
+                    heading=block.heading or active_heading,
+                    language=block.language,
+                    block_ids=heading_block_ids + [index],
+                    spans=[(0, len(block.text), index)],
+                    locations=[block.location],
+                )
+            )
             index += 1
             continue
         if block.kind == "table_row":
@@ -708,6 +804,17 @@ def _group_location(group: TextGroup, used_block_ids: list[int]) -> dict[str, An
         for (_, _, block_id), location in zip(group.spans, group.locations, strict=True)
         if block_id in used_set and location
     ]
+    image_loc = next((loc for loc in selected if loc and "image_key" in loc), None)
+    if image_loc is not None:
+        img_result: dict[str, Any] = {
+            "type": "image",
+            "image_key": image_loc["image_key"],
+            "image_format": image_loc.get("image_format", "png"),
+        }
+        for key in ("image_width", "image_height", "image_name", "page", "slide"):
+            if key in image_loc:
+                img_result[key] = image_loc[key]
+        return img_result
     if group.table_id is not None:
         rows = [int(location.get("row", 0)) for location in selected]
         result: dict[str, Any] = {
@@ -993,6 +1100,14 @@ def process_document(
                 ),
                 lease_guard,
             )
+        for block in blocks:
+            if block.image_bytes is not None:
+                img_ext = block.location.get("image_format", "png").lower().lstrip(".")
+                if img_ext not in {"png", "jpg", "jpeg", "webp"}:
+                    img_ext = "png"
+                img_key = f"derived/{source.workspace_id}/{document.id}/images/{uuid4()}.{img_ext}"
+                storage.put(img_key, block.image_bytes)
+                block.location["image_key"] = img_key
         profile = _tokenizer_profile(settings)
         try:
             chunks = _make_chunks(

@@ -57,7 +57,7 @@ class DocumentTools:
         versions = {
             source.id: run.config["source_versions"][source.id]
             for source in sources
-            if source.kind in {"pdf", "docx", "txt", "md", "html", "pptx"}
+            if source.kind in {"pdf", "docx", "txt", "md", "html", "pptx", "image"}
         }
         if not versions:
             return ToolResult(

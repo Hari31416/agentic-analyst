@@ -40,6 +40,8 @@ class EmbeddingAdapter(Protocol):
 
     def embed_query(self, text: str) -> list[float]: ...
 
+    def embed_multimodal(self, items: list[dict[str, Any]]) -> list[list[float]]: ...
+
 
 def _manifest(model_path: Path, settings: Settings) -> dict[str, Any]:
     if settings.embedding_model not in _SUPPORTED_MODELS:
@@ -154,6 +156,10 @@ class FastEmbedE5Adapter:
         vectors = self._embed([f"query: {text.strip()}"])
         return vectors[0]
 
+    def embed_multimodal(self, items: list[dict[str, Any]]) -> list[list[float]]:
+        texts = [str(item.get("text", "")) for item in items]
+        return self.embed_passages(texts)
+
     def _embed(self, texts: list[str]) -> list[list[float]]:
         try:
             raw_vectors = self._model.embed(texts, batch_size=self._batch_size)
@@ -208,8 +214,46 @@ class EmbeddingGemmaAdapter:
         vectors = self._embed([cleaned], prompt_name="SearchQuery")
         return vectors[0]
 
+    def embed_multimodal(self, items: list[dict[str, Any]]) -> list[list[float]]:
+        if not items:
+            return []
+        inputs: list[Any] = []
+        for item in items:
+            text = str(item.get("text", "")).strip()
+            image_bytes = item.get("image_bytes")
+            if image_bytes:
+                try:
+                    import io
+                    from PIL import Image
+
+                    pil_img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+                    if text and not text.startswith("[Image"):
+                        formatted_text = (
+                            text
+                            if text.startswith("title: ")
+                            else f"title: none | text: {text}"
+                        )
+                        inputs.append({"text": formatted_text, "image": pil_img})
+                    else:
+                        inputs.append(pil_img)
+                except Exception:
+                    formatted_text = (
+                        text
+                        if text.startswith("title: ")
+                        else f"title: none | text: {text}"
+                    )
+                    inputs.append(formatted_text)
+            else:
+                formatted_text = (
+                    text
+                    if text.startswith("title: ")
+                    else f"title: none | text: {text}"
+                )
+                inputs.append(formatted_text)
+        return self._embed(inputs, prompt_name=None)
+
     def _embed(
-        self, texts: list[str], prompt_name: str | None = None
+        self, inputs: list[Any], prompt_name: str | None = None
     ) -> list[list[float]]:
         try:
             encode_kwargs: dict[str, Any] = {
@@ -219,7 +263,7 @@ class EmbeddingGemmaAdapter:
             }
             if prompt_name is not None:
                 encode_kwargs["prompt_name"] = prompt_name
-            raw_vectors = self._model.encode(texts, **encode_kwargs)
+            raw_vectors = self._model.encode(inputs, **encode_kwargs)
             vectors = [
                 _validate_vector(vector, self.dimensions) for vector in raw_vectors
             ]
@@ -229,7 +273,7 @@ class EmbeddingGemmaAdapter:
             raise EmbeddingUnavailable(
                 "embedding_inference_failed", "Local embedding inference failed."
             ) from None
-        if len(vectors) != len(texts):
+        if len(vectors) != len(inputs):
             raise EmbeddingUnavailable(
                 "embedding_output_mismatch",
                 "The embedding model returned an incomplete batch.",

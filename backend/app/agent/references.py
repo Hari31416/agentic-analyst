@@ -281,6 +281,17 @@ class ModelReferences:
         output = []
         for message in history:
             item = self.view(message)
-            item["content"] = self.text_view(str(message.get("content") or ""))
+            content = message.get("content")
+            if isinstance(content, list):
+                item["content"] = [
+                    (
+                        {**part, "text": self.text_view(part["text"])}
+                        if isinstance(part, dict) and "text" in part
+                        else part
+                    )
+                    for part in content
+                ]
+            else:
+                item["content"] = self.text_view(str(content or ""))
             output.append(item)
         return output

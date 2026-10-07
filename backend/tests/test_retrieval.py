@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -242,3 +243,53 @@ def test_embeddinggemma_adapter_prefixes_and_512_dimensions(
     assert seen_calls[1][1]["prompt_name"] == "SearchQuery"
     assert seen_calls[1][1]["truncate_dim"] == 512
     assert seen_calls[1][1]["normalize_embeddings"] is True
+
+
+def test_embeddinggemma_adapter_multimodal_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from PIL import Image
+    from app.retrieval.embedding import EmbeddingGemmaAdapter
+
+    seen_inputs: list[list[Any]] = []
+
+    class FakeMultimodalTransformer:
+        def encode(self, inputs: list[Any], **kwargs: Any) -> list[list[float]]:
+            seen_inputs.append(list(inputs))
+            dim = kwargs.get("truncate_dim", 512)
+            return [[1.0] + [0.0] * (dim - 1) for _ in inputs]
+
+    import app.retrieval.embedding as module
+
+    monkeypatch.setattr(
+        module, "_load_embeddinggemma", lambda *_args: FakeMultimodalTransformer()
+    )
+
+    settings = Settings(
+        embedding_model="google/embeddinggemma-2",
+        embedding_dimension=512,
+    )
+    adapter = EmbeddingGemmaAdapter(settings)
+
+    img = Image.new("RGB", (32, 32), color=(0, 255, 0))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    raw_png = buf.getvalue()
+
+    items = [
+        {"text": "[Image: chart.png]", "image_bytes": raw_png},
+        {"text": "Revenue grew 20% in Q3", "image_bytes": raw_png},
+        {"text": "Pure text passage without image"},
+    ]
+    vectors = adapter.embed_multimodal(items)
+    assert len(vectors) == 3
+    assert all(len(v) == 512 for v in vectors)
+
+    assert len(seen_inputs) == 1
+    encoded = seen_inputs[0]
+    assert len(encoded) == 3
+    assert isinstance(encoded[0], Image.Image)
+    assert isinstance(encoded[1], dict)
+    assert encoded[1]["text"] == "title: none | text: Revenue grew 20% in Q3"
+    assert isinstance(encoded[1]["image"], Image.Image)
+    assert encoded[2] == "title: none | text: Pure text passage without image"

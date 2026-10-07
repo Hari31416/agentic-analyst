@@ -40,7 +40,7 @@ class SummaryTools:
         document_sources = {
             source.id: source
             for source in sources
-            if source.kind in {"pdf", "docx", "txt", "md", "html", "pptx"}
+            if source.kind in {"pdf", "docx", "txt", "md", "html", "pptx", "image"}
         }
         versions = {
             source_id: version

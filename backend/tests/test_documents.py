@@ -32,6 +32,7 @@ from app.sources.documents import (
     CHUNK_BODY_TOKENS,
     CHUNK_OVERLAP_TOKENS,
     CHUNKER_VERSION,
+    EXTRACTOR_VERSION,
     DocumentIngestionError,
     ExtractedBlock,
     TokenizerProfile,
@@ -677,3 +678,126 @@ def test_block_api_returns_bounded_pagination(tmp_path: Path) -> None:
     assert response.json()["total"] == 3
     assert response.json()["blocks"][0]["ordinal"] == 1
     assert response.json()["next_offset"] == 2
+
+
+def _image_bytes(fmt: str = "PNG", size: tuple[int, int] = (64, 64)) -> bytes:
+    from PIL import Image
+
+    img = Image.new("RGB", size, color=(255, 0, 0))
+    buf = io.BytesIO()
+    img.save(buf, format=fmt)
+    return buf.getvalue()
+
+
+def test_validate_document_upload_image() -> None:
+    png_data = _image_bytes("PNG")
+    kind = validate_document_upload("photo.png", png_data, len(png_data) + 100)
+    assert kind == "image"
+
+    jpeg_data = _image_bytes("JPEG")
+    kind = validate_document_upload("photo.jpg", jpeg_data, len(jpeg_data) + 100)
+    assert kind == "image"
+
+    with pytest.raises(DocumentIngestionError, match="image"):
+        validate_document_upload("bad.png", b"not an image", 1000)
+
+
+def test_extract_document_standalone_image() -> None:
+    png_data = _image_bytes("PNG")
+    blocks, warnings, languages = extract_document(
+        "figure.png", png_data, ocr_enabled=False
+    )
+    assert len(blocks) == 1
+    assert blocks[0].kind == "image"
+    assert blocks[0].image_bytes == png_data
+    assert blocks[0].location["type"] == "image"
+    assert blocks[0].location["image_format"] == "png"
+    assert blocks[0].location["image_width"] == 64
+    assert blocks[0].location["image_height"] == 64
+
+
+def test_process_document_standalone_image(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sessions, session = _database()
+    session.close()
+    storage = FileStorage(tmp_path)
+    monkeypatch.setattr("app.storage.factory.get_storage", lambda settings: storage)
+
+    png_data = _image_bytes("PNG")
+    with sessions() as s:
+        workspace = Workspace(label="Images")
+        s.add(workspace)
+        s.flush()
+        source = Source(
+            workspace_id=workspace.id,
+            kind="document",
+            version=1,
+            display_name="chart.png",
+            state="processing",
+            content_hash="c" * 64,
+            details={"media_type": "image/png"},
+        )
+        s.add(source)
+        s.flush()
+        stored = storage.put(
+            f"originals/{workspace.id}/{source.id}/original.png", png_data
+        )
+        source.storage_key = stored.key
+        document = Document(
+            source_id=source.id,
+            source_version=source.version,
+            extractor_version=EXTRACTOR_VERSION,
+            chunker_version=CHUNKER_VERSION,
+            state="queued",
+            stage="queued",
+            progress=0,
+            details={},
+        )
+        s.add(document)
+        s.commit()
+        doc_id = document.id
+        ws_id = workspace.id
+
+    result = process_document(
+        doc_id,
+        _settings(tmp_path),
+        sessions,
+    )
+    assert result["state"] == "ready"
+
+    with sessions() as s:
+        blocks = s.scalars(
+            select(DocumentBlock).where(DocumentBlock.document_id == doc_id)
+        ).all()
+        assert len(blocks) == 1
+        assert blocks[0].kind == "image"
+        assert blocks[0].location["type"] == "image"
+        img_key = blocks[0].location["image_key"]
+        assert img_key.startswith(f"derived/{ws_id}/{doc_id}/images/")
+        assert storage.read(img_key) == png_data
+
+        chunks = s.scalars(
+            select(DocumentChunk).where(DocumentChunk.document_id == doc_id)
+        ).all()
+        assert len(chunks) == 1
+        assert chunks[0].location["type"] == "image"
+        assert chunks[0].location["image_key"] == img_key
+
+
+def test_docx_extracts_embedded_media_images() -> None:
+    doc = WordDocument()
+    doc.add_paragraph("Paragraph before image.")
+    img_stream = io.BytesIO(_image_bytes("PNG", size=(50, 50)))
+    doc.add_picture(img_stream, width=None, height=None)
+    doc.add_paragraph("Paragraph after image.")
+    docx_buf = io.BytesIO()
+    doc.save(docx_buf)
+
+    blocks, warnings, languages = extract_document(
+        "with_img.docx", docx_buf.getvalue(), ocr_enabled=False
+    )
+    image_blocks = [b for b in blocks if b.kind == "image"]
+    assert len(image_blocks) >= 1
+    assert image_blocks[0].image_bytes is not None
+    assert image_blocks[0].location["type"] == "image"

@@ -523,3 +523,77 @@ async def test_fatal_provider_error_records_model_attempt_duration():
     assert failure["code"] == "model_provider_error"
     assert failure["model_calls"] == 1 and failure["duration_ms"] >= 0
     assert not failure["retryable"] and "private-provider-body" not in str(failure)
+
+
+async def test_vision_parts_extracted_and_passed_for_sparse_image_passages(
+    tmp_path, monkeypatch
+):
+    import io
+    from PIL import Image
+    from pydantic import BaseModel
+    from app.storage.filesystem import FileStorage
+
+    storage_root = tmp_path / "storage"
+    storage = FileStorage(storage_root)
+    monkeypatch.setattr("app.storage.factory.get_storage", lambda _: storage)
+
+    img = Image.new("RGB", (64, 64), color=(255, 0, 0))
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    img_bytes = buf.getvalue()
+
+    storage_key = "derived/ws1/doc1/images/test.png"
+    storage.put(storage_key, img_bytes)
+
+    loop_settings = settings(storage_root=storage_root)
+
+    model = ScriptedModel(
+        [
+            response("search_docs", {"query": "chart"}, "call-search"),
+            response("finish_answer", {"text": "Answer from image analysis"}),
+        ]
+    )
+
+    class SearchInput(BaseModel):
+        query: str
+
+    async def search_docs(call, args):
+        return ToolResult(
+            status="ok",
+            summary="found image passage",
+            data={
+                "passages": [
+                    {
+                        "chunk_id": "chunk-img-1",
+                        "evidence_id": "ev-1",
+                        "image_key": storage_key,
+                        "excerpt": "[Image: chart.png]",
+                        "location": {"type": "image"},
+                    }
+                ]
+            },
+        )
+
+    search_tool = Tool(
+        name="search_docs",
+        description="search",
+        arguments=SearchInput,
+        execute=search_docs,
+    )
+
+    loop = AgentLoop(model, loop_settings, [search_tool], ignore, ignore)
+    answer = await loop.run([], "en-IN")
+    assert answer.text == "Answer from image analysis"
+
+    second_request_messages = model.requests[1]
+    vision_msg = next(
+        msg
+        for msg in second_request_messages
+        if msg["role"] == "user" and isinstance(msg["content"], list)
+    )
+    assert vision_msg["content"][0]["type"] == "text"
+    assert "ev-1" in vision_msg["content"][0]["text"]
+    assert vision_msg["content"][1]["type"] == "image_url"
+    assert vision_msg["content"][1]["image_url"]["url"].startswith(
+        "data:image/jpeg;base64,"
+    )

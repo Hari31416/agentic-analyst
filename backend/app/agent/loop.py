@@ -475,6 +475,31 @@ class AgentLoop:
                                 "content": encoded,
                             }
                         )
+                        if (
+                            result.data
+                            and isinstance(result.data, dict)
+                            and "passages" in result.data
+                        ):
+                            vision_parts = self._extract_vision_parts(
+                                result.data["passages"]
+                            )
+                            if vision_parts:
+                                current_len = len(
+                                    json.dumps(messages, ensure_ascii=False)
+                                )
+                                est_len = len(
+                                    json.dumps(vision_parts, ensure_ascii=False)
+                                )
+                                if (
+                                    current_len + est_len
+                                    < self.settings.max_context_characters - 10000
+                                ):
+                                    messages.append(
+                                        {
+                                            "role": "user",
+                                            "content": vision_parts,
+                                        }
+                                    )
                         await self.events(
                             "status",
                             {
@@ -487,3 +512,76 @@ class AgentLoop:
         except TimeoutError as exc:
             raise BudgetExhausted("Run time limit reached") from exc
         raise BudgetExhausted("Model call limit reached")
+
+    def _extract_vision_parts(self, passages: list[Any]) -> list[dict[str, Any]]:
+        import base64
+        import io
+        from app.storage.factory import get_storage
+
+        parts: list[dict[str, Any]] = []
+        storage = None
+        for passage in passages[:3]:
+            if not isinstance(passage, dict):
+                continue
+            image_key = passage.get("image_key") or (passage.get("location") or {}).get(
+                "image_key"
+            )
+            if not image_key:
+                continue
+            excerpt = str(passage.get("excerpt", "")).strip()
+            word_count = len(excerpt.split())
+            is_image = (passage.get("location") or {}).get(
+                "type"
+            ) == "image" or excerpt.startswith("[Image")
+            if word_count < 60 or is_image:
+                try:
+                    if storage is None:
+                        storage = get_storage(self.settings)
+                    raw = storage.read(str(image_key), 10 * 1024 * 1024)
+                    from PIL import Image
+
+                    with Image.open(io.BytesIO(raw)) as img:
+                        max_edge = 768
+                        if max(img.width, img.height) > max_edge:
+                            ratio = max_edge / max(img.width, img.height)
+                            new_size = (
+                                max(1, int(img.width * ratio)),
+                                max(1, int(img.height * ratio)),
+                            )
+                            resized = img.resize(new_size, Image.Resampling.LANCZOS)
+                        else:
+                            resized = img
+                        out = io.BytesIO()
+                        if resized.mode in ("RGB", "L"):
+                            resized.save(out, format="JPEG", quality=85)
+                            mime = "image/jpeg"
+                        else:
+                            resized.save(out, format="PNG")
+                            mime = "image/png"
+                        b64 = base64.b64encode(out.getvalue()).decode("ascii")
+                    evidence_ref = (
+                        passage.get("evidence_id") or passage.get("chunk_id") or "image"
+                    )
+                    heading = passage.get("heading")
+                    label = (
+                        f"{evidence_ref} ({heading})" if heading else str(evidence_ref)
+                    )
+                    parts.append(
+                        {
+                            "type": "text",
+                            "text": f"Visual context for image evidence [{label}]:",
+                        }
+                    )
+                    parts.append(
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{mime};base64,{b64}",
+                                "detail": "auto",
+                            },
+                        }
+                    )
+                except Exception as exc:
+                    logger.warning("Could not format vision image for passage: %s", exc)
+                    continue
+        return parts

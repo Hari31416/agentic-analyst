@@ -186,19 +186,28 @@ def _tesseract_languages(executable: str) -> set[str]:
     return {line.strip() for line in result.stdout.splitlines()[1:] if line.strip()}
 
 
-def _ocr_page(
-    content: bytes, page_number: int, languages: str, timeout: int
-) -> tuple[str, str | None, dict[str, Any]]:
+def _check_tesseract_availability(languages: str) -> tuple[str | None, str | None]:
     executable = shutil.which("tesseract")
     if executable is None:
-        return "", "ocr_unavailable:tesseract_missing", {}
+        return None, "ocr_unavailable:tesseract_missing"
     requested = {item.strip() for item in languages.split("+") if item.strip()}
     available = _tesseract_languages(executable)
     missing = sorted(requested - available)
     if missing:
-        return "", "ocr_unavailable:missing_language_assets:" + "+".join(missing), {}
+        return None, "ocr_unavailable:missing_language_assets:" + "+".join(missing)
+    return executable, None
+
+
+def _run_tesseract(
+    png: bytes, languages: str, timeout: int, executable: str | None = None
+) -> tuple[str, str | None, dict[str, Any]]:
+    if executable is None:
+        executable, issue = _check_tesseract_availability(languages)
+        if issue:
+            return "", issue, {}
+    assert executable is not None
+    requested = {item.strip() for item in languages.split("+") if item.strip()}
     try:
-        png = _pdfium_page_png(content, page_number)
         deadline = time.monotonic() + timeout
         rotation = 0
         try:
@@ -292,6 +301,98 @@ def _ocr_page(
     return " ".join(words), None, metadata
 
 
+def _ocr_page(
+    content: bytes, page_number: int, languages: str, timeout: int
+) -> tuple[str, str | None, dict[str, Any]]:
+    executable, issue = _check_tesseract_availability(languages)
+    if issue:
+        return "", issue, {}
+    try:
+        png = _pdfium_page_png(content, page_number)
+    except DocumentIngestionError as error:
+        return "", error.code, {}
+    return _run_tesseract(
+        png, languages=languages, timeout=timeout, executable=executable
+    )
+
+
+def _ocr_image(
+    content: bytes, languages: str, timeout: int
+) -> tuple[str, str | None, dict[str, Any]]:
+    executable, issue = _check_tesseract_availability(languages)
+    if issue:
+        return "", issue, {}
+    try:
+        from PIL import Image
+
+        with Image.open(io.BytesIO(content)) as img:
+            if img.format == "PNG":
+                png = content
+            else:
+                out = io.BytesIO()
+                img.convert("RGB").save(out, format="PNG")
+                png = out.getvalue()
+    except Exception:
+        return "", "invalid_image", {}
+    return _run_tesseract(
+        png, languages=languages, timeout=timeout, executable=executable
+    )
+
+
+def extract_image(
+    filename: str,
+    content: bytes,
+    *,
+    ocr_enabled: bool = True,
+    ocr_languages: str = "eng+hin",
+    ocr_timeout_seconds: int = 20,
+) -> tuple[list[ExtractedBlock], list[str], list[str]]:
+    try:
+        from PIL import Image
+
+        with Image.open(io.BytesIO(content)) as img:
+            width, height = img.size
+            img_format = (img.format or "PNG").lower()
+            if width <= 0 or height <= 0 or width * height > MAX_RENDER_PIXELS:
+                raise DocumentIngestionError(
+                    "invalid_image_size",
+                    "Image dimensions are invalid or exceed limits.",
+                )
+    except DocumentIngestionError:
+        raise
+    except Exception as error:
+        raise DocumentIngestionError(
+            "invalid_image", "The image could not be read safely."
+        ) from error
+
+    warnings: list[str] = []
+    text = ""
+    location: dict[str, Any] = {
+        "type": "image",
+        "filename": filename,
+        "image_format": img_format,
+        "image_width": width,
+        "image_height": height,
+        "image_size_bytes": len(content),
+    }
+    if ocr_enabled:
+        recognized, issue, ocr_metadata = _ocr_image(
+            content, ocr_languages, ocr_timeout_seconds
+        )
+        if issue:
+            warnings.append(f"image_ocr:{issue}")
+        if recognized.strip():
+            text = recognized.strip()
+            location["extractor"] = "ocr"
+            location.update(ocr_metadata)
+    if not text:
+        text = f"[Image: {filename}]"
+        location["extractor"] = "image"
+
+    block = _block("image", text, None, location, image_bytes=content)
+    return [block], warnings, [block.language]
+
+
 def extract_pdf(
     content: bytes,
     *,
@@ -359,6 +460,51 @@ def extract_pdf(
             visit_outlines(reader.outline)
         except Exception:
             pass
+        embedded_image_count = 0
+        MAX_EMBEDDED_IMAGES = 100
+
+        def extract_page_images(p_num: int, p_obj: Any, p_heading: str | None) -> None:
+            nonlocal embedded_image_count
+            if embedded_image_count >= MAX_EMBEDDED_IMAGES:
+                return
+            for img in getattr(p_obj, "images", []):
+                if embedded_image_count >= MAX_EMBEDDED_IMAGES:
+                    break
+                try:
+                    img_data = img.data
+                    if len(img_data) < 100 or len(img_data) > MAX_MEMBER_BYTES:
+                        continue
+                    from PIL import Image
+
+                    with Image.open(io.BytesIO(img_data)) as pil_img:
+                        w, h = pil_img.size
+                        fmt = (pil_img.format or "PNG").lower()
+                        if w < 32 or h < 32:
+                            continue
+                except Exception:
+                    continue
+                embedded_image_count += 1
+                img_name = getattr(img, "name", f"image_{embedded_image_count}")
+                img_text = f"[Image on page {p_num}: {img_name}]"
+                img_location = {
+                    "type": "image",
+                    "page": p_num,
+                    "image_name": img_name,
+                    "image_format": fmt,
+                    "image_width": w,
+                    "image_height": h,
+                    "image_size_bytes": len(img_data),
+                }
+                blocks.append(
+                    _block(
+                        "image",
+                        img_text,
+                        p_heading,
+                        img_location,
+                        image_bytes=img_data,
+                    )
+                )
+
         for page_number, page in enumerate(reader.pages, start=1):
             legacy_fonts = legacy_fonts_by_page.get(page_number, [])
             is_legacy = bool(legacy_fonts)
@@ -417,6 +563,9 @@ def extract_pdf(
                         legacy_ocr_failures.append((page_number, "empty_ocr_result"))
             elif is_legacy:
                 legacy_ocr_failures.append((page_number, "ocr_disabled"))
+            headings = toc_entries.get(page_number, [])
+            parent = " > ".join(title for _, title in headings) if headings else None
+            extract_page_images(page_number, page, parent)
             if not text.strip():
                 empty_pages.append(page_number)
                 continue
@@ -446,12 +595,8 @@ def extract_pdf(
                     warnings.append(
                         f"page_{page_number}:low_ocr_recognizer_confidence_review_required"
                     )
-            headings = toc_entries.get(page_number, [])
             if headings:
                 warnings.append(f"page_{page_number}:pdf_outline_headings_applied")
-                parent = " > ".join(title for _, title in headings)
-            else:
-                parent = None
             lines = text.splitlines()
             numbered_heading = re.compile(
                 r"^(?:chapter|section|appendix)\s+[\w.-]+\b|^\d+(?:\.\d+){0,4}[.)]?\s+\S",
@@ -875,8 +1020,39 @@ def extract_pptx(content: bytes) -> tuple[list[ExtractedBlock], list[str], list[
                         },
                     )
                 )
-        if any(getattr(shape, "shape_type", None) == 13 for shape in slide.shapes):
-            warnings.append(f"slide_{slide_number}:embedded_images_not_ocr_processed")
+            if getattr(shape, "shape_type", None) == 13 and getattr(
+                shape, "image", None
+            ):
+                try:
+                    img_data = shape.image.blob
+                    if len(img_data) >= 100 and len(img_data) <= MAX_MEMBER_BYTES:
+                        from PIL import Image
+
+                        with Image.open(io.BytesIO(img_data)) as pil_img:
+                            w, h = pil_img.size
+                            fmt = (pil_img.format or "PNG").lower()
+                            if w >= 32 and h >= 32:
+                                img_name = f"slide_{slide_number}_image_{shape_index}"
+                                blocks.append(
+                                    _block(
+                                        "image",
+                                        f"[Image on slide {slide_number}: {img_name}]",
+                                        " > ".join(heading_stack) or None,
+                                        {
+                                            "type": "image",
+                                            "slide": slide_number,
+                                            "shape": shape_index,
+                                            "image_name": img_name,
+                                            "image_format": fmt,
+                                            "image_width": w,
+                                            "image_height": h,
+                                            "image_size_bytes": len(img_data),
+                                        },
+                                        image_bytes=img_data,
+                                    )
+                                )
+                except Exception:
+                    pass
     if total > MAX_EXTRACTED_BYTES:
         raise DocumentIngestionError(
             "extracted_text_too_large",

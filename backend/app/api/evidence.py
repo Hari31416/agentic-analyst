@@ -2,7 +2,7 @@
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.db.models import Document, Evidence, Source
@@ -67,4 +67,49 @@ def get_evidence(evidence_id: str, session: Db) -> dict[str, Any]:
         "display_name": display_name,
         "source_state": source_state,
         "source_availability": availability,
+        "has_image": bool(
+            details.get("image_key") or (details.get("location") or {}).get("image_key")
+        ),
+        "image_url": (
+            f"/api/evidence/{evidence.id}/image"
+            if (
+                details.get("image_key")
+                or (details.get("location") or {}).get("image_key")
+            )
+            else None
+        ),
     }
+
+
+@router.get("/api/evidence/{evidence_id}/image")
+def get_evidence_image(evidence_id: str, session: Db) -> Response:
+    evidence = session.get(Evidence, evidence_id)
+    if evidence is None:
+        raise HTTPException(404, "Evidence not found")
+    details = evidence.details or {}
+    location = details.get("location") or {}
+    image_key = details.get("image_key") or location.get("image_key")
+    if not image_key:
+        raise HTTPException(404, "No image associated with this evidence")
+
+    import io
+    from PIL import Image
+    from app.config import get_settings
+    from app.storage.factory import get_storage
+
+    settings = get_settings()
+    storage = get_storage(settings)
+    raw = storage.read(str(image_key), 20 * 1024 * 1024)
+
+    with Image.open(io.BytesIO(raw)) as img:
+        if img.mode != "RGB":
+            converted = img.convert("RGB")
+        else:
+            converted = img
+        out = io.BytesIO()
+        converted.save(out, format="JPEG", quality=90)
+        return Response(
+            content=out.getvalue(),
+            media_type="image/jpeg",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )

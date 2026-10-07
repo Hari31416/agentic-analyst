@@ -8,14 +8,23 @@ from pathlib import PurePosixPath
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, Form
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+    Form,
+    Response,
+)
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.audit.redaction import contains_secret
 from app.db.repository import audit
-from app.db.models import Document, Job, Source, Workspace
+from app.db.models import Document, DocumentBlock, Job, Source, Workspace
 from app.db.session import get_session
 from app.sources.documents import (
     CHUNKER_VERSION,
@@ -321,3 +330,93 @@ def document_blocks(
         "next_offset": next_offset if next_offset < total else None,
         "truncated": len(selected) < len(rows) or next_offset < total,
     }
+
+
+@router.get("/api/documents/{document_id}/blocks/{block_id}/image")
+def document_block_image(
+    document_id: UUID,
+    block_id: str,
+    session: Db,
+) -> Response:
+    block = session.scalar(
+        select(DocumentBlock).where(
+            DocumentBlock.document_id == str(document_id),
+            DocumentBlock.id == block_id,
+        )
+    )
+    if block is None:
+        raise HTTPException(status_code=404, detail="Block not found")
+    location = block.location or {}
+    image_key = location.get("image_key")
+    if not image_key:
+        raise HTTPException(
+            status_code=404, detail="No image associated with this block"
+        )
+
+    import io
+    from PIL import Image
+
+    settings = get_settings()
+    storage = get_storage(settings)
+    raw = storage.read(str(image_key), 20 * 1024 * 1024)
+    with Image.open(io.BytesIO(raw)) as img:
+        if img.mode != "RGB":
+            converted = img.convert("RGB")
+        else:
+            converted = img
+        out = io.BytesIO()
+        converted.save(out, format="JPEG", quality=90)
+        return Response(
+            content=out.getvalue(),
+            media_type="image/jpeg",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )
+
+
+@router.get("/api/documents/{document_id}/image")
+def document_image(document_id: UUID, session: Db) -> Response:
+    document = session.get(Document, str(document_id))
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    source = session.get(Source, document.source_id)
+    if source is None:
+        raise HTTPException(status_code=404, detail="Source not found")
+
+    image_key = None
+    if source.kind == "image" and source.storage_key:
+        image_key = source.storage_key
+    else:
+        first_block = session.scalar(
+            select(DocumentBlock)
+            .where(DocumentBlock.document_id == str(document_id))
+            .order_by(DocumentBlock.ordinal)
+            .limit(1)
+        )
+        if (
+            first_block
+            and first_block.location
+            and first_block.location.get("image_key")
+        ):
+            image_key = first_block.location["image_key"]
+
+    if not image_key:
+        raise HTTPException(status_code=404, detail="No image found for this document")
+
+    import io
+    from PIL import Image
+
+    settings = get_settings()
+    storage = get_storage(settings)
+    raw = storage.read(str(image_key), 20 * 1024 * 1024)
+    with Image.open(io.BytesIO(raw)) as img:
+        if img.mode != "RGB":
+            converted = img.convert("RGB")
+        else:
+            converted = img
+        out = io.BytesIO()
+        converted.save(out, format="JPEG", quality=90)
+        return Response(
+            content=out.getvalue(),
+            media_type="image/jpeg",
+            headers={"Cache-Control": "public, max-age=86400"},
+        )

@@ -212,6 +212,7 @@ def test_embeddinggemma_adapter_prefixes_and_512_dimensions(
 
     import app.retrieval.embedding as module
 
+    module._ADAPTERS.clear()
     monkeypatch.setattr(
         module, "_load_embeddinggemma", lambda *_args: FakeSentenceTransformer()
     )

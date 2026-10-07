@@ -551,17 +551,21 @@ class AgentLoop:
                             resized = img.resize(new_size, Image.Resampling.LANCZOS)
                         else:
                             resized = img
-                        out = io.BytesIO()
-                        if resized.mode in ("RGB", "L"):
-                            resized.save(out, format="JPEG", quality=85)
-                            mime = "image/jpeg"
+                        if resized.mode != "RGB":
+                            converted = resized.convert("RGB")
                         else:
-                            resized.save(out, format="PNG")
-                            mime = "image/png"
+                            converted = resized
+                        out = io.BytesIO()
+                        converted.save(out, format="JPEG", quality=85)
+                        mime = "image/jpeg"
                         b64 = base64.b64encode(out.getvalue()).decode("ascii")
-                    evidence_ref = (
-                        passage.get("evidence_id") or passage.get("chunk_id") or "image"
-                    )
+                    raw_id = passage.get("evidence_id") or passage.get("chunk_id")
+                    if self.references and passage.get("evidence_id"):
+                        evidence_ref = self.references.reference(
+                            "evidence", str(passage["evidence_id"])
+                        )
+                    else:
+                        evidence_ref = str(raw_id or "image")
                     heading = passage.get("heading")
                     label = (
                         f"{evidence_ref} ({heading})" if heading else str(evidence_ref)
@@ -569,7 +573,7 @@ class AgentLoop:
                     parts.append(
                         {
                             "type": "text",
-                            "text": f"Visual context for image evidence [{label}]:",
+                            "text": f"Visual context for image evidence [{label}]: Cite this image using [{evidence_ref}].",
                         }
                     )
                     parts.append(

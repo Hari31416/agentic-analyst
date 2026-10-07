@@ -37,6 +37,7 @@ dependencies = [
   "pyjwt>=2.10,<3",
   "argon2-cffi>=23.1,<26",
   "sentence-transformers>=3",
+  "torchvision>=0.29.1",
 ]
 
 [dependency-groups]

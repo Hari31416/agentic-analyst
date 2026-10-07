@@ -430,6 +430,14 @@ def test_process_document_persists_blocks_chunks_and_degraded_generation(
     storage = FileStorage(tmp_path)
     document_id = _add_document(sessions, storage, _pdf_bytes())
     monkeypatch.setattr("app.storage.factory.get_storage", lambda settings: storage)
+    from app.retrieval.embedding import EmbeddingUnavailable
+
+    monkeypatch.setattr(
+        "app.retrieval.service.get_embedding_adapter",
+        lambda settings: (_ for _ in ()).throw(
+            EmbeddingUnavailable("embedding_model_load_failed", "offline")
+        ),
+    )
 
     guarded_sessions: list[Session] = []
     result = process_document(
@@ -723,6 +731,7 @@ def test_process_document_standalone_image(
     session.close()
     storage = FileStorage(tmp_path)
     monkeypatch.setattr("app.storage.factory.get_storage", lambda settings: storage)
+    monkeypatch.setattr("app.api.documents.get_storage", lambda _: storage)
 
     png_data = _image_bytes("PNG")
     with sessions() as s:
@@ -783,6 +792,26 @@ def test_process_document_standalone_image(
         assert len(chunks) == 1
         assert chunks[0].location["type"] == "image"
         assert chunks[0].location["image_key"] == img_key
+
+    app = FastAPI()
+    app.include_router(router)
+
+    def override_session():
+        with sessions() as active:
+            yield active
+
+    app.dependency_overrides[get_session] = override_session
+    client = TestClient(app)
+
+    block_resp = client.get(f"/api/documents/{doc_id}/blocks/{blocks[0].id}/image")
+    assert block_resp.status_code == 200
+    assert block_resp.headers["content-type"] == "image/jpeg"
+    assert len(block_resp.content) > 0
+
+    doc_resp = client.get(f"/api/documents/{doc_id}/image")
+    assert doc_resp.status_code == 200
+    assert doc_resp.headers["content-type"] == "image/jpeg"
+    assert len(doc_resp.content) > 0
 
 
 def test_docx_extracts_embedded_media_images() -> None:

@@ -537,9 +537,9 @@ async def test_vision_parts_extracted_and_passed_for_sparse_image_passages(
     storage = FileStorage(storage_root)
     monkeypatch.setattr("app.storage.factory.get_storage", lambda _: storage)
 
-    img = Image.new("RGB", (64, 64), color=(255, 0, 0))
+    img = Image.new("CMYK", (64, 64), color=(0, 255, 255, 0))
     buf = io.BytesIO()
-    img.save(buf, format="PNG")
+    img.save(buf, format="TIFF")
     img_bytes = buf.getvalue()
 
     storage_key = "derived/ws1/doc1/images/test.png"

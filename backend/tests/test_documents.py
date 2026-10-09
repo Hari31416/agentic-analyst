@@ -830,3 +830,92 @@ def test_docx_extracts_embedded_media_images() -> None:
     assert len(image_blocks) >= 1
     assert image_blocks[0].image_bytes is not None
     assert image_blocks[0].location["type"] == "image"
+
+
+@pytest.mark.parametrize("scope", ["source", "document", "workspace", "retained"])
+def test_image_cleanup_obeys_source_retention(scope):
+    from uuid import UUID
+    from app.api.resource_lifecycle import delete_workspace, remove_source
+    from app.api.document_lifecycle import remove_document
+    from app.db.models import Run, Thread
+
+    sessions, session = _database()
+    workspace = Workspace(label="images")
+    session.add(workspace)
+    session.flush()
+    source = Source(
+        workspace_id=workspace.id,
+        kind="document",
+        display_name="chart.png",
+        state="ready",
+        storage_key="originals/chart.png",
+        details={},
+    )
+    session.add(source)
+    session.flush()
+    document = Document(
+        source_id=source.id,
+        source_version=1,
+        extractor_version=EXTRACTOR_VERSION,
+        chunker_version=CHUNKER_VERSION,
+        state="ready",
+        stage="ready",
+        progress=100,
+        details={},
+    )
+    session.add(document)
+    session.flush()
+    image_key = f"derived/{workspace.id}/{document.id}/images/chart.png"
+    session.add(
+        DocumentBlock(
+            document_id=document.id,
+            ordinal=0,
+            kind="image",
+            text="chart",
+            heading=None,
+            location={"image_key": image_key},
+            language="en-IN",
+            scripts=[],
+        )
+    )
+    session.add(
+        DocumentChunk(
+            document_id=document.id,
+            ordinal=0,
+            chunker_version=CHUNKER_VERSION,
+            text="chart",
+            normalized_text="chart",
+            heading=None,
+            location={"image_key": image_key},
+            language="en-IN",
+            block_ids=[],
+            token_count=1,
+        )
+    )
+    if scope == "retained":
+        thread = Thread(workspace_id=workspace.id, label="citation")
+        session.add(thread)
+        session.flush()
+        session.add(
+            Run(
+                thread_id=thread.id,
+                state="completed",
+                selected_source_ids=[source.id],
+                config={},
+            )
+        )
+    session.commit()
+    if scope == "workspace":
+        delete_workspace(UUID(workspace.id), session)
+    elif scope == "document":
+        remove_document(UUID(document.id), session)
+    else:
+        result = remove_source(session, source.id)
+        assert result["retention"] == (
+            "archived_for_citations" if scope == "retained" else "purged"
+        )
+    queued = list(session.scalars(select(Job).where(Job.kind == "delete_storage")))
+    assert sum(job.payload["storage_key"] == image_key for job in queued) == (
+        0 if scope == "retained" else 1
+    )
+    session.close()

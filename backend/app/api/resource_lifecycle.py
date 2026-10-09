@@ -14,6 +14,8 @@ from app.db.models import (
     Connection,
     Dataset,
     Document,
+    DocumentBlock,
+    DocumentChunk,
     Evidence,
     Job,
     Run,
@@ -144,6 +146,18 @@ def queue_blob_deletion(session: Session, keys: set[str]) -> None:
         )
 
 
+def document_image_keys(session: Session, document_ids: set[str]) -> set[str]:
+    keys: set[str] = set()
+    for model in (DocumentBlock, DocumentChunk):
+        for location in session.scalars(
+            select(model.location).where(model.document_id.in_(document_ids))
+        ):
+            key = (location or {}).get("image_key")
+            if isinstance(key, str) and key:
+                keys.add(key)
+    return keys
+
+
 def drop_summaries(session: Session, workspace_id: str, ids: set[str]) -> None:
     for summary in session.scalars(
         select(SummaryCache).where(SummaryCache.workspace_id == workspace_id)
@@ -249,6 +263,7 @@ def delete_workspace(workspace_id: UUID, session: Db) -> Response:
     keys = {a.storage_key for a in artifact_rows}
     keys.update(source.storage_key for source in sources if source.storage_key)
     keys.update(dataset.storage_key for dataset in datasets if dataset.storage_key)
+    keys.update(document_image_keys(session, doc_ids))
     queue_blob_deletion(session, keys)
     for job in jobs:
         session.delete(job)
@@ -352,6 +367,7 @@ def remove_source(session: Session, source_id: str) -> dict[str, Any]:
         keys = {dataset.storage_key for dataset in datasets if dataset.storage_key}
         if source.storage_key:
             keys.add(source.storage_key)
+        keys.update(document_image_keys(session, set(document_ids)))
         queue_blob_deletion(session, keys)
         for job in jobs:
             session.delete(job)

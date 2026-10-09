@@ -7,9 +7,9 @@ class AssetRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     path: str = Field(pattern=r"^assets/[0-9a-f]{64}$")
-    owner_type: Literal["source", "dataset", "artifact"]
+    owner_type: Literal["source", "dataset", "artifact", "block"]
     owner_id: str = Field(min_length=1, max_length=36)
-    purpose: Literal["original", "dataset", "artifact"]
+    purpose: Literal["original", "dataset", "artifact", "image"]
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     byte_size: int = Field(ge=0, le=128 * 1024 * 1024)
 

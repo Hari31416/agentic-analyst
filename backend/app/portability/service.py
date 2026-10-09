@@ -198,6 +198,10 @@ def export_workspace(session: Session, workspace_id: str, settings: Any) -> byte
             )
     for dataset in datasets:
         add_asset("dataset", dataset.id, "dataset", dataset.storage_key)
+    for block in blocks:
+        image_key = (block.location or {}).get("image_key")
+        if image_key:
+            add_asset("block", block.id, "image", image_key)
     for artifact in artifacts:
         if artifact.durable:
             add_asset(
@@ -272,6 +276,19 @@ def import_workspace(
             id_map[old_id] = str(uuid4())
     _validate_entity_references(entities, id_map)
     _validate_asset_ownership(manifest, entities)
+
+    image_map: dict[str, str] = {}
+    for row in entities["blocks"]:
+        old_key = (row.get("location") or {}).get("image_key")
+        if old_key and old_key not in image_map:
+            asset = _asset_for(assets, "block", row["id"], "image")
+            assert asset is not None  # Ownership validation requires the asset.
+            image_map[old_key] = _store_imported_asset(
+                settings, id_map[row["id"]], "image", asset
+            )
+    # Rewrite image keys before UUID remapping, including evidence snapshots.
+    for name in ("blocks", "chunks", "evidence"):
+        entities[name] = [_remap_image_keys(row, image_map) for row in entities[name]]
 
     new_workspace = Workspace(
         id=id_map[old_workspace_id], label=(label or old_label)[:120]
@@ -712,6 +729,7 @@ def _validate_asset_ownership(
         "source": {row.get("id") for row in entities["sources"]},
         "dataset": {row.get("id") for row in entities["datasets"]},
         "artifact": {row.get("id") for row in entities["artifacts"]},
+        "block": {row.get("id") for row in entities["blocks"]},
     }
     seen: set[tuple[str, str, str]] = set()
     for asset in manifest.assets:
@@ -720,13 +738,42 @@ def _validate_asset_ownership(
             raise PortabilityError(
                 "invalid_asset_owner", "An asset has an unknown or duplicate owner."
             )
-        if asset.purpose != asset.owner_type and not (
-            asset.owner_type == "source" and asset.purpose == "original"
+        if (
+            asset.purpose != asset.owner_type
+            and not (asset.owner_type == "source" and asset.purpose == "original")
+            and not (asset.owner_type == "block" and asset.purpose == "image")
         ):
             raise PortabilityError(
                 "invalid_asset_owner", "Asset purpose does not match its owner."
             )
         seen.add(key)
+
+    image_hashes: dict[str, str] = {}
+    image_assets = {
+        asset.owner_id: asset
+        for asset in manifest.assets
+        if asset.owner_type == "block"
+    }
+    for block in entities["blocks"]:
+        image_key = (block.get("location") or {}).get("image_key")
+        asset = image_assets.get(block["id"])
+        if image_key:
+            if not isinstance(image_key, str) or asset is None:
+                raise PortabilityError(
+                    "image_asset_missing", "A block image is missing from the archive."
+                )
+            if image_key in image_hashes and image_hashes[image_key] != asset.sha256:
+                raise PortabilityError(
+                    "image_asset_conflict",
+                    "An image key refers to conflicting archive assets.",
+                )
+            image_hashes[image_key] = asset.sha256
+        elif asset is not None:
+            raise PortabilityError(
+                "invalid_asset_owner", "An image asset has no block image reference."
+            )
+    for name in ("chunks", "evidence"):
+        _remap_image_keys(entities[name], image_hashes)
 
     for source in entities["sources"]:
         if (
@@ -755,6 +802,25 @@ def _validate_asset_ownership(
                 "asset_manifest_mismatch",
                 "A stored dataset is missing from the archive.",
             )
+
+
+def _remap_image_keys(value: Any, image_map: dict[str, str]) -> Any:
+    if isinstance(value, dict):
+        result = {}
+        for key, item in value.items():
+            if key == "image_key" and item is not None:
+                if not isinstance(item, str) or item not in image_map:
+                    raise PortabilityError(
+                        "image_asset_missing",
+                        "An image reference has no archived block asset.",
+                    )
+                result[key] = image_map[item]
+            else:
+                result[key] = _remap_image_keys(item, image_map)
+        return result
+    if isinstance(value, list):
+        return [_remap_image_keys(item, image_map) for item in value]
+    return value
 
 
 def _validate_entity_references(

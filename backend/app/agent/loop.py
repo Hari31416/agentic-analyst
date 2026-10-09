@@ -350,6 +350,7 @@ class AgentLoop:
                             ],
                         }
                     )
+                    pending_vision_parts: list[dict[str, Any]] = []
                     for call in response.tool_calls:
                         if call.id in seen_call_ids:
                             raise ValueError("Model reused a tool call ID")
@@ -483,23 +484,7 @@ class AgentLoop:
                             vision_parts = self._extract_vision_parts(
                                 result.data["passages"]
                             )
-                            if vision_parts:
-                                current_len = len(
-                                    json.dumps(messages, ensure_ascii=False)
-                                )
-                                est_len = len(
-                                    json.dumps(vision_parts, ensure_ascii=False)
-                                )
-                                if (
-                                    current_len + est_len
-                                    < self.settings.max_context_characters - 10000
-                                ):
-                                    messages.append(
-                                        {
-                                            "role": "user",
-                                            "content": vision_parts,
-                                        }
-                                    )
+                            pending_vision_parts.extend(vision_parts)
                         await self.events(
                             "status",
                             {
@@ -507,6 +492,16 @@ class AgentLoop:
                                 "tool_calls": self.calls,
                             },
                         )
+                    # Every tool reply must precede the next user message.
+                    if pending_vision_parts:
+                        vision_message = {
+                            "role": "user",
+                            "content": pending_vision_parts,
+                        }
+                        if len(
+                            json.dumps([*messages, vision_message], ensure_ascii=False)
+                        ) < (self.settings.max_context_characters - 10000):
+                            messages.append(vision_message)
                     if time.monotonic() - started > self.settings.run_timeout_seconds:
                         raise BudgetExhausted("Run time limit reached")
         except TimeoutError as exc:

@@ -597,3 +597,43 @@ async def test_vision_parts_extracted_and_passed_for_sparse_image_passages(
     assert vision_msg["content"][1]["image_url"]["url"].startswith(
         "data:image/jpeg;base64,"
     )
+
+
+async def test_vision_context_follows_all_replies_in_tool_batch(monkeypatch):
+    from pydantic import BaseModel
+
+    class SearchInput(BaseModel):
+        query: str
+
+    async def search(call, args):
+        return ToolResult(status="ok", summary="image", data={"passages": [{}]})
+
+    batch = ModelResponse(
+        finish_reason="tool_calls",
+        tool_calls=[
+            ModelToolCall(id=identity, name="search", arguments='{"query":"chart"}')
+            for identity in ("first", "second")
+        ],
+    )
+    model = ScriptedModel([batch, response("finish_answer", {"text": "done"})])
+    loop = AgentLoop(
+        model,
+        settings(),
+        [Tool("search", "search", SearchInput, search)],
+        ignore,
+        ignore,
+    )
+    monkeypatch.setattr(
+        loop, "_extract_vision_parts", lambda _: [{"type": "text", "text": "visual"}]
+    )
+    await loop.run([], "en-IN")
+    messages = model.requests[1]
+    assert [message["role"] for message in messages] == [
+        "system",
+        "assistant",
+        "tool",
+        "tool",
+        "user",
+    ]
+    assert [message["tool_call_id"] for message in messages[2:4]] == ["first", "second"]
+    assert len(messages[-1]["content"]) == 2

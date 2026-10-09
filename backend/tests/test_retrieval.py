@@ -294,3 +294,73 @@ def test_embeddinggemma_adapter_multimodal_inputs(
     assert encoded[1]["text"] == "title: none | text: Revenue grew 20% in Q3"
     assert isinstance(encoded[1]["image"], Image.Image)
     assert encoded[2] == "title: none | text: Pure text passage without image"
+
+
+@pytest.fixture
+def gemma_loader(monkeypatch):
+    import sys
+    import app.retrieval.embedding as module
+
+    loaded = []
+
+    def load(path, **kwargs):
+        model = SimpleNamespace()
+        loaded.append((path, kwargs, model))
+        return model
+
+    monkeypatch.setitem(sys.modules, "torch", SimpleNamespace(bfloat16="bf16"))
+    monkeypatch.setitem(
+        sys.modules, "sentence_transformers", SimpleNamespace(SentenceTransformer=load)
+    )
+    return module, loaded
+
+
+def test_gemma_loader_resolves_configured_revision(gemma_loader, monkeypatch, tmp_path):
+    import huggingface_hub
+
+    module, loaded = gemma_loader
+    snapshot = tmp_path / "snapshots" / ("a" * 40)
+    seen = []
+
+    def download(repo_id, *, revision):
+        seen.append((repo_id, revision))
+        return str(snapshot)
+
+    monkeypatch.setattr(huggingface_hub, "snapshot_download", download)
+    adapter = module.EmbeddingGemmaAdapter(
+        Settings(_env_file=None, embedding_revision="release-v2")
+    )
+    assert seen == [("google/embeddinggemma-2", "release-v2")]
+    assert loaded[0][0] == str(snapshot)
+    assert adapter.revision == "a" * 40
+
+
+def test_gemma_local_revision_changes_with_weights(gemma_loader, tmp_path):
+    module, loaded = gemma_loader
+    weights = tmp_path / "model.safetensors"
+    weights.write_bytes(b"first weights")
+    cfg = Settings(_env_file=None, embedding_model_path=tmp_path)
+    first = module.EmbeddingGemmaAdapter(cfg)
+    weights.write_bytes(b"replacement weights")
+    second = module.EmbeddingGemmaAdapter(cfg)
+    assert first.revision.startswith("sha256:")
+    assert first.revision != second.revision
+    assert all(item[0] == str(tmp_path) for item in loaded)
+
+
+def test_gemma_missing_local_directory_does_not_download(
+    gemma_loader, monkeypatch, tmp_path
+):
+    import huggingface_hub
+
+    module, loaded = gemma_loader
+
+    def unexpected_download(*args, **kwargs):
+        pytest.fail("Missing local assets must not silently download a model")
+
+    monkeypatch.setattr(huggingface_hub, "snapshot_download", unexpected_download)
+    with pytest.raises(EmbeddingUnavailable, match="could not be loaded"):
+        module.EmbeddingGemmaAdapter(
+            Settings(_env_file=None, embedding_model_path=tmp_path / "missing")
+        )
+    assert loaded == []

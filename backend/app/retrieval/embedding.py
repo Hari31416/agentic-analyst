@@ -192,6 +192,7 @@ class EmbeddingGemmaAdapter:
         self.dimensions = settings.embedding_dimension
         self._batch_size = settings.embedding_batch_size
         self._model = _load_embeddinggemma(settings)
+        self.revision = getattr(self._model, "_analyst_revision", self.revision)
 
     def embed_passages(self, texts: list[str]) -> list[list[float]]:
         if not texts:
@@ -362,18 +363,43 @@ def _load_embeddinggemma(settings: Settings) -> Any:
     import torch
     from sentence_transformers import SentenceTransformer
 
-    model_name_or_path = settings.embedding_model or _DEFAULT_MODEL
-    if settings.embedding_model_path is not None:
-        resolved = _resolved_model_path(settings.embedding_model_path)
-        if resolved.exists():
-            model_name_or_path = str(resolved)
-
     try:
-        return SentenceTransformer(
-            model_name_or_path,
+        if settings.embedding_model_path is not None:
+            model_path = _resolved_model_path(settings.embedding_model_path)
+            if not model_path.is_dir():
+                raise ValueError("Configured model directory is missing")
+            # Local directories have no reliable Hub revision. Fingerprint their
+            # bytes so replacing local weights cannot reuse a previous index.
+            digest = hashlib.sha256()
+            for path in sorted(model_path.rglob("*")):
+                if not path.is_file() or any(
+                    part.startswith(".") for part in path.relative_to(model_path).parts
+                ):
+                    continue
+                digest.update(str(path.relative_to(model_path)).encode())
+                digest.update(b"\0")
+                with path.open("rb") as stream:
+                    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                        digest.update(chunk)
+                digest.update(b"\0")
+            revision = f"sha256:{digest.hexdigest()}"
+        else:
+            from huggingface_hub import snapshot_download
+
+            model_path = Path(
+                snapshot_download(
+                    settings.embedding_model or _DEFAULT_MODEL,
+                    revision=settings.embedding_revision or "main",
+                )
+            )
+            revision = model_path.name
+        model = SentenceTransformer(
+            str(model_path),
             model_kwargs={"torch_dtype": torch.bfloat16},
             config_kwargs={"audio_config": None},
         )
+        model._analyst_revision = revision
+        return model
     except Exception:
         raise EmbeddingUnavailable(
             "embedding_model_load_failed",

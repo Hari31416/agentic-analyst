@@ -233,3 +233,7 @@ app.include_router(resource_lifecycle_router)
 from app.api.auth import router as auth_router
 
 app.include_router(auth_router)
+
+from app.api.pins import router as pins_router
+
+app.include_router(pins_router)

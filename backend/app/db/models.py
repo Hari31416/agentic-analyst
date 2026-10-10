@@ -153,6 +153,39 @@ class Message(Identity, Base):
     references: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
 
 
+class Pin(Identity, Base):
+    """Personal bookmarks referencing live resources, never copied artifacts."""
+
+    __tablename__ = "pins"
+    __table_args__ = (
+        UniqueConstraint("user_id", "kind", "target_id", name="uq_pins_owner_target"),
+        CheckConstraint(
+            "(kind = 'thread' AND target_id = thread_id AND message_id IS NULL AND artifact_id IS NULL) OR "
+            "(kind = 'message' AND target_id = message_id AND message_id IS NOT NULL AND artifact_id IS NULL) OR "
+            "(kind = 'artifact' AND target_id = artifact_id AND artifact_id IS NOT NULL AND message_id IS NULL)",
+            name="ck_pins_target",
+        ),
+    )
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    thread_id: Mapped[str] = mapped_column(
+        ForeignKey("threads.id", ondelete="CASCADE"), index=True
+    )
+    message_id: Mapped[str | None] = mapped_column(
+        ForeignKey("messages.id", ondelete="CASCADE")
+    )
+    artifact_id: Mapped[str | None] = mapped_column(
+        ForeignKey("artifacts.id", ondelete="CASCADE")
+    )
+    kind: Mapped[str] = mapped_column(String(20))
+    target_id: Mapped[str] = mapped_column(String(36))
+    title: Mapped[str] = mapped_column(String(200))
+    notes: Mapped[str] = mapped_column(Text, default="")
+    tags: Mapped[list[str]] = mapped_column(Json, default=list)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
 class Job(Identity, Base):
     __tablename__ = "jobs"
     __table_args__ = (Index("ix_jobs_dispatch", "state", "available_at"),)

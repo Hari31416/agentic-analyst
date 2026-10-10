@@ -226,6 +226,7 @@ class ReportVersion(Identity, Base):
     feedback: Mapped[str] = mapped_column(Text, default="")
     mode: Mapped[str] = mapped_column(String(20), default="initial")
     base_version_id: Mapped[str | None] = mapped_column(String(36))
+    progress: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
 
 
 class ReportAsset(Identity, Base):

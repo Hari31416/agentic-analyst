@@ -420,7 +420,7 @@ def test_evidence_limit_explains_actual_content_size(report_client):
             run_id=ids["run"],
             kind="document",
             source_ids=[],
-            details={"excerpt": "x" * 100_001},
+            details={"excerpt": "x " * 50_001},
         )
         session.add(evidence)
         session.flush()
@@ -430,6 +430,129 @@ def test_evidence_limit_explains_actual_content_size(report_client):
     assert response.status_code == 422
     assert "cite 1 evidence records" in response.json()["detail"]
     assert "100,000 evidence characters" in response.json()["detail"]
+
+
+def test_report_sse_progress_and_reconnect(report_client, monkeypatch):
+    import json
+    import app.api.reports as reports_api
+
+    client, sessions, ids, _, storage = report_client
+    report = create(client, ids).json()
+    version_id = ready(sessions, report, storage)
+    monkeypatch.setattr(reports_api, "factory", lambda: sessions)
+    url = f"/api/reports/{report['id']}/versions/{version_id}/events"
+    response = client.get(url)
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert response.headers["x-accel-buffering"] == "no"
+    assert "event: progress" in response.text
+    payload = json.loads(
+        next(
+            line[6:] for line in response.text.splitlines() if line.startswith("data: ")
+        )
+    )
+    assert payload["state"] == "ready"
+    assert payload["step"] == payload["total_steps"]
+    resumed = client.get(url, headers={"Last-Event-ID": str(payload["revision"])})
+    assert "data:" not in resumed.text
+    assert client.get(url, headers={"Last-Event-ID": "bad"}).status_code == 422
+
+
+def test_report_sse_owner_and_version_scope(report_client, monkeypatch):
+    import app.api.reports as reports_api
+
+    client, sessions, ids, users, storage = report_client
+    report = create(client, ids).json()
+    version_id = ready(sessions, report, storage)
+    monkeypatch.setattr(reports_api, "factory", lambda: sessions)
+    root = f"/api/reports/{report['id']}/versions"
+    assert client.get(f"{root}/{uuid4()}/events").status_code == 404
+    app.dependency_overrides[require_auth] = lambda: users[1]
+    assert client.get(f"{root}/{version_id}/events").status_code == 404
+
+
+def test_report_sse_tracks_live_stage_snapshots(report_client, monkeypatch):
+    import app.api.reports as reports_api
+
+    client, sessions, ids, _, _ = report_client
+    report = create(client, ids).json()
+    version_id = report["versions"][0]["id"]
+    snapshots = iter(
+        [
+            {
+                "revision": 0,
+                "state": "queued",
+                "stage": "queued",
+                "message": "Waiting",
+                "step": 0,
+                "total_steps": 5,
+            },
+            {
+                "revision": 3,
+                "state": "generating",
+                "stage": "composing",
+                "message": "Writing report",
+                "step": 2,
+                "total_steps": 5,
+            },
+            {
+                "revision": 5,
+                "state": "ready",
+                "stage": "ready",
+                "message": "Report ready",
+                "step": 5,
+                "total_steps": 5,
+            },
+        ]
+    )
+    monkeypatch.setattr(
+        reports_api, "report_progress_snapshot", lambda *_: next(snapshots)
+    )
+    response = client.get(f"/api/reports/{report['id']}/versions/{version_id}/events")
+    assert response.status_code == 200
+    assert response.text.count("event: progress") == 3
+    assert (
+        response.text.index('"queued"')
+        < response.text.index('"composing"')
+        < response.text.index('"ready"')
+    )
+
+
+def test_report_progress_requires_live_lease(report_client, monkeypatch):
+    from app.reports import progress
+    from app.workers.queue import Claim, LeaseLost
+
+    client, sessions, ids, _, _ = report_client
+    report = create(client, ids).json()
+    version_id = report["versions"][0]["id"]
+    with sessions() as session:
+        job = session.scalar(
+            select(Job).where(Job.payload["version_id"].as_string() == version_id)
+        )
+        job.state = "running"
+        job.lease_token = "current"
+        job.lease_expires_at = now() + timedelta(minutes=1)
+        session.get(ReportVersion, version_id).state = "generating"
+        session.commit()
+        task = Claim(job.id, job.kind, "current", job.payload, None, 1)
+    monkeypatch.setattr(progress, "factory", lambda: sessions)
+    progress.update_progress(task, version_id, "composing", "Writing report", 2)
+    with sessions() as session:
+        version = session.get(ReportVersion, version_id)
+        view = progress.progress_view(version)
+        assert view["revision"] == 3
+        assert view["step"] == 2
+        session.get(Job, task.id).lease_token = "replacement"
+        session.commit()
+    with pytest.raises(LeaseLost):
+        progress.update_progress(task, version_id, "rendering", "Rendering PDF", 4)
+    with sessions() as session:
+        version = session.get(ReportVersion, version_id)
+        assert version.progress["stage"] == "composing"
+        version.state = "failed"
+        session.commit()
+        assert progress.progress_view(version)["revision"] == 4
+        assert progress.progress_view(version)["stage"] == "failed"
 
 
 def test_integrity_failure_rolls_back_copies(report_client):

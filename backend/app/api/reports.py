@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import hashlib
+import asyncio
+import json
+from collections.abc import AsyncIterator
 from contextlib import suppress
 from datetime import timezone
 from typing import Annotated, Any, Literal
 from urllib.parse import quote
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -34,7 +38,8 @@ from app.db.models import (
     User,
     now,
 )
-from app.db.session import get_session
+from app.db.session import factory, get_session
+from app.reports.progress import progress_view
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
 
@@ -106,6 +111,7 @@ def version_view(version: ReportVersion, *, document: bool = True) -> dict[str, 
         "id": version.id,
         "number": version.number,
         "state": version.state,
+        "progress": progress_view(version),
         "language": version.language,
         "created_at": timestamp(version.created_at),
         "error": (
@@ -616,6 +622,75 @@ def verified_response(
             "X-Content-Type-Options": "nosniff",
             "Cache-Control": "private, no-store",
         },
+    )
+
+
+def report_progress_snapshot(
+    report_id: str, version_id: str, user_id: str
+) -> dict[str, Any]:
+    with factory()() as session:
+        report = session.scalar(
+            select(Report).where(Report.id == report_id, Report.user_id == user_id)
+        )
+        if report is None:
+            raise HTTPException(404, "Report not found")
+        return progress_view(get_version(session, report, version_id))
+
+
+@router.get("/reports/{report_id}/versions/{version_id}/events")
+async def stream_report_progress(
+    report_id: UUID,
+    version_id: UUID,
+    request: Request,
+    user: Owner,
+    last_event_id: Annotated[str | None, Header()] = None,
+) -> StreamingResponse:
+    try:
+        raw_after = last_event_id or request.query_params.get("after")
+        after = int(raw_after) if raw_after is not None else -1
+        if raw_after is not None and after < 0:
+            raise ValueError
+    except ValueError as error:
+        raise HTTPException(
+            422, "Last event ID must be a nonnegative sequence"
+        ) from error
+    identity = (str(report_id), str(version_id), user.id)
+    initial = await asyncio.to_thread(report_progress_snapshot, *identity)
+
+    async def stream() -> AsyncIterator[str]:
+        sequence = after
+        current = initial
+        auth_checked = 0.0
+        while not await request.is_disconnected():
+            from app.auth.security import stream_authorized
+            from datetime import datetime, timezone
+
+            claims = getattr(request.state, "auth_claims", None)
+            if claims is not None:
+                if datetime.now(timezone.utc).timestamp() >= claims["exp"]:
+                    return
+                now = asyncio.get_running_loop().time()
+                if now - auth_checked >= 5:
+                    if not await asyncio.to_thread(stream_authorized, claims):
+                        return
+                    auth_checked = now
+            if current["revision"] != sequence:
+                sequence = current["revision"]
+                yield f"id: {sequence}\nevent: progress\ndata: {json.dumps(current)}\n\n"
+            else:
+                yield ": heartbeat\n\n"
+            if current["state"] in {"ready", "failed"}:
+                return
+            await asyncio.sleep(0.5)
+            try:
+                current = await asyncio.to_thread(report_progress_snapshot, *identity)
+            except HTTPException:
+                return
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 

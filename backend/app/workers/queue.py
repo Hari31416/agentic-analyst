@@ -60,6 +60,13 @@ def claim(session: Session, owner: str, lease_seconds: int) -> Claim | None:
                         "message": "Worker attempts were exhausted before document processing finished.",
                     },
                 }
+        if kind == "report_generation":
+            from app.db.models import ReportVersion
+
+            version = session.get(ReportVersion, payload.get("version_id"))
+            if version is not None and version.state != "ready":
+                version.state = "failed"
+                version.error = "retry_limit_exceeded"
         if run_id is None:
             continue
         run = session.scalar(select(Run).where(Run.id == run_id).with_for_update())

@@ -127,6 +127,17 @@ def maintenance(task: Claim) -> dict[str, object]:
                 )
                 for model in (Source, Dataset, Artifact)
             )
+            # Report assets and generated PDFs are retained independently of the
+            # chat artifacts that were copied into a report.
+            from app.db.models import ReportAsset, ReportVersion
+
+            referenced = referenced or any(
+                session.scalar(select(model.id).where(column == key).limit(1))
+                for model, column in (
+                    (ReportAsset, ReportAsset.storage_key),
+                    (ReportVersion, ReportVersion.pdf_key),
+                )
+            )
             if referenced:
                 return {"deleted": False, "retained_shared_object": True}
             get_storage(get_settings()).delete(key)
@@ -169,6 +180,10 @@ async def run_worker() -> None:
                     "crawl_documents",
                 }:
                     result = await execute_document(task, stop)
+                elif task.kind == "report_generation":
+                    from app.reports.generation import execute_report
+
+                    result = await execute_report(task, stop)
                 else:
                     result = await asyncio.to_thread(maintenance, task)
                 with factory()() as session, session.begin():
@@ -253,11 +268,31 @@ async def run_worker() -> None:
                                         "message": "Document processing stopped unexpectedly; retained extraction remains inspectable.",
                                     },
                                 }
+                        if task.kind == "report_generation":
+                            from app.reports.generation import mark_report_failed
+
+                            report_error_code = getattr(
+                                exc, "code", "report_generation_failed"
+                            )
+                            if not isinstance(
+                                report_error_code, str
+                            ) or not STABLE_ERROR_CODE.fullmatch(report_error_code):
+                                report_error_code = "report_generation_failed"
+                            mark_report_failed(
+                                session,
+                                task,
+                                report_error_code,
+                                "The report could not be generated. Retry with a new version.",
+                            )
                         fail(
                             session,
                             task.id,
                             task.token,
-                            "maintenance_failed",
+                            (
+                                report_error_code
+                                if task.kind == "report_generation"
+                                else "maintenance_failed"
+                            ),
                             retryable=task.kind == "delete_storage",
                         )
                 except LeaseLost:

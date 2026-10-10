@@ -237,3 +237,7 @@ app.include_router(auth_router)
 from app.api.pins import router as pins_router
 
 app.include_router(pins_router)
+
+from app.api.reports import router as reports_router
+
+app.include_router(reports_router)

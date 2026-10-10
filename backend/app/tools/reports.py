@@ -11,6 +11,7 @@ import io
 import json
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
@@ -64,31 +65,12 @@ def _md_text(value: str) -> str:
 
 
 def _pdf_markup(value: str, *, indic_font: bool) -> str:
-    """Escape untrusted text and wrap Devanagari runs in an embedded font."""
-    output: list[str] = []
-    current_indic: bool | None = None
-    chunk: list[str] = []
+    """Use the shared font-run handling for shaped multilingual paragraphs."""
+    if indic_font:
+        from app.reports.renderer import _markup
 
-    def flush() -> None:
-        if not chunk:
-            return
-        safe = html.escape("".join(chunk), quote=False)
-        output.append(
-            f'<font name="ReportIndic">{safe}</font>'
-            if indic_font and current_indic
-            else safe
-        )
-        chunk.clear()
-
-    for character in value:
-        codepoint = ord(character)
-        is_indic = 0x0900 <= codepoint <= 0x097F or 0xA8E0 <= codepoint <= 0xA8FF
-        if current_indic is not None and is_indic != current_indic:
-            flush()
-        current_indic = is_indic
-        chunk.append(character)
-    flush()
-    return "".join(output)
+        return _markup(value)
+    return html.escape(value, quote=False)
 
 
 def _contains_devanagari(value: Any) -> bool:
@@ -160,17 +142,16 @@ def _pdf_bytes(
     from reportlab.pdfbase import pdfmetrics  # type: ignore[import-untyped]
     from reportlab.pdfbase.ttfonts import TTFont  # type: ignore[import-untyped]
     from reportlab.platypus import (  # type: ignore[import-untyped]
-        Paragraph,
         SimpleDocTemplate,
         Spacer,
         Table,
         TableStyle,
     )
+    from app.reports import ReportParagraph as Paragraph
 
     latin_font = "Helvetica"
     for path in (
-        "/Users/hari/Library/Fonts/NotoSans-Regular.ttf",
-        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        str(Path(__file__).resolve().parents[1] / "reports/fonts/NotoSans-Regular.ttf"),
     ):
         try:
             pdfmetrics.registerFont(TTFont("ReportLatin", path, shapable=True))
@@ -180,8 +161,10 @@ def _pdf_bytes(
             continue
     indic_font = False
     for path in (
-        "/Users/hari/Library/Fonts/NotoSansDevanagari-Regular.ttf",
-        "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf",
+        str(
+            Path(__file__).resolve().parents[1]
+            / "reports/fonts/NotoSansDevanagari-Regular.ttf"
+        ),
     ):
         try:
             pdfmetrics.registerFont(TTFont("ReportIndic", path, shapable=True))
@@ -203,6 +186,7 @@ def _pdf_bytes(
         "ReportTitle",
         parent=styles["Title"],
         fontName=latin_font,
+        shaping=True,
         fontSize=20,
         leading=26,
         alignment=TA_LEFT,
@@ -213,6 +197,7 @@ def _pdf_bytes(
         "SectionHeading",
         parent=styles["Heading2"],
         fontName=latin_font,
+        shaping=True,
         fontSize=13,
         leading=18,
         textColor=colors.HexColor("#176B67"),
@@ -224,6 +209,7 @@ def _pdf_bytes(
         "ReportBody",
         parent=styles["BodyText"],
         fontName=latin_font,
+        shaping=True,
         fontSize=9,
         leading=14,
         spaceAfter=6,

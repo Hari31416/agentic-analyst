@@ -19,6 +19,7 @@ from app.db.models import (
     Evidence,
     Job,
     Run,
+    Report,
     Source,
     SummaryCache,
     Thread,
@@ -264,6 +265,12 @@ def delete_workspace(workspace_id: UUID, session: Db) -> Response:
     keys.update(source.storage_key for source in sources if source.storage_key)
     keys.update(dataset.storage_key for dataset in datasets if dataset.storage_key)
     keys.update(document_image_keys(session, doc_ids))
+    from app.api.reports import report_storage_keys
+
+    report_ids = list(
+        session.scalars(select(Report.id).where(Report.workspace_id == workspace.id))
+    )
+    keys.update(report_storage_keys(session, report_ids))
     queue_blob_deletion(session, keys)
     for job in jobs:
         session.delete(job)

@@ -186,6 +186,68 @@ class Pin(Identity, Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
+class Report(Identity, Base):
+    __tablename__ = "reports"
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    workspace_id: Mapped[str] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    title: Mapped[str] = mapped_column(String(200))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class ReportVersion(Identity, Base):
+    __tablename__ = "report_versions"
+    __table_args__ = (
+        UniqueConstraint("report_id", "number", name="uq_report_version_number"),
+        CheckConstraint(
+            "state IN ('queued', 'generating', 'ready', 'failed')",
+            name="ck_report_version_state",
+        ),
+        CheckConstraint(
+            "mode IN ('initial', 'wording', 'restructure')",
+            name="ck_report_version_mode",
+        ),
+    )
+    report_id: Mapped[str] = mapped_column(
+        ForeignKey("reports.id", ondelete="CASCADE"), index=True
+    )
+    number: Mapped[int] = mapped_column(Integer)
+    language: Mapped[str] = mapped_column(String(20))
+    state: Mapped[str] = mapped_column(String(20), default="queued")
+    snapshot: Mapped[dict[str, Any]] = mapped_column(Json, default=dict)
+    document: Mapped[dict[str, Any] | None] = mapped_column(Json)
+    pdf_key: Mapped[str | None] = mapped_column(String(512))
+    pdf_sha256: Mapped[str | None] = mapped_column(String(64))
+    pdf_size: Mapped[int | None] = mapped_column(Integer)
+    error: Mapped[str | None] = mapped_column(String(200))
+    feedback: Mapped[str] = mapped_column(Text, default="")
+    mode: Mapped[str] = mapped_column(String(20), default="initial")
+    base_version_id: Mapped[str | None] = mapped_column(String(36))
+
+
+class ReportAsset(Identity, Base):
+    """Frozen copies survive deletion of the original chat and artifact."""
+
+    __tablename__ = "report_assets"
+    __table_args__ = (
+        UniqueConstraint(
+            "report_id", "original_artifact_id", name="uq_report_asset_original"
+        ),
+    )
+    report_id: Mapped[str] = mapped_column(
+        ForeignKey("reports.id", ondelete="CASCADE"), index=True
+    )
+    original_artifact_id: Mapped[str] = mapped_column(String(36))
+    storage_key: Mapped[str] = mapped_column(String(512), unique=True)
+    sha256: Mapped[str] = mapped_column(String(64))
+    byte_size: Mapped[int] = mapped_column(Integer)
+    media_type: Mapped[str] = mapped_column(String(120))
+    display_name: Mapped[str] = mapped_column(String(255))
+
+
 class Job(Identity, Base):
     __tablename__ = "jobs"
     __table_args__ = (Index("ix_jobs_dispatch", "state", "available_at"),)

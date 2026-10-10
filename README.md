@@ -247,3 +247,5 @@ Document extraction, table review, retry/removal, and approved website imports a
 Workspace/thread rename and deletion, source retention and blob cleanup are documented in [docs/resource-lifecycle.md](docs/resource-lifecycle.md).
 
 Personal thread, message, and artifact pinning is documented in [docs/pins.md](docs/pins.md).
+
+Versioned ReportLab PDFs, pinned inputs, retained artifact references, and regeneration are documented in [docs/reports.md](docs/reports.md).

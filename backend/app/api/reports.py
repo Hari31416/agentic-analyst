@@ -72,10 +72,22 @@ class ReportTitle(BaseModel):
         return value
 
 
-class ReportCreate(ReportTitle):
+class ReportCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    title: str | None = Field(default=None, max_length=200)
     language: Literal["en-IN", "hi-IN"] = "en-IN"
     pin_ids: list[UUID] = Field(min_length=1, max_length=30)
     instructions: str = Field(default="", max_length=4000)
+
+    @field_validator("title")
+    @classmethod
+    def clean_optional_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if contains_secret(value):
+            raise ValueError("Title contains credentials")
+        return value or None
 
 
 class Regenerate(BaseModel):
@@ -306,20 +318,49 @@ def build_snapshot(
             "display_name": redact(artifact.display_name),
             "lineage": redact(artifact.lineage),
         }
+    # Search tools retain every retrieved passage and repeat their retrieval trace
+    # on each row. Report inputs need the answer's citations, not that search log.
+    cited_ids = {
+        str(identity)
+        for message in messages.values()
+        for identity in message.references.get("evidence_ids", [])
+    }
+    legacy_run_ids = {
+        message.run_id
+        for message in messages.values()
+        if message.role == "assistant"
+        and "evidence_ids" not in message.references
+        and message.run_id
+    }
     evidence = list(
         session.scalars(
             select(Evidence)
-            .where(Evidence.run_id.in_(run_ids))
+            .where(
+                Evidence.run_id.in_(run_ids),
+                (Evidence.id.in_(cited_ids) | Evidence.run_id.in_(legacy_run_ids)),
+            )
             .order_by(Evidence.created_at, Evidence.id)
             .limit(201)
         )
     )
-    if (
-        len(evidence) > 200
-        or sum(len(str(item.details)) for item in evidence) > MAX_TEXT
-    ):
+    evidence_records = [
+        {
+            "id": e.id,
+            "kind": e.kind,
+            "source_ids": e.source_ids,
+            "details": redact(
+                {key: value for key, value in e.details.items() if key != "trace"}
+            ),
+        }
+        for e in evidence
+    ]
+    evidence_chars = sum(len(str(item["details"])) for item in evidence_records)
+    if len(evidence) > 200 or evidence_chars > MAX_TEXT:
         raise HTTPException(
-            422, "Selected evidence exceeds the report limit; select fewer pins"
+            422,
+            f"Selected answers cite {len(evidence)} evidence records containing "
+            f"{evidence_chars:,} characters. Reports support up to 200 records and "
+            "100,000 evidence characters; choose answers with fewer citations.",
         )
     source_ids = {
         identity
@@ -334,8 +375,12 @@ def build_snapshot(
             )
         )
     )
+    if not body.title:
+        first_title = selection[0]["title"] or selection[0]["thread_label"]
+        prefix = "रिपोर्ट: " if body.language == "hi-IN" else "Report: "
+        report.title = prefix + first_title[: 200 - len(prefix)]
     return {
-        "title": body.title,
+        "title": report.title,
         "instructions": body.instructions,
         "selection": selection,
         "assets": assets,
@@ -358,15 +403,7 @@ def build_snapshot(
             }
             for m in messages.values()
         ],
-        "evidence": [
-            {
-                "id": e.id,
-                "kind": e.kind,
-                "source_ids": e.source_ids,
-                "details": redact(e.details),
-            }
-            for e in evidence
-        ],
+        "evidence": evidence_records,
         "sources": [
             {
                 "id": s.id,
@@ -431,7 +468,7 @@ def create_report(
         id=str(uuid4()),
         workspace_id=str(workspace_id),
         user_id=user.id,
-        title=body.title,
+        title=body.title or "Report",
     )
     session.add(report)
     session.flush()

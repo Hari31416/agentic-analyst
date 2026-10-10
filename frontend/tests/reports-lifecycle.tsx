@@ -177,9 +177,14 @@ try {
   const titleInput = createForm
     .findAllByType('input')
     .find((input) => input.props.maxLength === 180)!
-  await act(async () => {
-    titleInput.props.onChange({ target: { value: 'Chart notes' } })
-  })
+  assert.equal(titleInput.props.required, undefined)
+  assert.equal(titleInput.props.value, '')
+  assert.equal(
+    createForm
+      .findAllByType('button')
+      .find((button) => button.props.type === 'submit')!.props.disabled,
+    false,
+  )
   await act(async () => {
     holdStaleDetail = true
     await createForm.props.onSubmit({ preventDefault() {} })
@@ -188,6 +193,7 @@ try {
     (request) => request.method === 'POST' && request.url.endsWith('/reports'),
   )!
   assert.deepEqual(createRequest.body.pin_ids, ['artifact-pin'])
+  assert.equal(createRequest.body.title, '')
   assert.equal(createRequest.body.language, 'en-IN')
   assert.ok(
     releaseStaleDetail,

@@ -491,13 +491,12 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
           </div>
           <div className="report-form-grid">
             <label className="report-field">
-              Report title
+              Report title (optional)
               <input
-                required
                 maxLength={180}
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
-                placeholder="Quarterly findings"
+                placeholder="Auto-generated from selected material"
               />
             </label>
             <label className="report-field">
@@ -641,12 +640,7 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
             </Button>
             <Button
               type="submit"
-              disabled={
-                busy ||
-                !title.trim() ||
-                !selectedPinIds.length ||
-                pinsState?.loading
-              }
+              disabled={busy || !selectedPinIds.length || pinsState?.loading}
             >
               {busy ? 'Creating...' : 'Create report'}
             </Button>

@@ -1,6 +1,6 @@
 # Versioned reports
 
-Open **Reports** in a workspace and select **New report**. Choose saved pins in the order you want them used, add instructions, and choose English or Hindi. An artifact pin can be the only input. A thread pin expands to its messages; an answer pin includes its question and answer. Overlapping selections deduplicate messages and artifacts.
+Open **Reports** in a workspace and select **New report**. Choose saved pins in the order you want them used, add instructions, and choose English or Hindi. The title is optional; a blank title becomes “Report: <first selected pin title>” in the chosen language. You can rename it later. An artifact pin can be the only input. A thread pin expands to its messages; an answer pin includes its question and answer. Overlapping selections deduplicate messages and artifacts.
 
 The API freezes those selections and copies verified artifact bytes before queuing a report job. The host worker asks the configured model for a validated JSON document, then renders its paragraphs, images, charts, and tables with ReportLab. The model receives artifact IDs, metadata, bounded table previews, and frozen conversation/evidence text. It never receives binary images or base64 payloads. Report generation uses the same configured model provider and context limits as the chat agent.
 
@@ -20,7 +20,7 @@ The backend bundles Noto Sans and Noto Sans Devanagari regular/bold fonts under 
 
 PDFs use bounded A4 layouts, page numbers, fitted PNG/JPEG images, and native tables with repeated headers and wrapped cells. Tables show at most 100 rows and 12 columns, with a truncation note and a retained original download. Charts render on the server from a validated Plotly subset: grouped bars and scatter charts with at most 16 categories or points per trace, and single-series pies with at most eight slices. Stacked, overlay, mixed-type, and incompatible-coordinate charts fail instead of silently changing their meaning. The browser preview offers the retained original for charts; the PDF contains the rendered chart.
 
-A report accepts at most 30 pins, 200 messages, 100,000 characters of message text, 200 evidence records, and 30 retained artifacts. Each artifact is limited to 20 MB, with a 50 MB total. Provider context limits may require a smaller selection.
+A report accepts at most 30 pins, 200 messages, 100,000 characters of message text, 200 cited evidence records with at most 100,000 evidence characters, and 30 retained artifacts. Evidence includes the selected answers' declared citations; uncited search results and retrieval traces are excluded. Older answers without citation metadata use their turn's evidence with retrieval traces excluded. Each artifact is limited to 20 MB, with a 50 MB total. Provider context limits may require a smaller selection.
 
 ## API and operation
 

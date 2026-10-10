@@ -102,7 +102,7 @@ export const reportApi = {
   create: (
     workspaceId: string,
     input: {
-      title: string
+      title?: string | null
       language: string
       pin_ids: string[]
       instructions: string

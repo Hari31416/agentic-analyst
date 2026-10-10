@@ -15,6 +15,7 @@ from app.config import Settings, get_settings
 from app.db.models import (
     Artifact,
     Base,
+    Evidence,
     Job,
     Message,
     Pin,
@@ -329,7 +330,6 @@ def test_owner_and_workspace_isolation(report_client):
 @pytest.mark.parametrize(
     "fields",
     [
-        {"title": " "},
         {"title": "x" * 201},
         {"language": "ar"},
         {"instructions": "x" * 4001},
@@ -341,6 +341,95 @@ def test_owner_and_workspace_isolation(report_client):
 def test_create_validation(report_client, fields):
     client, _, ids, _, _ = report_client
     assert create(client, ids, **fields).status_code == 422
+
+
+@pytest.mark.parametrize(
+    "fields", [{}, {"title": None}, {"title": ""}, {"title": "  "}]
+)
+def test_optional_title_uses_selected_material(report_client, fields):
+    client, sessions, ids, _, _ = report_client
+    response = client.post(
+        f"/api/workspaces/{ids['workspace']}/reports",
+        json={"pin_ids": [ids["pin_artifact"]], **fields},
+    )
+    assert response.status_code == 201, response.text
+    report = response.json()
+    assert report["title"] == "Report: artifact"
+    with sessions() as session:
+        version = session.get(ReportVersion, report["versions"][0]["id"])
+        assert version.snapshot["title"] == report["title"]
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+def test_report_evidence_excludes_search_traces(report_client, legacy):
+    client, sessions, ids, _, _ = report_client
+    with sessions() as session:
+        cited = Evidence(
+            run_id=ids["run"],
+            kind="document",
+            source_ids=[],
+            details={
+                "excerpt": "The original supporting passage.",
+                "source_version": 3,
+                "location": {"page": 42},
+                "trace": {"diagnostics": "x" * 150_000},
+            },
+        )
+        session.add(cited)
+        session.flush()
+        if not legacy:
+            session.get(Message, ids["answer"]).references = {
+                "evidence_ids": [cited.id]
+            }
+            session.add_all(
+                [
+                    Evidence(
+                        run_id=ids["run"],
+                        kind="document",
+                        source_ids=[],
+                        details={"excerpt": "Uncited search result."},
+                    )
+                    for _ in range(205)
+                ]
+            )
+        session.commit()
+        cited_id = cited.id
+    response = create(client, ids, kinds=("message",))
+    assert response.status_code == 201, response.text
+    with sessions() as session:
+        version = session.get(ReportVersion, response.json()["versions"][0]["id"])
+        assert version.snapshot["evidence"] == [
+            {
+                "id": cited_id,
+                "kind": "document",
+                "source_ids": [],
+                "details": {
+                    "excerpt": "The original supporting passage.",
+                    "source_version": 3,
+                    "location": {"page": 42},
+                },
+            }
+        ]
+        assert "trace" in session.get(Evidence, cited_id).details
+
+
+def test_evidence_limit_explains_actual_content_size(report_client):
+    client, sessions, ids, _, _ = report_client
+    with sessions() as session:
+        evidence = Evidence(
+            run_id=ids["run"],
+            kind="document",
+            source_ids=[],
+            details={"excerpt": "x" * 100_001},
+        )
+        session.add(evidence)
+        session.flush()
+        session.get(Message, ids["answer"]).references = {"evidence_ids": [evidence.id]}
+        session.commit()
+    response = create(client, ids, kinds=("message",))
+    assert response.status_code == 422
+    assert "cite 1 evidence records" in response.json()["detail"]
+    assert "100,000 evidence characters" in response.json()["detail"]
 
 
 def test_integrity_failure_rolls_back_copies(report_client):

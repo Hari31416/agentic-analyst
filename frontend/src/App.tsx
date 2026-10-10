@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, Layers, Plus } from 'lucide-react'
 import ChatPanel from './ChatPanel'
 import SavedPins from './SavedPins'
+import Reports from './Reports'
 import { PinsProvider } from './components/PinsContext'
 import './pins.css'
 import SourceWorkbench from './SourceWorkbench'
@@ -65,7 +66,7 @@ export function App() {
   const initialRouteRef = useRef(parsePath(window.location.pathname))
 
   const [activeView, setActiveView] = useState<
-    'chat' | 'workbench' | 'outputs' | 'pins'
+    'chat' | 'workbench' | 'outputs' | 'pins' | 'reports'
   >(initialRouteRef.current.view)
   const activeViewRef = useRef(activeView)
   activeViewRef.current = activeView
@@ -316,7 +317,7 @@ export function App() {
   }, [])
 
   const handleSelectView = useCallback(
-    (view: 'chat' | 'workbench' | 'outputs' | 'pins') => {
+    (view: 'chat' | 'workbench' | 'outputs' | 'pins' | 'reports') => {
       setActiveView(view)
       activeViewRef.current = view
       const targetPath = formatPath({
@@ -708,6 +709,8 @@ export function App() {
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
           {activeView === 'pins' && workspaceId ? (
             <SavedPins onOpenThread={handleSelectThread} />
+          ) : activeView === 'reports' && workspaceId ? (
+            <Reports key={workspaceId} workspaceId={workspaceId} />
           ) : activeView === 'outputs' && workspaceId ? (
             <ArtifactBrowser
               workspaceId={workspaceId}

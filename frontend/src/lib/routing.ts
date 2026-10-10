@@ -1,4 +1,4 @@
-export type ActiveView = 'chat' | 'workbench' | 'outputs' | 'pins'
+export type ActiveView = 'chat' | 'workbench' | 'outputs' | 'pins' | 'reports'
 
 export interface RouteParams {
   workspaceId?: string
@@ -25,6 +25,7 @@ export function parsePath(pathname: string): RouteParams {
       }
     }
     if (section === 'pins') return { workspaceId: wsId, view: 'pins' }
+    if (section === 'reports') return { workspaceId: wsId, view: 'reports' }
     if (section === 'outputs') {
       return {
         workspaceId: wsId,
@@ -50,6 +51,7 @@ export function formatPath(params: {
   if (!ws) return '/'
   if (params.view === 'workbench') return `/workspaces/${ws}/sources`
   if (params.view === 'pins') return `/workspaces/${ws}/pins`
+  if (params.view === 'reports') return `/workspaces/${ws}/reports`
   if (params.view === 'outputs') return `/workspaces/${ws}/outputs`
   if (params.threadId) {
     return `/workspaces/${ws}/threads/${encodeURIComponent(params.threadId)}`

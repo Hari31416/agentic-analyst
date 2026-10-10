@@ -8,8 +8,10 @@ type TopBarProps = {
   onToggleRightSidebar?: () => void
   activeWorkspaceLabel: string
   activeThreadLabel?: string
-  activeView: 'chat' | 'workbench' | 'outputs' | 'pins'
-  onSelectView: (view: 'chat' | 'workbench' | 'outputs' | 'pins') => void
+  activeView: 'chat' | 'workbench' | 'outputs' | 'pins' | 'reports'
+  onSelectView: (
+    view: 'chat' | 'workbench' | 'outputs' | 'pins' | 'reports',
+  ) => void
   readiness?: SystemReadiness | null
   health?: 'checking' | 'online' | 'offline'
   onRefresh?: () => void
@@ -54,7 +56,9 @@ export const TopBar: FC<TopBarProps> = ({
                 ? 'Source Workbench'
                 : activeView === 'pins'
                   ? 'Saved pins'
-                  : 'Workspace Outputs'}
+                  : activeView === 'reports'
+                    ? 'Research reports'
+                    : 'Workspace Outputs'}
           </strong>
         </div>
       </div>

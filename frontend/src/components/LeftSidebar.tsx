@@ -2,6 +2,7 @@ import { FC, useState, useMemo } from 'react'
 import {
   ChevronDown,
   FolderPlus,
+  FileText,
   Globe,
   Layers,
   LogOut,
@@ -51,8 +52,10 @@ type LeftSidebarProps = {
   onCreateThreadClick: () => void
   onRenameThread: (thread: ThreadItem) => void
   onDeleteThread: (thread: ThreadItem) => void
-  activeView: 'chat' | 'workbench' | 'outputs' | 'pins'
-  onSelectView: (view: 'chat' | 'workbench' | 'outputs' | 'pins') => void
+  activeView: 'chat' | 'workbench' | 'outputs' | 'pins' | 'reports'
+  onSelectView: (
+    view: 'chat' | 'workbench' | 'outputs' | 'pins' | 'reports',
+  ) => void
   isCollapsed: boolean
   onToggleCollapse: () => void
   health: 'checking' | 'online' | 'offline'
@@ -173,6 +176,20 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
               aria-label="Workspace outputs"
             >
               <PackageOpen size={18} />
+            </button>
+            <button
+              type="button"
+              className={cn(
+                'flex items-center justify-center w-9 h-9 rounded-md transition-colors',
+                activeView === 'reports'
+                  ? 'bg-card text-primary border border-border shadow-xs'
+                  : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground',
+              )}
+              onClick={() => onSelectView('reports')}
+              title="Research reports"
+              aria-label="Research reports"
+            >
+              <FileText size={18} />
             </button>
           </div>
 
@@ -465,6 +482,19 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           >
             <Pin size={15} />
             <span>Saved pins</span>
+          </button>
+          <button
+            type="button"
+            className={cn(
+              'flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md text-xs font-medium transition-colors',
+              activeView === 'reports'
+                ? 'bg-card text-primary border border-border'
+                : 'text-muted-foreground hover:bg-sidebar-accent',
+            )}
+            onClick={() => onSelectView('reports')}
+          >
+            <FileText size={15} />
+            <span>Reports</span>
           </button>
           <button
             type="button"

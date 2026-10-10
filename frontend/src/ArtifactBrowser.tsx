@@ -17,6 +17,7 @@ import {
   Terminal,
   Upload,
 } from 'lucide-react'
+import { PinButton } from './components/PinButton'
 import { chatApi } from './chatApi'
 import {
   ArtifactManifest,
@@ -469,6 +470,11 @@ export function ArtifactDetail({
           <h2>{artifact.display_name}</h2>
         </div>
         <div className="artifact-header-actions">
+          <PinButton
+            kind="artifact"
+            targetId={artifact.id}
+            title={artifact.display_name}
+          />
           {isReusableCsv && onSourcesChanged && (
             <button
               className="outputs-download"

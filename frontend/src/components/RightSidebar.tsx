@@ -70,7 +70,7 @@ type RightSidebarProps = {
   artifacts?: ArtifactManifest[]
   onRefreshArtifacts?: () => Promise<void>
   onSourcesChanged?: () => Promise<void>
-  onSelectView?: (view: 'chat' | 'workbench' | 'outputs') => void
+  onSelectView?: (view: 'chat' | 'workbench' | 'outputs' | 'pins') => void
   workspaceId?: string
   readiness?: SystemReadiness | null
   health?: 'checking' | 'online' | 'offline'

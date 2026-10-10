@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, Layers, Plus } from 'lucide-react'
 import ChatPanel from './ChatPanel'
+import SavedPins from './SavedPins'
+import { PinsProvider } from './components/PinsContext'
+import './pins.css'
 import SourceWorkbench from './SourceWorkbench'
 import {
   LeftSidebar,
@@ -62,7 +65,7 @@ export function App() {
   const initialRouteRef = useRef(parsePath(window.location.pathname))
 
   const [activeView, setActiveView] = useState<
-    'chat' | 'workbench' | 'outputs'
+    'chat' | 'workbench' | 'outputs' | 'pins'
   >(initialRouteRef.current.view)
   const activeViewRef = useRef(activeView)
   activeViewRef.current = activeView
@@ -313,7 +316,7 @@ export function App() {
   }, [])
 
   const handleSelectView = useCallback(
-    (view: 'chat' | 'workbench' | 'outputs') => {
+    (view: 'chat' | 'workbench' | 'outputs' | 'pins') => {
       setActiveView(view)
       activeViewRef.current = view
       const targetPath = formatPath({
@@ -619,7 +622,7 @@ export function App() {
     readiness?.components?.model?.status === 'configured'
   const modelMessage = readiness?.components?.model?.message
 
-  return (
+  const content = (
     <div className="flex w-screen h-screen overflow-hidden bg-background text-foreground">
       {/* Column 1: Collapsible Left Sidebar */}
       <LeftSidebar
@@ -703,7 +706,9 @@ export function App() {
         )}
 
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
-          {activeView === 'outputs' && workspaceId ? (
+          {activeView === 'pins' && workspaceId ? (
+            <SavedPins onOpenThread={handleSelectThread} />
+          ) : activeView === 'outputs' && workspaceId ? (
             <ArtifactBrowser
               workspaceId={workspaceId}
               onWorkspaceImported={handleWorkspaceImported}
@@ -823,6 +828,15 @@ export function App() {
         error={deleteError}
       />
     </div>
+  )
+  return (
+    <PinsProvider
+      key={workspaceId}
+      workspaceId={workspaceId}
+      resourceKey={threads.map((thread) => thread.id).join(',')}
+    >
+      {content}
+    </PinsProvider>
   )
 }
 

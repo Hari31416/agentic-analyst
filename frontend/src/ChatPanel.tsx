@@ -39,6 +39,7 @@ import {
 } from './chatApi'
 import { restoreThreadSelection } from './lib/threadSelection'
 import { apiFetch } from './lib/apiFetch'
+import { PinButton } from './components/PinButton'
 import { InlineArtifactPreview } from './components/InlineArtifactPreview'
 import { DatasetSummary } from './structuredApi'
 import { EvidenceView, documentApi } from './documentApi'
@@ -1309,6 +1310,17 @@ function ChatPanel({
                         {message.role === 'assistant' && (
                           <CopyButton text={message.content} />
                         )}
+                        {/^[0-9a-f-]{36}$/i.test(message.id) &&
+                          message.role !== 'system' && (
+                            <PinButton
+                              kind="message"
+                              targetId={message.id}
+                              title={
+                                related.find((item) => item.role === 'user')
+                                  ?.content ?? message.content
+                              }
+                            />
+                          )}
                         {run && (
                           <span className={`message-run-state ${run.state}`}>
                             {labelForState(run)}

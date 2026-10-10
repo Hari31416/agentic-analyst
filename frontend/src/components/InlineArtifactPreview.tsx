@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Download, ExternalLink, Eye } from 'lucide-react'
+import { PinButton } from './PinButton'
 import { ArtifactDetail } from '../ArtifactBrowser'
 import { ArtifactManifest, ArtifactRows, phase06Api } from '../phase06Api'
 import { chatApi } from '../chatApi'
@@ -102,6 +103,7 @@ export function InlineArtifactPreview({
           {expanded ? 'Hide preview' : label}
         </button>
         <span className="inline-artifact-actions">
+          <PinButton kind="artifact" targetId={id} title={label} />
           <button
             type="button"
             onClick={() => setOpen(true)}

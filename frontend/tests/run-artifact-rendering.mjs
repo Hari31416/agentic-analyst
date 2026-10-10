@@ -10,6 +10,7 @@ try {
     'artifact-rendering',
     'artifact-lifecycle',
     'artifact-visibility',
+    'pins-lifecycle',
   ]) {
     const directory = join(output, entry)
     await build({

@@ -15,9 +15,12 @@ import {
   Sun,
   Trash2,
   Pencil,
+  Pin,
   UserRound,
   Users,
 } from 'lucide-react'
+import { PinButton } from './PinButton'
+import { usePins } from './PinsContext'
 import { cn } from '../lib/utils'
 import { useAuth } from '../auth/AuthGate'
 import { UiLanguage } from '../uiText'
@@ -48,8 +51,8 @@ type LeftSidebarProps = {
   onCreateThreadClick: () => void
   onRenameThread: (thread: ThreadItem) => void
   onDeleteThread: (thread: ThreadItem) => void
-  activeView: 'chat' | 'workbench' | 'outputs'
-  onSelectView: (view: 'chat' | 'workbench' | 'outputs') => void
+  activeView: 'chat' | 'workbench' | 'outputs' | 'pins'
+  onSelectView: (view: 'chat' | 'workbench' | 'outputs' | 'pins') => void
   isCollapsed: boolean
   onToggleCollapse: () => void
   health: 'checking' | 'online' | 'offline'
@@ -83,12 +86,20 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   const { user, logout, logoutError, openUserManager } = useAuth()
   const [uiLanguage, setUiLanguage] = useUiLanguage()
   const [searchQuery, setSearchQuery] = useState('')
+  const pins = usePins()?.pins ?? []
+  const pinnedThreads = new Set(
+    pins.filter((pin) => pin.kind === 'thread').map((pin) => pin.target_id),
+  )
 
   const filteredThreads = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
-    if (!q) return threads
-    return threads.filter((t) => t.label.toLowerCase().includes(q))
-  }, [threads, searchQuery])
+    return threads
+      .filter((t) => !q || t.label.toLowerCase().includes(q))
+      .sort(
+        (a, b) =>
+          Number(pinnedThreads.has(b.id)) - Number(pinnedThreads.has(a.id)),
+      )
+  }, [threads, searchQuery, pins])
 
   if (isCollapsed) {
     return (
@@ -165,6 +176,15 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </button>
           </div>
 
+          <button
+            type="button"
+            onClick={() => onSelectView('pins')}
+            className="flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground hover:bg-sidebar-accent"
+            aria-label="Saved pins"
+            title="Saved pins"
+          >
+            <Pin size={18} />
+          </button>
           <div className="flex flex-col items-center gap-1.5 w-full mt-auto pt-2 border-t border-sidebar-border shrink-0">
             <button
               type="button"
@@ -367,7 +387,9 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return
                     if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
                       onSelectThread(thread.id)
                       onSelectView('chat')
                     }
@@ -385,6 +407,11 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                       {thread.label}
                     </span>
                   </div>
+                  <PinButton
+                    kind="thread"
+                    targetId={thread.id}
+                    title={thread.label}
+                  />
                   <button
                     type="button"
                     className="flex opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 items-center justify-center w-5.5 h-5.5 rounded-sm text-muted-foreground shrink-0 transition-opacity hover:bg-sidebar-accent hover:text-foreground"
@@ -426,6 +453,19 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
           <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.6px] px-1.5 py-1">
             Library
           </div>
+          <button
+            type="button"
+            className={cn(
+              'flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md text-xs font-medium transition-colors',
+              activeView === 'pins'
+                ? 'bg-card text-primary border border-border'
+                : 'text-muted-foreground hover:bg-sidebar-accent',
+            )}
+            onClick={() => onSelectView('pins')}
+          >
+            <Pin size={15} />
+            <span>Saved pins</span>
+          </button>
           <button
             type="button"
             className={cn(

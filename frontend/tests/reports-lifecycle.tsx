@@ -85,7 +85,35 @@ const earlierReport = {
   title: 'Earlier analysis',
   versions: [readyVersion],
 }
+class MockEventSource extends EventTarget {
+  static instances: MockEventSource[] = []
+  onerror: ((event: Event) => void) | null = null
+  onopen: ((event: Event) => void) | null = null
+  closed = false
+  constructor(
+    readonly url: string,
+    readonly options?: EventSourceInit,
+  ) {
+    super()
+    MockEventSource.instances.push(this)
+  }
+  close() {
+    this.closed = true
+  }
+  emitProgress(data: Record<string, unknown>, id: string) {
+    const event = new Event('progress') as MessageEvent<string>
+    Object.defineProperties(event, {
+      data: { value: JSON.stringify(data) },
+      lastEventId: { value: id },
+    })
+    this.dispatchEvent(event)
+  }
+}
 const originalFetch = globalThis.fetch
+const originalEventSource = globalThis.EventSource
+const originalSetInterval = globalThis.setInterval
+const originalClearInterval = globalThis.clearInterval
+globalThis.EventSource = MockEventSource as unknown as typeof EventSource
 const originalConsoleError = console.error
 const consoleErrors: unknown[][] = []
 console.error = (...args: unknown[]) => consoleErrors.push(args)
@@ -93,6 +121,8 @@ const requests: { url: string; method: string; body?: any }[] = []
 let releaseStaleDetail: ((response: Response) => void) | null = null
 let holdStaleDetail = false
 let releaseRename: ((response: Response) => void) | null = null
+let serverReport = report
+let failTerminalRead = false
 globalThis.fetch = async (input, options) => {
   const url = String(input)
   const method = options?.method ?? 'GET'
@@ -105,15 +135,19 @@ globalThis.fetch = async (input, options) => {
       { language: 'hi-IN', label: 'हिन्दी' },
     ])
   if (url.startsWith('/api/workspaces/ws/reports?') && method === 'GET')
-    return Response.json([earlierReport])
+    return Response.json([earlierReport, serverReport])
   if (url === '/api/workspaces/ws/reports' && method === 'POST')
     return Response.json(report, { status: 201 })
   if (url === '/api/reports/report-1' && method === 'GET' && holdStaleDetail)
     return new Promise((resolve) => {
       releaseStaleDetail = resolve
     })
+  if (url === '/api/reports/report-1' && method === 'GET' && failTerminalRead) {
+    failTerminalRead = false
+    return Response.json({ detail: 'temporarily unavailable' }, { status: 503 })
+  }
   if (url === '/api/reports/report-1' && method === 'GET')
-    return Response.json(report)
+    return Response.json(serverReport)
   if (url === '/api/reports/report-earlier' && method === 'GET')
     return Response.json(earlierReport)
   if (url.includes('/assets/table-1/table?'))
@@ -125,25 +159,25 @@ globalThis.fetch = async (input, options) => {
       ],
       truncated: false,
     })
-  if (url === '/api/reports/report-1/regenerate')
-    return Response.json(
-      {
-        ...report,
-        versions: [
-          {
-            ...readyVersion,
-            id: 'version-2',
-            number: 2,
-            state: 'queued',
-            document: null,
-            feedback: body.feedback,
-            mode: body.mode,
-          },
-          readyVersion,
-        ],
-      },
-      { status: 202 },
-    )
+  if (url === '/api/reports/report-1/regenerate') {
+    serverReport = {
+      ...report,
+      versions: [
+        {
+          ...readyVersion,
+          id: 'version-2',
+          number: 2,
+          state: 'queued',
+          document: null,
+          feedback: body.feedback,
+          mode: body.mode,
+        },
+        readyVersion,
+      ],
+    }
+    serverReport.latest_version = serverReport.versions[0]
+    return Response.json(serverReport, { status: 202 })
+  }
   if (url === '/api/reports/report-1' && method === 'PATCH')
     return new Promise((resolve) => {
       releaseRename = resolve
@@ -253,11 +287,179 @@ try {
     releaseStaleDetail!(Response.json(report))
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
+  holdStaleDetail = false
   assert.equal(
     renderer!.root.findByProps({ 'aria-label': 'Choose report version' }).props
       .value,
     'version-2',
     'an older detail response must not replace the regenerated version',
+  )
+  const queuedStream = MockEventSource.instances.at(-1)!
+  assert.equal(
+    queuedStream.url,
+    '/api/reports/report-1/versions/version-2/events',
+  )
+  assert.equal(queuedStream.options?.withCredentials, true)
+  const versionSelect = renderer!.root.findByProps({
+    'aria-label': 'Choose report version',
+  })
+  await act(async () => {
+    versionSelect.props.onChange({ target: { value: 'version-1' } })
+  })
+  assert.equal(
+    MockEventSource.instances.at(-1),
+    queuedStream,
+    'previewing an older ready version must keep the pending version stream',
+  )
+  serverReport.versions![0] = {
+    ...serverReport.versions![0],
+    state: 'generating',
+  }
+  serverReport.latest_version = serverReport.versions[0]
+  await act(async () => {
+    queuedStream.emitProgress(
+      {
+        state: 'generating',
+        stage: 'writing_sections',
+        message: 'Drafting the findings',
+        step: 2,
+        total_steps: 5,
+      },
+      'progress-2',
+    )
+  })
+  assert.equal(
+    renderer!.root.findByProps({ role: 'progressbar' }).props['aria-valuenow'],
+    2,
+  )
+  assert.ok(
+    renderer!.root
+      .findAllByType('span')
+      .some((span) => span.children.join('').includes('Drafting the findings')),
+    'pending progress should remain visible while an older version is selected',
+  )
+  const generatingStream = MockEventSource.instances.at(-1)!
+  assert.equal(generatingStream, queuedStream)
+  const earlierDuringStream = renderer!.root
+    .findAllByType('button')
+    .find(
+      (button) =>
+        button.props.className?.startsWith('report-library-item') &&
+        button
+          .findAllByType('strong')
+          .some((label) => label.children.join('') === 'Earlier analysis'),
+    )!
+  await act(async () => {
+    earlierDuringStream.props.onClick()
+  })
+  assert.equal(
+    generatingStream.closed,
+    true,
+    'switching reports should close the selected stream',
+  )
+  await act(async () => {
+    generatingStream.emitProgress(
+      {
+        state: 'ready',
+        stage: 'ready',
+        message: 'stale completion',
+        step: 5,
+        total_steps: 5,
+      },
+      'progress-3',
+    )
+  })
+  assert.ok(
+    renderer!.root
+      .findAllByType('h2')
+      .some((heading) => heading.children.join('') === 'Earlier analysis'),
+  )
+
+  const reportOneButton = renderer!.root
+    .findAllByType('button')
+    .find(
+      (button) =>
+        button.props.className?.startsWith('report-library-item') &&
+        button
+          .findAllByType('strong')
+          .some((label) => label.children.join('') === 'Chart notes'),
+    )!
+  await act(async () => {
+    reportOneButton.props.onClick()
+  })
+  const resumedStream = MockEventSource.instances.at(-1)!
+  await act(async () => {
+    renderer!.root
+      .findByProps({ 'aria-label': 'Choose report version' })
+      .props.onChange({ target: { value: 'version-1' } })
+  })
+  assert.equal(
+    MockEventSource.instances.at(-1),
+    resumedStream,
+    'a pending version must stay streamed while its earlier version is previewed',
+  )
+  const readyVersionTwo = {
+    ...readyVersion,
+    id: 'version-2',
+    number: 2,
+    document: { ...readyVersion.document, title: 'Final report text' },
+  }
+  serverReport = {
+    ...report,
+    latest_version: readyVersionTwo,
+    versions: [readyVersionTwo, readyVersion],
+  }
+  let fallbackPoll: (() => void) | null = null
+  globalThis.setInterval = ((callback: TimerHandler) => {
+    if (typeof callback === 'function') fallbackPoll = callback as () => void
+    return 1
+  }) as typeof setInterval
+  globalThis.clearInterval = (() => {}) as typeof clearInterval
+  failTerminalRead = true
+  await act(async () => {
+    resumedStream.emitProgress(
+      {
+        state: 'ready',
+        stage: 'ready',
+        message: 'Report is ready',
+        step: 5,
+        total_steps: 5,
+      },
+      'progress-4',
+    )
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+  assert.equal(
+    renderer!.root.findByProps({ 'aria-label': 'Choose report version' }).props
+      .value,
+    'version-1',
+    'terminal progress must not replace the selected version before canonical detail loads',
+  )
+  assert.ok(
+    fallbackPoll,
+    'failed terminal detail fetch should enable polling fallback',
+  )
+  await act(async () => {
+    fallbackPoll!()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+  globalThis.setInterval = originalSetInterval
+  globalThis.clearInterval = originalClearInterval
+  assert.equal(
+    renderer!.root.findByProps({ 'aria-label': 'Choose report version' }).props
+      .value,
+    'version-1',
+    'canonical refresh should preserve the version the user is previewing',
+  )
+  await act(async () => {
+    renderer!.root
+      .findByProps({ 'aria-label': 'Choose report version' })
+      .props.onChange({ target: { value: 'version-2' } })
+  })
+  assert.ok(
+    renderer!.root
+      .findAllByType('h1')
+      .some((heading) => heading.children.join('') === 'Final report text'),
   )
 
   await act(async () => {
@@ -323,6 +525,7 @@ try {
   await act(async () => {
     renderer!.unmount()
   })
+  assert.ok(MockEventSource.instances.every((stream) => stream.closed))
   assert.deepEqual(consoleErrors, [])
   const reportListCalls: string[] = []
   globalThis.fetch = async (input) => {
@@ -348,6 +551,9 @@ try {
     'Report creation, artifact-only selection, version feedback, preview, and routing checks passed',
   )
 } finally {
+  globalThis.setInterval = originalSetInterval
+  globalThis.clearInterval = originalClearInterval
   globalThis.fetch = originalFetch
+  globalThis.EventSource = originalEventSource
   console.error = originalConsoleError
 }

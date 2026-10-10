@@ -34,6 +34,7 @@ export type ReportVersion = {
   language: string
   created_at: string
   error: string | null
+  progress?: ReportProgress | null
   document: ReportDocument | null
   feedback: string
   mode: string
@@ -51,6 +52,14 @@ export type ReportTable = {
   columns: string[]
   rows: unknown[][]
   truncated: boolean
+}
+export type ReportProgress = {
+  state: 'queued' | 'generating' | 'ready' | 'failed'
+  stage: string
+  message: string
+  step: number
+  total_steps: number
+  revision?: string
 }
 export type Report = {
   id: string
@@ -160,6 +169,30 @@ export const reportApi = {
       `/api/reports/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/assets/${encodeURIComponent(artifactId)}/table?max_rows=${Math.min(30, maxRows)}${columns.map((column) => `&columns=${encodeURIComponent(column)}`).join('')}`,
       { signal },
     ),
+  subscribeProgress: (
+    reportId: string,
+    versionId: string,
+    onProgress: (progress: ReportProgress) => void,
+    onError: () => void,
+    onOpen?: () => void,
+  ) => {
+    const stream = new EventSource(
+      `/api/reports/${encodeURIComponent(reportId)}/versions/${encodeURIComponent(versionId)}/events`,
+      { withCredentials: true },
+    )
+    stream.addEventListener('progress', (event) => {
+      try {
+        const message = event as MessageEvent<string>
+        const progress = JSON.parse(message.data) as ReportProgress
+        onProgress({ ...progress, revision: message.lastEventId })
+      } catch {
+        onError()
+      }
+    })
+    stream.onerror = onError
+    stream.onopen = () => onOpen?.()
+    return () => stream.close()
+  },
 }
 
 export function reportAssetUrl(

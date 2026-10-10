@@ -22,6 +22,7 @@ import {
   type Report,
   type ReportBlock,
   type ReportLanguage,
+  type ReportProgress,
   type ReportTable,
   type ReportVersion,
 } from './reportApi'
@@ -60,6 +61,10 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
   const [pinQuery, setPinQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState('')
+  const [streamProgress, setStreamProgress] = useState<ReportProgress | null>(
+    null,
+  )
+  const [streamFailed, setStreamFailed] = useState(false)
   const [mode, setMode] = useState<'wording' | 'restructure'>('wording')
   const [renaming, setRenaming] = useState(false)
   const [renameValue, setRenameValue] = useState('')
@@ -135,52 +140,68 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
     }
   }, [refreshList])
 
-  const loadDetail = useCallback(async (id: string, signal?: AbortSignal) => {
-    if (!id) {
-      detailRequestRef.current += 1
-      setDetail(null)
-      setSelectedVersionId('')
-      return
-    }
-    const request = ++detailRequestRef.current
-    const epoch = pollEpochRef.current
-    try {
-      const next = await reportApi.read(id, signal)
-      if (
-        !mountedRef.current ||
-        signal?.aborted ||
-        epoch !== pollEpochRef.current ||
-        request !== detailRequestRef.current ||
-        id !== selectedIdRef.current
-      )
-        return
-      setDetail(next)
-      setSelectedVersionId((current) =>
-        current && next.versions?.some((version) => version.id === current)
-          ? current
-          : (next.versions?.[0]?.id ?? ''),
-      )
-      setReports((items) =>
-        items.map((report) =>
-          report.id === id ? { ...report, ...next } : report,
-        ),
-      )
-      setError('')
-    } catch (reason) {
-      if (
-        mountedRef.current &&
-        !signal?.aborted &&
-        epoch === pollEpochRef.current &&
-        request === detailRequestRef.current &&
-        id === selectedIdRef.current
-      )
-        setError(
-          reason instanceof Error
-            ? reason.message
-            : 'Could not load this report.',
+  const loadDetail = useCallback(
+    async (id: string, signal?: AbortSignal, terminalVersionId?: string) => {
+      if (!id) {
+        detailRequestRef.current += 1
+        setDetail(null)
+        setSelectedVersionId('')
+        return null
+      }
+      const request = ++detailRequestRef.current
+      const epoch = pollEpochRef.current
+      try {
+        const next = await reportApi.read(id, signal)
+        if (
+          !mountedRef.current ||
+          signal?.aborted ||
+          epoch !== pollEpochRef.current ||
+          request !== detailRequestRef.current ||
+          id !== selectedIdRef.current
         )
-    }
-  }, [])
+          return null
+        if (terminalVersionId) {
+          const terminalVersion = next.versions?.find(
+            (version) => version.id === terminalVersionId,
+          )
+          if (
+            !terminalVersion ||
+            (terminalVersion.state !== 'failed' &&
+              (terminalVersion.state !== 'ready' || !terminalVersion.document))
+          )
+            return null
+        }
+        setDetail(next)
+        setSelectedVersionId((current) =>
+          current && next.versions?.some((version) => version.id === current)
+            ? current
+            : (next.versions?.[0]?.id ?? ''),
+        )
+        setReports((items) =>
+          items.map((report) =>
+            report.id === id ? { ...report, ...next } : report,
+          ),
+        )
+        setError('')
+        return next
+      } catch (reason) {
+        if (
+          mountedRef.current &&
+          !signal?.aborted &&
+          epoch === pollEpochRef.current &&
+          request === detailRequestRef.current &&
+          id === selectedIdRef.current
+        )
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : 'Could not load this report.',
+          )
+        return null
+      }
+    },
+    [],
+  )
 
   useEffect(() => {
     const controller = new AbortController()
@@ -196,6 +217,8 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
     setDeleteBusy(false)
     setDeleteError('')
     setFeedback('')
+    setStreamProgress(null)
+    setStreamFailed(false)
     if (selectedId) void loadDetail(selectedId, controller.signal)
     return () => controller.abort()
   }, [selectedId, loadDetail])
@@ -206,14 +229,113 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
   const pendingVersion = versions.find(
     (version) => version.state === 'queued' || version.state === 'generating',
   )
+  const activeProgress =
+    streamProgress ??
+    pendingVersion?.progress ??
+    selectedVersion?.progress ??
+    null
 
   useEffect(() => {
+    if (!detail || !pendingVersion) {
+      setStreamProgress(null)
+      setStreamFailed(false)
+      return
+    }
+    const reportId = detail.id
+    const versionId = pendingVersion.id
+    let active = true
+    setStreamProgress(pendingVersion.progress ?? null)
+    setStreamFailed(false)
+    try {
+      const unsubscribe = reportApi.subscribeProgress(
+        reportId,
+        versionId,
+        (progress) => {
+          if (!active || selectedIdRef.current !== reportId) return
+          setStreamProgress(progress)
+          const isTerminal =
+            progress.state === 'ready' || progress.state === 'failed'
+          const visibleState = isTerminal ? undefined : progress.state
+          setDetail((current) => {
+            if (!current || current.id !== reportId) return current
+            const versions = current.versions?.map((version) =>
+              version.id === versionId
+                ? {
+                    ...version,
+                    ...(visibleState ? { state: visibleState } : {}),
+                    progress,
+                  }
+                : version,
+            )
+            const latestVersion =
+              current.latest_version?.id === versionId
+                ? {
+                    ...current.latest_version,
+                    ...(visibleState ? { state: visibleState } : {}),
+                    progress,
+                  }
+                : current.latest_version
+            return { ...current, versions, latest_version: latestVersion }
+          })
+          setReports((current) =>
+            current.map((report) => {
+              if (report.id !== reportId) return report
+              const versions = report.versions?.map((version) =>
+                version.id === versionId
+                  ? {
+                      ...version,
+                      ...(visibleState ? { state: visibleState } : {}),
+                      progress,
+                    }
+                  : version,
+              )
+              const latestVersion =
+                report.latest_version?.id === versionId
+                  ? {
+                      ...report.latest_version,
+                      ...(visibleState ? { state: visibleState } : {}),
+                      progress,
+                    }
+                  : report.latest_version
+              return { ...report, versions, latest_version: latestVersion }
+            }),
+          )
+          if (isTerminal)
+            void loadDetail(reportId, undefined, versionId).then(
+              (canonical) => {
+                if (active && selectedIdRef.current === reportId && !canonical)
+                  setStreamFailed(true)
+              },
+            )
+        },
+        () => {
+          if (active && selectedIdRef.current === reportId)
+            setStreamFailed(true)
+        },
+        () => {
+          if (active && selectedIdRef.current === reportId)
+            setStreamFailed(false)
+        },
+      )
+      return () => {
+        active = false
+        unsubscribe()
+      }
+    } catch {
+      setStreamFailed(true)
+      return
+    }
+  }, [detail?.id, pendingVersion?.id, loadDetail])
+
+  useEffect(() => {
+    const hasPendingElsewhere = reports.some(
+      (report) =>
+        report.id !== selectedId &&
+        (report.latest_version?.state === 'queued' ||
+          report.latest_version?.state === 'generating'),
+    )
     const hasPending =
-      reports.some(
-        (report) =>
-          report.latest_version?.state === 'queued' ||
-          report.latest_version?.state === 'generating',
-      ) || Boolean(pendingVersion)
+      hasPendingElsewhere || (Boolean(pendingVersion) && streamFailed)
     if (!hasPending) return
     const timer = globalThis.setInterval(() => {
       const epoch = pollEpochRef.current
@@ -234,13 +356,8 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
           const selected = current.find(
             (report) => report.id === selectedIdRef.current,
           )
-          if (
-            selected &&
-            (selected.latest_version?.state === 'queued' ||
-              selected.latest_version?.state === 'generating' ||
-              Boolean(pendingVersion))
-          )
-            void loadDetail(selected.id)
+          if (selected && streamFailed && pendingVersion)
+            void loadDetail(selected.id, undefined, pendingVersion.id)
         })
         .catch(() => {})
     }, 2500)
@@ -250,6 +367,7 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
     reports,
     pendingVersion?.id,
     pendingVersion?.state,
+    streamFailed,
     loadDetail,
   ])
 
@@ -812,6 +930,33 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
                         {pendingVersion.number}
                       </span>
                     )}
+                    {pendingVersion && activeProgress && (
+                      <div className="report-progress-detail">
+                        <div
+                          className="report-progress-track"
+                          role="progressbar"
+                          aria-label="Report generation progress"
+                          aria-valuemin={0}
+                          aria-valuemax={activeProgress.total_steps || 1}
+                          aria-valuenow={activeProgress.step}
+                        >
+                          <i
+                            style={{
+                              width: `${activeProgress.total_steps > 0 ? Math.max(0, Math.min(100, (activeProgress.step / activeProgress.total_steps) * 100)) : 0}%`,
+                            }}
+                          />
+                        </div>
+                        <span>
+                          {activeProgress.stage.replaceAll('_', ' ')}
+                          {activeProgress.message
+                            ? ` · ${activeProgress.message}`
+                            : ''}
+                        </span>
+                        <small>
+                          {activeProgress.step}/{activeProgress.total_steps}
+                        </small>
+                      </div>
+                    )}
                   </div>
                 )}
                 {selectedVersion?.error && (
@@ -837,7 +982,8 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
                     </h3>
                     <p>
                       {selectedVersion?.state === 'failed'
-                        ? 'You can start another version below.'
+                        ? activeProgress?.message ||
+                          'You can start another version below.'
                         : 'The report will appear here when it is ready.'}
                     </p>
                   </div>

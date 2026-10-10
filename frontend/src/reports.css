@@ -290,6 +290,39 @@
   gap: 5px;
   color: #ad7a28;
 }
+.report-progress-detail {
+  display: flex;
+  min-width: 180px;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: 8px;
+  color: var(--report-dim);
+  font-size: 10px;
+}
+.report-progress-track {
+  width: 74px;
+  height: 4px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 15%, var(--report-rule));
+}
+.report-progress-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+  transition: width 0.2s ease;
+}
+.report-progress-detail > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.report-progress-detail > small {
+  flex: 0 0 auto;
+  font-size: 9px;
+}
 .report-preview {
   width: min(100% - 40px, 760px);
   margin: 20px auto;

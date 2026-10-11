@@ -12,6 +12,7 @@ from app.config import get_settings
 from app.contracts import CreateLabel, SourceView, ThreadView, WorkspaceView
 from app.db.models import Source, Thread, Workspace
 from app.db.session import get_session
+from app.db.notifications import EVENTS_CHANNEL, Notifications
 from app.auth.security import require_auth
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
@@ -25,7 +26,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     with factory()() as session:
         seed_admin(session, get_settings())
-    yield
+    async with Notifications(
+        get_settings().database_url.get_secret_value(), EVENTS_CHANNEL
+    ) as notifications:
+        app.state.run_notifications = notifications
+        try:
+            yield
+        finally:
+            del app.state.run_notifications
 
 
 app = FastAPI(

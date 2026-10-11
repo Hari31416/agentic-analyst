@@ -14,6 +14,7 @@ from app.db.models import (
     AuditEvent,
     Base,
     Document,
+    Event,
     Job,
     Run,
     Source,
@@ -292,3 +293,104 @@ def test_document_worker_audit_is_recorded_with_stable_codes_sqlite(monkeypatch)
         )
     finally:
         engine.dispose()
+
+
+@pytest.fixture
+def notification_db(db_factory):
+    import runpy
+    from pathlib import Path
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+
+    migration = runpy.run_path(
+        str(
+            Path(__file__).parents[2]
+            / "migrations/versions/ba321c7d801a_postgres_wakeups.py"
+        )
+    )
+    with db_factory() as session, session.begin():
+        with Operations.context(MigrationContext.configure(session.connection())):
+            migration["upgrade"]()
+    yield db_factory
+    with db_factory() as session, session.begin():
+        with Operations.context(MigrationContext.configure(session.connection())):
+            migration["downgrade"]()
+
+
+async def test_job_notifications_are_transactional_and_cover_requeues(notification_db):
+    import asyncio
+    from app.db.notifications import Notifications, JOBS_CHANNEL
+
+    url = os.environ["TEST_DATABASE_URL"]
+    async with Notifications(url, JOBS_CHANNEL) as notifications:
+        with notifications.subscribe() as wakeup:
+            # Startup wake confirms LISTEN is established before producing work.
+            await asyncio.wait_for(wakeup.wait(), 3)
+            wakeup.clear()
+            with notification_db() as session:
+                job = Job(kind="verify_storage", dedupe_key=str(uuid4()), payload={})
+                session.add(job)
+                session.flush()
+                with pytest.raises(TimeoutError):
+                    await asyncio.wait_for(wakeup.wait(), 0.1)
+                session.commit()
+                await asyncio.wait_for(wakeup.wait(), 1)
+                wakeup.clear()
+                session.add(
+                    Job(kind="verify_storage", dedupe_key=str(uuid4()), payload={})
+                )
+                session.flush()
+                session.rollback()
+                with pytest.raises(TimeoutError):
+                    await asyncio.wait_for(wakeup.wait(), 0.1)
+                session.execute(
+                    update(Job).where(Job.id == job.id).values(state="running")
+                )
+                session.commit()
+                session.execute(
+                    update(Job).where(Job.id == job.id).values(state="queued")
+                )
+                session.commit()
+                await asyncio.wait_for(wakeup.wait(), 1)
+
+
+async def test_event_notifications_are_committed_and_scoped(notification_db):
+    import asyncio
+    from app.db.notifications import Notifications, EVENTS_CHANNEL
+
+    with notification_db() as session, session.begin():
+        workspace = Workspace(label="notifications")
+        session.add(workspace)
+        session.flush()
+        thread = Thread(workspace_id=workspace.id, label="notifications")
+        session.add(thread)
+        session.flush()
+        run = Run(thread_id=thread.id)
+        session.add(run)
+        session.flush()
+        run_id = run.id
+    async with Notifications(
+        os.environ["TEST_DATABASE_URL"], EVENTS_CHANNEL
+    ) as notifications:
+        with (
+            notifications.subscribe(run_id) as wakeup,
+            notifications.subscribe("other") as other,
+        ):
+            await asyncio.wait_for(wakeup.wait(), 3)
+            wakeup.clear()
+            other.clear()
+            with notification_db() as session:
+                append_event(session, run_id, "progress", {})
+                with pytest.raises(TimeoutError):
+                    await asyncio.wait_for(wakeup.wait(), 0.1)
+                session.rollback()
+                with pytest.raises(TimeoutError):
+                    await asyncio.wait_for(wakeup.wait(), 0.1)
+                append_event(session, run_id, "terminal", {"state": "completed"})
+                session.commit()
+            await asyncio.wait_for(wakeup.wait(), 1)
+            assert not other.is_set()
+            with notification_db() as session:
+                event = session.scalar(select(Event).where(Event.run_id == run_id))
+                assert event.sequence == 1
+                assert event.type == "terminal"

@@ -26,6 +26,7 @@ from app.db.models import (
     ToolCall,
     now,
 )
+from app.db.notifications import EVENTS_CHANNEL, Notifications, wait_for_wakeup
 from app.db.repository import append_event, audit, events_after
 from app.db.session import factory, get_session
 from app.language.metadata import LanguageMetadata
@@ -411,28 +412,36 @@ async def stream_events(
     async def stream() -> AsyncIterator[str]:
         sequence = after
         auth_checked = 0.0
-        while not await request.is_disconnected():
-            from app.auth.security import stream_authorized
-            from datetime import datetime, timezone
+        notifications = getattr(request.app.state, "run_notifications", None)
+        if notifications is None:
+            # Lifespan-free tests/embeddings retain the polling path.
+            notifications = Notifications("sqlite://", EVENTS_CHANNEL)
+        with notifications.subscribe(run_id) as wakeup:
+            while not await request.is_disconnected():
+                wakeup.clear()
+                from app.auth.security import stream_authorized
+                from datetime import datetime, timezone
 
-            claims = getattr(request.state, "auth_claims", None)
-            if claims is not None:
-                if datetime.now(timezone.utc).timestamp() >= claims["exp"]:
-                    return
-                now = asyncio.get_running_loop().time()
-                if now - auth_checked >= 5:
-                    if not await asyncio.to_thread(stream_authorized, claims):
+                claims = getattr(request.state, "auth_claims", None)
+                if claims is not None:
+                    if datetime.now(timezone.utc).timestamp() >= claims["exp"]:
                         return
-                    auth_checked = now
-            batch, state, total = await asyncio.to_thread(event_batch, run_id, sequence)
-            for event in batch:
-                sequence = event.sequence
-                yield f"id: {sequence}\ndata: {event.model_dump_json()}\n\n"
-            if state in TERMINAL_STATES and sequence >= total:
-                return
-            if not batch:
-                yield ": heartbeat\n\n"
-            await asyncio.sleep(0.5)
+                    now = asyncio.get_running_loop().time()
+                    if now - auth_checked >= 5:
+                        if not await asyncio.to_thread(stream_authorized, claims):
+                            return
+                        auth_checked = now
+                batch, state, total = await asyncio.to_thread(
+                    event_batch, run_id, sequence
+                )
+                for event in batch:
+                    sequence = event.sequence
+                    yield f"id: {sequence}\ndata: {event.model_dump_json()}\n\n"
+                if state in TERMINAL_STATES and sequence >= total:
+                    return
+                if not batch:
+                    yield ": heartbeat\n\n"
+                    await wait_for_wakeup(wakeup, timeout=0.5)
 
     return StreamingResponse(
         stream(),

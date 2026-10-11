@@ -158,6 +158,22 @@ Run submission accepts a UUID `request_id` for idempotency. Events at
 or `?after=`. Run status records cleanup separately as `pending`, `complete`,
 or `failed`, so an answer does not hide a guest cleanup failure.
 
+Workers and run SSE handlers use PostgreSQL `LISTEN/NOTIFY` as wakeup hints.
+Apply the migration with `make migrate`, then restart the API and worker.
+Database triggers notify only on commit when jobs are queued or requeued and
+when run events are inserted. The jobs table, leases, and saved event sequences
+remain authoritative. Workers poll at least every second when idle; SSE handlers
+poll every 500 ms when no events arrive. Delayed retries and expired leases are
+therefore discovered even without a notification.
+
+Each worker process opens one dedicated listener connection. Each API process
+shares one listener connection across its run SSE subscribers. Listeners reconnect
+and wake subscribers after establishing `LISTEN`; callers subscribe and clear
+wakeups before reading durable state. Shutdown and cancelled streams release
+listeners and subscriptions. Listener connections require a direct PostgreSQL
+connection or session pooling, since `LISTEN` requires a persistent session.
+Notifications contain only a run ID or an empty job hint.
+
 ## RustFS image
 
 The image is pinned as `ghcr.io/rustfs/rustfs:1.0.0-glibc` at digest

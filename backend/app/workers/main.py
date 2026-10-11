@@ -9,6 +9,7 @@ from contextlib import suppress
 from uuid import uuid4
 
 from app.audit.redaction import configure_logging
+from app.db.notifications import JOBS_CHANNEL, Notifications, wait_for_wakeup
 from app.db.repository import audit
 from app.config import get_settings
 from app.db.models import Artifact
@@ -164,143 +165,152 @@ async def run_worker() -> None:
         loop.add_signal_handler(sig, stop.set)
     owner = f"{socket.gethostname()}-{uuid4()}"
     logger.info("worker started")
-    while not stop.is_set():
-        task: Claim | None = None
-        try:
-            with factory()() as session, session.begin():
-                task = claim(session, owner, settings.job_lease_seconds)
-            if task:
-                result: dict[str, object]
-                if task.kind == "agent_run":
-                    await execute_run(task, stop)
-                    result = {"run_id": task.run_id}
-                elif task.kind in {
-                    "ingest_document",
-                    "index_document",
-                    "crawl_documents",
-                }:
-                    result = await execute_document(task, stop)
-                elif task.kind == "report_generation":
-                    from app.reports.generation import execute_report
+    async with Notifications(
+        settings.database_url.get_secret_value(), JOBS_CHANNEL
+    ) as notifications:
+        with notifications.subscribe() as wakeup:
+            while not stop.is_set():
+                wakeup.clear()
+                task: Claim | None = None
+                try:
+                    with factory()() as session, session.begin():
+                        task = claim(session, owner, settings.job_lease_seconds)
+                    if task:
+                        result: dict[str, object]
+                        if task.kind == "agent_run":
+                            await execute_run(task, stop)
+                            result = {"run_id": task.run_id}
+                        elif task.kind in {
+                            "ingest_document",
+                            "index_document",
+                            "crawl_documents",
+                        }:
+                            result = await execute_document(task, stop)
+                        elif task.kind == "report_generation":
+                            from app.reports.generation import execute_report
 
-                    result = await execute_report(task, stop)
-                else:
-                    result = await asyncio.to_thread(maintenance, task)
-                with factory()() as session, session.begin():
-                    finish(session, task.id, task.token, result)
-        except LeaseLost:
-            logger.warning("worker lease lost")
-        except RunCancelled:
-            logger.info("run cancellation acknowledged")
-            if task:
-                try:
-                    with factory()() as session, session.begin():
-                        finish(
-                            session,
-                            task.id,
-                            task.token,
-                            {"run_id": task.run_id, "cancelled": True},
-                        )
+                            result = await execute_report(task, stop)
+                        else:
+                            result = await asyncio.to_thread(maintenance, task)
+                        with factory()() as session, session.begin():
+                            finish(session, task.id, task.token, result)
                 except LeaseLost:
-                    logger.warning("cancelled run lease lost before acknowledgement")
-        except Exception as exc:
-            logger.exception("worker task failed: %s", exc)
-            if task:
-                try:
-                    with factory()() as session, session.begin():
-                        if task.kind == "agent_run" and task.run_id:
-                            runtime = RunRuntime(task, settings, factory())
-                            run = runtime.guard(session, allow_cancelled=True)
-                            if run.state not in {
-                                "completed",
-                                "awaiting_clarification",
-                                "failed",
-                                "cancelled",
-                                "budget_exhausted",
-                            }:
-                                runtime._fail_open_tool_calls(
-                                    session, run, "worker_failed"
-                                )
-                                runtime.finalize(
+                    logger.warning("worker lease lost")
+                except RunCancelled:
+                    logger.info("run cancellation acknowledged")
+                    if task:
+                        try:
+                            with factory()() as session, session.begin():
+                                finish(
                                     session,
-                                    run,
-                                    "failed",
-                                    {
-                                        "partial": True,
-                                        "error": {
-                                            "code": "worker_failed",
-                                            "message": "The run stopped unexpectedly. Retry as a new run.",
-                                        },
-                                    },
+                                    task.id,
+                                    task.token,
+                                    {"run_id": task.run_id, "cancelled": True},
                                 )
-                        if task.kind in {"ingest_document", "index_document"}:
-                            from app.db.models import Document, Job
-                            from sqlalchemy import select
+                        except LeaseLost:
+                            logger.warning(
+                                "cancelled run lease lost before acknowledgement"
+                            )
+                except Exception as exc:
+                    logger.exception("worker task failed: %s", exc)
+                    if task:
+                        try:
+                            with factory()() as session, session.begin():
+                                if task.kind == "agent_run" and task.run_id:
+                                    runtime = RunRuntime(task, settings, factory())
+                                    run = runtime.guard(session, allow_cancelled=True)
+                                    if run.state not in {
+                                        "completed",
+                                        "awaiting_clarification",
+                                        "failed",
+                                        "cancelled",
+                                        "budget_exhausted",
+                                    }:
+                                        runtime._fail_open_tool_calls(
+                                            session, run, "worker_failed"
+                                        )
+                                        runtime.finalize(
+                                            session,
+                                            run,
+                                            "failed",
+                                            {
+                                                "partial": True,
+                                                "error": {
+                                                    "code": "worker_failed",
+                                                    "message": "The run stopped unexpectedly. Retry as a new run.",
+                                                },
+                                            },
+                                        )
+                                if task.kind in {"ingest_document", "index_document"}:
+                                    from app.db.models import Document, Job
+                                    from sqlalchemy import select
 
-                            if (
-                                session.scalar(
-                                    select(Job)
-                                    .where(owned(task.id, task.token))
-                                    .with_for_update()
-                                )
-                                is None
-                            ):
-                                raise LeaseLost("document job ownership lost")
-                            document = session.get(
-                                Document, task.payload.get("document_id")
-                            )
-                            if document is not None:
-                                document.state = (
-                                    "failed"
-                                    if task.kind == "ingest_document"
-                                    else "ready"
-                                )
-                                document.stage = (
-                                    "failed"
-                                    if task.kind == "ingest_document"
-                                    else "index_degraded"
-                                )
-                                document.progress = 100
-                                document.details = {
-                                    **document.details,
-                                    "error": {
-                                        "code": "worker_failed",
-                                        "message": "Document processing stopped unexpectedly; retained extraction remains inspectable.",
-                                    },
-                                }
-                        if task.kind == "report_generation":
-                            from app.reports.generation import mark_report_failed
+                                    if (
+                                        session.scalar(
+                                            select(Job)
+                                            .where(owned(task.id, task.token))
+                                            .with_for_update()
+                                        )
+                                        is None
+                                    ):
+                                        raise LeaseLost("document job ownership lost")
+                                    document = session.get(
+                                        Document, task.payload.get("document_id")
+                                    )
+                                    if document is not None:
+                                        document.state = (
+                                            "failed"
+                                            if task.kind == "ingest_document"
+                                            else "ready"
+                                        )
+                                        document.stage = (
+                                            "failed"
+                                            if task.kind == "ingest_document"
+                                            else "index_degraded"
+                                        )
+                                        document.progress = 100
+                                        document.details = {
+                                            **document.details,
+                                            "error": {
+                                                "code": "worker_failed",
+                                                "message": "Document processing stopped unexpectedly; retained extraction remains inspectable.",
+                                            },
+                                        }
+                                if task.kind == "report_generation":
+                                    from app.reports.generation import (
+                                        mark_report_failed,
+                                    )
 
-                            report_error_code = getattr(
-                                exc, "code", "report_generation_failed"
-                            )
-                            if not isinstance(
-                                report_error_code, str
-                            ) or not STABLE_ERROR_CODE.fullmatch(report_error_code):
-                                report_error_code = "report_generation_failed"
-                            mark_report_failed(
-                                session,
-                                task,
-                                report_error_code,
-                                "The report could not be generated. Retry with a new version.",
-                            )
-                        fail(
-                            session,
-                            task.id,
-                            task.token,
-                            (
-                                report_error_code
-                                if task.kind == "report_generation"
-                                else "maintenance_failed"
-                            ),
-                            retryable=task.kind == "delete_storage",
-                        )
-                except LeaseLost:
-                    pass
-        try:
-            await asyncio.wait_for(stop.wait(), timeout=1)
-        except TimeoutError:
-            pass
+                                    report_error_code = getattr(
+                                        exc, "code", "report_generation_failed"
+                                    )
+                                    if not isinstance(
+                                        report_error_code, str
+                                    ) or not STABLE_ERROR_CODE.fullmatch(
+                                        report_error_code
+                                    ):
+                                        report_error_code = "report_generation_failed"
+                                    mark_report_failed(
+                                        session,
+                                        task,
+                                        report_error_code,
+                                        "The report could not be generated. Retry with a new version.",
+                                    )
+                                fail(
+                                    session,
+                                    task.id,
+                                    task.token,
+                                    (
+                                        report_error_code
+                                        if task.kind == "report_generation"
+                                        else "maintenance_failed"
+                                    ),
+                                    retryable=task.kind == "delete_storage",
+                                )
+                        except LeaseLost:
+                            pass
+                if task is None:
+                    await wait_for_wakeup(wakeup, timeout=1, stop=stop)
 
 
 async def execute_run(task: Claim, stop: asyncio.Event) -> None:

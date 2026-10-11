@@ -1,267 +1,231 @@
 # Agentic RAG Analyst
 
-A local analyst workspace for documents, SQL, spreadsheets, and generated Python.
-Source files remain immutable. RustFS stores original and derived bytes;
-PostgreSQL stores metadata, jobs, events, and conversation history. Generated
-Python runs in a separate network-disabled microVM.
+An evidence-backed workspace for asking questions across documents, spreadsheets,
+and SQL databases. Combine document retrieval with SQL and Python analysis, then
+inspect the sources, calculations, and generated artifacts behind an answer.
 
-## Start locally
+The application runs locally, with an OpenAI-compatible endpoint for chat.
+Original files remain immutable, and generated Python runs in a separate,
+network-disabled microVM.
 
-Install Docker Compose, uv, Node.js, and pnpm. Docker runs infrastructure only.
-The API, worker, frontend, and sandbox service run directly on the host.
+## Features
+
+- **Document search:** ingest PDF, DOCX, TXT, Markdown, HTML, and PPTX, with local
+  OCR for scanned PDFs and lexical, dense, or hybrid retrieval.
+- **Structured analysis:** upload CSV, XLSX, or XLS files and connect external
+  databases for read-only SQL queries.
+- **Python execution:** run generated analysis in isolated microVMs and retain
+  code, output hashes, and source lineage after cleanup.
+- **Evidence and outputs:** inspect citations, retrieval traces, tables, charts,
+  downloadable artifacts, and versioned PDF reports.
+- **English and Hindi:** choose an answer language, with optional local speech
+  transcription.
+- **Saved work:** organize workspaces and threads, pin useful content, replay run
+  progress, and export analysis.
+
+## Architecture
+
+| Component | Technology | Runs in |
+| --- | --- | --- |
+| Frontend | React, TypeScript, Vite, Tailwind CSS | Host |
+| API | FastAPI, Pydantic, SQLAlchemy | Host |
+| Worker | Python, durable PostgreSQL jobs | Host |
+| Metadata and retrieval | PostgreSQL 17, pgvector | Docker |
+| File and artifact storage | RustFS, S3-compatible API | Docker |
+| Python execution | Sandbox service and microsandbox microVMs | Host service, isolated guests |
+
+PostgreSQL stores metadata, jobs, events, and conversation history. RustFS stores
+original files and derived artifacts. Docker runs infrastructure only; the API,
+worker, frontend, and sandbox service run directly on the host.
+
+## Getting started
+
+### Prerequisites
+
+- Python 3.12 and [uv](https://docs.astral.sh/uv/).
+- Node.js and [pnpm](https://pnpm.io/).
+- Docker with Docker Compose.
+- An OpenAI-compatible model endpoint to enable chat.
+- A compatible `msb` CLI installation for microVM execution. The sandbox setup
+  below targets macOS.
+
+### Install and configure
+
+From the repository root:
 
 ```bash
 make setup
-make up
-make migrate
-make dev
 ```
 
-`make setup` copies `.env.example` when needed and installs locked backend and
-frontend dependencies. Before the first API start, set `JWT_SECRET_KEY`,
-`ADMIN_USERNAME`, and `ADMIN_PASSWORD` in `.env`; see
-[local authentication](docs/authentication.md). The first startup seeds the admin,
-which can create admin/user accounts through **Users**. `make up` starts PostgreSQL 17 with pgvector and RustFS,
-waits for infrastructure health, and initializes the S3 bucket from the host.
-`make dev` starts the API, worker, and Vite in one foreground process. Ctrl-C
-stops the apps. API and frontend reload on changes; restart the worker after
-backend changes. `make up-all` combines infrastructure, migrations, and dev.
+This installs locked backend and frontend dependencies and creates `.env` from
+[.env.example](.env.example) if it does not already exist.
 
-### Background process management and logs
+Before starting the API, set these values in `.env`:
 
-To run the full stack in the background with persistent logs in `logs/`:
+```dotenv
+JWT_SECRET_KEY=<random secret of at least 32 bytes>
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<your initial password>
+
+OPENAI_BASE_URL=<your endpoint URL>
+OPENAI_API_KEY=<your API key>
+OPENAI_MODEL=<your model ID>
+```
+
+Generate a signing key with:
 
 ```bash
-make start      # Starts Docker infra, runs migrations, and starts apps in background
-make stop       # Stops background apps and Docker infra
-make restart    # Stops and restarts full stack
-make status     # Shows Docker container status, local processes, and health
+cd backend
+uv run python -c 'import secrets; print(secrets.token_urlsafe(48))'
+cd ..
 ```
 
-To manage host applications separately in the background:
+The first API startup creates the admin account. Sign in with the configured
+credentials; admins can create additional accounts through **Users**. Accounts
+share workspace data. See [authentication](docs/authentication.md) for account
+and session behavior.
+
+Missing model configuration leaves the workspace available but disables new
+chat runs. Set `DATABASE_ENCRYPTION_KEY` to a valid Fernet key before saving
+external database credentials. Keep credentials in the ignored `.env` file.
+
+### Start the application
 
 ```bash
-make app-start     # Starts backend, worker, and frontend in background
-make app-stop      # Stops backend, worker, frontend, and sandbox
-make app-restart   # Restarts backend, worker, and frontend
-
-make start-backend # Starts backend (logs/backend.log)
-make stop-backend  # Stops backend
-make start-worker  # Starts worker (logs/worker.log)
-make stop-worker   # Stops worker
-make start-frontend# Starts frontend (logs/frontend.log)
-make stop-frontend # Stops frontend
-make start-sandbox # Starts sandbox (logs/sandbox.log)
-make stop-sandbox  # Stops sandbox
+make up       # Start PostgreSQL and RustFS; initialize the storage bucket
+make migrate  # Apply database migrations
+make dev      # Run the API, worker, and frontend in the foreground
 ```
 
-To view or manage logs:
+| Service | Default address |
+| --- | --- |
+| Workspace | [http://127.0.0.1:5173](http://127.0.0.1:5173) |
+| API health | [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health) |
+| RustFS S3 endpoint | [http://127.0.0.1:19000](http://127.0.0.1:19000) |
+| RustFS console | [http://127.0.0.1:19001](http://127.0.0.1:19001) |
+| PostgreSQL | `localhost:55432` |
 
-```bash
-make logs          # Follow Docker infrastructure logs
-make logs-backend  # Follow local backend logs
-make logs-worker   # Follow local worker logs
-make logs-frontend # Follow local frontend logs
-make logs-sandbox  # Follow local sandbox logs
-make logs-save     # Save timestamped Docker logs to logs/
-make clean-logs    # Remove local log files
-```
+Use `.env` to change ports and infrastructure credentials. Keep the host
+connection settings aligned with the exposed infrastructure ports. If you change
+the frontend origin, update `AUTH_ALLOWED_ORIGINS` too.
 
-Open [the workspace](http://127.0.0.1:5173). API health is at
-[port 8000](http://127.0.0.1:8000/api/health). Individual terminals can instead
-use `make api`, `make worker`, and `make frontend`. Configure `API_PORT` and
-`FRONTEND_PORT` in `.env` for `make dev`, or export them for individual commands.
+### Enable Python analysis
 
-PostgreSQL listens on loopback port 55432. RustFS exposes its
-[S3 endpoint](http://127.0.0.1:19000) and
-[console](http://127.0.0.1:19001). Default development credentials are
-`analyst-dev` and `analyst-dev-secret`. Override infrastructure ports and
-credentials in `.env` and keep host S3/database settings aligned. Both databases
-persist in Docker volumes. RustFS runs as UID 10001; its startup service sets
-ownership on the data volume.
-
-`make down` stops infrastructure and preserves volumes. Stop host apps with
-Ctrl-C or `make app-stop`. Removing Docker volumes deletes saved data and
-requires running `make up` and `make migrate` again.
-
-## Sandbox service on macOS
-
-The standalone HTTP service is pinned to revision
-`b3f032b6a0ce1fab7cebc75250073f58b5b6c63c` of
-[Hari31416/sandbox](https://github.com/Hari31416/sandbox). Install the
-Mac-compatible microsandbox CLI, `msb`, then run:
+Install the macOS-compatible microsandbox CLI, then prepare the sandbox service
+and analysis image:
 
 ```bash
 bash scripts/setup-sandbox.sh
+make analysis-image
 make sandbox
 ```
 
-Setup installs the service into `.sandbox/venv`. The launcher uses port 8787 and
-`.sandbox/data`, selects the microVM backend, and passes only sandbox settings
-and required host runtime paths to the service. Model, database, and RustFS
-credentials stay outside that environment. Set `SANDBOX_IMAGE` to the supported
-analysis image digest in `.env`. The service binds to loopback by default.
-`SANDBOX_AUTH_TOKEN` enables service authentication.
+The image build records its digest as `SANDBOX_IMAGE` in `.env`. Restart the API
+and worker after the configuration changes. Run `make sandbox` in a separate
+terminal; the service defaults to loopback port 8787.
 
-Startup alone does not prove execution readiness. `make live-sandbox` creates a
-real guest, executes Python, exports verified bytes, and stops/deletes the
-session. Missing microsandbox support fails explicitly. There is no host or
-subprocess execution fallback.
+Verify real guest execution with `make live-sandbox`. Python execution requires
+a working microVM backend; there is no host or subprocess fallback. Each run
+owns its guest, and outputs are copied to application storage before cleanup.
 
-Each run owns its guest session. A fixed launcher executes staged Python files;
-imports include only retained artifacts permitted for that thread and selected
-sources. Outputs are copied to application storage before cleanup. Code,
-output hashes, and tool lineage remain available after the guest is deleted.
-
-## Configuration and verification
-
-The root `.env` configures host apps and Compose infrastructure. RustFS is the
-default object store through `STORAGE_BACKEND=s3` and the host S3 URL. Select
-`filesystem` explicitly for isolated development or tests.
-
-Set `OPENAI_BASE_URL`, `OPENAI_API_KEY`, and `OPENAI_MODEL` for the supplied
-OpenAI-compatible endpoint. Missing model configuration keeps the workspace
-available and disables new chat runs. Set a valid Fernet
-`DATABASE_ENCRYPTION_KEY` before saving external database credentials.
-Restart API/worker processes after changing their environment settings.
+### Enable local document models and OCR
 
 ```bash
-make health             # Infrastructure status and local HTTP health
-make format             # Format backend and frontend
-make check              # Backend checks and frontend typecheck/build
-make test-integration   # Requires TEST_DATABASE_URL / TEST_S3_* settings
-make live-model         # Explicit English/Hindi provider tool-call checks
-make live-sandbox       # Explicit real microVM check
-make live-agent         # Full English/Hindi model + microVM + RustFS checks
+make embedding-model  # Download pinned multilingual embedding assets
 ```
 
-Compose reads the root `.env` explicitly. The API/worker load it through
-Pydantic settings. Vite receives only its API proxy URL, without backend
-credentials. Default tests skip live gates unless explicitly enabled.
+Restart the API and worker afterward. Without compatible embedding assets,
+documents remain available through lexical retrieval and expose their degraded
+index status. Ingestion does not download missing models at runtime.
 
-## Chat and live evaluation
+For scanned PDFs, install Tesseract separately with its `eng`, `hin`, and `osd`
+assets. Optional reranking and speech models can be provisioned with
+`make reranker-model` and `make speech-model`. See the
+[ingestion](docs/ingestion.md), [retrieval](docs/retrieval.md), and
+[language and voice](docs/language-and-voice.md) guides for configuration.
 
-Create a workspace and thread, select the answer language, and send a question.
-The worker validates tool calls and records progress, generated code, artifacts,
-and final answers. Artifact rows provide downloads and bounded text or PNG/JPEG
-previews. Stop requests cancellation and keeps progress connected until guest
-cleanup is recorded. Retry creates a new run; reconnecting replays saved events.
-The source panel supports file uploads and encrypted database connections.
+## Usage
 
-`make live-agent` uses synthetic grant amounts in two saved threads. It checks
-count 2 and INR 25,000, English/Hindi answers, output hashes after guest cleanup,
-final references, saved history, request idempotency, and event replay. It writes
-`data/reports/phase01-live.json`. Live commands intentionally make model requests.
+1. Sign in and create a workspace and thread.
+2. Upload sources or add a database connection in the source panel.
+3. Select the sources, sheets, or tables relevant to your question.
+4. Choose the answer language and send your question.
+5. Inspect the answer's citations, tool activity, and generated artifacts.
 
-Run submission accepts a UUID `request_id` for idempotency. Events at
-`GET /api/runs/{id}/events` use numeric sequence IDs and accept `Last-Event-ID`
-or `?after=`. Run status records cleanup separately as `pending`, `complete`,
-or `failed`, so an answer does not hide a guest cleanup failure.
+Stop requests cancellation and retains progress through guest cleanup. Retry
+creates a new run, and reconnecting replays saved events. Original source files
+remain unchanged. Website imports are disabled until exact hostnames are
+explicitly approved in configuration.
 
-Workers and run SSE handlers use PostgreSQL `LISTEN/NOTIFY` as wakeup hints.
-Apply the migration with `make migrate`, then restart the API and worker.
-Database triggers notify only on commit when jobs are queued or requeued and
-when run events are inserted. The jobs table, leases, and saved event sequences
-remain authoritative. Workers poll at least every second when idle; SSE handlers
-poll every 500 ms when no events arrive. Delayed retries and expired leases are
-therefore discovered even without a notification.
+## Development
 
-Each worker process opens one dedicated listener connection. Each API process
-shares one listener connection across its run SSE subscribers. Listeners reconnect
-and wake subscribers after establishing `LISTEN`; callers subscribe and clear
-wakeups before reading durable state. Shutdown and cancelled streams release
-listeners and subscriptions. Listener connections require a direct PostgreSQL
-connection or session pooling, since `LISTEN` requires a persistent session.
-Notifications contain only a run ID or an empty job hint.
+```bash
+make format            # Format backend and frontend
+make check             # Backend formatting, typing, tests; frontend typing/build
+make test              # Backend tests
+make test-integration  # Requires TEST_DATABASE_URL and applicable TEST_S3_* settings
+make eval-check        # Deterministic checks without live services or model calls
+make eval-list         # List evaluation cases
+```
 
-## RustFS image
+API and frontend reload during `make dev`; restart the worker after backend
+changes. To run services in separate terminals, use `make api`, `make worker`,
+and `make frontend`. Restart API and worker processes after environment changes.
 
-The image is pinned as `ghcr.io/rustfs/rustfs:1.0.0-glibc` at digest
-`sha256:bffcab0c9d647aab0055d1c69d340b202d0909966b385932d4ead1aeb7602858`.
-See the [release list](https://github.com/rustfs/rustfs/releases),
-[official package](https://github.com/rustfs/rustfs/pkgs/container/rustfs), and
-[container setup docs](https://docs.rustfs.com/en/installation/container).
+Live checks are explicit and require the corresponding services:
 
-## Structured sources
+```bash
+make live-model      # Provider tool-call checks in English and Hindi
+make live-sandbox    # Real microVM execution and artifact checks
+make live-agent      # Model, microVM, storage, history, and replay checks
+make live-documents  # Document retrieval and mixed-source checks
+```
 
-Upload CSV, XLSX, or legacy XLS in the source panel. Originals remain immutable
-in RustFS. Profiles report exact row counts, sampled type inference, missingness,
-bounded examples, and formula-cache warnings. CSV decoding/delimiter detection
-is explicit; leading-zero identifiers stay text. Workbook macros and unsafe
-archives are rejected. File SQL stages canonical UTF-8 working copies and treats
-columns as VARCHAR; numeric/date casts must be explicit.
+Model-backed checks make requests to the configured provider. See the
+[evaluation guide](docs/evaluation.md) for repeatable trials, checkpoints,
+offline scoring, and report generation.
 
-Run `make analysis-image` once to build and register the DuckDB 1.4.4 / xlrd 2.0.2
-microVM image. This builds a guest image and records its microsandbox digest in
-`.env`. Restart host apps afterward. `make eval-infra` starts the optional MySQL
-8.4 fixture database on port 33306. PostgreSQL remains on port 55432. Application
-processes run through `make dev` directly on the host.
+### Process management
 
-Database credentials use Fernet encryption with `DATABASE_ENCRYPTION_KEY`.
-Connection setup discovers tables, columns, keys, and relationships. The UI
-supports TLS modes and explicit schema refresh. Queries parse as one selected-table
-read statement, with an allowlist of scalar/aggregate functions. Writes, unsafe
-functions, file/network readers, optimizer hints, and system schemas are rejected.
-Read-only transactions and server query deadlines add database enforcement.
-Queries retain at most 5,000 tool rows and run for at most 30 seconds. Limits apply
-to returned rows after aggregation; decimal values serialize as exact strings.
+| Command | Action |
+| --- | --- |
+| `make start` / `make stop` / `make restart` | Manage infrastructure and background apps |
+| `make app-start` / `make app-stop` / `make app-restart` | Manage host apps separately |
+| `make status` | Show infrastructure, local processes, and health |
+| `make logs` | Follow Docker infrastructure logs |
+| `make logs-backend` / `make logs-worker` | Follow API or worker logs |
+| `make logs-frontend` / `make logs-sandbox` | Follow frontend or sandbox logs |
+| `make down` | Stop infrastructure and preserve volumes |
+| `make help` | List common development commands |
 
-Use selected sources and optionally narrow to particular sheets/tables. Source
-descriptions and metric hints are optional. `run_sql` retains SQL, result CSV,
-input/schema versions, hashes, and calculation evidence. `run_python` can stage
-selected file datasets or retained result artifacts; database credentials never
-enter the guest. `register_dataset` turns a CSV artifact into a derived source
-for selection in a later run and retains its lineage.
+Background application logs are stored in `logs/`. Ctrl-C stops foreground apps.
+Docker volumes retain database and object-store data; removing them deletes saved
+state and requires infrastructure initialization and migrations again.
 
-Repeat the five synthetic live source cases with
-`cd backend && uv run python -m app.structured_probes`. Reports are saved under
-`evals/reports`. Complete browser verification is deferred.
+## Project structure
 
-## Document retrieval
+```text
+backend/    API, workers, analysis tools, evaluation runner, and tests
+frontend/   React application
+infra/      Docker Compose infrastructure
+scripts/    Development launchers and model/sandbox provisioning
+docs/       Feature and operational documentation
+evals/      Fixtures, evaluation cases, reports, and reviews
+plans/      Implementation plans
+```
 
-Upload digital PDF or DOCX in the source panel. RustFS retains the original
-bytes. The worker stores extracted blocks, stable page/paragraph/table locations,
-script metadata, warnings, and separate versioned chunks. Scanned PDFs report
-`ocr_needed`; OCR is scheduled for phase 04. Extraction is bounded to 2,000 PDF
-pages, 12 MiB of text, 100,000 blocks, and 512 chunks per document. Unsupported
-or oversized documents receive a visible failure instead of an empty index.
+## Documentation
 
-Run `make embedding-model` once to download the pinned quantized
-`intfloat/multilingual-e5-small` assets and record their SHA-256 manifest and
-configuration in `.env`. Restart `make dev` afterward. Inference runs locally
-on the host CPU and produces 384-dimensional normalized vectors. Assets are
-loaded from the configured directory; ingestion never downloads missing models.
-Without compatible assets, documents remain available for lexical retrieval and
-report `index_degraded`. Dense requests report unavailable, and hybrid responses
-identify the lexical fallback in their trace.
-
-The `structure-token-v2` chunker groups narrative blocks under headings and
-keeps table groups separate. With the pinned tokenizer, body windows contain at
-most 384 tokens with 48-token overlap and bounded heading context. Without a
-matching tokenizer, conservative UTF-8 byte windows bound the input instead.
-Original Unicode excerpts remain separate from normalized search text.
-
-Retrieval supports English stemming, Hindi/simple PostgreSQL full-text search,
-exact cosine search, and reciprocal rank fusion. Selected document versions
-scope candidates and neighbor expansion. Every index generation records its
-source hash, extractor/chunker, model revision, dimensions, and adapter version.
-`POST /api/documents/{id}/reindex` indexes existing chunks without changing saved
-extraction or citation locations.
-
-Document search and passage tools retain evidence IDs, original excerpts,
-locations, rank/score metadata, actual retrieval mode, and bounded context.
-Saved answers reopen the same citation version through `/api/evidence/{id}`.
-The source panel includes extraction inspection and the chat includes citation
-previews and retrieval traces. Full browser verification remains deferred.
-
-Run `make live-documents` with host apps and infrastructure running to measure
-Hindi/English fixture recall and execute live mixed-source cases. The report in
-`evals/reports/phase03-2026-10-02.json` includes misses, document plus calculation
-citations, retained CSV/PNG outputs, and original-file/database integrity checks.
-
-Document extraction, table review, retry/removal, and approved website imports are documented in [docs/ingestion.md](docs/ingestion.md).
-Workspace/thread rename and deletion, source retention and blob cleanup are documented in [docs/resource-lifecycle.md](docs/resource-lifecycle.md).
-
-Personal thread, message, and artifact pinning is documented in [docs/pins.md](docs/pins.md).
-
-Versioned ReportLab PDFs, pinned inputs, retained artifact references, and regeneration are documented in [docs/reports.md](docs/reports.md).
+| Guide | Covers |
+| --- | --- |
+| [Authentication](docs/authentication.md) | Accounts, sessions, API clients, and shared access |
+| [Document ingestion](docs/ingestion.md) | Formats, OCR, table review, and website imports |
+| [Retrieval](docs/retrieval.md) | Search stages, reranking, context, and inspection |
+| [Analysis and exports](docs/analysis-and-exports.md) | Analyst operations and portable outputs |
+| [Reports and artifacts](docs/reports-and-artifacts.md) | Artifact viewers and answer references |
+| [Versioned reports](docs/reports.md) | PDF reports, pinned inputs, and regeneration |
+| [Language and voice](docs/language-and-voice.md) | English/Hindi behavior and local transcription |
+| [Saved pins](docs/pins.md) | Personal thread, message, and artifact pins |
+| [Resource lifecycle](docs/resource-lifecycle.md) | Rename, deletion, retention, and blob cleanup |
+| [Guardrails and audit](docs/guardrails-and-audit.md) | Execution boundaries, limits, and run inspection |
+| [Evaluation](docs/evaluation.md) | Cases, scoring, repeatable runs, and review |

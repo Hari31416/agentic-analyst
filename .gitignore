@@ -22,6 +22,10 @@ logs/
 # Evaluation checkpoints/traces are local; retain reviewed reports explicitly.
 evals/runs/
 
+# Evaluation HTML viewers are local artifacts; retain report data and builders.
+/evals/reports/**/*.html
+/evals/reviews/**/*.html
+
 # Public real-data evaluation inputs are downloaded/generated locally.
 evals/fixtures/real-v1/raw/
 evals/fixtures/real-v1/derived/

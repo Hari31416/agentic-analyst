@@ -303,18 +303,15 @@ def notification_db(db_factory):
     from alembic.operations import Operations
 
     migration = runpy.run_path(
-        str(
-            Path(__file__).parents[2]
-            / "migrations/versions/ba321c7d801a_postgres_wakeups.py"
-        )
+        str(Path(__file__).parents[2] / "migrations/versions/001_initial_schema.py")
     )
     with db_factory() as session, session.begin():
         with Operations.context(MigrationContext.configure(session.connection())):
-            migration["upgrade"]()
+            migration["create_notifications"]()
     yield db_factory
     with db_factory() as session, session.begin():
         with Operations.context(MigrationContext.configure(session.connection())):
-            migration["downgrade"]()
+            migration["drop_notifications"]()
 
 
 async def test_job_notifications_are_transactional_and_cover_requeues(notification_db):

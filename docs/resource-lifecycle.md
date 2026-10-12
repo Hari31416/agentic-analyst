@@ -42,11 +42,10 @@ that a guest is gone merely because its TTL may have expired.
 
 ## Database and storage
 
-Migration `c2d14e6a901f` adds `ON DELETE CASCADE` to ownership foreign keys.
-It also gives ingestion/crawl jobs and summary caches explicit database owners,
-backfills existing jobs/caches, and discards unattributable disposable caches.
-It does not delete user workspaces during migration. Run `make migrate` before
-starting API and worker processes that use this schema.
+The baseline migration `001_initial_schema` creates ownership foreign keys with
+`ON DELETE CASCADE` and explicit owners for ingestion/crawl jobs and summary
+caches. Run `make migrate` on a fresh database before starting API and worker
+processes that use this schema.
 
 Blob deletion uses an outbox in the same transaction as metadata deletion.
 Independent `delete_storage` jobs survive the cascades. The normal worker checks

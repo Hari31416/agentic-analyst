@@ -62,6 +62,6 @@ List endpoints support bounded `limit` and `offset`. Versions move through `queu
 
 Progress snapshots are persisted with each version and streamed as named SSE `progress` events with IDs. Stages cover input preparation, model composition, validation, PDF rendering, and completion. Reconnecting clients receive the current snapshot rather than a replay of every intermediate stage; `Last-Event-ID` suppresses duplicates. The frontend subscribes to the pending version, closes streams when switching reports, and falls back to polling after stream errors. Progress describes completed stages, not a predicted duration or token count.
 
-Apply migrations through `c84e091ab326` with `make migrate`, then restart the host API and worker. The Vite frontend reloads normally. No new external rendering service or browser printing step is required.
+Apply migrations through `001_initial_schema` with `make migrate`, then restart the host API and worker. The Vite frontend reloads normally. No new external rendering service or browser printing step is required.
 
 Focused verification covers ownership, CRUD, ordered selection/deduplication, artifact-only inputs, retained bytes after chat deletion, exact table previews, model/reference failures, lease loss, immutable ready versions, multilingual shaping, images, and charts. Tests use fake model responses rather than live provider requests.

@@ -36,9 +36,8 @@ Previously selected outputs remain outputs when referenced in follow-up answers.
 An empty deliverable list is valid when the answer needs no file.
 
 Roles are included in manifest APIs and preserved by workspace export/import.
-Migration `b19d4a2e730f` adds the role column and allowed-value constraint. It does
-not classify historical data: existing rows receive `intermediate` and remain
-available through the toggle. No files are deleted.
+The baseline migration `001_initial_schema` creates the role column and
+allowed-value constraint. New artifacts default to `intermediate`.
 
 The agent prompt now asks for final deliverable selection. Deterministic checks
 validate classification, promotion, reference boundaries, and persistence; live

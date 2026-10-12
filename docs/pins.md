@@ -44,7 +44,7 @@ creation time descending with a stable ID tie-breaker.
 
 ## Setup and verification
 
-Apply migration `e42c851ab901` with `make migrate` before starting the updated API.
+Apply migration `001_initial_schema` with `make migrate` before starting the updated API.
 No worker or model call is needed to create or manage pins.
 
 Run the focused backend tests with:

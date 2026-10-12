@@ -71,7 +71,7 @@ extractive, with zero chat-model calls/tokens/cost. Neural clustering and genera
 map-reduce are not enabled. Each selected summary sentence has an original
 supporting excerpt and evidence ID; summary prose itself is never primary evidence.
 
-The summary cache uses migration `a8c204d39f51`. Fingerprints include source/hash,
+The summary cache uses migration `001_initial_schema`. Fingerprints include source/hash,
 source version, extraction/chunking versions, sampled chunk hashes, scope, section,
 algorithm/prompt/model versions and bounds. Long documents use a bounded sample;
 coverage and incomplete results are explicit. A concurrent duplicate cache write

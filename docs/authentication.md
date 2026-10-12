@@ -32,7 +32,7 @@ stored as salted Argon2id hashes. No password is committed or returned by accoun
 inspection. Choose a unique initial password; there is no built-in default.
 
 Run `make up`, `make migrate`, then `make dev` or `make start`. Migration
-`d37e41b5a002` adds accounts and revoked JWT IDs; existing workspace data remains.
+`001_initial_schema` creates accounts and revoked JWT IDs on a fresh database.
 Open the frontend and sign in using the environment credentials. The initial
 admin is created only when the users table is empty. Concurrent API starts use a
 PostgreSQL transaction advisory lock to prevent duplicate seeding. Startup fails

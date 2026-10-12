@@ -97,6 +97,10 @@ make migrate  # Apply database migrations
 make dev      # Run the API, worker, and frontend in the foreground
 ```
 
+The migration history is consolidated into `001_initial_schema` for fresh
+databases. Recreate databases using the older revisions before running
+`make migrate`. Historical data migration is not supported.
+
 | Service | Default address |
 | --- | --- |
 | Workspace | [http://127.0.0.1:5173](http://127.0.0.1:5173) |

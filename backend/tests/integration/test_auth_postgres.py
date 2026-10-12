@@ -112,24 +112,11 @@ def test_parallel_seed_and_lifespan_api(postgres_auth, monkeypatch):
         assert client.get("/api/workspaces", headers=headers).status_code == 401
 
 
-def test_auth_migration_roundtrip_preserves_workspaces(postgres_auth):
+def test_auth_migration_roundtrip(postgres_auth):
     _, _, config, database, schema = postgres_auth
-    wid = str(uuid4())
-    with database.begin() as conn:
-        conn.execute(
-            text(
-                "INSERT INTO workspaces (id,label,created_at) VALUES (:id,'preserved',now())"
-            ),
-            {"id": wid},
-        )
-    command.downgrade(config, "c2d14e6a901f")
-    assert "users" not in inspect(database).get_table_names(schema=schema)
+    command.downgrade(config, "base")
+    assert inspect(database).get_table_names(schema=schema) == ["alembic_version"]
     command.upgrade(config, "head")
-    assert {"users", "revoked_tokens"}.issubset(
+    assert {"users", "revoked_tokens", "workspaces"}.issubset(
         inspect(database).get_table_names(schema=schema)
     )
-    with database.connect() as conn:
-        assert (
-            conn.scalar(text("SELECT label FROM workspaces WHERE id=:id"), {"id": wid})
-            == "preserved"
-        )

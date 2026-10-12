@@ -1,4 +1,4 @@
-"""Upgrade existing data and exercise real PostgreSQL lifecycle constraints."""
+"""Exercise the fresh schema and real PostgreSQL lifecycle constraints."""
 
 import os
 from uuid import uuid4
@@ -14,7 +14,7 @@ from app.config import Settings
 pytestmark = pytest.mark.integration
 
 
-def test_migration_backfills_owners_cascades_and_roundtrips(monkeypatch):
+def test_initial_migration_cascades_and_roundtrips(monkeypatch):
     url = os.getenv("TEST_DATABASE_URL")
     if not url:
         pytest.skip("TEST_DATABASE_URL is not configured")
@@ -39,18 +39,18 @@ def test_migration_backfills_owners_cascades_and_roundtrips(monkeypatch):
     engine = create_engine(scoped_url)
     wid, sid, did, jid, cache_id = [str(uuid4()) for _ in range(5)]
     try:
-        command.upgrade(config, "a8c204d39f51")
+        command.upgrade(config, "head")
         with engine.begin() as conn:
             conn.execute(
                 text(
-                    "INSERT INTO workspaces (id,label,created_at) VALUES (:id,'old',now())"
+                    "INSERT INTO workspaces (id,label,created_at) VALUES (:id,'fresh',now())"
                 ),
                 {"id": wid},
             )
             conn.execute(
                 text(
                     """INSERT INTO sources (id,created_at,workspace_id,kind,version,display_name,state,details)
-                VALUES (:id,now(),:wid,'pdf',1,'old.pdf','ready','{}')"""
+                VALUES (:id,now(),:wid,'pdf',1,'fresh.pdf','ready','{}')"""
                 ),
                 {"id": sid, "wid": wid},
             )
@@ -63,19 +63,18 @@ def test_migration_backfills_owners_cascades_and_roundtrips(monkeypatch):
             )
             conn.execute(
                 text(
-                    """INSERT INTO jobs (id,created_at,kind,dedupe_key,payload,state,attempts,max_attempts,available_at)
-                VALUES (:id,now(),'ingest_document',:id,jsonb_build_object('document_id',CAST(:did AS text)),'completed',1,3,now())"""
+                    """INSERT INTO jobs (id,created_at,workspace_id,document_id,kind,dedupe_key,payload,state,attempts,max_attempts,available_at)
+                VALUES (:id,now(),:wid,:did,'ingest_document',:id,jsonb_build_object('document_id',CAST(:did AS varchar)),'completed',1,3,now())"""
                 ),
-                {"id": jid, "did": did},
+                {"id": jid, "did": did, "wid": wid},
             )
             conn.execute(
                 text(
-                    """INSERT INTO summary_cache (id,created_at,fingerprint,scope,payload)
-                VALUES (:id,now(),:id,'document',jsonb_build_object('documents',jsonb_build_array(jsonb_build_object('source_id',CAST(:sid AS text)))))"""
+                    """INSERT INTO summary_cache (id,created_at,workspace_id,fingerprint,scope,payload)
+                VALUES (:id,now(),:wid,:id,'document',jsonb_build_object('documents',jsonb_build_array(jsonb_build_object('source_id',CAST(:sid AS text)))))"""
                 ),
-                {"id": cache_id, "sid": sid},
+                {"id": cache_id, "sid": sid, "wid": wid},
             )
-        command.upgrade(config, "head")
         with engine.connect() as conn:
             row = conn.execute(
                 text("SELECT workspace_id,document_id FROM jobs WHERE id=:id"),
@@ -116,18 +115,27 @@ def test_migration_backfills_owners_cascades_and_roundtrips(monkeypatch):
                     for fk in inspector.get_foreign_keys(table)
                 )
         command.check(config)
-        command.downgrade(config, "a8c204d39f51")
-        with engine.connect() as conn:
-            assert (
-                inspect(conn).get_foreign_keys("sources")[0]["options"].get("ondelete")
-                is None
-            )
-        command.upgrade(config, "head")
         with engine.begin() as conn:
             conn.execute(text("DELETE FROM workspaces WHERE id=:id"), {"id": wid})
         with engine.connect() as conn:
             for table in ("sources", "documents", "jobs", "summary_cache"):
                 assert conn.scalar(text(f"SELECT count(*) FROM {table}")) == 0
+        command.downgrade(config, "base")
+        assert inspect(engine).get_table_names(schema=schema) == ["alembic_version"]
+        with engine.connect() as conn:
+            assert (
+                conn.scalar(
+                    text(
+                        "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace "
+                        "WHERE n.nspname = :schema AND p.proname IN "
+                        "('analyst_notify_job', 'analyst_notify_run_event')"
+                    ),
+                    {"schema": schema},
+                )
+                == 0
+            )
+        command.upgrade(config, "head")
+        command.check(config)
     finally:
         engine.dispose()
         with admin.begin() as conn:

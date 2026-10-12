@@ -26,6 +26,7 @@ import {
   type ReportTable,
   type ReportVersion,
 } from './reportApi'
+import { ReportEditor, ReportComparison } from './ReportEditor'
 import './reports.css'
 
 const dateLabel = (date: string) =>
@@ -61,6 +62,8 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
   const [pinQuery, setPinQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [compareId, setCompareId] = useState('')
   const [streamProgress, setStreamProgress] = useState<ReportProgress | null>(
     null,
   )
@@ -217,6 +220,8 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
     setDeleteBusy(false)
     setDeleteError('')
     setFeedback('')
+    setEditing(false)
+    setCompareId('')
     setStreamProgress(null)
     setStreamFailed(false)
     if (selectedId) void loadDetail(selectedId, controller.signal)
@@ -404,6 +409,7 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
     })
   }
   function startCreate() {
+    if (editing) return
     setError('')
     setCreating(true)
     setTitle('')
@@ -576,7 +582,12 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
           >
             <RefreshCw size={14} /> Refresh
           </Button>
-          <Button size="sm" onClick={startCreate} aria-label="New report">
+          <Button
+            size="sm"
+            onClick={startCreate}
+            aria-label="New report"
+            disabled={editing}
+          >
             <Plus size={15} /> New report
           </Button>
         </div>
@@ -788,6 +799,7 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
               <button
                 key={report.id}
                 className={`report-library-item ${selectedId === report.id ? 'is-active' : ''}`}
+                disabled={editing}
                 onClick={() => setSelectedId(report.id)}
               >
                 <FileText size={16} />
@@ -854,6 +866,7 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
                         <h2>{detail.title}</h2>
                         <button
                           className="report-text-action"
+                          disabled={editing}
                           onClick={() => {
                             setRenameValue(detail.title)
                             setRenaming(true)
@@ -870,10 +883,12 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
                       Version{' '}
                       <select
                         aria-label="Choose report version"
+                        disabled={editing}
                         value={selectedVersionId}
-                        onChange={(event) =>
+                        onChange={(event) => {
                           setSelectedVersionId(event.target.value)
-                        }
+                          setCompareId('')
+                        }}
                       >
                         {versions.map((version) => (
                           <option key={version.id} value={version.id}>
@@ -906,6 +921,7 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
                       size="icon-sm"
                       variant="ghost"
                       aria-label="Delete report"
+                      disabled={editing}
                       onClick={() => {
                         setDeleteError('')
                         setDeleteOpen(true)
@@ -924,6 +940,11 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
                     </span>
                     <span>Created {dateLabel(selectedVersion.created_at)}</span>
                     <span>{selectedVersion.language}</span>
+                    <span>
+                      {selectedVersion.mode === 'manual'
+                        ? 'Edited by you'
+                        : selectedVersion.mode}
+                    </span>
                     {pendingVersion && (
                       <span className="report-pending">
                         <RotateCw size={13} /> Building version{' '}
@@ -966,10 +987,95 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
                 )}
                 {selectedVersion?.state === 'ready' &&
                 selectedVersion.document ? (
-                  <ReportPreview
-                    reportId={detail.id}
-                    version={selectedVersion}
-                  />
+                  editing ? (
+                    <ReportEditor
+                      key={`${detail.id}:${selectedVersion.id}`}
+                      reportId={detail.id}
+                      version={selectedVersion}
+                      onCancel={() => setEditing(false)}
+                      onSaved={(next) => {
+                        if (
+                          !mountedRef.current ||
+                          selectedIdRef.current !== next.id
+                        )
+                          return
+                        pollEpochRef.current += 1
+                        detailRequestRef.current += 1
+                        setDetail(next)
+                        setSelectedVersionId(next.versions?.[0]?.id ?? '')
+                        setReports((current) =>
+                          current.map((item) =>
+                            item.id === next.id ? next : item,
+                          ),
+                        )
+                        setEditing(false)
+                        setCompareId('')
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <div className="report-edit-toolbar">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busy || Boolean(pendingVersion)}
+                          onClick={() => {
+                            setEditing(true)
+                            setCompareId('')
+                          }}
+                        >
+                          Edit report
+                        </Button>
+                        {versions.filter(
+                          (v) =>
+                            v.state === 'ready' &&
+                            v.id !== selectedVersion.id &&
+                            v.document,
+                        ).length > 0 && (
+                          <label>
+                            Compare with
+                            <select
+                              aria-label="Compare report version"
+                              value={compareId}
+                              onChange={(event) =>
+                                setCompareId(event.target.value)
+                              }
+                            >
+                              <option value="">Choose version</option>
+                              {versions
+                                .filter(
+                                  (v) =>
+                                    v.state === 'ready' &&
+                                    v.id !== selectedVersion.id &&
+                                    v.document,
+                                )
+                                .map((v) => (
+                                  <option key={v.id} value={v.id}>
+                                    Version {v.number}
+                                  </option>
+                                ))}
+                            </select>
+                          </label>
+                        )}
+                      </div>
+                      {compareId &&
+                        versions.find((v) => v.id === compareId)?.document && (
+                          <ReportComparison
+                            before={
+                              versions.find((v) => v.id === compareId)!
+                                .document!
+                            }
+                            after={selectedVersion.document}
+                            beforeLabel={`Version ${versions.find((v) => v.id === compareId)!.number}`}
+                            afterLabel={`Version ${selectedVersion.number}`}
+                          />
+                        )}
+                      <ReportPreview
+                        reportId={detail.id}
+                        version={selectedVersion}
+                      />
+                    </>
+                  )
                 ) : (
                   <div className="report-placeholder report-state-placeholder">
                     <FileText size={25} />
@@ -988,7 +1094,7 @@ export default function Reports({ workspaceId }: { workspaceId: string }) {
                     </p>
                   </div>
                 )}
-                {selectedVersion && (
+                {selectedVersion?.state === 'ready' && !editing && (
                   <form
                     className="report-regenerate"
                     onSubmit={(event) => void regenerate(event)}

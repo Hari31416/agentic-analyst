@@ -1025,7 +1025,7 @@ async def execute_report(task: Claim, stop: asyncio.Event) -> dict[str, object]:
             )
         asset_records = {key: dict(value) for key, value in snapshot["assets"].items()}
         base_document: dict[str, Any] | None = None
-        if version.mode in {"wording", "restructure"}:
+        if version.mode in {"wording", "restructure", "manual"}:
             if not version.base_version_id:
                 raise ReportGenerationError(
                     "report_base_missing", "The base report version is unavailable."
@@ -1046,6 +1046,11 @@ async def execute_report(task: Claim, stop: asyncio.Event) -> dict[str, object]:
             raise ReportGenerationError(
                 "report_mode_invalid", "The report generation mode is invalid."
             )
+        manual_document = (
+            dict(version.document)
+            if version.mode == "manual" and version.document
+            else None
+        )
         prompt_version = _PromptVersion(
             title=str(snapshot.get("title") or report.title),
             workspace_id=report.workspace_id,
@@ -1072,158 +1077,181 @@ async def execute_report(task: Claim, stop: asyncio.Event) -> dict[str, object]:
     evidence_catalog: list[dict[str, Any]] = []
     citation_expansions: dict[str, str] = {}
     evidence_aliases: dict[str, str] = {}
-    if version.mode == "initial":
-        aliases = {
-            f"a{index}": identity
-            for index, identity in enumerate(sorted(asset_records), start=1)
-        }
-        reverse_asset_aliases = {identity: alias for alias, identity in aliases.items()}
-        for alias, artifact_id in aliases.items():
-            metadata = asset_records[artifact_id]
-            key, size, digest = (
-                metadata.get("storage_key"),
-                metadata.get("byte_size"),
-                metadata.get("sha256"),
+    if version.mode == "manual":
+        from app.reports.schemas import ReportDocument
+
+        if manual_document is None:
+            raise ReportGenerationError(
+                "report_output_invalid", "Edited report is missing."
             )
-            if (
-                not isinstance(key, str)
-                or type(size) is not int
-                or size < 0
-                or size > MAX_ASSET_BYTES
-            ):
-                raise ReportGenerationError(
-                    "report_asset_invalid",
-                    "A copied report artifact is invalid or too large.",
-                )
-            if (
-                _asset_kind(metadata) != "table"
-                and metadata.get("media_type") != "application/vnd.plotly.v1+json"
-            ):
-                continue
-            with factory()() as session, session.begin():
-                _assert_lease(session, task)
-                _, current = _load_version(session, version_id)
-                if current.state == "ready":
-                    return {
-                        "report_version_id": version_id,
-                        "state": "ready",
-                        "already_ready": True,
-                    }
-            try:
-                content = await asyncio.to_thread(storage.read, key, MAX_ASSET_BYTES)
-            except Exception:
-                raise ReportGenerationError(
-                    "report_asset_unavailable",
-                    "A copied report artifact could not be read.",
-                ) from None
-            if (
-                len(content) != size
-                or not isinstance(digest, str)
-                or hashlib.sha256(content).hexdigest() != digest
-            ):
-                raise ReportGenerationError(
-                    "report_asset_integrity_failed",
-                    "A copied report artifact failed its integrity check.",
-                )
-            if _asset_kind(metadata) == "table":
-                previews[alias] = _parse_table_preview(content, metadata)
-            else:
-                try:
-                    previews[alias] = _chart_summary(content)
-                except (ValueError, UnicodeError):
-                    raise ReportGenerationError(
-                        "report_asset_invalid", "A copied chart artifact is invalid."
-                    ) from None
-        catalog, aliases = _asset_catalog(asset_records, previews)
-        # _asset_catalog assigns the same deterministic aliases; retain the reverse map above.
-        source_catalog, evidence_catalog, citation_expansions, evidence_aliases = (
-            _compact_evidence(snapshot)
-        )
-        messages = _messages(
-            snapshot,
-            prompt_version,
-            catalog,
-            reverse_asset_aliases,
-            source_catalog,
-            evidence_catalog,
-            citation_expansions,
-            evidence_aliases,
-            None,
-            settings,
+        document = ReportDocument.model_validate(manual_document)
+        await _progress(
+            task, version_id, "validating", "Checking edited report and references", 3
         )
     else:
-        assert base_document is not None
-        messages = _messages(
-            snapshot,
-            prompt_version,
-            {},
-            {},
-            [],
-            [],
-            {},
-            {},
-            _base_text_view(base_document, compact=version.mode == "restructure"),
-            settings,
-        )
-
-    await _progress(
-        task, version_id, "composing", "Composing report from bounded inputs", 2
-    )
-    model = OpenAICompatibleModel(settings)
-    completion = asyncio.create_task(model.complete(messages, []))
-    watcher = asyncio.create_task(_watch_lease(task, stop, settings))
-    try:
-        done, _ = await asyncio.wait(
-            {completion, watcher}, return_when=asyncio.FIRST_COMPLETED
-        )
-        if watcher in done:
-            completion.cancel()
-            with suppress(asyncio.CancelledError):
-                await completion
-            watcher.result()
-            raise LeaseLost("report worker stopped while model was running")
-        response = await completion
-    finally:
-        watcher.cancel()
-        with suppress(asyncio.CancelledError):
-            await watcher
-    if not response.content:
-        raise ReportGenerationError(
-            "report_output_empty", "The model returned an empty report."
-        )
-    await _progress(
-        task, version_id, "validating", "Checking report structure and references", 3
-    )
-    try:
-        value = json.loads(response.content)
         if version.mode == "initial":
-            from app.reports.schemas import ReportDocument
-
-            document = ReportDocument.model_validate(value)
-            alias_allowlist = {
-                alias: asset_records[identity] for alias, identity in aliases.items()
+            aliases = {
+                f"a{index}": identity
+                for index, identity in enumerate(sorted(asset_records), start=1)
             }
-            document = _restore_asset_aliases(document, aliases, alias_allowlist)
-            document = _expand_evidence_aliases(
-                document,
-                {
-                    key: value
-                    for key, value in citation_expansions.items()
-                    if key.startswith("e")
-                },
+            reverse_asset_aliases = {
+                identity: alias for alias, identity in aliases.items()
+            }
+            for alias, artifact_id in aliases.items():
+                metadata = asset_records[artifact_id]
+                key, size, digest = (
+                    metadata.get("storage_key"),
+                    metadata.get("byte_size"),
+                    metadata.get("sha256"),
+                )
+                if (
+                    not isinstance(key, str)
+                    or type(size) is not int
+                    or size < 0
+                    or size > MAX_ASSET_BYTES
+                ):
+                    raise ReportGenerationError(
+                        "report_asset_invalid",
+                        "A copied report artifact is invalid or too large.",
+                    )
+                if (
+                    _asset_kind(metadata) != "table"
+                    and metadata.get("media_type") != "application/vnd.plotly.v1+json"
+                ):
+                    continue
+                with factory()() as session, session.begin():
+                    _assert_lease(session, task)
+                    _, current = _load_version(session, version_id)
+                    if current.state == "ready":
+                        return {
+                            "report_version_id": version_id,
+                            "state": "ready",
+                            "already_ready": True,
+                        }
+                try:
+                    content = await asyncio.to_thread(
+                        storage.read, key, MAX_ASSET_BYTES
+                    )
+                except Exception:
+                    raise ReportGenerationError(
+                        "report_asset_unavailable",
+                        "A copied report artifact could not be read.",
+                    ) from None
+                if (
+                    len(content) != size
+                    or not isinstance(digest, str)
+                    or hashlib.sha256(content).hexdigest() != digest
+                ):
+                    raise ReportGenerationError(
+                        "report_asset_integrity_failed",
+                        "A copied report artifact failed its integrity check.",
+                    )
+                if _asset_kind(metadata) == "table":
+                    previews[alias] = _parse_table_preview(content, metadata)
+                else:
+                    try:
+                        previews[alias] = _chart_summary(content)
+                    except (ValueError, UnicodeError):
+                        raise ReportGenerationError(
+                            "report_asset_invalid",
+                            "A copied chart artifact is invalid.",
+                        ) from None
+            catalog, aliases = _asset_catalog(asset_records, previews)
+            # _asset_catalog assigns the same deterministic aliases; retain the reverse map above.
+            source_catalog, evidence_catalog, citation_expansions, evidence_aliases = (
+                _compact_evidence(snapshot)
             )
-        elif version.mode == "wording":
-            assert base_document is not None
-            document = _apply_wording_patches(base_document, value)
+            messages = _messages(
+                snapshot,
+                prompt_version,
+                catalog,
+                reverse_asset_aliases,
+                source_catalog,
+                evidence_catalog,
+                citation_expansions,
+                evidence_aliases,
+                None,
+                settings,
+            )
         else:
             assert base_document is not None
-            document = _apply_restructure_plan(base_document, value)
-    except ReportGenerationError:
-        raise
-    except (ValueError, ValidationError, ImportError):
-        raise ReportGenerationError(
-            "report_output_invalid", "The model returned an invalid report document."
-        ) from None
+            messages = _messages(
+                snapshot,
+                prompt_version,
+                {},
+                {},
+                [],
+                [],
+                {},
+                {},
+                _base_text_view(base_document, compact=version.mode == "restructure"),
+                settings,
+            )
+
+        await _progress(
+            task, version_id, "composing", "Composing report from bounded inputs", 2
+        )
+        model = OpenAICompatibleModel(settings)
+        completion = asyncio.create_task(model.complete(messages, []))
+        watcher = asyncio.create_task(_watch_lease(task, stop, settings))
+        try:
+            done, _ = await asyncio.wait(
+                {completion, watcher}, return_when=asyncio.FIRST_COMPLETED
+            )
+            if watcher in done:
+                completion.cancel()
+                with suppress(asyncio.CancelledError):
+                    await completion
+                watcher.result()
+                raise LeaseLost("report worker stopped while model was running")
+            response = await completion
+        finally:
+            watcher.cancel()
+            with suppress(asyncio.CancelledError):
+                await watcher
+        if not response.content:
+            raise ReportGenerationError(
+                "report_output_empty", "The model returned an empty report."
+            )
+        await _progress(
+            task,
+            version_id,
+            "validating",
+            "Checking report structure and references",
+            3,
+        )
+        try:
+            value = json.loads(response.content)
+            if version.mode == "initial":
+                from app.reports.schemas import ReportDocument
+
+                document = ReportDocument.model_validate(value)
+                alias_allowlist = {
+                    alias: asset_records[identity]
+                    for alias, identity in aliases.items()
+                }
+                document = _restore_asset_aliases(document, aliases, alias_allowlist)
+                document = _expand_evidence_aliases(
+                    document,
+                    {
+                        key: value
+                        for key, value in citation_expansions.items()
+                        if key.startswith("e")
+                    },
+                )
+            elif version.mode == "wording":
+                assert base_document is not None
+                document = _apply_wording_patches(base_document, value)
+            else:
+                assert base_document is not None
+                document = _apply_restructure_plan(base_document, value)
+        except ReportGenerationError:
+            raise
+        except (ValueError, ValidationError, ImportError):
+            raise ReportGenerationError(
+                "report_output_invalid",
+                "The model returned an invalid report document.",
+            ) from None
     if document.language != prompt_version.language:
         raise ReportGenerationError(
             "report_output_invalid",
@@ -1255,13 +1283,19 @@ async def execute_report(task: Claim, stop: asyncio.Event) -> dict[str, object]:
                 "The report omitted an explicitly selected embeddable artifact.",
             )
     elif base_document is not None:
-        _preserve_embedded_blocks(base_document, document, version.mode)
+        _preserve_embedded_blocks(
+            base_document,
+            document,
+            "wording" if version.mode == "manual" else version.mode,
+        )
+
+    from app.reports.schemas import FigureBlock, TableBlock
 
     render_assets: dict[str, dict[str, Any]] = {}
     asset_bytes: dict[str, bytes] = {}
     for section in document.sections:
         for block in section.blocks:
-            if getattr(block, "type", None) not in {"figure", "table"}:
+            if not isinstance(block, (FigureBlock, TableBlock)):
                 continue
             artifact_id = block.artifact_id
             asset_metadata = asset_records.get(artifact_id)

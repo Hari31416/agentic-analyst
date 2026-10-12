@@ -826,3 +826,68 @@ def test_execute_report_maps_unsupported_glyph_to_safe_code(monkeypatch):
     assert error.value.code == "report_glyph_unsupported"
     assert "U+E000" not in error.value.safe_message
     engine.dispose()
+
+
+@pytest.mark.parametrize(
+    "language,text",
+    [("en-IN", "Reviewed finding."), ("hi-IN", "समीक्षा की गई रिपोर्ट।")],
+)
+def test_manual_version_renders_without_model_and_preserves_base(
+    monkeypatch, tmp_path, language, text
+):
+    from app.storage.filesystem import FileStorage
+
+    engine, maker, task = _report_job(monkeypatch)
+    document = {
+        "title": "Reviewed findings",
+        "language": language,
+        "sections": [
+            {
+                "id": "s1",
+                "heading": "Summary",
+                "blocks": [
+                    {"id": "p1", "type": "paragraph", "text": text},
+                ],
+            }
+        ],
+    }
+    with maker.begin() as session:
+        current = session.get(ReportVersion, "version-1")
+        base = ReportVersion(
+            id="version-base",
+            report_id=current.report_id,
+            number=0,
+            language=language,
+            state="ready",
+            snapshot=current.snapshot,
+            document={**document, "title": "Original findings"},
+        )
+        session.add(base)
+        current.mode = "manual"
+        current.language = language
+        current.base_version_id = base.id
+        current.document = document
+
+    def no_model(*_args):
+        raise AssertionError("manual edits must not construct a provider client")
+
+    storage = FileStorage(tmp_path)
+    monkeypatch.setattr(generation, "get_settings", lambda: Settings(_env_file=None))
+    monkeypatch.setattr(generation, "OpenAICompatibleModel", no_model)
+    monkeypatch.setattr(generation, "get_storage", lambda _settings: storage)
+    try:
+        result = asyncio.run(generation.execute_report(task, asyncio.Event()))
+        assert result["state"] == "ready"
+        with maker() as session:
+            current = session.get(ReportVersion, "version-1")
+            assert current.document == document
+            assert storage.read(current.pdf_key).startswith(b"%PDF")
+            assert (
+                session.get(ReportVersion, "version-base").document["title"]
+                == "Original findings"
+            )
+        assert asyncio.run(generation.execute_report(task, asyncio.Event()))[
+            "already_ready"
+        ]
+    finally:
+        engine.dispose()

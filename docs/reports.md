@@ -12,6 +12,28 @@ Each version retains its canonical document, source snapshot, asset hashes, and 
 
 **Wording** regeneration sends editable text and accepts patches keyed by existing section and block IDs. The backend applies only title, heading, paragraph, and caption edits to a copy of the saved document. Protected references and table settings never need to be reproduced by the model. **Restructure** sends a compact block outline and accepts an ordering plan; the backend moves the original blocks without rewriting their contents. Every existing block must appear exactly once. Revisions do not resend source evidence or artifact previews. Both modes create a new version. An invalid model response fails visibly and leaves earlier versions available. Initial generation must include every explicitly selected artifact that supports embedding.
 
+### Direct editing and comparison
+
+Select a ready version and choose **Edit report** to change its document title,
+section headings, paragraphs, or figure/table captions. Choose **Review changes**
+to see the changed fields side by side, then **Save new version**. The worker
+renders a new PDF without calling the model. The library title remains separate
+from the document title. Tables, figures, block order, language, frozen source
+snapshots, and asset references remain protected. Earlier versions stay intact.
+
+While editing, report and version switching are disabled. **Discard changes**
+returns to the saved version. A failed save keeps the draft for retry, and
+reloading or closing the page with unsaved edits triggers the browser warning.
+Drafts are held in memory; leaving the Reports view discards an unsaved draft.
+The API limits edited documents to 100,000 characters and rejects configured
+credentials, invalid structure, or a save while another version is processing.
+
+Use **Compare with** on a ready version to compare it against another ready
+version. The comparison shows changed text, added/removed fields, block/section
+order, and table settings. Unchanged fields are omitted. The selected version
+remains available for preview and download below the comparison. Editing starts
+from the selected version, including when it is an older version.
+
 Rename changes the library title. It does not rewrite existing PDFs. Delete removes the report and all versions, cancels active generation leases, and queues retained files for cleanup. Removing a pin, chat, or original artifact does not remove report copies. Deleting the workspace removes its reports too.
 
 Reports are personal to the authenticated user within the workspace. Generated report PDFs have explicit report ownership and appear in the report library.
@@ -29,6 +51,7 @@ A report accepts at most 30 pins, 200 messages, 100,000 characters of message te
 - `GET/POST /api/workspaces/{workspace_id}/reports`
 - `GET/PATCH/DELETE /api/reports/{report_id}`
 - `POST /api/reports/{report_id}/regenerate`
+- `POST /api/reports/{report_id}/edit` with `version_id` and the edited `document`
 - `GET /api/reports/{report_id}/versions/{version_id}/download`
 - `GET /api/reports/{report_id}/versions/{version_id}/document`
 - `GET /api/reports/{report_id}/versions/{version_id}/events`
@@ -39,6 +62,6 @@ List endpoints support bounded `limit` and `offset`. Versions move through `queu
 
 Progress snapshots are persisted with each version and streamed as named SSE `progress` events with IDs. Stages cover input preparation, model composition, validation, PDF rendering, and completion. Reconnecting clients receive the current snapshot rather than a replay of every intermediate stage; `Last-Event-ID` suppresses duplicates. The frontend subscribes to the pending version, closes streams when switching reports, and falls back to polling after stream errors. Progress describes completed stages, not a predicted duration or token count.
 
-Apply migrations through `a74e013cd215` with `make migrate`, then restart the host API and worker. The Vite frontend reloads normally. No new external rendering service or browser printing step is required.
+Apply migrations through `c84e091ab326` with `make migrate`, then restart the host API and worker. The Vite frontend reloads normally. No new external rendering service or browser printing step is required.
 
 Focused verification covers ownership, CRUD, ordered selection/deduplication, artifact-only inputs, retained bytes after chat deletion, exact table previews, model/reference failures, lease loss, immutable ready versions, multilingual shaping, images, and charts. Tests use fake model responses rather than live provider requests.

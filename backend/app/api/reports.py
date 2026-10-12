@@ -40,6 +40,7 @@ from app.db.models import (
 )
 from app.db.session import factory, get_session
 from app.reports.progress import progress_view
+from app.reports.schemas import ReportDocument
 from app.storage.factory import get_storage
 from app.storage.s3 import StorageUnavailable
 
@@ -100,6 +101,12 @@ class Regenerate(BaseModel):
     version_id: UUID
     feedback: str = Field(default="", max_length=4000)
     mode: Literal["wording", "restructure"] = "wording"
+
+
+class ManualRevision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    version_id: UUID
+    document: ReportDocument
 
 
 def timestamp(value: Any) -> Any:
@@ -552,6 +559,62 @@ def regenerate_report(
         snapshot=base.snapshot,
         feedback=body.feedback,
         mode=body.mode,
+        base_version_id=base.id,
+    )
+    enqueue(session, report, version)
+    report.updated_at = now()
+    session.commit()
+    return report_view(session, report, detail=True)
+
+
+@router.post("/reports/{report_id}/edit", status_code=201)
+def edit_report(
+    report_id: UUID, body: ManualRevision, session: Db, user: Owner
+) -> dict[str, Any]:
+    from app.reports.generation import ReportGenerationError, _preserve_embedded_blocks
+
+    report = owned_report(session, str(report_id), user, lock=True)
+    base = get_version(session, report, str(body.version_id))
+    if base.state != "ready" or not base.document:
+        raise HTTPException(409, "Editing requires a ready version")
+    if session.scalar(
+        select(ReportVersion.id).where(
+            ReportVersion.report_id == report.id,
+            ReportVersion.state.in_(["queued", "generating"]),
+        )
+    ):
+        raise HTTPException(409, "Wait for the current report version to finish")
+    document = body.document.model_dump(mode="json")
+    if len(json.dumps(document, ensure_ascii=False)) > MAX_TEXT:
+        raise HTTPException(422, "Edited report exceeds the 100,000 character limit")
+    if contains_secret(str(document)):
+        raise HTTPException(422, "Edited report contains configured credentials")
+    if body.document.language != base.language:
+        raise HTTPException(422, "Editing cannot change the report language")
+    try:
+        _preserve_embedded_blocks(base.document, body.document, "wording")
+    except ReportGenerationError as error:
+        raise HTTPException(422, str(error)) from error
+    if document == base.document:
+        raise HTTPException(422, "Make a change before saving a new version")
+    number = (
+        int(
+            session.scalar(
+                select(func.max(ReportVersion.number)).where(
+                    ReportVersion.report_id == report.id
+                )
+            )
+            or 0
+        )
+        + 1
+    )
+    version = ReportVersion(
+        report_id=report.id,
+        number=number,
+        language=base.language,
+        snapshot=base.snapshot,
+        document=document,
+        mode="manual",
         base_version_id=base.id,
     )
     enqueue(session, report, version)

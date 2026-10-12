@@ -1275,3 +1275,33 @@ Keep secrets and raw client data out of this file.
   explicitly unverified; retained metadata/chart schemas/answer previews provide
   limited support. No human/native-speaker certification or calibrated ranking
   is claimed. Phase 10 remains unstarted.
+
+## 12 October 2026: direct report editing and comparison
+
+- Added direct editing of document titles, headings, paragraphs, and captions.
+  Users review changed fields side by side before saving a new immutable version.
+  Ready versions can also be compared, including text and structural changes.
+  Existing table settings, artifact references, language, IDs, and order remain
+  protected by backend validation. Report and version switching are disabled
+  during editing; failed saves retain the draft, and browser unload warns about
+  unsaved edits. Drafts remain in memory while the editor is mounted.
+- Added authenticated `POST /api/reports/{report_id}/edit`, ready-base and
+  pending-version checks, credential/text limits, frozen snapshot reuse, and
+  explicit manual-version provenance. The durable worker validates and renders
+  edited versions without constructing a model client. Existing lease, integrity,
+  cleanup, and immutable-ready safeguards continue to apply.
+- Added migration `c84e091ab326` after `ba321c7d801a` to allow manual revisions.
+  Offline upgrade SQL generation passes. Local Docker infrastructure and host
+  apps are stopped, so no database migration or service restart was performed.
+  Apply `make migrate` before restarting API and worker to use direct editing.
+- Validation: 549 deterministic backend tests passed, 82 live/integration tests
+  deselected. The focused report API/generation/renderer suite passed 73 tests,
+  including real English/Hindi PDF rendering without model calls, retained base
+  versions, ownership, pending saves, and protected-structure rejection.
+  Changed report modules pass mypy. Full app mypy reports existing assignment
+  errors in retrieval/embedding.py:401 and portability/service.py:759.
+- Frontend production build, focused Prettier checks, and artifact/pin/report
+  lifecycle checks pass. New editor checks cover draft review, save-error retry,
+  immutable base content, protected assets, unload warnings, and order comparison.
+  Full browser QA and real PostgreSQL migration verification remain unperformed.
+  No model calls, source downloads, or phase-10 implementation occurred.

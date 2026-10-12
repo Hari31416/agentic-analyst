@@ -38,6 +38,7 @@ export type ReportVersion = {
   document: ReportDocument | null
   feedback: string
   mode: string
+  base_version_id?: string | null
   assets?: Record<
     string,
     {
@@ -129,6 +130,11 @@ export const reportApi = {
   remove: (id: string) =>
     request<void>(`/api/reports/${encodeURIComponent(id)}`, {
       method: 'DELETE',
+    }),
+  edit: (id: string, versionId: string, document: ReportDocument) =>
+    request<Report>(`/api/reports/${encodeURIComponent(id)}/edit`, {
+      method: 'POST',
+      body: JSON.stringify({ version_id: versionId, document }),
     }),
   regenerate: (
     id: string,

@@ -12,6 +12,7 @@ try {
     'artifact-visibility',
     'pins-lifecycle',
     'reports-lifecycle',
+    'report-editing',
   ]) {
     const directory = join(output, entry)
     await build({

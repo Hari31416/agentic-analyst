@@ -869,3 +869,138 @@
     padding-inline: 14px;
   }
 }
+
+.report-edit-toolbar,
+.report-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--report-rule);
+}
+.report-edit-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.report-edit-toolbar select {
+  padding: 6px 10px;
+  border: 1px solid var(--report-rule);
+  border-radius: 4px;
+  background: var(--color-background);
+}
+.report-editor {
+  padding: 24px;
+}
+.report-editor-header h3,
+.report-comparison > h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  font-weight: 500;
+}
+.report-editor-header p {
+  color: var(--report-dim);
+  font-size: 13px;
+  margin: 8px 0 22px;
+}
+.report-editor-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.report-editor-fields input,
+.report-editor-fields textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--report-rule);
+  border-radius: 4px;
+  background: var(--color-background);
+  color: var(--report-ink);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.report-editor-fields textarea {
+  resize: vertical;
+}
+.report-editor-fields fieldset {
+  border-top: 1px solid var(--report-rule);
+  padding: 20px 0 0;
+  min-width: 0;
+}
+.report-editor-fields legend {
+  color: var(--report-dim);
+  font-size: 12px;
+  padding-right: 12px;
+}
+.report-editor-actions {
+  padding: 18px 0 0;
+  border-top: 1px solid var(--report-rule);
+  border-bottom: 0;
+  justify-content: flex-end;
+}
+.report-comparison {
+  padding: 24px;
+}
+.report-editor .report-comparison {
+  padding: 0 0 24px;
+}
+.report-diff-head,
+.report-diff-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+.report-diff-head {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--report-dim);
+}
+.report-diff {
+  padding-top: 18px;
+}
+.report-diff h4 {
+  font-size: 12px;
+  color: var(--report-dim);
+  margin-bottom: 8px;
+}
+.report-diff-columns > div {
+  padding: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.7;
+  border-inline-start: 3px solid var(--report-rule);
+  background: var(--color-muted);
+}
+.report-diff-columns > .report-diff-after {
+  border-color: var(--color-primary);
+  background: color-mix(
+    in srgb,
+    var(--color-primary) 7%,
+    var(--color-background)
+  );
+}
+@container (max-width: 600px) {
+  .report-diff-head,
+  .report-diff-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .report-diff-head {
+    display: none;
+  }
+  .report-diff-before::before {
+    content: 'Before';
+  }
+  .report-diff-after::before {
+    content: 'After';
+  }
+  .report-diff-columns > div::before {
+    display: block;
+    font-size: 11px;
+    color: var(--report-dim);
+  }
+}

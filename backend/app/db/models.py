@@ -207,7 +207,7 @@ class ReportVersion(Identity, Base):
             name="ck_report_version_state",
         ),
         CheckConstraint(
-            "mode IN ('initial', 'wording', 'restructure')",
+            "mode IN ('initial', 'wording', 'restructure', 'manual')",
             name="ck_report_version_mode",
         ),
     )

@@ -644,3 +644,94 @@ def test_cleanup_worker_retains_live_reports_then_deletes_copies(
     assert worker.maintenance(task) == {"deleted": True}
     with pytest.raises(FileNotFoundError):
         storage.read(key)
+
+
+def test_direct_edit_freezes_new_version_and_checks_ownership(report_client):
+    import copy
+
+    client, sessions, ids, users, storage = report_client
+    report = create(client, ids).json()
+    base_id = ready(sessions, report, storage)
+    base = client.get(f"/api/reports/{report['id']}").json()["versions"][0]
+    document = copy.deepcopy(base["document"])
+    document["title"] = "Edited findings"
+    document["sections"][0]["blocks"][0]["caption"] = "Reviewed revenue"
+    payload = {"version_id": base_id, "document": document}
+    response = client.post(f"/api/reports/{report['id']}/edit", json=payload)
+    assert response.status_code == 201, response.text
+    versions = response.json()["versions"]
+    assert len(versions) == 2
+    assert versions[0]["number"] == 2
+    assert versions[0]["mode"] == "manual"
+    assert versions[0]["base_version_id"] == base_id
+    assert versions[0]["document"] == document
+    assert versions[1]["document"] == base["document"]
+    with sessions() as session:
+        edited = session.get(ReportVersion, versions[0]["id"])
+        original = session.get(ReportVersion, base_id)
+        assert edited.snapshot == original.snapshot
+        assert edited.pdf_key is None
+        assert original.pdf_key is not None
+    assert (
+        client.post(f"/api/reports/{report['id']}/edit", json=payload).status_code
+        == 409
+    )
+    app.dependency_overrides[require_auth] = lambda: users[1]
+    assert (
+        client.post(f"/api/reports/{report['id']}/edit", json=payload).status_code
+        == 404
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "reference",
+        "rows",
+        "columns",
+        "block",
+        "section",
+        "language",
+        "unchanged",
+        "oversized",
+        "control",
+    ],
+)
+def test_direct_edit_rejects_protected_or_invalid_changes(report_client, mutation):
+    client, sessions, ids, _, storage = report_client
+    report = create(client, ids).json()
+    base_id = ready(sessions, report, storage)
+    document = client.get(f"/api/reports/{report['id']}").json()["versions"][0][
+        "document"
+    ]
+    block = document["sections"][0]["blocks"][0]
+    if mutation == "reference":
+        block["artifact_id"] = str(uuid4())
+    elif mutation == "rows":
+        block["max_rows"] = 12
+    elif mutation == "columns":
+        block["columns"] = ["region"]
+    elif mutation == "block":
+        document["sections"][0]["blocks"] = []
+    elif mutation == "section":
+        document["sections"][0]["id"] = "replacement"
+    elif mutation == "language":
+        document["language"] = "hi-IN"
+    elif mutation == "control":
+        block["caption"] = "bad\x00text"
+    elif mutation == "oversized":
+        document["sections"][0]["blocks"].extend(
+            [
+                {"id": f"p{i}", "type": "paragraph", "text": "x" * 50000}
+                for i in range(3)
+            ]
+        )
+    response = client.post(
+        f"/api/reports/{report['id']}/edit",
+        json={
+            "version_id": base_id,
+            "document": document,
+        },
+    )
+    assert response.status_code == 422, response.text
+    assert len(client.get(f"/api/reports/{report['id']}").json()["versions"]) == 1

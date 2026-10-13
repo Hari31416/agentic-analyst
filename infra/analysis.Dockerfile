@@ -2,3 +2,6 @@ FROM hari31416/data-science-heavy-runtime:py312-v2@sha256:73520043dc5aa0a30475b8
 
 # Build packages into the OCI rootfs before any network-disabled guest boots.
 RUN python -m pip install --no-cache-dir duckdb==1.4.4 xlrd==2.0.2
+
+# Check the libraries used by file SQL, spreadsheet readers, and Python analysis.
+RUN python -c "import duckdb, xlrd, pandas, numpy, scipy, matplotlib, pyarrow, openpyxl; assert duckdb.sql('SELECT 42').fetchone() == (42,)"

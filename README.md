@@ -124,7 +124,12 @@ make analysis-image
 make sandbox
 ```
 
-The image build records its digest as `SANDBOX_IMAGE` in `.env`. Restart the API
+`make analysis-image` pulls the published
+`hari31416/agentic-rag-analyst-runtime:py312-v1` image into microsandbox and records
+the pinned registry digest from `.env.example` as `SANDBOX_IMAGE` in `.env`.
+The image extends `hari31416/data-science-heavy-runtime:py312-v2` with
+DuckDB 1.4.4 and xlrd 2.0.2, and supports Linux ARM64 and AMD64.
+No local Docker build is needed. Restart the API
 and worker after the configuration changes. Run `make sandbox` in a separate
 terminal; the service defaults to loopback port 8787.
 

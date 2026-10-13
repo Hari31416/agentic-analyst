@@ -206,6 +206,20 @@ Background application logs are stored in `logs/`. Ctrl-C stops foreground apps.
 Docker volumes retain database and object-store data; removing them deletes saved
 state and requires infrastructure initialization and migrations again.
 
+## Agent tools
+
+The chat agent has nine tools:
+
+- `list_sources`, `inspect_schema`, and `sample_rows` discover selected inputs.
+- `search_documents` and `source_passage` retrieve original document evidence.
+- `run_python` and `run_sql` calculate results and retain output files.
+- `list_artifacts` and `inspect_artifact` discover and read retained outputs.
+
+Python handles cleaning, joins, statistics, charts, and requested report files.
+`analyze_data`, `dataset_profile`, `summarize_documents`, `generate_report`, and
+`register_dataset` are not exposed to the chat agent. Their backend
+implementations remain for existing internal callers and APIs.
+
 ## Project structure
 
 ```text

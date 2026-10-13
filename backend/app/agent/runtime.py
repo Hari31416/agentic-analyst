@@ -892,8 +892,6 @@ class RunRuntime:
                 return await self.dispatch("list_artifacts", call, args)
 
             from app.tools.structured import (
-                DatasetInput,
-                RegisterInput,
                 SampleInput,
                 SourceInput,
                 SQLInput,
@@ -908,26 +906,8 @@ class RunRuntime:
                 return Tool(name, description, schema, execute)
 
             from app.tools.documents import PassageInput, SearchInput
-            from app.tools.summaries import SummaryInput
-            from app.tools.analysis import AnalyzeInput
-            from app.tools.reports import GenerateReportInput
 
             structured_tools = [
-                structured_tool(
-                    "analyze_data",
-                    "Run bounded cleaning, joins, reshaping, exact decimal arithmetic, date/fiscal derivations and statistics in the microVM. Supply selected dataset IDs or CSV artifact snapshots. Explicitly convert numeric/date columns. Rejects missing and duplicate keys unless cleaned; join relationship defaults many_to_one. Record assumptions, units and chart labels. DB/file analysis first uses run_sql to retain a bounded CSV snapshot.",
-                    AnalyzeInput,
-                ),
-                structured_tool(
-                    "generate_report",
-                    "Generate Markdown/PDF and a replay notebook from retained results and document evidence. Supply exact accessible artifact/evidence IDs; calculated numbers and citations are preserved. Inputs and code snapshots must be available for replay.",
-                    GenerateReportInput,
-                ),
-                structured_tool(
-                    "summarize_documents",
-                    "Get cached document, section or multi-document overview summaries with original supporting evidence. Summaries are navigation aids; cite original passages for claims. Optional thematic headings group the bounded sample.",
-                    SummaryInput,
-                ),
                 structured_tool(
                     "search_documents",
                     "Search selected document versions using lexical, dense or hybrid retrieval. Advanced profile fuses up to three queries with optional local rerank, context expansion, extractive compression, and independent subquestions. For dependent hops supply hop_evidence_ids and hop_terms copied verbatim from earlier evidence to locate the next passage. Returns original excerpts and stage traces. Never infer unsupported criteria.",
@@ -944,11 +924,6 @@ class RunRuntime:
                     NoInput,
                 ),
                 structured_tool(
-                    "dataset_profile",
-                    "Inspect a selected dataset's columns, types, units, and warnings.",
-                    DatasetInput,
-                ),
-                structured_tool(
                     "inspect_schema",
                     "Inspect selected sheets or database tables in a selected source.",
                     SourceInput,
@@ -962,11 +937,6 @@ class RunRuntime:
                     "run_sql",
                     "Execute one read-only query. For file SQL use selected dataset references and listed dataset_1 table aliases; all file columns are VARCHAR, so explicitly cast numeric/date columns. For database SQL supply source_id and exact schema.table identifiers. Output limits apply after full aggregation. SQL, CSV, and evidence are retained.",
                     SQLInput,
-                ),
-                structured_tool(
-                    "register_dataset",
-                    "Register an accessible CSV output as a derived source with lineage. Select it in a later run.",
-                    RegisterInput,
                 ),
             ]
             loop = AgentLoop(

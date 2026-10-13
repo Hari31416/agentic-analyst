@@ -1,6 +1,9 @@
 # Analysis and portable outputs
 
-Phase 06 adds `analyze_data` and `generate_report` to prompt `analyst-v4`.
+Phase 06 introduced `analyze_data` and `generate_report` in prompt `analyst-v4`.
+As of `analyst-v11`, these implementations remain available internally but are
+not exposed to the chat agent. The agent uses `run_python` for analysis and
+requested report files.
 API, worker and sandbox run on the host. Calculations execute in the existing
 networkless microVM; report assembly reads retained results on the host and
 never executes their code.
